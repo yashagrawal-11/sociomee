@@ -9,6 +9,8 @@ import os, re, json, random, threading
 from dataclasses import dataclass
 from openai import OpenAI
 from dotenv import load_dotenv
+from youtube_engine import YouTubeIntelligenceEngine
+from instagram_engine import InstagramEngine
 
 # ──────────────────────────────────────────────────────────
 # API
@@ -352,9 +354,9 @@ def generate_threads(topic: str) -> dict:
     ai_score = random.randint(72, 88)
     style = random.choice(["story", "controversial", "educational"])
     post_variants = {
-        "story":        f"I struggled with {topic} for months.\n\nNothing worked.\n\nUntil one shift changed everything.\n\nHave you experienced this?",
+        "story":         f"I struggled with {topic} for months.\n\nNothing worked.\n\nUntil one shift changed everything.\n\nHave you experienced this?",
         "controversial": f"{topic} is overrated.\n\nEveryone follows the same advice.\n\nBut it doesn't work for most people.\n\nAgree or disagree?",
-        "educational":  f"How to actually improve {topic}:\n\n1. Stop overthinking\n2. Stay consistent\n3. Track progress\n\nSave this 🔥",
+        "educational":   f"How to actually improve {topic}:\n\n1. Stop overthinking\n2. Stay consistent\n3. Track progress\n\nSave this 🔥",
     }
     return {
         "platform": "threads",
@@ -381,7 +383,7 @@ def generate_x(topic: str) -> dict:
     }
 
 
-def generate_youtube(topic: str) -> dict:
+def generate_youtube_basic(topic: str) -> dict:
     ideas = generate_ideas(topic, "youtube", 5)
     return {
         "platform": "youtube",
@@ -414,13 +416,13 @@ PLATFORM_GENERATORS = {
     "telegram":  generate_telegram,
     "threads":   generate_threads,
     "x":         generate_x,
-    "youtube":   generate_youtube,
+    "youtube":   generate_youtube_basic,
     "pinterest": generate_pinterest,
 }
 
 
-def generate_content(topic: str, platform: str) -> dict:
-    """Main entry point. Returns full content dict for given platform and topic."""
+def _get_platform_data(topic: str, platform: str) -> dict:
+    """Internal helper — returns raw platform dict (no tone logic)."""
     fn = PLATFORM_GENERATORS.get(platform.lower())
     if not fn:
         raise ValueError(f"Unknown platform: {platform}")
@@ -656,76 +658,186 @@ def generate_hashtags(keyword: str) -> dict:
 
 # ──────────────────────────────────────────────────────────
 # UNIFIED CONTENT GENERATOR (UI-READY)
-# Connects existing scoring engine + new tone/type support
+# Connects scoring engine + YouTube Intelligence + tone/type
 # ──────────────────────────────────────────────────────────
-def generate_content(keyword: str, platform: str, content_type: str, tone: str) -> dict:
+def generate_content(
+    keyword:      str,
+    platform:     str,
+    content_type: str,
+    tone:         str,
+    language:     str = "english",
+) -> dict:
     """
     Main unified entry point for UI-facing calls.
-    Combines existing SocioMee scoring engine with tone/content_type support.
+
+    - YouTube  → uses YouTubeIntelligenceEngine (real API data + patterns)
+    - All else → uses SocioMee scoring engine + tone/content_type support
 
     Args:
         keyword      : niche or topic (e.g. "skincare routine")
         platform     : one of PLATFORMS list
         content_type : e.g. "reel", "post", "story", "thread", "pin"
         tone         : "bold" | "funny" | "emotional" | "informative"
+        language     : "english" | "hinglish" | "both" (default: "english")
 
     Returns:
-        Full content dict with hooks, captions, cta, hashtags, and scores.
+        Full content dict ready for the frontend / API response.
     """
-    # ── Pull from existing advanced scoring engine ──
-    insight = get_content_insight(
-        platform=platform,
-        keyword=keyword,
-    )
+
+    # ── Sanitise inputs ───────────────────────────────────────────────────
+    platform     = (platform     or "").lower().strip()
+    keyword      = (keyword      or "").strip()
+    content_type = (content_type or "").strip()
+    tone         = (tone         or "bold").strip()
+    language     = (language     or "english").strip().lower()
+
+    # ── Instagram branch — powered by InstagramEngine ─────────────────
+    if platform == "instagram":
+        engine = InstagramEngine()
+        data = engine.build_intelligence_pack(
+            keyword=keyword,
+            tone=tone,
+            content_type=content_type,
+            niche=keyword,
+            language=language,
+        )
+        return {
+            "platform":          "instagram",
+            "keyword":           keyword,
+            "content_type":      content_type,
+            "tone":              tone,
+            "hooks":             data.get("hooks", []),
+            "captions":          data.get("captions", []),
+            "cta":               data.get("cta", "Follow for more 🔥"),
+            "hashtags":          data.get("hashtags", {}),
+            "reel_ideas":        data.get("reel_ideas", []),
+            "post_ideas":        data.get("post_ideas", []),
+            "story_ideas":       data.get("story_ideas", []),
+            "best_time":         data.get("best_time", {}),
+            "trend_prediction":  data.get("trend_prediction", {}),
+            "trending_keywords": data.get("trend_keywords", []),
+            "top_search_terms":  data.get("top_search_terms", []),
+            "viral_sounds":      data.get("viral_sounds", []),
+            "aesthetic_profile": data.get("aesthetic_profile", {}),
+            "profile_preview":   data.get("profile_preview", {}),
+            "quality_notes":     data.get("quality_notes", []),
+            "prompt_support":    data.get("prompt_support", []),
+            "scores":            data.get("scores", {}),
+            "description":       data.get("description", ""),
+        }
+
+    # ── YouTube branch — powered by YouTubeIntelligenceEngine ──────────
+    if platform == "youtube":
+        engine = YouTubeIntelligenceEngine()
+        yt = engine.build_intelligence_pack(keyword=keyword)
+        return {
+            "platform":           "youtube",
+            "keyword":            keyword,
+            "content_type":       content_type,
+            "tone":               tone,
+            "hooks":              yt["hooks"],
+            "captions":           yt["captions"],
+            "cta":                "Follow for more 🚀",
+            "hashtags":           yt["hashtags"],
+            "ideas":              yt["ideas"],
+            "best_time":          yt["best_time"],
+            "trending_keywords":  yt["trending_keywords"],
+            "top_search_terms":   yt["top_search_terms"],
+            "scores":             yt["scores"],
+            "description":        yt["description"],
+            "search_results":     yt["search_results"][:10],
+            "top_current_titles": yt["top_current_titles"],
+            "top_channels":       yt["top_channels"],
+            "quality_notes":      yt["quality_notes"],
+            "prompt_support":     yt["prompt_support"],
+        }
+
+    # ── All other platforms ────────────────────────────────────────────
+    # ── All other platforms ────────────────────────────────────────────────
+    insight = get_content_insight(platform=platform, keyword=keyword)
 
     ai_score      = insight.get("ai_score", 75)
     content_score = insight.get("content_score", 75)
     final_score   = insight.get("final_score", 80)
 
-    # ── Hooks: use existing platform hooks if available, else tone-based ──
-    platform_data = {"hooks": [], "hashtags": []}
+    # Hooks: prefer platform-native hooks, fall back to tone-based
+    platform_data  = _get_platform_data(keyword, platform)
     existing_hooks = platform_data.get("hooks", [])
-    hooks = existing_hooks if existing_hooks else generate_hooks(keyword, tone)
+    hooks          = existing_hooks if existing_hooks else generate_hooks(keyword, tone)
 
-    # ── Captions: always tone-aware ──
+    # Captions: always tone-aware
     captions = generate_captions(keyword, tone, content_type)
 
-    # ── CTA: tone-aware ──
+    # CTA: tone-aware
     cta = generate_cta(tone)
 
-    # ── Hashtags: use existing platform groups, fallback to tiered generator ──
+    # Hashtags: prefer platform groups, fall back to tiered generator
     raw_hashtags = platform_data.get("hashtags", [])
     if raw_hashtags:
-        # Convert existing (band, tag) tuple list → tiered dict
-        hashtags = {"high": [], "medium": [], "low": []}
+        hashtags: dict | list = {"high": [], "medium": [], "low": []}
         for band, tag in raw_hashtags:
             hashtags[band.lower()].append(tag)
     else:
         hashtags = generate_hashtags(keyword)
 
     return {
-    "platform": platform,
-    "keyword": keyword,
-    "content_type": content_type,
-    "tone": tone,
+        "platform":     platform,
+        "keyword":      keyword,
+        "content_type": content_type,
+        "tone":         tone,
+        "hooks":        hooks,
+        "captions":     captions,
+        "cta":          cta,
+        "hashtags":     hashtags,
+        "best_time":    platform_data.get("best_time", ""),
+        "ideas":        platform_data.get("ideas", []),
+        "scores": {
+            "ai_score":      ai_score,
+            "content_score": content_score,
+            "final_score":   final_score,
+            "level":         insight.get("level", "MEDIUM"),
+            "label":         insight.get("label", ""),
+            "tag_scores":    insight.get("tag_scores", []),
+            "colors":        insight.get("colors", {}),
+        },
+        "tips": insight.get("tips", []),
+    }
 
-    "hooks": hooks,
-    "captions": captions,
-    "cta": cta,
-    "hashtags": hashtags,
-
-    "best_time": platform_data.get("best_time", ""),
-    "ideas": platform_data.get("ideas", []),
-
-    "scores": {
-        "ai_score": ai_score,
-        "content_score": content_score,
-        "final_score": final_score,
-        "level": insight.get("level", "MEDIUM"),
-        "label": insight.get("label", ""),
-        "tag_scores": insight.get("tag_scores", []),
-        "colors": insight.get("colors", {})
-    },
-
-    "tips": insight.get("tips", [])
+# ──────────────────────────────────────────────────────────
+# SMART CHATBOT — FAQ REPLY ENGINE
+# ──────────────────────────────────────────────────────────
+FAQ = {
+    "best time":   "Post between 6 PM - 9 PM for max reach.",
+    "hashtags":    "Use 3-5 strong keywords, avoid spam.",
+    "thumbnail":   "Use emotion + bold text + contrast.",
+    "hook":        "Open with a question, bold claim, or relatable moment.",
+    "cta":         "Always end with: save, share, comment, or follow.",
+    "viral":       "Short hook + value + strong CTA = viral formula.",
+    "reel":        "Keep reels under 30 seconds. Hook in first 2 seconds.",
+    "caption":     "Lead with the hook. Add value. Close with CTA.",
+    "engagement":  "Ask a question at the end to boost comments.",
+    "youtube":     "Title + thumbnail = 80% of clicks. Optimize both.",
+    "tiktok":      "First 3 seconds decide everything. Start strong.",
+    "instagram":   "Use 3-5 targeted hashtags, not 30 generic ones.",
+    "seo":         "Use your main keyword in the first line and title.",
+    "frequency":   "Post 3-5 times a week for steady growth.",
+    "story":       "Stories get 2x reach. Use polls and question boxes.",
 }
+
+
+def chatbot_reply(query: str) -> str:
+    """
+    Simple FAQ chatbot for SocioMee.
+    Matches query keywords against FAQ dict and returns the best answer.
+
+    Args:
+        query: User's question as a string.
+
+    Returns:
+        A helpful string answer, or a fallback prompt.
+    """
+    q = query.lower().strip()
+    for key, answer in FAQ.items():
+        if key in q:
+            return answer
+    return "Ask me about thumbnails, hashtags, best time to post, hooks, or CTAs."
