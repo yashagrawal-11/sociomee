@@ -1491,6 +1491,7 @@ If this helped you, leave a comment and subscribe for more practical growth cont
         format_type: str = "long",
         duration_seconds: int = 180,
         language: str = "hinglish",
+        tone: str = "default",
     ) -> Dict[str, Any]:
         """
         Smart persona-aware YouTube content generator.
@@ -1521,6 +1522,23 @@ If this helped you, leave a comment and subscribe for more practical growth cont
         outro        = self._build_outro(topic, niche_data, persona, format_type, language)
         script_text  = self._compose_script(hook, intro, beats, cta, outro, format_type)
 
+        seo_pack     = build_youtube_seo_pack(topic, format_type)
+        viral_titles = generate_viral_titles(topic, personality, tone if tone else "default",
+                                             language, niche)
+        content_mode = detect_content_type(topic)
+
+        # Deep research mode — upgrade beats to documentary arc
+        if content_mode == "deep_research":
+            deep = generate_deep_research_script(
+                topic, personality, tone if tone else "default",
+                language, niche, beats, persona
+            )
+            beats        = deep["beats"]
+            arc_structure = deep["arc_structure"]
+            script_text  = "\n\n".join(b["text"] for b in beats)
+        else:
+            arc_structure = None
+
         return {
             "platform":         "youtube",
             "topic":            topic,
@@ -1541,7 +1559,316 @@ If this helped you, leave a comment and subscribe for more practical growth cont
             "tone_style":       persona["style_notes"],
             "pacing":           persona["pacing"],
             "energy":           persona["energy"],
+            # ── SEO pack ─────────────────────────────────────────────
+            "seo_description":      seo_pack["description"],
+            "search_queries":       seo_pack["search_queries"],
+            "seo_hashtags":         seo_pack["hashtags"],
+            "copyright_disclaimer": seo_pack["copyright_disclaimer"],
+            # ── Intelligence layer ────────────────────────────────────
+            "titles":               [t["title"] for t in viral_titles],
+            "titles_with_score":    viral_titles,
+            "content_mode":         content_mode,
+            "arc_structure":        arc_structure,
         }
+
+
+
+def build_youtube_seo_pack(keyword: str, format_type: str = "long") -> dict:
+    """
+    Build a full YouTube SEO pack: search queries, hashtags,
+    copyright disclaimer, and a ready-to-paste description.
+    """
+    keyword  = (keyword or "").strip()
+    base     = keyword or "this topic"
+    slug     = "".join(ch for ch in base.lower() if ch.isalnum()) or "youtube"
+
+    search_queries = [
+        base,
+        f"{base} tips",
+        f"{base} guide",
+        f"how to {base}",
+        f"best {base}",
+        f"{base} tutorial",
+        f"{base} for beginners",
+        f"{base} ideas",
+        f"{base} strategy",
+        f"{base} seo",
+        f"{base} explained",
+        f"{base} mistakes",
+        f"{base} examples",
+        f"{base} checklist",
+        f"{base} best practices",
+    ]
+
+    if (format_type or "").lower() == "short":
+        hashtags = [
+            f"#{slug}",
+            f"#{slug}shorts",
+            "#shorts",
+            "#youtubeshorts",
+            "#youtube",
+            "#viral",
+            "#contentcreator",
+            "#youtubeseo",
+        ]
+    else:
+        hashtags = [
+            f"#{slug}",
+            f"#{slug}video",
+            "#youtube",
+            "#youtubevideo",
+            "#tutorial",
+            "#contentcreator",
+            "#videoseo",
+            "#creator",
+        ]
+
+    copyright_disclaimer = (
+        "Copyright Disclaimer under Section 107 of the Copyright Act 1976: "
+        "This video is for criticism, comment, news reporting, teaching, scholarship, and research. "
+        "Fair use depends on the full context of the use and is not legal advice."
+    )
+
+    description = (
+        "Don't Forget To Like, Comment, Share & Subscribe\n\n"
+        "🔎 Your Queries:\n\n"
+        + "\n".join(search_queries)
+        + "\n\n"
+        + "\n".join(hashtags)
+        + "\n\n"
+        + copyright_disclaimer
+    )
+
+    return {
+        "keyword":              keyword,
+        "search_queries":       search_queries,
+        "hashtags":             hashtags,
+        "copyright_disclaimer": copyright_disclaimer,
+        "description":          description,
+    }
+
+
+
+# ──────────────────────────────────────────────────────────────────────
+# CONTENT INTELLIGENCE LAYER
+# ──────────────────────────────────────────────────────────────────────
+
+def detect_content_type(keyword: str) -> str:
+    """
+    Detect if the topic needs deep-research documentary mode
+    or standard content mode.
+    """
+    deep_keywords = [
+        "exposed", "scam", "truth", "case study", "documentary",
+        "dark side", "hidden", "real story", "untold", "leaked",
+        "controversy", "fraud", "rise and fall", "arrested", "banned",
+        "secrets", "mystery", "betrayal", "criminal", "lawsuit",
+    ]
+    kw = keyword.lower()
+    for word in deep_keywords:
+        if word in kw:
+            return "deep_research"
+    return "normal"
+
+
+def seo_score(title: str, keyword: str) -> int:
+    """
+    Real SEO scoring for a YouTube title.
+    Max 100. Based on keyword presence, length, power words.
+    """
+    score = 0
+    t = title.lower()
+    k = keyword.lower().strip()
+
+    # Keyword present
+    if k and k in t:
+        score += 40
+
+    # Partial keyword words match
+    elif k:
+        words = k.split()
+        matches = sum(1 for w in words if w in t)
+        score += int((matches / max(len(words), 1)) * 20)
+
+    # Ideal title length (40–60 chars)
+    n = len(title)
+    if 40 <= n <= 60:
+        score += 20
+    elif 30 <= n <= 70:
+        score += 12
+    elif n <= 80:
+        score += 6
+
+    # Power / viral words
+    power_words = [
+        "exposed", "truth", "secret", "real", "hidden", "shocking",
+        "never", "nobody", "dark", "scam", "leaked", "banned",
+        "controversial", "untold", "mistake", "why", "how", "best",
+    ]
+    for word in power_words:
+        if word in t:
+            score += 8
+            break  # only bonus once
+
+    # Number in title
+    if any(ch.isdigit() for ch in title):
+        score += 8
+
+    # Question hook
+    if "?" in title:
+        score += 4
+
+    return min(score, 100)
+
+
+def generate_viral_titles(topic: str, personality: str, tone: str,
+                          language: str, niche: str) -> List[Dict[str, Any]]:
+    """
+    Generate 3 viral YouTube title candidates with SEO scores.
+    Each title follows a different proven viral frame.
+    """
+    topic   = topic.strip()
+    slug    = topic.lower()
+    p       = personality.lower()
+    is_hi   = language == "hinglish"
+
+    # Frame templates — 3 distinct viral angles
+    if is_hi:
+        frames = [
+            # Frame 1 — Expose / dark truth
+            f"{'Bhai, ' if p == 'carryminati' else ''}{topic} ka dark truth jo koi nahi batata 😱",
+            # Frame 2 — Mistake / learning
+            f"{topic} mein log yeh {3} galtiyan karte hain — avoid karo",
+            # Frame 3 — Curiosity / reveal
+            f"Maine {topic} try kiya aur jo hua woh sochta bhi nahi tha",
+        ]
+    else:
+        frames = [
+            f"The dark truth about {topic} nobody talks about",
+            f"3 biggest mistakes people make with {topic} (avoid these)",
+            f"I tried {topic} for 30 days — here is what actually happened",
+        ]
+
+    # Persona twist adjustments
+    tweaks = {
+        "carryminati":  ["💀", "🔥", "😤"],
+        "samayraina":   ["😶", "💀", "😐"],
+        "dhruvrathee":  ["📊", "🧵", "🔍"],
+        "mrbeast":      ["🤯", "😱", "💥"],
+        "alexhormozi":  ["📈", "⚡", "🎯"],
+        "default":      ["🔥", "💡", "📌"],
+    }
+    emojis = tweaks.get(p, tweaks["default"])
+
+    titles = []
+    for i, (frame, emoji) in enumerate(zip(frames, emojis)):
+        # Append emoji if not already present
+        title = frame if any(ord(c) > 127 for c in frame) else f"{frame} {emoji}"
+        titles.append({
+            "title":      title,
+            "seo_score":  seo_score(title, topic),
+            "frame":      ["dark_truth", "mistakes", "personal_story"][i],
+        })
+
+    # Sort best first
+    titles.sort(key=lambda x: x["seo_score"], reverse=True)
+    return titles
+
+
+def generate_deep_research_script(
+    topic:       str,
+    personality: str,
+    tone:        str,
+    language:    str,
+    niche:       str,
+    beats:       List[Dict[str, Any]],
+    persona:     Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Upgrade beats to deep-research / documentary structure when
+    detect_content_type() returns 'deep_research'.
+
+    7 beats → mapped to documentary arc:
+    intro → background → rise → problem/expose → evidence → impact → conclusion
+    """
+    voice  = persona["voice"]
+    is_hi  = language == "hinglish"
+    t      = topic
+
+    arc_labels = [
+        "introduction",
+        "background_history",
+        "rise_success",
+        "problem_expose",
+        "evidence_facts",
+        "impact",
+        "conclusion",
+    ]
+
+    if is_hi:
+        arc_texts = {
+            "carryminati": [
+                f"Bhai, {t} ka scene sunke tere hosh ud jaenge. Seedha bolta hoon kya hua.",
+                f"Pehle samajh {t} ka background kya tha. Sab kuch normal lag raha tha, tab tak...",
+                f"Phir {t} ne ek peak pakdi. Log deewane ho gaye, paisa aaya, fame aaya.",
+                f"Lekin yahin se gadbad shuru hui. Jo cheez chal rahi thi, uski asli sach saamne aayi.",
+                f"Evidence ki baat karein toh — real events, real numbers, real consequences. Ignore mat karna.",
+                f"Iska impact? Log barbad hue, trust tuta, aur ek puri industry ka scene badal gaya.",
+                f"Conclusion simple hai bhai. {t} se sabak yeh hai ki shortcut aur hype hamesha khatam hote hain.",
+            ],
+            "samayraina": [
+                f"Toh basically {t} ki kahani shuru hoti hai ek simple cheez se. Aur phir... haan.",
+                f"History dekhein toh {t} ek pattern follow karta hai. Har baar wahi hota hai.",
+                f"Ek point tha jab {t} bilkul top pe tha. Sab log involved the. Sab khush the.",
+                f"Phir woh moment aaya. The problem. The thing nobody talked about openly.",
+                f"Facts yeh hain. Real events. Real damage. Aur phir bhi log surprised hote hain.",
+                f"Impact massive tha. Logon ki zindagiyan, businesses, trust — sab affect hua.",
+                f"Conclusion? {t} ek reminder hai ki hype aur reality mein gap hota hai. Classic.",
+            ],
+        }
+        default_arc = [
+            f"{t} ek aisa topic hai jo bahut serious hai. Aaj seedha baat karte hain.",
+            f"Background samajhna zaroori hai. {t} ka history batata hai kahan se shuru hua.",
+            f"Ek time tha jab {t} top pe tha — logon ne invest kiya, trust kiya, follow kiya.",
+            f"Phir problem saamne aayi. Jo dikhaya gaya aur jo tha, woh alag tha.",
+            f"Evidence clear hai. Numbers, events, aur testimonials sab point karte hain usi taraf.",
+            f"Impact widespread tha. Common log sabse zyada affected hue.",
+            f"Takeaway: {t} se samajh aata hai ki research aur awareness kitni important hai.",
+        ]
+        texts = arc_texts.get(voice.split(",")[0].strip().lower(), None)
+        if not texts:
+            texts = default_arc
+    else:
+        texts = [
+            f"Today we are talking about {t} — and what you are about to hear might surprise you.",
+            f"To understand what happened, we need to go back to where {t} started.",
+            f"At its peak, {t} seemed unstoppable. Everyone was on board.",
+            f"Then the cracks started showing. The real story behind {t} was very different.",
+            f"The evidence is clear — facts, events, and consequences that were ignored.",
+            f"The impact on real people was significant. Trust was broken at scale.",
+            f"The lesson from {t} is straightforward: hype fades, fundamentals remain.",
+        ]
+
+    emotions = [
+        "curiosity", "context", "excitement", "tension",
+        "clarity", "impact", "motivation",
+    ]
+
+    upgraded_beats = []
+    for i, (label, text, emotion) in enumerate(zip(arc_labels, texts, emotions)):
+        upgraded_beats.append({
+            "beat":         i + 1,
+            "time_seconds": beats[i]["time_seconds"] if i < len(beats) else i * 15,
+            "emotion":      emotion,
+            "arc_label":    label,
+            "text":         text,
+        })
+
+    return {
+        "mode":          "deep_research",
+        "beats":         upgraded_beats,
+        "arc_structure": arc_labels,
+    }
 
 
 def enforce_exact_beats(beats: list, target: int = 7) -> list:
