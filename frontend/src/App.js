@@ -2,11 +2,11 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import YouTubeDashboard from "./YouTubeDashboard";
 import ThreadsDashboard from "./ThreadsDashboard";
+import InstagramDashboard from "./InstagramDashboard";
 
 // ══════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
 // ══════════════════════════════════════════════════════════════════════
-// ── Theme tokens ──────────────────────────────────────────────────────
 const LIGHT_THEME = {
   rose:"#ff3d8f",    roseXlt:"#fff0f7",
   purple:"#7c3aed",  purpleXlt:"#f5f3ff",
@@ -43,7 +43,6 @@ const DARK_THEME = {
   warn:"#fbbf24",    danger:"#f87171",
 };
 
-// Module-level C — updated by App before each render cycle
 let C = { ...LIGHT_THEME };
 
 const BASE = "https://sociomee.in/api";
@@ -76,9 +75,9 @@ const PLATFORMS = [
 
 const TONES = [
   {id:"bold",emoji:"🔥",color:"#ff4d4d"},
-  {id:"funny",emoji:"😂",color:C.warn},
-  {id:"emotional",emoji:"💖",color:C.rose},
-  {id:"informative",emoji:"📚",color:C.purple},
+  {id:"funny",emoji:"😂",color:"#f59e0b"},
+  {id:"emotional",emoji:"💖",color:"#ff3d8f"},
+  {id:"informative",emoji:"📚",color:"#7c3aed"},
   {id:"aggressive",emoji:"⚡",color:"#6d28d9"},
 ];
 
@@ -510,7 +509,6 @@ function ScriptRenderer({ text, capped }) {
   );
 }
 
-
 // ══════════════════════════════════════════════════════════════════════
 // TELEGRAM ICON
 // ══════════════════════════════════════════════════════════════════════
@@ -527,42 +525,32 @@ function TGIcon({ size=16, color="#fff" }) {
 // ══════════════════════════════════════════════════════════════════════
 function TelegramSend({ result, platform, user }) {
   const userId = user?.user_id || "";
-  const [tgStatus,   setTgStatus  ] = useState("checking"); // checking|connected|disconnected
-  const [tgInfo,     setTgInfo    ] = useState(null);
-  const [connectLink,setConnectLink] = useState("");
-  const [sendStatus, setSendStatus] = useState("idle"); // idle|sending|sent|error
-  const [sendMsg,    setSendMsg   ] = useState("");
-  const [polling,    setPolling   ] = useState(false);
-  const [channel,    setChannel   ] = useState("");
-  const [chStatus,   setChStatus  ] = useState("idle"); // idle|saving|verifying|verified|error
-  const [chMsg,      setChMsg     ] = useState("");
-  const [showChInput,setShowChInput] = useState(false);
+  const [tgStatus,    setTgStatus   ] = useState("checking");
+  const [tgInfo,      setTgInfo     ] = useState(null);
+  const [connectLink, setConnectLink] = useState("");
+  const [sendStatus,  setSendStatus ] = useState("idle");
+  const [sendMsg,     setSendMsg    ] = useState("");
+  const [polling,     setPolling    ] = useState(false);
+  const [channel,     setChannel    ] = useState("");
+  const [chStatus,    setChStatus   ] = useState("idle");
+  const [chMsg,       setChMsg      ] = useState("");
+  const [showChInput, setShowChInput] = useState(false);
 
-  // Check connection on mount and after result changes
   useEffect(() => {
     if (!userId) return;
     fetch(`${BASE}/telegram/connect-status?user_id=${userId}`)
       .then(r => r.json())
-      .then(d => {
-        setTgStatus(d.connected ? "connected" : "disconnected");
-        if (d.connected) setTgInfo(d);
-      })
+      .then(d => { setTgStatus(d.connected ? "connected" : "disconnected"); if (d.connected) setTgInfo(d); })
       .catch(() => setTgStatus("disconnected"));
   }, [userId]);
 
-  // Poll for connection after showing link
   useEffect(() => {
     if (!polling) return;
     const interval = setInterval(async () => {
       try {
         const r = await fetch(`${BASE}/telegram/connect-status?user_id=${userId}`);
         const d = await r.json();
-        if (d.connected) {
-          setTgStatus("connected");
-          setTgInfo(d);
-          setPolling(false);
-          clearInterval(interval);
-        }
+        if (d.connected) { setTgStatus("connected"); setTgInfo(d); setPolling(false); clearInterval(interval); }
       } catch {}
     }, 3000);
     return () => clearInterval(interval);
@@ -575,10 +563,8 @@ function TelegramSend({ result, platform, user }) {
       const ch = channel.startsWith("@") ? channel : "@" + channel;
       const r  = await fetch(`${BASE}/telegram/save-channel?user_id=${userId}&channel=${encodeURIComponent(ch)}`, { method:"POST" });
       const d  = await r.json();
-      if (d.success) {
-        setChStatus("saved");
-        setChMsg(`Channel ${d.channel} saved! Now add @sociomee_bot as admin to your channel, then click Verify.`);
-      } else { setChStatus("error"); setChMsg(d.detail || "Failed."); }
+      if (d.success) { setChStatus("saved"); setChMsg(`Channel ${d.channel} saved! Now add @sociomee_bot as admin, then click Verify.`); }
+      else { setChStatus("error"); setChMsg(d.detail || "Failed."); }
     } catch(e) { setChStatus("error"); setChMsg(e.message); }
   };
 
@@ -587,11 +573,8 @@ function TelegramSend({ result, platform, user }) {
     try {
       const r = await fetch(`${BASE}/telegram/verify-channel?user_id=${userId}`, { method:"POST" });
       const d = await r.json();
-      if (d.success) {
-        setChStatus("verified");
-        setChMsg(`✅ ${d.channel} verified! Content will now also go to your channel.`);
-        setTgInfo(prev => ({ ...prev, channel: d.channel, channel_verified: true }));
-      } else { setChStatus("error"); setChMsg(d.detail || "Verification failed."); }
+      if (d.success) { setChStatus("verified"); setChMsg(`✅ ${d.channel} verified!`); setTgInfo(prev => ({ ...prev, channel: d.channel, channel_verified: true })); }
+      else { setChStatus("error"); setChMsg(d.detail || "Verification failed."); }
     } catch(e) { setChStatus("error"); setChMsg(e.message); }
   };
 
@@ -605,13 +588,9 @@ function TelegramSend({ result, platform, user }) {
     try {
       const r = await fetch(`${BASE}/telegram/connect-link?user_id=${userId}`);
       const d = await r.json();
-      setConnectLink(d.link);
-      setPolling(true);
-      // Open in new tab - works for both Telegram web and app
+      setConnectLink(d.link); setPolling(true);
       window.open(d.link.replace("tg://", "https://t.me/").replace("resolve?domain=", ""), "_blank");
-    } catch(e) {
-      setSendMsg("Failed to generate connect link.");
-    }
+    } catch(e) { setSendMsg("Failed to generate connect link."); }
   };
 
   const handleSend = async () => {
@@ -619,72 +598,41 @@ function TelegramSend({ result, platform, user }) {
     setSendStatus("sending"); setSendMsg("");
     try {
       const r = await fetch(`${BASE}/telegram/send-content`, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          user_id:     userId,
-          topic:       result.topic       || "",
-          platform:    platform           || "youtube",
-          script_text: result.script_text || "",
-          best_title:  result.best_title  || "",
-          hook:        result.hook        || "",
-          hashtags:    result.seo_hashtags || [],
-          description: result.seo_description || result.youtube_description || "",
-        }),
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ user_id:userId, topic:result.topic||"", platform:platform||"youtube",
+          script_text:result.script_text||"", best_title:result.best_title||"", hook:result.hook||"",
+          hashtags:result.seo_hashtags||[], description:result.seo_description||result.youtube_description||"" }),
       });
       const d = await r.json();
-      if (d.success) {
-        setSendStatus("sent");
-        setSendMsg(`✅ Sent ${d.messages_sent} messages to your Telegram!`);
-        setTimeout(() => setSendStatus("idle"), 4000);
-      } else {
-        setSendStatus("error");
-        setSendMsg(d.detail || "Failed to send.");
-      }
-    } catch(e) {
-      setSendStatus("error");
-      setSendMsg(e.message || "Network error.");
-    }
+      if (d.success) { setSendStatus("sent"); setSendMsg(`✅ Sent ${d.messages_sent} messages to your Telegram!`); setTimeout(() => setSendStatus("idle"), 4000); }
+      else { setSendStatus("error"); setSendMsg(d.detail || "Failed to send."); }
+    } catch(e) { setSendStatus("error"); setSendMsg(e.message || "Network error."); }
   };
 
   const handleDisconnect = async () => {
     await fetch(`${BASE}/telegram/disconnect?user_id=${userId}`, { method:"POST" });
-    setTgStatus("disconnected");
-    setTgInfo(null);
-    setConnectLink("");
+    setTgStatus("disconnected"); setTgInfo(null); setConnectLink("");
   };
 
   if (!result) return null;
 
   return (
     <div style={{ marginTop:"16px", paddingTop:"16px", borderTop:`1px solid ${C.hairline}` }}>
-
-      {/* Connected state */}
       {tgStatus === "connected" && (
         <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-          {/* Send button row */}
           <div style={{ display:"flex", alignItems:"center", gap:"10px", flexWrap:"wrap" }}>
-            <button onClick={handleSend} disabled={sendStatus==="sending"}
-              style={{ display:"flex",alignItems:"center",gap:"8px",padding:"10px 20px",borderRadius:"99px",border:"none",background:sendStatus==="sent"?C.success:"linear-gradient(135deg,#2aabee,#1a8ac0)",color:"#fff",fontWeight:"800",fontSize:"13px",cursor:sendStatus==="sending"?"not-allowed":"pointer",fontFamily:"inherit",opacity:sendStatus==="sending"?0.7:1,transition:"all 0.2s",boxShadow:"0 4px 16px rgba(42,171,238,0.35)" }}>
+            <button onClick={handleSend} disabled={sendStatus==="sending"} style={{ display:"flex",alignItems:"center",gap:"8px",padding:"10px 20px",borderRadius:"99px",border:"none",background:sendStatus==="sent"?C.success:"linear-gradient(135deg,#2aabee,#1a8ac0)",color:"#fff",fontWeight:"800",fontSize:"13px",cursor:sendStatus==="sending"?"not-allowed":"pointer",fontFamily:"inherit",opacity:sendStatus==="sending"?0.7:1,boxShadow:"0 4px 16px rgba(42,171,238,0.35)" }}>
               <TGIcon />
               {sendStatus==="sending"?"Sending…":sendStatus==="sent"?"Sent ✓":"Send to Telegram"}
             </button>
-            <span style={{ fontSize:"11.5px",color:C.success,fontWeight:"700" }}>
-              ✅ @{tgInfo?.telegram_username || tgInfo?.full_name || "Connected"}
-            </span>
-            {tgInfo?.channel_verified && (
-              <span style={{ fontSize:"11px",color:"#2aabee",fontWeight:"700" }}>+ {tgInfo.channel} 📢</span>
-            )}
+            <span style={{ fontSize:"11.5px",color:C.success,fontWeight:"700" }}>✅ @{tgInfo?.telegram_username || tgInfo?.full_name || "Connected"}</span>
+            {tgInfo?.channel_verified && <span style={{ fontSize:"11px",color:"#2aabee",fontWeight:"700" }}>+ {tgInfo.channel} 📢</span>}
             <button onClick={handleDisconnect} style={{ fontSize:"11px",color:C.danger,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",textDecoration:"underline",marginLeft:"auto" }}>Disconnect</button>
           </div>
           {sendMsg && <span style={{ fontSize:"12.5px",fontWeight:"600",color:sendStatus==="sent"?C.success:C.danger }}>{sendMsg}</span>}
-
-          {/* Channel section */}
           <div style={{ background:`${C.teal}10`, border:`1px solid ${C.teal}30`, borderRadius:"12px", padding:"12px 14px" }}>
             {!showChInput && !tgInfo?.channel_verified ? (
-              <button onClick={()=>setShowChInput(true)} style={{ fontSize:"12px",fontWeight:"700",color:"#2aabee",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"6px" }}>
-                📢 + Also send to my Telegram Channel
-              </button>
+              <button onClick={()=>setShowChInput(true)} style={{ fontSize:"12px",fontWeight:"700",color:"#2aabee",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit" }}>📢 + Also send to my Telegram Channel</button>
             ) : tgInfo?.channel_verified ? (
               <div style={{ display:"flex",alignItems:"center",gap:"8px",flexWrap:"wrap" }}>
                 <span style={{ fontSize:"12px",fontWeight:"700",color:C.success }}>📢 Channel: {tgInfo.channel} ✅</span>
@@ -694,28 +642,14 @@ function TelegramSend({ result, platform, user }) {
               <div style={{ display:"flex",flexDirection:"column",gap:"8px" }}>
                 <p style={{ fontSize:"12px",color:C.slate,fontWeight:"600" }}>📢 Enter your channel username:</p>
                 <div style={{ display:"flex",gap:"8px",flexWrap:"wrap" }}>
-                  <input
-                    value={channel}
-                    onChange={e=>setChannel(e.target.value)}
-                    placeholder="@yourchannel"
-                    style={{ flex:1,minWidth:"140px",padding:"8px 12px",borderRadius:"99px",border:`1.5px solid ${C.hairline}`,background:C.glass,color:C.ink,fontSize:"13px",fontFamily:"inherit",outline:"none" }}
-                  />
-                  <button onClick={handleSaveChannel} disabled={chStatus==="saving"||!channel.trim()} style={{ padding:"8px 16px",borderRadius:"99px",border:"none",background:"#2aabee",color:"#fff",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>
-                    {chStatus==="saving"?"Saving…":"Save"}
-                  </button>
+                  <input value={channel} onChange={e=>setChannel(e.target.value)} placeholder="@yourchannel" style={{ flex:1,minWidth:"140px",padding:"8px 12px",borderRadius:"99px",border:`1.5px solid ${C.hairline}`,background:C.glass,color:C.ink,fontSize:"13px",fontFamily:"inherit",outline:"none" }}/>
+                  <button onClick={handleSaveChannel} disabled={chStatus==="saving"||!channel.trim()} style={{ padding:"8px 16px",borderRadius:"99px",border:"none",background:"#2aabee",color:"#fff",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>{chStatus==="saving"?"Saving…":"Save"}</button>
                 </div>
-                {(chStatus==="saved"||chMsg) && (
-                  <div style={{ fontSize:"12px",color:chStatus==="verified"?C.success:chStatus==="error"?C.danger:C.slate }}>{chMsg}</div>
-                )}
+                {chMsg && <div style={{ fontSize:"12px",color:chStatus==="verified"?C.success:chStatus==="error"?C.danger:C.slate }}>{chMsg}</div>}
                 {chStatus==="saved" && (
                   <div style={{ display:"flex",flexDirection:"column",gap:"6px" }}>
-                    <p style={{ fontSize:"11.5px",color:C.muted }}>
-                      1. Add <strong>@sociomee_bot</strong> as admin to your channel<br/>
-                      2. Then click Verify below
-                    </p>
-                    <button onClick={handleVerifyChannel} disabled={chStatus==="verifying"} style={{ alignSelf:"flex-start",padding:"8px 18px",borderRadius:"99px",border:"none",background:C.success,color:"#fff",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>
-                      {chStatus==="verifying"?"Verifying…":"✓ Verify Channel"}
-                    </button>
+                    <p style={{ fontSize:"11.5px",color:C.muted }}>1. Add <strong>@sociomee_bot</strong> as admin<br/>2. Click Verify</p>
+                    <button onClick={handleVerifyChannel} disabled={chStatus==="verifying"} style={{ alignSelf:"flex-start",padding:"8px 18px",borderRadius:"99px",border:"none",background:C.success,color:"#fff",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>{chStatus==="verifying"?"Verifying…":"✓ Verify Channel"}</button>
                   </div>
                 )}
               </div>
@@ -723,39 +657,26 @@ function TelegramSend({ result, platform, user }) {
           </div>
         </div>
       )}
-
-      {/* Disconnected state */}
       {tgStatus === "disconnected" && (
         <div>
           {!connectLink ? (
-            <button onClick={handleConnect}
-              style={{ display:"flex",alignItems:"center",gap:"8px",padding:"10px 20px",borderRadius:"99px",border:`1.5px dashed #2aabee55`,background:"rgba(42,171,238,0.08)",color:"#2aabee",fontWeight:"800",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s" }}>
-              <TGIcon size={15} color="#2aabee" />
-              Connect Telegram to Send
+            <button onClick={handleConnect} style={{ display:"flex",alignItems:"center",gap:"8px",padding:"10px 20px",borderRadius:"99px",border:`1.5px dashed #2aabee55`,background:"rgba(42,171,238,0.08)",color:"#2aabee",fontWeight:"800",fontSize:"13px",cursor:"pointer",fontFamily:"inherit" }}>
+              <TGIcon size={15} color="#2aabee" /> Connect Telegram to Send
             </button>
           ) : (
             <div style={{ background:"rgba(42,171,238,0.08)",border:"1.5px solid #2aabee33",borderRadius:"14px",padding:"14px 16px" }}>
-              <p style={{ fontSize:"13px",fontWeight:"700",color:C.ink,marginBottom:"8px" }}>
-                <TGIcon size={14} color="#2aabee" /> &nbsp;Open Telegram and tap Start
-              </p>
-              <a href={connectLink} target="_blank" rel="noreferrer"
-                style={{ display:"inline-flex",alignItems:"center",gap:"7px",padding:"8px 18px",borderRadius:"99px",border:"none",background:"linear-gradient(135deg,#2aabee,#1a8ac0)",color:"#fff",fontWeight:"800",fontSize:"12.5px",textDecoration:"none" }}>
-                <TGIcon size={14} /> Open Telegram
-              </a>
-              <p style={{ fontSize:"11.5px",color:C.muted,marginTop:"8px" }}>
-                {polling ? "⏳ Waiting for you to tap Start in Telegram…" : "Tap the link to open Telegram"}
-              </p>
+              <p style={{ fontSize:"13px",fontWeight:"700",color:C.ink,marginBottom:"8px" }}><TGIcon size={14} color="#2aabee" /> &nbsp;Open Telegram and tap Start</p>
+              <a href={connectLink} target="_blank" rel="noreferrer" style={{ display:"inline-flex",alignItems:"center",gap:"7px",padding:"8px 18px",borderRadius:"99px",border:"none",background:"linear-gradient(135deg,#2aabee,#1a8ac0)",color:"#fff",fontWeight:"800",fontSize:"12.5px",textDecoration:"none" }}><TGIcon size={14} /> Open Telegram</a>
+              <p style={{ fontSize:"11.5px",color:C.muted,marginTop:"8px" }}>{polling ? "⏳ Waiting for you to tap Start…" : "Tap the link to open Telegram"}</p>
             </div>
           )}
         </div>
       )}
-
-      {tgStatus === "checking" && (
-        <p style={{ fontSize:"12px",color:C.muted }}>Checking Telegram connection…</p>
-      )}
+      {tgStatus === "checking" && <p style={{ fontSize:"12px",color:C.muted }}>Checking Telegram connection…</p>}
     </div>
   );
 }
+
 // ══════════════════════════════════════════════════════════════════════
 // RESULT PANEL
 // ══════════════════════════════════════════════════════════════════════
@@ -876,8 +797,6 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user })
 
       <ThumbnailStudio keyword={keyword} title={result.best_title||result.hook||keyword} isPro={isPro} onUpgradeClick={onUpgradeClick}/>
       {result.credits!==undefined&&<p style={{ textAlign:"center",fontSize:"12px",color:C.muted,fontWeight:"600",marginTop:"20px" }}>💳 {result.credits} credits remaining this month</p>}
-
-      {/* ── Send to Telegram ── */}
       <TelegramSend result={result} platform={platform} user={user} />
     </Card>
   );
@@ -904,14 +823,10 @@ export default function App() {
     return res.json();
   }, []);
 
-  // ── State ─────────────────────────────────────────────────────────
   // ── Dark mode ──────────────────────────────────────────────────────
   const [dark, setDark] = useState(() => localStorage.getItem("sm_theme") === "dark");
-
-  // Update module-level C before every render so all components see correct theme
   C = dark ? { ...DARK_THEME } : { ...LIGHT_THEME };
 
-  // Keep body attribute in sync for YouTubeDashboard CSS vars
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
     document.body.style.background = C.pageBg;
@@ -936,7 +851,7 @@ export default function App() {
   const [showPricing,  setShowPricing] = useState(false);
   const [pricingMode,  setPricingMode] = useState("upgrade");
   const [btnHov,       setBtnHov     ] = useState(false);
-  const [activeTab,    setActiveTab  ] = useState("generate"); // "generate" | "youtube"
+  const [activeTab,    setActiveTab  ] = useState("generate"); // "generate" | "youtube" | "threads" | "instagram"
   const resultRef = useRef(null);
 
   const plan  = creditStatus?.plan || user?.plan || "free";
@@ -961,7 +876,6 @@ export default function App() {
       .catch(() => {});
   }, [user]);
 
-  // ── Auto language from persona ────────────────────────────────────
   useEffect(() => {
     const p = PERSONAS.find(p => p.id === personality);
     if (p) setLanguage(p.lang);
@@ -977,7 +891,6 @@ export default function App() {
     refreshToken();
   };
 
-  // ── Generate ──────────────────────────────────────────────────────
   const handleSubmit = useCallback(async () => {
     if (!keyword.trim()) { setError("Please enter a keyword or topic."); return; }
     if (!platform)       { setError("Please select a platform."); return; }
@@ -1014,6 +927,9 @@ export default function App() {
 
   const selPersona = PERSONAS.find(p => p.id === personality);
 
+  // ── Tab toggle helper ─────────────────────────────────────────────
+  const toggleTab = (tab) => setActiveTab(t => t === tab ? "generate" : tab);
+
   return (
     <div style={{ minHeight:"100vh",background:C.pageBg,display:"flex",justifyContent:"center",alignItems:"flex-start",fontFamily:"'DM Sans','Syne',sans-serif",padding:"52px 16px 120px",position:"relative",overflow:"hidden",transition:"background 0.3s ease,color 0.3s ease",color:C.ink }}>
 
@@ -1026,11 +942,9 @@ export default function App() {
         <div style={{ marginBottom:"28px" }}>
           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"14px" }}>
             <div style={{ display:"inline-flex",alignItems:"center",gap:"8px",background:`linear-gradient(135deg,${C.rose},${C.purple})`,color:"#fff",fontSize:"10px",fontWeight:"900",letterSpacing:"2.5px",textTransform:"uppercase",padding:"5px 14px",borderRadius:"99px" }}>✦ AI Content Studio</div>
-            {/* Dark mode toggle — iOS sliding pill */}
+            {/* Dark mode toggle */}
             <button onClick={toggleTheme} title={dark?"Switch to Light":"Switch to Dark"} style={{ display:"flex",alignItems:"center",gap:"8px",padding:"5px 10px 5px 6px",borderRadius:"99px",border:`1.5px solid ${dark?"rgba(167,139,250,0.3)":C.hairline}`,background:dark?"rgba(30,20,55,0.85)":"rgba(255,255,255,0.85)",cursor:"pointer",fontFamily:"inherit",backdropFilter:"blur(10px)",transition:"all 0.25s ease",boxShadow:dark?"0 0 14px rgba(167,139,250,0.25)":"0 2px 8px rgba(0,0,0,0.08)" }}>
-              {/* Sliding pill track */}
               <div style={{ position:"relative",width:"40px",height:"22px",borderRadius:"99px",background:dark?"linear-gradient(135deg,#7c3aed,#a78bfa)":"rgba(200,190,220,0.5)",transition:"background 0.3s ease",flexShrink:0 }}>
-                {/* Gliding circle */}
                 <div style={{ position:"absolute",top:"3px",left:dark?"20px":"3px",width:"16px",height:"16px",borderRadius:"50%",background:"#fff",boxShadow:"0 1px 4px rgba(0,0,0,0.25)",transition:"left 0.25s ease",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"9px",lineHeight:1 }}>
                   {dark ? "🌙" : "☀️"}
                 </div>
@@ -1056,35 +970,44 @@ export default function App() {
                 <p style={{ fontSize:"10.5px",color:C.muted }}>{user.email}</p>
               </div>
             </div>
-            <div style={{ display:"flex",gap:"8px",alignItems:"center" }}>
-              {/* YouTube Analytics tab toggle */}
-              <button
-                onClick={() => setActiveTab(t => t==="youtube"?"generate":"youtube")}
-                style={{ padding:"5px 12px",borderRadius:"99px",border:`1.5px solid ${activeTab==="youtube"?"#ff0000":C.hairline}`,background:activeTab==="youtube"?"#ff000012":"rgba(255,255,255,0.7)",color:activeTab==="youtube"?"#ff0000":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"5px",transition:"all 0.15s" }}>
-                <svg viewBox="0 0 24 24" width="13" height="13" fill={activeTab==="youtube"?"#ff0000":C.muted}>
+            <div style={{ display:"flex",gap:"6px",alignItems:"center",flexWrap:"wrap" }}>
+
+              {/* YouTube tab */}
+              <button onClick={() => toggleTab("youtube")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="youtube"?"#ff0000":C.hairline}`,background:activeTab==="youtube"?"#ff000012":"rgba(255,255,255,0.7)",color:activeTab==="youtube"?"#ff0000":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill={activeTab==="youtube"?"#ff0000":C.muted}>
                   <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                 </svg>
-                YouTube
+                YT
               </button>
-              {/* Threads tab toggle */}
-              <button
-                onClick={() => setActiveTab(t => t==="threads"?"generate":"threads")}
-                style={{ padding:"5px 12px",borderRadius:"99px",border:`1.5px solid ${activeTab==="threads"?"#000":C.hairline}`,background:activeTab==="threads"?"rgba(0,0,0,0.08)":"rgba(255,255,255,0.7)",color:activeTab==="threads"?C.ink:C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"5px",transition:"all 0.15s" }}>
-                <svg viewBox="0 0 192 192" width="13" height="13" fill={activeTab==="threads"?C.ink:C.muted}>
+
+              {/* Threads tab */}
+              <button onClick={() => toggleTab("threads")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="threads"?"#000":C.hairline}`,background:activeTab==="threads"?"rgba(0,0,0,0.08)":"rgba(255,255,255,0.7)",color:activeTab==="threads"?C.ink:C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
+                <svg viewBox="0 0 192 192" width="12" height="12" fill={activeTab==="threads"?C.ink:C.muted}>
                   <path d="M141.537 88.988a66.667 66.667 0 0 0-2.518-1.143c-1.482-27.307-16.403-42.94-41.457-43.1h-.34c-14.986 0-27.449 6.396-35.12 18.036l13.779 9.452c5.73-8.695 14.724-10.548 21.348-10.548h.229c8.249.053 14.474 2.452 18.503 7.129 2.932 3.405 4.893 8.111 5.864 14.05-7.314-1.243-15.224-1.626-23.68-1.14-23.82 1.371-39.134 15.264-38.105 34.568.522 9.792 5.4 18.216 13.735 23.719 7.047 4.652 16.124 6.927 25.557 6.412 12.458-.683 22.231-5.436 29.049-14.127 5.178-6.6 8.452-15.153 9.899-25.93 5.937 3.583 10.337 8.298 12.767 13.966 4.132 9.635 4.373 25.468-8.546 38.376-11.319 11.308-24.925 16.2-45.488 16.351-22.809-.169-40.06-7.484-51.275-21.742C35.236 139.966 29.808 120.682 29.605 96c.203-24.682 5.63-43.966 16.133-57.317C56.954 24.425 74.206 17.11 97.015 16.94c22.975.17 40.526 7.52 52.171 21.847 5.71 7.026 10.015 15.86 12.853 26.162l16.147-4.308c-3.44-12.68-8.853-23.606-16.219-32.668C147.036 9.607 125.202.195 97.101 0h-.186C68.841.195 47.238 9.636 32.899 28.047 20.17 44.346 13.643 67.352 13.404 96v.004c.239 28.648 6.766 51.664 19.495 68.047C47.238 182.364 68.841 191.805 96.915 192h.186c24.692-.187 42.038-6.61 56.328-20.868 18.806-18.777 18.274-42.922 12.078-57.564-4.451-10.376-13.031-18.752-23.97-23.58z"/>
                 </svg>
                 Threads
               </button>
-              {!isPro && <button onClick={()=>openPricing("upgrade")} style={{ padding:"5px 12px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:C.white,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit" }}>✦ Upgrade</button>}
-              <button onClick={logout} style={{ padding:"5px 12px",borderRadius:"99px",border:`1px solid ${C.hairline}`,background:"rgba(255,255,255,0.7)",color:C.muted,fontSize:"11.5px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit" }}>Sign out</button>
+
+              {/* Instagram tab */}
+              <button onClick={() => toggleTab("instagram")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="instagram"?"#e1306c":C.hairline}`,background:activeTab==="instagram"?"rgba(225,48,108,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="instagram"?"#e1306c":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke={activeTab==="instagram"?"#e1306c":C.muted} strokeWidth="2">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                  <circle cx="12" cy="12" r="5"/>
+                  <circle cx="17.5" cy="6.5" r="1" fill={activeTab==="instagram"?"#e1306c":C.muted} stroke="none"/>
+                </svg>
+                IG
+              </button>
+
+              {!isPro && <button onClick={()=>openPricing("upgrade")} style={{ padding:"5px 10px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:C.white,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit" }}>✦ Pro</button>}
+              <button onClick={logout} style={{ padding:"5px 10px",borderRadius:"99px",border:`1px solid ${C.hairline}`,background:"rgba(255,255,255,0.7)",color:C.muted,fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit" }}>Out</button>
             </div>
           </div>
         )}
 
-        {/* Credit badge — always visible */}
+        {/* Credit badge */}
         <CreditBadge creditStatus={creditStatus} onUpgradeClick={()=>openPricing("upgrade")}/>
 
-        {/* ── YouTube Analytics Tab ─────────────────────────────────── */}
+        {/* ── YouTube Tab ───────────────────────────────────────────── */}
         {activeTab === "youtube" && isLoggedIn && (
           <Card style={{ marginBottom:"20px" }}>
             <YouTubeDashboard user={user} topic={keyword} />
@@ -1094,7 +1017,14 @@ export default function App() {
         {/* ── Threads Tab ───────────────────────────────────────────── */}
         {activeTab === "threads" && isLoggedIn && (
           <Card style={{ marginBottom:"20px" }}>
-            <ThreadsDashboard topic={keyword} />
+            <ThreadsDashboard user={user} topic={keyword} />
+          </Card>
+        )}
+
+        {/* ── Instagram Tab ─────────────────────────────────────────── */}
+        {activeTab === "instagram" && isLoggedIn && (
+          <Card style={{ marginBottom:"20px" }}>
+            <InstagramDashboard user={user} topic={keyword} />
           </Card>
         )}
 

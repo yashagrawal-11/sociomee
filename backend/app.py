@@ -36,6 +36,13 @@ try:
 except Exception as e:
     log.warning("threads_routes failed: %s", e); _HAS_THREADS_ROUTES = False; threads_router = None
 
+# ── Instagram router ──────────────────────────────────────────────────
+try:
+    from instagram_routes import router as instagram_router
+    _HAS_INSTAGRAM_ROUTES = True
+except Exception as e:
+    log.warning("instagram_routes failed: %s", e); _HAS_INSTAGRAM_ROUTES = False; instagram_router = None
+
 # ── Telegram router ───────────────────────────────────────────────────
 try:
     from telegram_routes import router as telegram_router
@@ -137,6 +144,10 @@ if _HAS_YT_ROUTES and yt_router is not None:
 if _HAS_THREADS_ROUTES and threads_router is not None:
     app.include_router(threads_router)
 
+# Instagram router
+if _HAS_INSTAGRAM_ROUTES and instagram_router is not None:
+    app.include_router(instagram_router)
+
 # Telegram router
 if _HAS_TG_ROUTES and telegram_router is not None:
     app.include_router(telegram_router)
@@ -145,8 +156,8 @@ if _HAS_TG_ROUTES and telegram_router is not None:
 ALLOWED_ORIGINS = [
     "https://sociomee.in",
     "https://www.sociomee.in",
-    "http://localhost:3000",      # dev only
-    "http://127.0.0.1:3000",     # dev only
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -536,7 +547,6 @@ def verify_payment(payload: VerifyPaymentRequest):
     return {"success": True, "message": msg, "plan": plan, "plan_label": info["label"], "credits": total, "credit_status": get_credit_status(payload.user_id)}
 
 # ── Admin ─────────────────────────────────────────────────────────────
-# ── Admin auth guard ─────────────────────────────────────────────────
 def _require_admin(x_admin_key: str = fastapi.Header(default="")):
     secret = os.getenv("ADMIN_SECRET_KEY", "")
     if not secret or x_admin_key != secret:
