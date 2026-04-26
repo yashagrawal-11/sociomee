@@ -14,7 +14,7 @@ import {
   Tooltip, ResponsiveContainer,
 } from "recharts";
 
-const BASE = "http://127.0.0.1:8000";
+const BASE = "https://sociomee.in/api";
 
 // Theme-aware colors — reads from html[data-theme] set by App.js
 function getThemeC() {

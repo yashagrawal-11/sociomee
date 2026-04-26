@@ -46,7 +46,7 @@ const DARK_THEME = {
 // Module-level C — updated by App before each render cycle
 let C = { ...LIGHT_THEME };
 
-const BASE = "http://127.0.0.1:8000";
+const BASE = "https://sociomee.in/api";
 
 // ══════════════════════════════════════════════════════════════════════
 // STATIC DATA

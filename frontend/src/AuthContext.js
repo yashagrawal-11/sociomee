@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
-const BASE = "http://127.0.0.1:8000";
+const BASE = "https://sociomee.in/api";
 const AuthContext = createContext(null);
 const TOKEN_KEY = "sociomee_token";
 

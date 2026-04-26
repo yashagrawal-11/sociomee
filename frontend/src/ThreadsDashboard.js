@@ -10,7 +10,7 @@ import {
   Tooltip, ResponsiveContainer,
 } from "recharts";
 
-const BASE = "http://127.0.0.1:8000";
+const BASE = "https://sociomee.in/api";
 
 function getThemeC() {
   const dark = document.documentElement.getAttribute("data-theme") === "dark";
