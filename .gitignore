@@ -1,0 +1,39 @@
+# Secrets
+.env
+.env.local
+.env.production
+backend/.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+env/
+
+# Data files (user data - never commit)
+credits_data.json
+youtube_accounts.json
+telegram_accounts.json
+telegram_pending.json
+threads_accounts.json
+*.json.bak
+
+# Cache files
+.youtube_cache.json
+instagram_brain_cache.json
+instagram_trend_cache.json
+*.cache.json
+
+# Node
+node_modules/
+frontend/build/
+frontend/.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
