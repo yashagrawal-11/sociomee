@@ -1,7 +1,5 @@
 /**
  * ThreadsDashboard.js — SocioMee Threads Analytics + Publisher
- * Shows profile stats, engagement graph, recent posts, growth prediction,
- * and allows publishing new threads directly from SocioMee.
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -60,16 +58,14 @@ function StatCard({ icon, label, value, color }) {
   );
 }
 
-// ── Threads Icon SVG ──────────────────────────────────────────────────
 function ThreadsIcon({ size = 20, color = "#000" }) {
   return (
     <svg width={size} height={size} viewBox="0 0 192 192" fill={color}>
-      <path d="M141.537 88.988a66.667 66.667 0 0 0-2.518-1.143c-1.482-27.307-16.403-42.94-41.457-43.1h-.34c-14.986 0-27.449 6.396-35.12 18.036l13.779 9.452c5.73-8.695 14.724-10.548 21.348-10.548h.229c8.249.053 14.474 2.452 18.503 7.129 2.932 3.405 4.893 8.111 5.864 14.05-7.314-1.243-15.224-1.626-23.68-1.14-23.82 1.371-39.134 15.264-38.105 34.568.522 9.792 5.4 18.216 13.735 23.719 7.047 4.652 16.124 6.927 25.557 6.412 12.458-.683 22.231-5.436 29.049-14.127 5.178-6.6 8.452-15.153 9.899-25.93 5.937 3.583 10.337 8.298 12.767 13.966 4.132 9.635 4.373 25.468-8.546 38.376-11.319 11.308-24.925 16.2-45.488 16.351-22.809-.169-40.06-7.484-51.275-21.742C35.236 139.966 29.808 120.682 29.605 96c.203-24.682 5.63-43.966 16.133-57.317C56.954 24.425 74.206 17.11 97.015 16.94c22.975.17 40.526 7.52 52.171 21.847 5.71 7.026 10.015 15.86 12.853 26.162l16.147-4.308c-3.44-12.68-8.853-23.606-16.219-32.668C147.036 9.607 125.202.195 97.101 0h-.186C68.841.195 47.238 9.636 32.899 28.047 20.17 44.346 13.643 67.352 13.404 96v.004c.239 28.648 6.766 51.664 19.495 68.047C47.238 182.364 68.841 191.805 96.915 192h.186c24.692-.187 42.038-6.61 56.328-20.868 18.806-18.777 18.274-42.922 12.078-57.564-4.451-10.376-13.031-18.752-23.97-23.58zM97.45 128.Groups c-10.243.575-20.857-4.016-21.384-13.795-.397-7.42 5.27-15.693 22.904-16.705 2.003-.115 3.974-.17 5.913-.17 6.476 0 12.542.617 18.072 1.8-2.058 25.706-15.3 28.29-25.505 28.87z"/>
+      <path d="M141.537 88.988a66.667 66.667 0 0 0-2.518-1.143c-1.482-27.307-16.403-42.94-41.457-43.1h-.34c-14.986 0-27.449 6.396-35.12 18.036l13.779 9.452c5.73-8.695 14.724-10.548 21.348-10.548h.229c8.249.053 14.474 2.452 18.503 7.129 2.932 3.405 4.893 8.111 5.864 14.05-7.314-1.243-15.224-1.626-23.68-1.14-23.82 1.371-39.134 15.264-38.105 34.568.522 9.792 5.4 18.216 13.735 23.719 7.047 4.652 16.124 6.927 25.557 6.412 12.458-.683 22.231-5.436 29.049-14.127 5.178-6.6 8.452-15.153 9.899-25.93 5.937 3.583 10.337 8.298 12.767 13.966 4.132 9.635 4.373 25.468-8.546 38.376-11.319 11.308-24.925 16.2-45.488 16.351-22.809-.169-40.06-7.484-51.275-21.742C35.236 139.966 29.808 120.682 29.605 96c.203-24.682 5.63-43.966 16.133-57.317C56.954 24.425 74.206 17.11 97.015 16.94c22.975.17 40.526 7.52 52.171 21.847 5.71 7.026 10.015 15.86 12.853 26.162l16.147-4.308c-3.44-12.68-8.853-23.606-16.219-32.668C147.036 9.607 125.202.195 97.101 0h-.186C68.841.195 47.238 9.636 32.899 28.047 20.17 44.346 13.643 67.352 13.404 96v.004c.239 28.648 6.766 51.664 19.495 68.047C47.238 182.364 68.841 191.805 96.915 192h.186c24.692-.187 42.038-6.61 56.328-20.868 18.806-18.777 18.274-42.922 12.078-57.564-4.451-10.376-13.031-18.752-23.97-23.58zM97.45 128.07c-10.243.575-20.857-4.016-21.384-13.795-.397-7.42 5.27-15.693 22.904-16.705 2.003-.115 3.974-.17 5.913-.17 6.476 0 12.542.617 18.072 1.8-2.058 25.706-15.3 28.29-25.505 28.87z"/>
     </svg>
   );
 }
 
-// ── Growth Prediction ─────────────────────────────────────────────────
 function GrowthPrediction({ prediction, topic }) {
   C = getThemeC();
   if (!prediction) return null;
@@ -90,7 +86,6 @@ function GrowthPrediction({ prediction, topic }) {
           <div style={{ fontSize:"9px", fontWeight:"800", color:C.muted, textTransform:"uppercase" }}>Virality</div>
         </div>
       </div>
-
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"8px", marginBottom:"14px" }}>
         {[
           { icon:"❤️", label:"Est. Likes",   val:fmt(estimated_likes)   },
@@ -105,13 +100,11 @@ function GrowthPrediction({ prediction, topic }) {
           </div>
         ))}
       </div>
-
       {next_milestone && (
         <div style={{ background:`${C.success}15`, border:`1px solid ${C.success}33`, borderRadius:"10px", padding:"10px 14px", marginBottom:"10px", fontSize:"12.5px", color:C.slate }}>
           🏆 At this pace → <strong style={{ color:C.success }}>{fmt(next_milestone.target)} followers</strong> in ~{next_milestone.months} month{next_milestone.months !== 1 ? "s" : ""}
         </div>
       )}
-
       <div style={{ fontSize:"12px", color:C.slate, lineHeight:1.6 }}>
         <div style={{ marginBottom:"3px" }}>💡 {recommendation}</div>
         <div style={{ marginBottom:"3px" }}>🕐 <strong>Best time:</strong> {best_post_time}</div>
@@ -121,13 +114,12 @@ function GrowthPrediction({ prediction, topic }) {
   );
 }
 
-// ── Publisher ─────────────────────────────────────────────────────────
 function ThreadPublisher({ topic, onPublished }) {
   C = getThemeC();
-  const [text,      setText    ] = useState(topic ? topic.slice(0, 450) : "");
-  const [loading,   setLoading ] = useState(false);
-  const [result,    setResult  ] = useState(null);
-  const [err,       setErr     ] = useState("");
+  const [text,    setText  ] = useState(topic ? topic.slice(0, 450) : "");
+  const [loading, setLoading] = useState(false);
+  const [result,  setResult ] = useState(null);
+  const [err,     setErr    ] = useState("");
   const maxChars = 500;
   const remaining = maxChars - text.length;
 
@@ -159,7 +151,6 @@ function ThreadPublisher({ topic, onPublished }) {
       <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.2px", textTransform:"uppercase", color:C.muted, marginBottom:"12px" }}>
         ✍️ Publish to Threads
       </div>
-
       {result ? (
         <div style={{ textAlign:"center", padding:"16px" }}>
           <div style={{ fontSize:"32px", marginBottom:"8px" }}>🎉</div>
@@ -193,21 +184,19 @@ function ThreadPublisher({ topic, onPublished }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════
-// MAIN DASHBOARD
-// ══════════════════════════════════════════════════════════════════════
 export default function ThreadsDashboard({ topic = "" }) {
   C = getThemeC();
 
-  const [profile,    setProfile   ] = useState(null);
-  const [posts,      setPosts     ] = useState([]);
-  const [insights,   setInsights  ] = useState(null);
-  const [prediction, setPrediction] = useState(null);
-  const [loading,    setLoading   ] = useState(true);
-  const [connected,  setConnected ] = useState(false);
-  const [activeChart,setActiveChart] = useState("views");
-  const [days,       setDays      ] = useState(30);
-  const [activeTab,  setActiveTab ] = useState("analytics"); // "analytics" | "publish"
+  const [profile,     setProfile    ] = useState(null);
+  const [posts,       setPosts      ] = useState([]);
+  const [insights,    setInsights   ] = useState(null);
+  const [prediction,  setPrediction ] = useState(null);
+  const [loading,     setLoading    ] = useState(true);
+  const [connected,   setConnected  ] = useState(false);
+  const [activeChart, setActiveChart] = useState("views");
+  const [days,        setDays       ] = useState(30);
+  const [activeTab,   setActiveTab  ] = useState("analytics");
+  const [connecting,  setConnecting ] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -217,7 +206,6 @@ export default function ThreadsDashboard({ topic = "" }) {
       if (!status.connected) { setConnected(false); setLoading(false); return; }
       setConnected(true);
       setProfile(status);
-
       const [insightsRes, postsRes] = await Promise.all([
         fetch(`${BASE}/threads/insights?days=${days}`),
         fetch(`${BASE}/threads/posts?limit=10`),
@@ -228,7 +216,6 @@ export default function ThreadsDashboard({ topic = "" }) {
       ]);
       setInsights(insightsData);
       setPosts(postsData.posts || []);
-
       if (topic) {
         const predRes  = await fetch(`${BASE}/threads/predict?topic=${encodeURIComponent(topic)}`);
         const predData = await predRes.json();
@@ -243,6 +230,18 @@ export default function ThreadsDashboard({ topic = "" }) {
 
   useEffect(() => { load(); }, [load]);
 
+  const handleConnect = async () => {
+    setConnecting(true);
+    try {
+      const res  = await fetch(`${BASE}/threads/auth-url`);
+      const data = await res.json();
+      window.location.href = data.url;
+    } catch (e) {
+      console.error("Failed to get Threads auth URL:", e);
+      setConnecting(false);
+    }
+  };
+
   if (loading) return <Spinner />;
 
   if (!connected) {
@@ -253,21 +252,22 @@ export default function ThreadsDashboard({ topic = "" }) {
         </div>
         <h2 style={{ fontSize:"18px", fontWeight:"900", color:C.ink }}>Threads Not Connected</h2>
         <p style={{ fontSize:"13px", color:C.muted, maxWidth:"320px", lineHeight:1.6 }}>
-          Add <strong>THREADS_ACCESS_TOKEN</strong> and <strong>THREADS_USER_ID</strong> to your <code>.env</code> file to connect your Threads account.
+          Connect your Threads account to publish posts and view analytics directly from SocioMee.
         </p>
-        <div style={{ background:`${C.purple}10`, border:`1px solid ${C.hairline}`, borderRadius:"12px", padding:"14px", fontSize:"12px", color:C.slate, textAlign:"left", maxWidth:"340px" }}>
-          <strong>In backend/.env add:</strong><br />
-          THREADS_ACCESS_TOKEN=your_token<br />
-          THREADS_USER_ID=your_user_id
-        </div>
+        <button
+          onClick={handleConnect}
+          disabled={connecting}
+          style={{ padding:"13px 32px", borderRadius:"99px", border:"none", background:"#000", color:"#fff", fontWeight:"800", fontSize:"14px", cursor: connecting ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:"10px", boxShadow:"0 8px 24px rgba(0,0,0,0.25)", opacity: connecting ? 0.7 : 1 }}
+        >
+          <ThreadsIcon size={18} color="#fff" />
+          {connecting ? "Redirecting…" : "Connect with Threads"}
+        </button>
       </div>
     );
   }
 
   return (
     <div style={{ fontFamily:"'DM Sans',sans-serif" }}>
-
-      {/* Profile header */}
       <div style={{ display:"flex", alignItems:"center", gap:"14px", marginBottom:"20px", background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:"16px", padding:"14px 18px" }}>
         {profile?.profile_pic
           ? <img src={profile.profile_pic} alt="" referrerPolicy="no-referrer" style={{ width:"48px", height:"48px", borderRadius:"50%", border:"2px solid #00000022", objectFit:"cover", flexShrink:0 }} onError={e => { e.target.style.display="none"; e.target.nextSibling.style.display="flex"; }} />
@@ -283,15 +283,13 @@ export default function ThreadsDashboard({ topic = "" }) {
         <a href={profile?.profile_url || "https://threads.net"} target="_blank" rel="noreferrer" style={{ padding:"5px 12px", borderRadius:"99px", border:`1px solid ${C.hairline}`, background:"rgba(0,0,0,0.06)", color:C.slate, fontSize:"11.5px", fontWeight:"700", textDecoration:"none" }}>View Profile</a>
       </div>
 
-      {/* Stat cards */}
       <div style={{ display:"flex", gap:"10px", flexWrap:"wrap", marginBottom:"20px" }}>
-        <StatCard icon="👥" label="Followers"     value={fmt(profile?.followers)}              color="#000" />
-        <StatCard icon="👁️" label={`Views (${days}d)`} value={fmt(insights?.total_views)}   color={C.purple} />
-        <StatCard icon="❤️" label={`Likes (${days}d)`} value={fmt(insights?.total_likes)}    color={C.rose} />
+        <StatCard icon="👥" label="Followers"       value={fmt(profile?.followers)}              color="#000" />
+        <StatCard icon="👁️" label={`Views (${days}d)`}  value={fmt(insights?.total_views)}   color={C.purple} />
+        <StatCard icon="❤️" label={`Likes (${days}d)`}  value={fmt(insights?.total_likes)}    color={C.rose} />
         <StatCard icon="💬" label={`Replies (${days}d)`} value={fmt(insights?.total_replies)} color={C.teal} />
       </div>
 
-      {/* Tab toggle */}
       <div style={{ display:"flex", gap:"8px", marginBottom:"20px" }}>
         {[["analytics","📊 Analytics"],["publish","✍️ Publish"]].map(([key, label]) => (
           <button key={key} onClick={() => setActiveTab(key)} style={{ padding:"8px 18px", borderRadius:"99px", border:`1.5px solid ${activeTab===key?C.purple:C.hairline}`, background:activeTab===key?`${C.purple}18`:"transparent", color:activeTab===key?C.purple:C.muted, fontWeight:"700", fontSize:"12.5px", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
@@ -309,7 +307,6 @@ export default function ThreadsDashboard({ topic = "" }) {
 
       {activeTab === "analytics" && (
         <>
-          {/* Chart */}
           <div style={{ background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:"16px", padding:"18px", marginBottom:"20px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"14px" }}>
               <span style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.2px", textTransform:"uppercase", color:C.muted }}>📈 Engagement</span>
@@ -337,10 +334,8 @@ export default function ThreadsDashboard({ topic = "" }) {
             {insights?.is_mock && <p style={{ textAlign:"center", fontSize:"10px", color:C.muted, marginTop:"6px" }}>⚠ Demo data — insights API may need threads_manage_insights permission</p>}
           </div>
 
-          {/* Growth prediction */}
           {topic && <GrowthPrediction prediction={prediction} topic={topic} />}
 
-          {/* Recent posts */}
           <div style={{ background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:"16px", padding:"18px" }}>
             <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.2px", textTransform:"uppercase", color:C.muted, marginBottom:"14px" }}>🧵 Recent Threads</div>
             {posts.length === 0
