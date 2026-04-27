@@ -3,6 +3,7 @@ import { useAuth } from "./AuthContext";
 import YouTubeDashboard from "./YouTubeDashboard";
 import ThreadsDashboard from "./ThreadsDashboard";
 import InstagramDashboard from "./InstagramDashboard";
+import PinterestDashboard from "./PinterestDashboard";
 
 // ══════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -851,13 +852,12 @@ export default function App() {
   const [showPricing,  setShowPricing] = useState(false);
   const [pricingMode,  setPricingMode] = useState("upgrade");
   const [btnHov,       setBtnHov     ] = useState(false);
-  const [activeTab,    setActiveTab  ] = useState("generate"); // "generate" | "youtube" | "threads" | "instagram"
+  const [activeTab,    setActiveTab  ] = useState("generate");
   const resultRef = useRef(null);
 
   const plan  = creditStatus?.plan || user?.plan || "free";
   const isPro = plan !== "free";
 
-  // ── Fetch credits on login ─────────────────────────────────────────
   useEffect(() => {
     if (!user?.user_id) return;
     fetch(`${BASE}/credits/${user.user_id}`)
@@ -926,8 +926,6 @@ export default function App() {
   }, [keyword, platform, tone, personality, language, formatType, apiFetch, creditStatus, user]);
 
   const selPersona = PERSONAS.find(p => p.id === personality);
-
-  // ── Tab toggle helper ─────────────────────────────────────────────
   const toggleTab = (tab) => setActiveTab(t => t === tab ? "generate" : tab);
 
   return (
@@ -942,7 +940,6 @@ export default function App() {
         <div style={{ marginBottom:"28px" }}>
           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"14px" }}>
             <div style={{ display:"inline-flex",alignItems:"center",gap:"8px",background:`linear-gradient(135deg,${C.rose},${C.purple})`,color:"#fff",fontSize:"10px",fontWeight:"900",letterSpacing:"2.5px",textTransform:"uppercase",padding:"5px 14px",borderRadius:"99px" }}>✦ AI Content Studio</div>
-            {/* Dark mode toggle */}
             <button onClick={toggleTheme} title={dark?"Switch to Light":"Switch to Dark"} style={{ display:"flex",alignItems:"center",gap:"8px",padding:"5px 10px 5px 6px",borderRadius:"99px",border:`1.5px solid ${dark?"rgba(167,139,250,0.3)":C.hairline}`,background:dark?"rgba(30,20,55,0.85)":"rgba(255,255,255,0.85)",cursor:"pointer",fontFamily:"inherit",backdropFilter:"blur(10px)",transition:"all 0.25s ease",boxShadow:dark?"0 0 14px rgba(167,139,250,0.25)":"0 2px 8px rgba(0,0,0,0.08)" }}>
               <div style={{ position:"relative",width:"40px",height:"22px",borderRadius:"99px",background:dark?"linear-gradient(135deg,#7c3aed,#a78bfa)":"rgba(200,190,220,0.5)",transition:"background 0.3s ease",flexShrink:0 }}>
                 <div style={{ position:"absolute",top:"3px",left:dark?"20px":"3px",width:"16px",height:"16px",borderRadius:"50%",background:"#fff",boxShadow:"0 1px 4px rgba(0,0,0,0.25)",transition:"left 0.25s ease",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"9px",lineHeight:1 }}>
@@ -998,6 +995,14 @@ export default function App() {
                 IG
               </button>
 
+              {/* Pinterest tab */}
+              <button onClick={() => toggleTab("pinterest")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="pinterest"?"#e60023":C.hairline}`,background:activeTab==="pinterest"?"rgba(230,0,35,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="pinterest"?"#e60023":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill={activeTab==="pinterest"?"#e60023":C.muted}>
+                  <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
+                </svg>
+                Pin
+              </button>
+
               {!isPro && <button onClick={()=>openPricing("upgrade")} style={{ padding:"5px 10px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:C.white,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit" }}>✦ Pro</button>}
               <button onClick={logout} style={{ padding:"5px 10px",borderRadius:"99px",border:`1px solid ${C.hairline}`,background:"rgba(255,255,255,0.7)",color:C.muted,fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit" }}>Out</button>
             </div>
@@ -1007,28 +1012,35 @@ export default function App() {
         {/* Credit badge */}
         <CreditBadge creditStatus={creditStatus} onUpgradeClick={()=>openPricing("upgrade")}/>
 
-        {/* ── YouTube Tab ───────────────────────────────────────────── */}
+        {/* ── YouTube Tab ── */}
         {activeTab === "youtube" && isLoggedIn && (
           <Card style={{ marginBottom:"20px" }}>
             <YouTubeDashboard user={user} topic={keyword} />
           </Card>
         )}
 
-        {/* ── Threads Tab ───────────────────────────────────────────── */}
+        {/* ── Threads Tab ── */}
         {activeTab === "threads" && isLoggedIn && (
           <Card style={{ marginBottom:"20px" }}>
             <ThreadsDashboard user={user} topic={keyword} />
           </Card>
         )}
 
-        {/* ── Instagram Tab ─────────────────────────────────────────── */}
+        {/* ── Instagram Tab ── */}
         {activeTab === "instagram" && isLoggedIn && (
           <Card style={{ marginBottom:"20px" }}>
             <InstagramDashboard user={user} topic={keyword} />
           </Card>
         )}
 
-        {/* ── Content Generator Tab ─────────────────────────────────── */}
+        {/* ── Pinterest Tab ── */}
+        {activeTab === "pinterest" && isLoggedIn && (
+          <Card style={{ marginBottom:"20px" }}>
+            <PinterestDashboard user={user} topic={keyword} />
+          </Card>
+        )}
+
+        {/* ── Content Generator Tab ── */}
         {activeTab === "generate" && (
           <>
             <Card>

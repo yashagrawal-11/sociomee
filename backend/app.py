@@ -22,7 +22,7 @@ try:
 except Exception as e:
     log.warning("auth_routes failed: %s", e); _HAS_AUTH = False; auth_router = None
 
-# ── YouTube connect router (separate OAuth from login) ─────────────────
+# ── YouTube connect router ─────────────────────────────────────────
 try:
     from youtube_routes import router as yt_router
     _HAS_YT_ROUTES = True
@@ -42,6 +42,13 @@ try:
     _HAS_INSTAGRAM_ROUTES = True
 except Exception as e:
     log.warning("instagram_routes failed: %s", e); _HAS_INSTAGRAM_ROUTES = False; instagram_router = None
+
+# ── Pinterest router ──────────────────────────────────────────────────
+try:
+    from pinterest_routes import router as pinterest_router
+    _HAS_PINTEREST_ROUTES = True
+except Exception as e:
+    log.warning("pinterest_routes failed: %s", e); _HAS_PINTEREST_ROUTES = False; pinterest_router = None
 
 # ── Telegram router ───────────────────────────────────────────────────
 try:
@@ -132,11 +139,11 @@ app = FastAPI(title="SocioMee API", version="3.0.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Google login router (uses GOOGLE_CLIENT_ID)
+# Google login router
 if _HAS_AUTH and auth_router is not None:
     app.include_router(auth_router)
 
-# YouTube connect router (uses YOUTUBE_CLIENT_ID — completely separate)
+# YouTube connect router
 if _HAS_YT_ROUTES and yt_router is not None:
     app.include_router(yt_router)
 
@@ -148,11 +155,15 @@ if _HAS_THREADS_ROUTES and threads_router is not None:
 if _HAS_INSTAGRAM_ROUTES and instagram_router is not None:
     app.include_router(instagram_router)
 
+# Pinterest router
+if _HAS_PINTEREST_ROUTES and pinterest_router is not None:
+    app.include_router(pinterest_router)
+
 # Telegram router
 if _HAS_TG_ROUTES and telegram_router is not None:
     app.include_router(telegram_router)
 
-# ── CORS — restricted to production domain ────────────────────────────
+# ── CORS ─────────────────────────────────────────────────────────────
 ALLOWED_ORIGINS = [
     "https://sociomee.in",
     "https://www.sociomee.in",
@@ -245,16 +256,16 @@ def _generate_titles_with_scores(topic: str, persona: str, language: str) -> lis
     TITLE_SETS = {
         "dhruvrathee": [
             f"{tc}: Woh Sachchi Kahani Jo Media Chhupaata Hai | Full Investigation",
-            f"Kya Sach Hai {tc} Ke Baare Mein? Evidence-Based Analysis 🔍",
+            f"Kya Sach Hai {tc} Ke Baare Mein? Evidence-Based Analysis",
             f"{tc} — Asli Hakikat Kya Hai? Poora Sach Aaj Jaaniye",
         ],
         "carryminati": [
-            f"{tc} Ka Pura Scene 😤 | Bhai Maine Research Kiya",
-            f"Yaar Seriously {tc}? | Seedha Point Pe Aata Hoon 💀",
+            f"{tc} Ka Pura Scene | Bhai Maine Research Kiya",
+            f"Yaar Seriously {tc}? | Seedha Point Pe Aata Hoon",
             f"{tc} — Bhai Tune Kya Kiya? Full Roast + Analysis",
         ],
         "samayraina": [
-            f"{tc}... [pause] Matlab Seriously? | Dark Comedy Analysis",
+            f"{tc}... Matlab Seriously? | Dark Comedy Analysis",
             f"Haan Toh {tc} Ke Baare Mein Baat Karte Hain",
             f"{tc} — Ye Bhi Theek Hai I Guess | Honest Review",
         ],
@@ -264,7 +275,7 @@ def _generate_titles_with_scores(topic: str, persona: str, language: str) -> lis
             f"Respectfully, {tc} Needs To Be Called Out | Full Take",
         ],
         "mrbeast": [
-            f"The SHOCKING Truth About {tc} Nobody Talks About 🤯",
+            f"The SHOCKING Truth About {tc} Nobody Talks About",
             f"I Researched {tc} For 30 Days — Here's What I Found",
             f"Why {tc} Is MORE Insane Than You Think (FULL STORY)",
         ],
@@ -280,7 +291,7 @@ def _generate_titles_with_scores(topic: str, persona: str, language: str) -> lis
         ],
         "default": [
             f"{tc}: The Complete Truth Finally Revealed | Full Analysis",
-            f"Why {tc} Matters More Than You Think — Deep Dive 🔍",
+            f"Why {tc} Matters More Than You Think — Deep Dive",
             f"Everything You Were Wrong About {tc} | Explained Simply",
         ],
     }
@@ -301,57 +312,34 @@ def _generate_yt_description(topic: str, hook: str, structure: dict, titles_with
     t = topic.strip(); tc = t.title()
     kp = structure.get("key_points", [])
     best_title = titles_with_score[0]["title"] if titles_with_score else tc
-    queries = [t, f"{t} explained", f"{t} full analysis", f"{t} truth revealed",
-               f"{t} in hindi", f"{t} documentary", f"about {t}", f"{t} real story",
-               f"{t} latest news", f"{t} investigation", f"{t} facts", f"why {t}",
-               f"how {t}", f"{t} 2024", f"{t} 2025"]
+    queries = [t, t+" explained", t+" full analysis", t+" truth revealed",
+               t+" in hindi", t+" documentary", "about "+t, t+" real story",
+               t+" latest news", t+" investigation", t+" facts", "why "+t,
+               "how "+t, t+" 2024", t+" 2025"]
     seen = set(); unique_q = []
     for q in queries:
         if q not in seen: seen.add(q); unique_q.append(q)
     unique_q = unique_q[:12]
-    timestamps = ["00:00 — Introduction", "00:00 — Background"]
+    timestamps = ["00:00 - Introduction", "00:00 - Background"]
     for i, point in enumerate(kp[:5], 1):
-        label = str(point)[:55].strip() if point else f"Part {i}"
-        timestamps.append(f"00:00 — {label}")
-    timestamps.append("00:00 — Conclusion")
-    kp_bullets = "\n".join(f"▶ {str(kp_item)[:80]}" for kp_item in kp[:5] if kp_item)
-    desc = f"""{best_title}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📌 ABOUT THIS VIDEO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-{hook or f"Aaj hum {t} ke baare mein ek honest aur detailed analysis karenge."}
-
-Is video mein aap janenge:
-{kp_bullets or f"▶ {tc} ki poori kahani\n▶ Evidence aur facts\n▶ Asal truth kya hai"}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔍 YOUR QUERIES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-{chr(10).join(unique_q)}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ TIMESTAMPS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-{chr(10).join(timestamps)}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📢 MORE ABOUT THIS CHANNEL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Hum yahan par in-depth research, honest analysis, aur fact-based content banate hain.
-Agar aap bhi real information chahte hain bina kisi bias ke — toh channel subscribe karein.
-
-🔔 Subscribe karein aur bell icon dabayein — taaki koi bhi video miss na ho.
-👍 Video useful lagi toh LIKE zaroor karein.
-💬 Apne thoughts COMMENT mein share karein — main har comment padhta hoon.
-📤 Apne doston ke saath SHARE karein jo yeh jaanna chahte hain.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ COPYRIGHT DISCLAIMER
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-This video is made under the Fair Use guidelines for educational and informational purposes only. All clips, images, and media used belong to their respective owners. No copyright infringement is intended. If you are the owner of any content used and wish it to be removed, please contact us directly and we will act promptly.
-
-© {tc} Analysis | All Rights Reserved."""
+        label = str(point)[:55].strip() if point else "Part "+str(i)
+        timestamps.append("00:00 - "+label)
+    timestamps.append("00:00 - Conclusion")
+    kp_bullets = "\n".join("- "+str(kp_item)[:80] for kp_item in kp[:5] if kp_item)
+    NL = "\n"
+    desc = (
+        best_title + NL + NL +
+        "ABOUT THIS VIDEO" + NL +
+        (hook or "Aaj hum "+t+" ke baare mein ek honest aur detailed analysis karenge.") + NL + NL +
+        "Is video mein aap janenge:" + NL +
+        (kp_bullets or tc+" ki poori kahani") + NL + NL +
+        "YOUR QUERIES" + NL +
+        NL.join(unique_q) + NL + NL +
+        "TIMESTAMPS" + NL +
+        NL.join(timestamps) + NL + NL +
+        "Subscribe karein aur bell icon dabayein." + NL +
+        tc + " Analysis | All Rights Reserved."
+    )
     return desc.strip()
 
 def _normalize(raw: dict, payload: FullContentRequest, platform: str = "youtube") -> dict:
