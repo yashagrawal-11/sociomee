@@ -1,24 +1,23 @@
 """
-youtube_upload.py — SocioMee YouTube Auto-Upload with AI SEO
-============================================================
+youtube_upload.py — SocioMee YouTube Auto-Upload (No-SEO Fast Version)
+=======================================================================
 Plans:
   - Free          : upload blocked
-  - Pro           : 4 uploads/month reset monthly, full SEO (Gemma)
-  - Premium       : 15 uploads/month reset monthly, perfect SEO + research (Gemma + DeepSeek)
+  - Pro           : 4 uploads/month reset monthly
+  - Premium       : 15 uploads/month reset monthly
 
-Upload quota tracked in data/upload_quota.json (separate from credits)
+SEO generation removed temporarily — upload works first, SEO added later.
+Upload quota tracked in data/upload_quota.json
 """
 
 from __future__ import annotations
 
 import json
 import logging
-import os
-import re
 import threading
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
@@ -124,129 +123,8 @@ def _get_user_plan(user_id: str) -> str:
         return "free"
 
 
-def _is_premium(plan: str) -> bool:
-    return "premium" in plan
-
-
 def _is_pro_or_above(plan: str) -> bool:
     return plan != "free"
-
-
-# ══════════════════════════════════════════════════════════════════════
-# AI SEO GENERATION
-# ══════════════════════════════════════════════════════════════════════
-
-def _gemma_generate(prompt: str, max_tokens: int = 2048) -> str:
-    try:
-        import google.generativeai as genai
-        genai.configure(api_key=os.getenv("GOOGLE_AI_API_KEY", ""))
-        model = genai.GenerativeModel("gemma-3-27b-it")
-        resp  = model.generate_content(
-            prompt,
-            generation_config={"max_output_tokens": max_tokens, "temperature": 0.7}
-        )
-        return resp.text.strip()
-    except Exception as e:
-        log.warning("Gemma failed: %s", e)
-        return ""
-
-
-def _deepseek_generate(prompt: str, max_tokens: int = 800) -> str:
-    api_key = os.getenv("DEEPSEEK_API_KEY", "")
-    if not api_key:
-        return ""
-    try:
-        import requests
-        resp = requests.post(
-            "https://api.deepseek.com/v1/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            json={
-                "model":      "deepseek-chat",
-                "messages":   [{"role": "user", "content": prompt}],
-                "max_tokens": max_tokens,
-            },
-            timeout=30,
-        )
-        return resp.json()["choices"][0]["message"]["content"].strip()
-    except Exception as e:
-        log.warning("DeepSeek failed: %s", e)
-        return ""
-
-
-def _parse_seo_json(raw: str, topic: str, video_type: str) -> dict:
-    try:
-        match = re.search(r'\{[\s\S]*\}', raw)
-        if match:
-            return json.loads(match.group())
-    except Exception:
-        pass
-    # Fallback
-    return {
-        "title":       f"{topic} | {video_type.title()} 2025",
-        "description": f"Watch this {video_type} about {topic}. Like, share and subscribe!\n\n#{topic.replace(' ','')} #india #youtube",
-        "tags":        [topic, "india", "youtube", "viral", "trending", video_type],
-        "category":    "People & Blogs",
-        "hashtags":    [f"#{topic.replace(' ','')}", "#india", "#youtube", "#trending", "#viral"],
-    }
-
-
-def generate_seo_pro(topic: str, video_type: str, language: str = "Hindi/English") -> dict:
-    """Pro: Full SEO — title + description + 20 tags via Gemma."""
-    prompt = f"""You are a YouTube SEO expert for Indian creators.
-Generate optimized SEO metadata for a YouTube {video_type} about: "{topic}"
-Target language: {language} (Hinglish mix is great for Indian audience)
-
-Return ONLY valid JSON, no markdown:
-{{
-  "title": "engaging title under 60 chars with power words",
-  "description": "150-200 word description with keywords naturally placed, timestamps placeholder [00:00 Intro], subscribe CTA at end",
-  "tags": ["tag1","tag2","tag3","tag4","tag5","tag6","tag7","tag8","tag9","tag10","tag11","tag12","tag13","tag14","tag15","tag16","tag17","tag18","tag19","tag20"],
-  "category": "one of: Education, Entertainment, People & Blogs, Science & Technology, Gaming, Howto & Style, News & Politics, Music, Sports",
-  "hashtags": ["#tag1","#tag2","#tag3","#tag4","#tag5"]
-}}"""
-    raw = _gemma_generate(prompt, max_tokens=1500)
-    return _parse_seo_json(raw, topic, video_type)
-
-
-def generate_seo_premium(topic: str, video_type: str, language: str = "Hindi/English") -> dict:
-    """Premium: Perfect SEO — competitor research + hooks + 30 tags via Gemma + DeepSeek."""
-    # Step 1: Research with DeepSeek
-    research = _deepseek_generate(
-        f"""Research YouTube topic "{topic}" for Indian audience 2025-2026.
-List:
-1. Top 5 competitor YouTube video titles on this exact topic
-2. Top 10 keywords Indians search for this topic
-3. Best hook strategy (first 15 seconds) to maximize watch time
-4. Unique angle no other creator has covered yet
-Keep under 250 words. Be specific.""",
-        max_tokens=400,
-    )
-
-    # Step 2: Perfect SEO with research context
-    prompt = f"""You are India's top YouTube SEO strategist.
-
-COMPETITOR RESEARCH:
-{research or "No research available - use your expertise"}
-
-Generate PERFECT viral SEO for a YouTube {video_type} about: "{topic}"
-Language: {language}
-
-Return ONLY valid JSON, no markdown:
-{{
-  "title": "viral-optimized title under 60 chars",
-  "description": "250-300 word description with research-backed keywords, storytelling hook, timestamps [00:00 Intro], strong subscribe CTA",
-  "tags": ["tag1","tag2","tag3","tag4","tag5","tag6","tag7","tag8","tag9","tag10","tag11","tag12","tag13","tag14","tag15","tag16","tag17","tag18","tag19","tag20","tag21","tag22","tag23","tag24","tag25","tag26","tag27","tag28","tag29","tag30"],
-  "category": "one of: Education, Entertainment, People & Blogs, Science & Technology, Gaming, Howto & Style",
-  "hashtags": ["#tag1","#tag2","#tag3","#tag4","#tag5","#tag6","#tag7"],
-  "hook": "exact first 15 seconds script to maximize retention",
-  "thumbnail_idea": "specific thumbnail concept: background color, text overlay, expression/pose",
-  "best_title_alternatives": ["alt title 1","alt title 2","alt title 3"]
-}}"""
-
-    raw    = _gemma_generate(prompt, max_tokens=2500)
-    result = _parse_seo_json(raw, topic, video_type)
-    result["research_used"] = bool(research)
-    return result
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -285,7 +163,7 @@ def get_best_upload_time() -> dict:
 
 
 # ══════════════════════════════════════════════════════════════════════
-# YOUTUBE UPLOAD
+# CATEGORY MAP
 # ══════════════════════════════════════════════════════════════════════
 
 CATEGORY_MAP = {
@@ -305,6 +183,10 @@ def _get_category_id(name: str) -> str:
     return "22"
 
 
+# ══════════════════════════════════════════════════════════════════════
+# YOUTUBE UPLOAD  — simple, no chunking, no resumable
+# ══════════════════════════════════════════════════════════════════════
+
 def _upload_to_youtube(
     user_id:      str,
     video_bytes:  bytes,
@@ -319,7 +201,7 @@ def _upload_to_youtube(
     try:
         import io
         import youtube_connect as ytc
-        from googleapiclient.http import MediaIoUpload
+        from googleapiclient.http import MediaIoBaseUpload
 
         creds   = ytc._get_credentials(user_id)
         youtube = ytc._build_youtube_client(creds)
@@ -345,15 +227,26 @@ def _upload_to_youtube(
         if schedule_utc:
             body["status"]["publishAt"] = schedule_utc
 
-        media   = MediaIoUpload(io.BytesIO(video_bytes), mimetype="video/*", chunksize=10*1024*1024, resumable=True)
-        request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
-        response = None
-        while response is None:
-            _, response = request.next_chunk()
+        # ── KEY FIX: chunksize=-1 (single request), resumable=False ──
+        media = MediaIoBaseUpload(
+            io.BytesIO(video_bytes),
+            mimetype="video/*",
+            chunksize=-1,
+            resumable=False,
+        )
+
+        request  = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
+        response = request.execute()   # single blocking call, no chunked loop
 
         vid_id = response["id"]
         url    = f"https://youtube.com/shorts/{vid_id}" if is_short else f"https://youtube.com/watch?v={vid_id}"
-        return {"success": True, "video_id": vid_id, "video_url": url, "title": title, "scheduled": schedule_utc}
+        return {
+            "success":   True,
+            "video_id":  vid_id,
+            "video_url": url,
+            "title":     title,
+            "scheduled": schedule_utc,
+        }
 
     except Exception as e:
         log.error("YouTube upload failed: %s", e)
@@ -369,16 +262,6 @@ async def upload_quota_status(user_id: str):
     """Get upload quota for user."""
     plan = _get_user_plan(user_id)
     return get_upload_status(user_id, plan)
-
-
-@router.get("/seo-preview")
-async def seo_preview(user_id: str, topic: str, video_type: str = "video"):
-    """Generate AI SEO without uploading — free preview for Pro/Premium."""
-    plan = _get_user_plan(user_id)
-    if not _is_pro_or_above(plan):
-        raise HTTPException(403, "SEO generation requires Pro or Premium plan")
-    seo = generate_seo_premium(topic, video_type) if _is_premium(plan) else generate_seo_pro(topic, video_type)
-    return {"plan": plan, "seo": seo}
 
 
 @router.get("/best-time")
@@ -399,8 +282,9 @@ async def auto_upload(
     video:         UploadFile = File(...),
 ):
     """
-    Auto-upload with AI SEO.
-    Steps: plan check → quota check → read video → generate SEO → upload → deduct quota
+    Auto-upload to YouTube.
+    Steps: plan check → quota check → read video → upload → deduct quota
+    SEO generation skipped for now (will be added back once upload is stable).
     """
     # 1. Plan check
     plan = _get_user_plan(user_id)
@@ -427,21 +311,21 @@ async def auto_upload(
 
     is_short = video_type.lower() == "short"
 
-    # 4. Generate AI SEO
-    seo = generate_seo_premium(topic, video_type, language) if _is_premium(plan) else generate_seo_pro(topic, video_type, language)
-    title       = seo.get("title", topic)
-    description = seo.get("description", "")
-    tags        = seo.get("tags", [topic])
-    category_id = _get_category_id(seo.get("category", "People & Blogs"))
+    # 4. Basic title/description from topic (no AI, instant)
+    title       = topic[:100]
+    description = f"{topic}\n\nPosted via SocioMee — AI Content Platform for Indian Creators\nsociomee.in"
+    tags        = [w for w in topic.split() if len(w) > 2][:10]
+    category_id = "22"  # People & Blogs default
 
     # 5. Schedule
-    schedule_utc = None
+    schedule_utc   = None
     best_time_info = None
     if schedule_type == "best":
         best_time_info = get_best_upload_time()
         schedule_utc   = best_time_info["utc_iso"]
     elif schedule_type == "custom" and custom_time:
         try:
+            from datetime import datetime
             dt = datetime.fromisoformat(custom_time)
             if dt.tzinfo is None:
                 dt = dt.replace(tzinfo=timezone(timedelta(hours=5, minutes=30)))
@@ -450,10 +334,19 @@ async def auto_upload(
             raise HTTPException(400, "Invalid custom_time. Use ISO format e.g. 2026-04-28T20:00:00")
 
     # 6. Upload
-    result = _upload_to_youtube(user_id, video_bytes, title, description, tags, category_id, privacy, schedule_utc, is_short)
+    result = _upload_to_youtube(
+        user_id, video_bytes, title, description,
+        tags, category_id, privacy, schedule_utc, is_short
+    )
 
     # 7. Deduct quota
     _use_upload_quota(user_id, plan)
     new_quota = get_upload_status(user_id, plan)
 
-    return {**result, "seo": seo, "best_time": best_time_info, "quota": new_quota, "plan": plan}
+    return {
+        **result,
+        "seo":       None,
+        "best_time": best_time_info,
+        "quota":     new_quota,
+        "plan":      plan,
+    }
