@@ -15,6 +15,7 @@ Required .env vars (separate from login):
 """
 
 from __future__ import annotations
+from youtube_upload import router as upload_router
 
 import logging
 import os
@@ -25,6 +26,7 @@ from pydantic import BaseModel
 log = logging.getLogger("youtube_routes")
 
 router = APIRouter(prefix="/youtube", tags=["youtube"])
+
 
 
 # ── Lazy import guard ─────────────────────────────────────────────────

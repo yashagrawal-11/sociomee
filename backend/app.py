@@ -22,6 +22,12 @@ try:
 except Exception as e:
     log.warning("auth_routes failed: %s", e); _HAS_AUTH = False; auth_router = None
 
+# ── YouTube upload router ────────────────────────────────────────────
+try:
+    from youtube_upload import router as yt_upload_router
+    _HAS_YT_UPLOAD = True
+except Exception as e:
+    log.warning("youtube_upload failed: %s", e); _HAS_YT_UPLOAD = False; yt_upload_router = None
 # ── YouTube connect router ─────────────────────────────────────────
 try:
     from youtube_routes import router as yt_router
@@ -146,6 +152,7 @@ if _HAS_AUTH and auth_router is not None:
 # YouTube connect router
 if _HAS_YT_ROUTES and yt_router is not None:
     app.include_router(yt_router)
+    app.include_router(yt_upload_router)
 
 # Threads router
 if _HAS_THREADS_ROUTES and threads_router is not None:
