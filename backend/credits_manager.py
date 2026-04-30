@@ -13,35 +13,57 @@ from typing import Any, Dict, Optional
 
 # ── Plan config ───────────────────────────────────────────────────────
 PLAN_LIMITS: Dict[str, int] = {
-    "free":        20,
-    "pro_monthly": 200,
-    "pro_annual":  200,
+    "free":             20,
+    "pro_monthly":      200,
+    "pro_annual":       200,
+    "premium_monthly":  500,
+    "premium_annual":   500,
 }
 
 PLAN_PRICES: Dict[str, Dict[str, Any]] = {
     "pro_monthly": {
-        "amount":     49900,
-        "label":      "SocioMee Pro Monthly",
-        "credits":    200,
-        "type":       "plan",
+        "amount":    49900,
+        "label":     "SocioMee Pro Monthly",
+        "credits":   200,
+        "uploads":   4,
+        "type":      "plan",
+        "features":  ["Full AI SEO", "Full script", "4 auto-uploads/month", "Instagram Auto DM", "Best time scheduling", "Thumbnail AI"],
     },
     "pro_annual": {
-        "amount":     399900,
-        "label":      "SocioMee Pro Annual",
-        "credits":    200,
-        "type":       "plan",
+        "amount":    399900,
+        "label":     "SocioMee Pro Annual",
+        "credits":   200,
+        "uploads":   4,
+        "type":      "plan",
+        "features":  ["Full AI SEO", "Full script", "4 auto-uploads/month", "Instagram Auto DM", "Best time scheduling", "Thumbnail AI", "33% off vs monthly"],
+    },
+    "premium_monthly": {
+        "amount":    299900,
+        "label":     "SocioMee Premium Monthly",
+        "credits":   500,
+        "uploads":   15,
+        "type":      "plan",
+        "features":  ["Perfect SEO + competitor research", "Script + hooks + research", "15 auto-uploads/month", "Instagram Auto DM", "Best time scheduling", "Thumbnail AI", "Priority support"],
+    },
+    "premium_annual": {
+        "amount":    2399900,
+        "label":     "SocioMee Premium Annual",
+        "credits":   500,
+        "uploads":   15,
+        "type":      "plan",
+        "features":  ["Perfect SEO + competitor research", "Script + hooks + research", "15 auto-uploads/month", "Instagram Auto DM", "Best time scheduling", "Thumbnail AI", "Priority support", "33% off vs monthly"],
     },
     "topup_99": {
-        "amount":     9900,
-        "label":      "50 Credits Top-Up",
-        "credits":    50,
-        "type":       "topup",
+        "amount":    9900,
+        "label":     "50 Credits Top-Up",
+        "credits":   50,
+        "type":      "topup",
     },
     "topup_199": {
-        "amount":     19900,
-        "label":      "120 Credits Top-Up",
-        "credits":    120,
-        "type":       "topup",
+        "amount":    19900,
+        "label":     "120 Credits Top-Up",
+        "credits":   120,
+        "type":      "topup",
     },
 }
 
@@ -73,7 +95,6 @@ def _now_iso() -> str:
 
 def _get_or_init(data: Dict, user_id: str) -> Dict[str, Any]:
     if user_id not in data:
-        # Brand new user — give full monthly credits
         data[user_id] = {
             "plan":              "free",
             "credits_remaining": PLAN_LIMITS["free"],
@@ -83,8 +104,6 @@ def _get_or_init(data: Dict, user_id: str) -> Dict[str, Any]:
         }
     else:
         record = data[user_id]
-        # ── Migration: old daily system had 'used'+'date', no 'credits_remaining'
-        # If record exists but credits_remaining is missing, initialise it now
         if "credits_remaining" not in record:
             plan = record.get("plan", "free")
             record["credits_remaining"] = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
@@ -102,8 +121,8 @@ def _check_and_reset(record: Dict[str, Any]) -> Dict[str, Any]:
         record["last_reset"] = _now_iso()
         return record
     try:
-        last_dt  = datetime.fromisoformat(last)
-        now      = datetime.now(timezone.utc)
+        last_dt = datetime.fromisoformat(last)
+        now     = datetime.now(timezone.utc)
         if (now - last_dt).days >= 30:
             plan = record.get("plan", "free")
             record["credits_remaining"] = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
@@ -120,7 +139,6 @@ def get_credit_status(user_id: str) -> Dict[str, Any]:
         data   = _load()
         record = _get_or_init(data, user_id)
         record = _check_and_reset(record)
-        # Safety: credits_remaining must never be None or negative
         if record.get("credits_remaining") is None:
             plan = record.get("plan", "free")
             record["credits_remaining"] = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
@@ -134,9 +152,7 @@ def get_credit_status(user_id: str) -> Dict[str, Any]:
     last    = record.get("last_reset", _now_iso())
 
     try:
-        next_reset = (
-            datetime.fromisoformat(last) + timedelta(days=30)
-        ).isoformat()
+        next_reset = (datetime.fromisoformat(last) + timedelta(days=30)).isoformat()
     except Exception:
         next_reset = ""
 
@@ -158,9 +174,9 @@ def get_user_credits(user_id: str) -> int:
 def use_credit(user_id: str) -> bool:
     """Deduct 1 credit atomically. Returns True if successful."""
     with _lock:
-        data   = _load()
-        record = _get_or_init(data, user_id)
-        record = _check_and_reset(record)
+        data    = _load()
+        record  = _get_or_init(data, user_id)
+        record  = _check_and_reset(record)
         credits = record.get("credits_remaining", 0)
         if credits <= 0:
             data[user_id] = record
@@ -184,7 +200,16 @@ def set_user_plan(user_id: str, plan: str, email: str = "") -> None:
         record["last_reset"]        = _now_iso()
         if email:
             record["email"] = email
-        days = 30 if plan == "pro_monthly" else 365 if plan == "pro_annual" else None
+        if plan == "pro_monthly":
+            days = 30
+        elif plan == "pro_annual":
+            days = 365
+        elif plan == "premium_monthly":
+            days = 30
+        elif plan == "premium_annual":
+            days = 365
+        else:
+            days = None
         record["plan_expires"] = (
             (datetime.now(timezone.utc) + timedelta(days=days)).isoformat()
             if days else None
@@ -227,7 +252,7 @@ def get_plan_info(plan: Optional[str] = None) -> Any:
     return PLAN_PRICES
 
 
-# Legacy aliases so existing app.py calls don't break
+# Legacy aliases
 def get_abuse_report() -> dict:
     return {}
 
@@ -238,7 +263,7 @@ def add_bonus_credits(user_id: str, amount: int) -> int:
 
 def ban_user(user_id: str, reason: str = "") -> None:
     with _lock:
-        data = _load()
+        data   = _load()
         record = _get_or_init(data, user_id)
         record["banned"]     = True
         record["ban_reason"] = reason

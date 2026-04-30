@@ -64,10 +64,6 @@ def _save(data: Dict) -> None:
 
 # ── YouTube OAuth client config dict ─────────────────────────────────
 def _yt_client_config(redirect_uri: str = "") -> Dict:
-    """
-    Build the client_config dict for google_auth_oauthlib.flow.Flow.
-    Always uses YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET.
-    """
     _assert_yt_env()
     redir = redirect_uri or _yt_redirect_uri()
     return {
@@ -81,9 +77,10 @@ def _yt_client_config(redirect_uri: str = "") -> Dict:
     }
 
 
-# ── OAuth scopes ──────────────────────────────────────────────────────
+# ── OAuth scopes — includes upload scope ─────────────────────────────
 YT_SCOPES = [
     "https://www.googleapis.com/auth/youtube.readonly",
+    "https://www.googleapis.com/auth/youtube.upload",      # ← NEW: for auto-upload
     "https://www.googleapis.com/auth/yt-analytics.readonly",
     "openid",
     "email",
@@ -132,8 +129,8 @@ def _get_credentials(user_id: str):
         token         = record.get("access_token"),
         refresh_token = record.get("refresh_token"),
         token_uri     = "https://oauth2.googleapis.com/token",
-        client_id     = _yt_client_id(),       # ← YOUTUBE_CLIENT_ID
-        client_secret = _yt_client_secret(),   # ← YOUTUBE_CLIENT_SECRET
+        client_id     = _yt_client_id(),
+        client_secret = _yt_client_secret(),
         scopes        = record.get("scopes", YT_SCOPES),
     )
 
@@ -193,7 +190,6 @@ def exchange_code(code: str, redirect_uri: str = "") -> Dict[str, str]:
     _assert_yt_env()
     redir = redirect_uri or _yt_redirect_uri()
 
-    # Raw token exchange — no Flow, no PKCE, no code_verifier
     token_resp = _requests.post(
         "https://oauth2.googleapis.com/token",
         data={
@@ -217,7 +213,6 @@ def exchange_code(code: str, redirect_uri: str = "") -> Dict[str, str]:
     access_token  = tokens["access_token"]
     refresh_token = tokens.get("refresh_token", "")
 
-    # Build credentials from raw tokens
     creds = Credentials(
         token         = access_token,
         refresh_token = refresh_token,
@@ -227,7 +222,6 @@ def exchange_code(code: str, redirect_uri: str = "") -> Dict[str, str]:
         scopes        = YT_SCOPES,
     )
 
-    # Fetch channel info
     youtube = build("youtube", "v3", credentials=creds, cache_discovery=False)
     resp    = youtube.channels().list(part="snippet,statistics", mine=True).execute()
     items   = resp.get("items", [])
@@ -262,7 +256,6 @@ def store_youtube_tokens(
     total_views:   int = 0,
     video_count:   int = 0,
 ) -> None:
-    """Persist YouTube tokens + channel metadata for a user."""
     data = _load()
     data[user_id] = {
         "access_token":  access_token,
@@ -275,7 +268,6 @@ def store_youtube_tokens(
         "video_count":   video_count,
         "scopes":        YT_SCOPES,
         "connected_at":  datetime.now(timezone.utc).isoformat(),
-        # Record which client was used — for auditability
         "yt_client_id":  _yt_client_id()[:12] + "…",
     }
     _save(data)
@@ -294,10 +286,6 @@ def disconnect(user_id: str) -> None:
 
 
 def get_channel_info(user_id: str) -> Dict[str, Any]:
-    """
-    Fetch live channel stats from YouTube Data API v3.
-    Falls back to stored values on error.
-    """
     data   = _load()
     record = data.get(user_id, {})
     if not record:
@@ -346,10 +334,6 @@ def get_channel_info(user_id: str) -> Dict[str, Any]:
 
 
 def get_analytics(user_id: str, days: int = 30) -> Dict[str, Any]:
-    """
-    Fetch last N days of daily views + subscribers from YouTube Analytics API.
-    Falls back to mock data if API unavailable.
-    """
     data   = _load()
     record = data.get(user_id, {})
     if not record:
@@ -419,7 +403,6 @@ def _mock_analytics(days: int) -> Dict:
 
 
 def get_top_videos(user_id: str, max_results: int = 10) -> List[Dict]:
-    """Top videos by view count."""
     try:
         creds   = _get_credentials(user_id)
         youtube = _build_youtube_client(creds)
@@ -475,7 +458,6 @@ def get_growth_prediction(
     topic:        str,
     channel_info: Optional[Dict] = None,
 ) -> Dict[str, Any]:
-    """AI growth prediction for a given topic based on channel baseline."""
     if channel_info is None:
         try:
             channel_info = get_channel_info(user_id)
@@ -485,10 +467,8 @@ def get_growth_prediction(
     subs        = channel_info.get("subscribers",  0)
     total_views = channel_info.get("total_views",  0)
     video_count = max(1, channel_info.get("video_count", 1))
+    avg_views   = max(100, total_views // video_count)
 
-    avg_views = max(100, total_views // video_count)
-
-    # Virality score from topic keywords
     import re as _re
     virality = 50
     for kw in ["exposed","truth","shocking","scam","leaked","viral","trending",
@@ -504,7 +484,6 @@ def get_growth_prediction(
     est_subs   = int(est_views * sub_rate)
     growth_pct = round((est_subs / max(subs, 1)) * 100, 2)
 
-    # Next subscriber milestone
     milestone = None
     for m in [1_000, 5_000, 10_000, 50_000, 100_000, 500_000, 1_000_000]:
         if m > subs:
