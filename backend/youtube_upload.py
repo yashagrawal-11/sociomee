@@ -1,264 +1,126 @@
 """
-youtube_upload.py — SocioMee YouTube Auto-Upload + AI SEO + Thumbnail Analyzer
+youtube_upload.py — SocioMee YouTube Auto-Upload + AI SEO + Thumbnail
 """
-
 from __future__ import annotations
-
-import io
-import json
-import logging
-import os
-import re
-import threading
-import uuid
+import io, json, logging, os, re, threading, uuid, traceback
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
-
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 log = logging.getLogger("youtube_upload")
-
 router = APIRouter(prefix="/youtube/upload", tags=["youtube-upload"])
 
-UPLOAD_QUOTA: Dict[str, int] = {
-    "free":            0,
-    "pro_monthly":     4,
-    "pro_annual":      4,
-    "premium_monthly": 15,
-    "premium_annual":  15,
-}
+UPLOAD_QUOTA = {"free":0,"pro_monthly":4,"pro_annual":4,"premium_monthly":15,"premium_annual":15}
+DATA_DIR = Path(__file__).parent / "data"
+DATA_DIR.mkdir(exist_ok=True)
+QUOTA_FILE = DATA_DIR / "upload_quota.json"
+JOBS_FILE  = DATA_DIR / "upload_jobs.json"
+_lock = threading.Lock()
+_jlock = threading.Lock()
 
-QUOTA_FILE = Path(__file__).parent / "data" / "upload_quota.json"
-QUOTA_FILE.parent.mkdir(exist_ok=True)
-_lock      = threading.Lock()
-_jobs: Dict[str, dict] = {}
-_jobs_lock = threading.Lock()
+def _ljobs():
+    try: return json.loads(JOBS_FILE.read_text()) if JOBS_FILE.exists() else {}
+    except: return {}
+def _sjobs(d):
+    JOBS_FILE.write_text(json.dumps(d))
+def _new_job(uid):
+    jid = str(uuid.uuid4())
+    with _jlock:
+        d = _ljobs(); d[jid] = {"job_id":jid,"user_id":uid,"status":"queued","progress":0,"message":"Starting…","result":None,"error":None}; _sjobs(d)
+    return jid
+def _ujob(jid, **kw):
+    with _jlock:
+        d = _ljobs()
+        if jid in d:
+            d[jid].update(kw)
+            _sjobs(d)
+def _gjob(jid):
+    with _jlock: return _ljobs().get(jid)
 
-
-# ══════════════════════════════════════════════════════════════════════
-# JOB STORE
-# ══════════════════════════════════════════════════════════════════════
-
-def _new_job(user_id: str) -> str:
-    job_id = str(uuid.uuid4())
-    with _jobs_lock:
-        _jobs[job_id] = {
-            "job_id": job_id, "user_id": user_id,
-            "status": "queued", "progress": 0,
-            "message": "Queued…", "result": None,
-            "error": None, "created_at": datetime.now(timezone.utc).isoformat(),
-        }
-    return job_id
-
-
-def _update_job(job_id: str, **kwargs):
-    with _jobs_lock:
-        if job_id in _jobs:
-            _jobs[job_id].update(kwargs)
-
-
-def get_job(job_id: str) -> Optional[dict]:
-    with _jobs_lock:
-        return _jobs.get(job_id)
-
-
-# ══════════════════════════════════════════════════════════════════════
-# QUOTA
-# ══════════════════════════════════════════════════════════════════════
-
-def _load_quota() -> dict:
-    if QUOTA_FILE.exists():
-        try:
-            return json.loads(QUOTA_FILE.read_text())
-        except Exception:
-            pass
-    return {}
-
-
-def _save_quota(data: dict):
-    QUOTA_FILE.write_text(json.dumps(data, indent=2))
-
-
-def _next_reset() -> str:
-    now = datetime.now(timezone.utc)
-    nxt = datetime(now.year + (1 if now.month == 12 else 0),
-                   1 if now.month == 12 else now.month + 1,
-                   1, tzinfo=timezone.utc)
-    return nxt.isoformat()
-
-
-def _get_quota_record(user_id: str, plan: str) -> dict:
+def _lquota():
+    try: return json.loads(QUOTA_FILE.read_text()) if QUOTA_FILE.exists() else {}
+    except: return {}
+def _squota(d): QUOTA_FILE.write_text(json.dumps(d,indent=2))
+def _nreset():
+    now=datetime.now(timezone.utc)
+    return datetime(now.year+(1 if now.month==12 else 0),1 if now.month==12 else now.month+1,1,tzinfo=timezone.utc).isoformat()
+def _gqrec_nolock(uid,plan):
+    d=_lquota(); now=datetime.now(timezone.utc)
+    if uid not in d: d[uid]={"plan":plan,"used":0,"reset_date":_nreset()}; _squota(d)
+    else:
+        r=d[uid]
+        if now>=datetime.fromisoformat(r.get("reset_date",now.isoformat())): r.update({"used":0,"reset_date":_nreset(),"plan":plan}); d[uid]=r; _squota(d)
+    return d[uid]
+def _gqrec(uid,plan):
+    with _lock: return _gqrec_nolock(uid,plan)
+def _uquota(uid,plan):
     with _lock:
-        data = _load_quota()
-        now  = datetime.now(timezone.utc)
-        if user_id not in data:
-            data[user_id] = {"plan": plan, "used": 0, "reset_date": _next_reset()}
-            _save_quota(data)
-        else:
-            rec      = data[user_id]
-            reset_dt = datetime.fromisoformat(rec.get("reset_date", now.isoformat()))
-            if now >= reset_dt:
-                rec.update({"used": 0, "reset_date": _next_reset(), "plan": plan})
-                data[user_id] = rec
-                _save_quota(data)
-        return data[user_id]
+        d=_lquota(); r=_gqrec_nolock(uid,plan); l=UPLOAD_QUOTA.get(plan,0)
+        if l==0 or r["used"]>=l: return False
+        r["used"]+=1; d[uid]=r; _squota(d); return True
+def get_upload_status(uid,plan):
+    r=_gqrec(uid,plan); l=UPLOAD_QUOTA.get(plan,0); u=r["used"]
+    return {"plan":plan,"used":u,"limit":l,"remaining":max(0,l-u),"reset_date":r["reset_date"],"can_upload":u<l and l>0}
 
-
-def _use_upload_quota(user_id: str, plan: str) -> bool:
-    with _lock:
-        data  = _load_quota()
-        rec   = _get_quota_record(user_id, plan)
-        limit = UPLOAD_QUOTA.get(plan, 0)
-        if limit == 0 or rec["used"] >= limit:
-            return False
-        rec["used"] += 1
-        data[user_id] = rec
-        _save_quota(data)
-        return True
-
-
-def get_upload_status(user_id: str, plan: str) -> dict:
-    rec   = _get_quota_record(user_id, plan)
-    limit = UPLOAD_QUOTA.get(plan, 0)
-    used  = rec["used"]
-    return {
-        "plan": plan, "used": used, "limit": limit,
-        "remaining": max(0, limit - used),
-        "reset_date": rec["reset_date"],
-        "can_upload": used < limit and limit > 0,
-    }
-
-
-# ══════════════════════════════════════════════════════════════════════
-# PLAN HELPERS
-# ══════════════════════════════════════════════════════════════════════
-
-def _get_user_plan(user_id: str) -> str:
+def _gplan(uid):
     try:
-        import credits_manager as cm
-        return cm.get_credit_status(user_id).get("plan", "free")
-    except Exception:
-        return "free"
+        import credits_manager as cm; return cm.get_credit_status(uid).get("plan","free")
+    except: return "free"
 
+BEST_TIMES={0:("19:00","Monday 7PM IST"),1:("20:00","Tuesday 8PM IST"),2:("19:00","Wednesday 7PM IST"),3:("20:00","Thursday 8PM IST"),4:("18:00","Friday 6PM IST"),5:("11:00","Saturday 11AM IST"),6:("11:00","Sunday 11AM IST")}
+def get_best_upload_time():
+    IST=timezone(timedelta(hours=5,minutes=30)); now=datetime.now(IST); wd=now.weekday(); ts,lb=BEST_TIMES[wd]; h,m=map(int,ts.split(":")); b=now.replace(hour=h,minute=m,second=0,microsecond=0)
+    if b<=now: b+=timedelta(days=1); wd=b.weekday(); ts,lb=BEST_TIMES[wd]; h,m=map(int,ts.split(":")); b=b.replace(hour=h,minute=m)
+    return {"utc_iso":b.astimezone(timezone.utc).isoformat(),"ist_label":lb,"weekday":b.strftime("%A")}
 
-def _is_pro_or_above(plan: str) -> bool:
-    return plan != "free"
-
-
-def _is_premium(plan: str) -> bool:
-    return "premium" in plan
-
-
-# ══════════════════════════════════════════════════════════════════════
-# BEST TIME
-# ══════════════════════════════════════════════════════════════════════
-
-BEST_TIMES_IST = {
-    0: ("19:00", "Monday 7:00 PM IST"),
-    1: ("20:00", "Tuesday 8:00 PM IST"),
-    2: ("19:00", "Wednesday 7:00 PM IST"),
-    3: ("20:00", "Thursday 8:00 PM IST"),
-    4: ("18:00", "Friday 6:00 PM IST"),
-    5: ("11:00", "Saturday 11:00 AM IST"),
-    6: ("11:00", "Sunday 11:00 AM IST"),
-}
-
-
-def get_best_upload_time() -> dict:
-    IST = timezone(timedelta(hours=5, minutes=30))
-    now = datetime.now(IST)
-    wd  = now.weekday()
-    time_str, label = BEST_TIMES_IST[wd]
-    h, m = map(int, time_str.split(":"))
-    best = now.replace(hour=h, minute=m, second=0, microsecond=0)
-    if best <= now:
-        best += timedelta(days=1)
-        wd = best.weekday()
-        time_str, label = BEST_TIMES_IST[wd]
-        h, m = map(int, time_str.split(":"))
-        best = best.replace(hour=h, minute=m, second=0, microsecond=0)
-    return {
-        "utc_iso": best.astimezone(timezone.utc).isoformat(),
-        "ist_label": label,
-        "weekday": best.strftime("%A"),
-    }
-
-
-# ══════════════════════════════════════════════════════════════════════
-# GEMINI AI
-# ══════════════════════════════════════════════════════════════════════
-
-def _gemini_text(prompt: str, max_tokens: int = 2048) -> str:
+def _gemini_text(prompt, max_tokens=2048):
     try:
         import google.generativeai as genai
-        api_key = os.getenv("GOOGLE_AI_API_KEY", "")
-        if not api_key:
-            raise ValueError("GOOGLE_AI_API_KEY not set")
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        resp  = model.generate_content(
-            prompt,
-            generation_config={"max_output_tokens": max_tokens, "temperature": 0.8}
-        )
-        return resp.text.strip()
+        k=os.getenv("GOOGLE_AI_API_KEY","")
+        if not k: return ""
+        genai.configure(api_key=k)
+        return genai.GenerativeModel("gemini-2.0-flash").generate_content(prompt,generation_config={"max_output_tokens":max_tokens,"temperature":0.8}).text.strip()
     except Exception as e:
-        log.warning("Gemini text failed: %s", e)
-        return ""
+        log.warning("Gemini: %s",e); return ""
 
-
-def _gemini_vision(prompt: str, images: List[bytes]) -> str:
+def _gemini_vision(prompt, images):
     try:
         import google.generativeai as genai
-        api_key = os.getenv("GOOGLE_AI_API_KEY", "")
-        if not api_key:
-            raise ValueError("GOOGLE_AI_API_KEY not set")
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        parts = []
-        for img_bytes in images:
-            parts.append({"mime_type": "image/jpeg", "data": img_bytes})
+        k=os.getenv("GOOGLE_AI_API_KEY","")
+        if not k: return ""
+        genai.configure(api_key=k)
+        parts=[{"mime_type":"image/jpeg","data":img} for img in images]
         parts.append(prompt)
-        resp = model.generate_content(parts)
-        return resp.text.strip()
+        return genai.GenerativeModel("gemini-2.0-flash").generate_content(parts).text.strip()
     except Exception as e:
-        log.warning("Gemini vision failed: %s", e)
-        return ""
+        log.warning("Gemini vision: %s",e); return ""
 
-
-def _parse_json(raw: str) -> dict:
+def _pj(raw):
     try:
-        match = re.search(r'\{[\s\S]*\}', raw)
-        if match:
-            return json.loads(match.group())
-    except Exception:
-        pass
+        m=re.search(r'\{[\s\S]*\}',raw)
+        if m: return json.loads(m.group())
+    except: pass
     return {}
 
-
-# ══════════════════════════════════════════════════════════════════════
-# DESCRIPTION TEMPLATE
-# ══════════════════════════════════════════════════════════════════════
-
-def _build_description(title: str, about: str, keyword: str, queries: List[str], hashtags: List[str]) -> str:
-    queries_text = "\n".join(queries) if queries else f"{keyword}\n{keyword} tips\n{keyword} tutorial"
-    hashtags_text = " ".join(hashtags[:3]) if hashtags else f"#{keyword.replace(' ','')} #india #youtube"
-
+def _build_desc(title,about,keyword,queries,hashtags):
+    qt="\n".join(queries) if queries else f"{keyword}\n{keyword} tips"
+    ht=" ".join(hashtags[:3]) if hashtags else f"#{keyword.replace(' ','')} #india"
     return f"""{title}
 
 {about}
 
-━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 📌 CHAPTERS
-━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 00:00 Intro
 00:30 Main Content
 02:00 Key Points
 04:00 Conclusion
 
-━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 🔗 CONNECT WITH ME
-━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 Instagram:
 Facebook:
 Twitter / X:
@@ -269,413 +131,155 @@ Pinterest:
 LinkedIn:
 Website:
 
-━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 ❓ YOUR QUERIES
-━━━━━━━━━━━━━━━━━━━━━━━━
-{queries_text}
+━━━━━━━━━━━━━━━━━━━━
+{qt}
 
-━━━━━━━━━━━━━━━━━━━━━━━━
-{hashtags_text}
-━━━━━━━━━━━━━━━━━━━━━━━━
+{ht}
 
 {about}
 
-━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ COPYRIGHT DISCLAIMER
-━━━━━━━━━━━━━━━━━━━━━━━━
-Copyright Disclaimer under Section 107 of the copyright act 1976, allowance is made for fair use for purposes such as criticism, comment, news reporting, scholarship, and research. Fair use is a use permitted by copyright statute that might otherwise be infringing.
+⚠️ Copyright Disclaimer under Section 107 of the copyright act 1976, allowance is made for fair use.
 
-━━━━━━━━━━━━━━━━━━━━━━━━
-🤖 Uploaded & Optimized by SocioMee AI
-India's #1 AI Content Platform for Creators
-👉 sociomee.in
-━━━━━━━━━━━━━━━━━━━━━━━━"""
+🤖 Uploaded by SocioMee AI · sociomee.in"""
 
-
-# ══════════════════════════════════════════════════════════════════════
-# AI SEO GENERATION
-# ══════════════════════════════════════════════════════════════════════
-
-def generate_viral_seo(keyword: str, video_type: str = "video", language: str = "Hindi/English", is_premium: bool = False) -> dict:
-    extra = ""
-    if is_premium:
-        extra = """,
-  "hook": "exact first 15 seconds script to hook viewers",
-  "thumbnail_idea": "specific thumbnail concept with colors, text, expression",
-  "best_title_alternatives": ["alt title 1", "alt title 2", "alt title 3"],
-  "upload_tip": "one specific tip to maximize this video's reach"
-"""
-
-    prompt = f"""You are India's #1 YouTube SEO expert. A creator wants to make a YouTube {video_type} about: "{keyword}"
-Target: Indian viewers | Language: {language}
-
-Generate VIRAL-OPTIMIZED YouTube SEO. Think MrBeast meets Indian YouTube.
-
-Rules:
-- Title: curiosity + shock + numbers/power words, under 60 chars
-- About: 3-4 sentences describing the video value naturally with keywords
-- Queries: exactly 10 search queries Indians type to find this content (one per line)
-- Tags: 20 mix of Hindi+English keywords
-- Hashtags: exactly 3 most relevant
-
-Return ONLY valid JSON, no markdown:
-{{
-  "title": "viral title under 60 chars",
-  "about": "3-4 sentence engaging description of what viewers will learn/get from this video",
-  "queries": ["query 1", "query 2", "query 3", "query 4", "query 5", "query 6", "query 7", "query 8", "query 9", "query 10"],
-  "tags": ["tag1","tag2","tag3","tag4","tag5","tag6","tag7","tag8","tag9","tag10","tag11","tag12","tag13","tag14","tag15","tag16","tag17","tag18","tag19","tag20"],
-  "hashtags": ["#hashtag1","#hashtag2","#hashtag3"],
-  "category": "Education",
-  "seo_score": 92,
-  "why_viral": "one sentence why this will trend"{extra}
-}}"""
-
-    raw    = _gemini_text(prompt, max_tokens=2000)
-    result = _parse_json(raw)
-
-    if not result.get("title"):
-        result = {
-            "title":    f"{keyword} | Must Watch 2025",
-            "about":    f"In this video, we explore everything about {keyword}. This is a must-watch for anyone interested in {keyword}. Watch till the end for the best tips and tricks!",
-            "queries":  [f"{keyword}", f"{keyword} tips", f"{keyword} tutorial", f"how to {keyword}", f"best {keyword}", f"{keyword} 2025", f"{keyword} in hindi", f"{keyword} guide", f"learn {keyword}", f"{keyword} for beginners"],
-            "tags":     [keyword, "india", "youtube", "viral", "trending", "2025", "hindi", "tips", "tutorial", "guide"],
-            "hashtags": [f"#{keyword.replace(' ','')}", "#india", "#youtube"],
-            "category": "People & Blogs",
-            "seo_score": 60,
-            "why_viral": "Trending topic for Indian audience",
-        }
-
-    # Build full description
-    result["description"] = _build_description(
-        title    = result.get("title", keyword),
-        about    = result.get("about", ""),
-        keyword  = keyword,
-        queries  = result.get("queries", []),
-        hashtags = result.get("hashtags", []),
-    )
-
-    return result
-
-
-# ══════════════════════════════════════════════════════════════════════
-# AI GROWTH PREDICTION
-# ══════════════════════════════════════════════════════════════════════
-
-def generate_growth_prediction(keyword: str, seo_score: int, channel_subs: int = 0) -> dict:
-    prompt = f"""You are a YouTube analytics expert for Indian creators.
-
-A creator just uploaded a video about: "{keyword}"
-Their channel has approximately {channel_subs} subscribers.
-The AI SEO score for this video is: {seo_score}/100
-
-Predict realistic growth for this video for Indian YouTube audience.
-
+def gen_seo(kw,vt="video",lang="Hindi/English",prem=False):
+    extra = ',\n  "hook":"15 sec script",\n  "thumbnail_idea":"thumbnail concept",\n  "best_title_alternatives":["a","b","c"]' if prem else ""
+    prompt=f"""YouTube SEO expert for Indian creators. Video about: "{kw}" | Type: {vt} | Language: {lang}
 Return ONLY valid JSON:
-{{
-  "views_7_days": 1200,
-  "views_30_days": 5000,
-  "views_90_days": 15000,
-  "new_subscribers": 45,
-  "estimated_ctr": "4.2%",
-  "watch_time_hours": 180,
-  "revenue_estimate": "₹150 - ₹400",
-  "viral_probability": "medium",
-  "peak_day": "Day 3-5",
-  "growth_tip": "one specific actionable tip to maximize this video's performance",
-  "competition_level": "low/medium/high"
-}}"""
+{{"title":"viral title under 60 chars","about":"3 sentence description","queries":["q1","q2","q3","q4","q5","q6","q7","q8","q9","q10"],"tags":["t1","t2","t3","t4","t5","t6","t7","t8","t9","t10","t11","t12","t13","t14","t15","t16","t17","t18","t19","t20"],"hashtags":["#h1","#h2","#h3"],"category":"Education","seo_score":85,"why_viral":"reason"{extra}}}"""
+    r=_pj(_gemini_text(prompt,1500))
+    if not r.get("title"):
+        r={"title":f"{kw} | Must Watch 2025","about":f"Everything about {kw}. Must watch!","queries":[kw,f"{kw} tips",f"{kw} tutorial",f"how to {kw}",f"best {kw}",f"{kw} 2025",f"{kw} hindi",f"{kw} guide",f"learn {kw}",f"{kw} beginners"],"tags":[kw,"india","youtube","viral","trending","2025","hindi","tips","tutorial","guide","howto","indian","creator","content",kw.replace(" ",""),"sociomee","shorts","ytindia","youtubeindia","ytshorts"],"hashtags":[f"#{kw.replace(' ','')}","#india","#youtube"],"category":"People & Blogs","seo_score":65,"why_viral":"Trending topic"}
+    r["description"]=_build_desc(r.get("title",kw),r.get("about",""),kw,r.get("queries",[]),r.get("hashtags",[]))
+    return r
 
-    raw    = _gemini_text(prompt, max_tokens=500)
-    result = _parse_json(raw)
-
-    if not result.get("views_7_days"):
-        base = max(100, channel_subs // 10)
-        result = {
-            "views_7_days":     base * 2,
-            "views_30_days":    base * 6,
-            "views_90_days":    base * 15,
-            "new_subscribers":  max(5, channel_subs // 50),
-            "estimated_ctr":    "3.5%",
-            "watch_time_hours": base // 2,
-            "revenue_estimate": "₹50 - ₹200",
-            "viral_probability": "medium",
-            "peak_day":         "Day 2-4",
-            "growth_tip":       "Share in WhatsApp groups and Instagram stories in first 24 hours for maximum reach.",
-            "competition_level": "medium",
-        }
-
-    return result
-
-
-# ══════════════════════════════════════════════════════════════════════
-# THUMBNAIL ANALYZER
-# ══════════════════════════════════════════════════════════════════════
-
-def analyze_thumbnails(thumb1_bytes: bytes, thumb2_bytes: Optional[bytes] = None) -> dict:
-    if thumb2_bytes:
-        prompt = """You are a YouTube thumbnail CTR expert for Indian creators.
-Analyze both thumbnails (A and B) and return ONLY valid JSON:
-{
-  "winner": "A",
-  "winner_reason": "clear one sentence why this wins",
-  "thumbnail_a": {
-    "ctr_score": 75,
-    "strengths": ["strength 1", "strength 2", "strength 3"],
-    "weaknesses": ["weakness 1", "weakness 2"],
-    "color_analysis": "color grading feedback",
-    "text_analysis": "text overlay feedback",
-    "face_emotion": "face/expression feedback",
-    "improvements": ["improvement 1", "improvement 2", "improvement 3"]
-  },
-  "thumbnail_b": {
-    "ctr_score": 82,
-    "strengths": ["strength 1", "strength 2", "strength 3"],
-    "weaknesses": ["weakness 1", "weakness 2"],
-    "color_analysis": "color grading feedback",
-    "text_analysis": "text overlay feedback",
-    "face_emotion": "face/expression feedback",
-    "improvements": ["improvement 1", "improvement 2", "improvement 3"]
-  },
-  "general_tips": ["CTR tip 1 for Indian YouTube", "CTR tip 2", "CTR tip 3"]
-}"""
-        raw = _gemini_vision(prompt, [thumb1_bytes, thumb2_bytes])
-    else:
-        prompt = """You are a YouTube thumbnail CTR expert for Indian creators.
-Analyze this thumbnail deeply and return ONLY valid JSON:
-{
-  "ctr_score": 75,
-  "grade": "B+",
-  "strengths": ["strength 1", "strength 2", "strength 3"],
-  "weaknesses": ["weakness 1", "weakness 2"],
-  "color_analysis": "detailed color grading feedback",
-  "text_analysis": "text overlay feedback — size, font, placement",
-  "face_emotion": "face/expression feedback — does it create curiosity?",
-  "background": "background feedback",
-  "improvements": ["specific improvement 1", "specific improvement 2", "specific improvement 3", "improvement 4"],
-  "viral_potential": "medium",
-  "overall": "2 sentence summary of CTR potential for Indian YouTube"
-}"""
-        raw = _gemini_vision(prompt, [thumb1_bytes])
-
-    result = _parse_json(raw)
-    if not result:
-        result = {"error": "Could not analyze thumbnail. Please try again.", "ctr_score": 0}
-    return result
-
-
-# ══════════════════════════════════════════════════════════════════════
-# CATEGORY MAP
-# ══════════════════════════════════════════════════════════════════════
-
-CATEGORY_MAP = {
-    "film & animation": "1", "music": "10", "pets & animals": "15",
-    "sports": "17", "travel": "19", "gaming": "20",
-    "people & blogs": "22", "comedy": "23", "entertainment": "24",
-    "news & politics": "25", "howto & style": "26", "education": "27",
-    "science & technology": "28",
-}
-
-
-def _get_category_id(name: str) -> str:
-    n = name.lower()
-    for k, v in CATEGORY_MAP.items():
-        if k in n:
-            return v
+CATMAP={"film & animation":"1","music":"10","pets & animals":"15","sports":"17","travel":"19","gaming":"20","people & blogs":"22","comedy":"23","entertainment":"24","news & politics":"25","howto & style":"26","education":"27","science & technology":"28"}
+def _catid(n):
+    nl=n.lower()
+    for k,v in CATMAP.items():
+        if k in nl: return v
     return "22"
 
-
-# ══════════════════════════════════════════════════════════════════════
-# UPLOAD WORKER
-# ══════════════════════════════════════════════════════════════════════
-
-def _upload_worker(
-    job_id: str, user_id: str, plan: str,
-    video_bytes: bytes, keyword: str, video_type: str,
-    language: str, privacy: str, schedule_utc: Optional[str],
-    is_short: bool, best_time_info: Optional[dict],
-):
+def _upload_worker(jid,uid,plan,vbytes,kw,vt,lang,priv,sched,isshort,btime):
     try:
-        _update_job(job_id, status="uploading", progress=10, message="Generating AI SEO…")
+        log.info("Worker start job=%s",jid)
+        _ujob(jid,status="uploading",progress=10,message="Generating AI SEO…")
+        seo=gen_seo(kw,vt,lang,"premium" in plan)
+        title=seo.get("title",kw)[:100]
+        desc=seo.get("description","")[:5000]
+        tags=seo.get("tags",[kw])[:30]
+        catid=_catid(seo.get("category","People & Blogs"))
+        score=seo.get("seo_score",75)
 
-        seo         = generate_viral_seo(keyword, video_type, language, _is_premium(plan))
-        title       = seo.get("title", keyword)[:100]
-        description = seo.get("description", "")[:5000]
-        tags        = seo.get("tags", [keyword])[:30]
-        category_id = _get_category_id(seo.get("category", "People & Blogs"))
-        seo_score   = seo.get("seo_score", 75)
-
-        _update_job(job_id, progress=35, message="Connecting to YouTube…")
-
+        _ujob(jid,progress=40,message="Uploading to YouTube…")
+        log.info("Getting credentials for uid=%s", uid)
         import youtube_connect as ytc
         from googleapiclient.http import MediaIoBaseUpload
+        creds=ytc._get_credentials(uid)
+        log.info("Building YouTube client")
+        yt=ytc._build_youtube_client(creds)
+        log.info("YouTube client built OK")
 
-        creds   = ytc._get_credentials(user_id)
-        youtube = ytc._build_youtube_client(creds)
+        if isshort:
+            if "#Shorts" not in title: title=(title[:52]+" #Shorts") if len(title)>52 else title+" #Shorts"
+            desc="#Shorts\n\n"+desc
 
-        _update_job(job_id, progress=50, message="Uploading to YouTube…")
+        body={"snippet":{"title":title,"description":desc,"tags":tags,"categoryId":catid},"status":{"privacyStatus":"private" if sched else priv,"selfDeclaredMadeForKids":False}}
+        if sched: body["status"]["publishAt"]=sched
 
-        if is_short:
-            if "#Shorts" not in title:
-                title = (title[:52] + " #Shorts") if len(title) > 52 else (title + " #Shorts")
-            description = "#Shorts\n\n" + description
+        import socket
+        socket.setdefaulttimeout(300)
+        log.info("Starting video upload size=%d bytes", len(vbytes))
+        media=MediaIoBaseUpload(io.BytesIO(vbytes),mimetype="video/*",chunksize=-1,resumable=False)
+        log.info("Executing YouTube insert")
+        resp=yt.videos().insert(part="snippet,status",body=body,media_body=media).execute()
+        log.info("YouTube insert done resp=%s", str(resp)[:100])
+        vid=resp["id"]
+        url=f"https://youtube.com/shorts/{vid}" if isshort else f"https://youtube.com/watch?v={vid}"
+        log.info("YouTube upload success vid=%s",vid)
 
-        body = {
-            "snippet": {
-                "title": title, "description": description,
-                "tags": tags, "categoryId": category_id,
-            },
-            "status": {
-                "privacyStatus":           "private" if schedule_utc else privacy,
-                "selfDeclaredMadeForKids": False,
-            },
-        }
-        if schedule_utc:
-            body["status"]["publishAt"] = schedule_utc
+        # Quota + prediction - NO external API calls here
+        _uquota(uid,plan)
+        nq=get_upload_status(uid,plan)
+        base=125; mult=1.0+(score-50)/100
+        pred={"views_7_days":int(base*2*mult),"views_30_days":int(base*6*mult),"views_90_days":int(base*15*mult),"new_subscribers":max(5,int(20*mult)),"estimated_ctr":f"{2.5+(score/100)*3:.1f}%","revenue_estimate":f"₹{int(base*15*mult*0.003)} - ₹{int(base*15*mult*0.008)}","viral_probability":"high" if score>=85 else "medium" if score>=65 else "low","growth_tip":"Share on WhatsApp groups and Instagram stories in first 24 hours for max reach."}
 
-        media    = MediaIoBaseUpload(io.BytesIO(video_bytes), mimetype="video/*", chunksize=-1, resumable=False)
-        request  = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
-        response = request.execute()
-
-        _update_job(job_id, progress=85, message="Generating growth prediction…")
-
-        vid_id = response["id"]
-        url    = f"https://youtube.com/shorts/{vid_id}" if is_short else f"https://youtube.com/watch?v={vid_id}"
-
-        # Get channel subs for better prediction
-        channel_subs = 0
-        try:
-            ch_resp = youtube.channels().list(part="statistics", mine=True).execute()
-            channel_subs = int(ch_resp["items"][0]["statistics"].get("subscriberCount", 0))
-        except Exception:
-            pass
-
-        prediction = generate_growth_prediction(keyword, seo_score, channel_subs)
-
-        _use_upload_quota(user_id, plan)
-        new_quota = get_upload_status(user_id, plan)
-
-        _update_job(job_id, status="done", progress=100, message="Upload complete! 🎉",
-                    result={
-                        "success":    True,
-                        "video_id":   vid_id,
-                        "video_url":  url,
-                        "title":      title,
-                        "scheduled":  schedule_utc,
-                        "best_time":  best_time_info,
-                        "quota":      new_quota,
-                        "plan":       plan,
-                        "seo":        seo,
-                        "prediction": prediction,
-                    })
-        log.info("Upload done — job=%s video=%s", job_id, vid_id)
+        result={"success":True,"video_id":vid,"video_url":url,"title":title,"scheduled":sched,"best_time":btime,"quota":nq,"plan":plan,"seo":seo,"prediction":pred}
+        log.info("Setting job done job=%s",jid)
+        _ujob(jid,status="done",progress=100,message="Upload complete!",result=result)
+        log.info("Job marked done job=%s",jid)
 
     except Exception as e:
-        log.error("Upload worker failed — job=%s error=%s", job_id, e)
-        _update_job(job_id, status="error", progress=0, message="Upload failed", error=str(e))
+        tb=traceback.format_exc()
+        log.error("Worker FAILED job=%s error=%s\n%s",jid,e,tb)
+        _ujob(jid,status="error",progress=0,message="Upload failed",error=str(e))
 
+def analyze_thumbnails(t1,t2=None):
+    if t2:
+        p="""Analyze 2 YouTube thumbnails (A=first, B=second) for Indian YouTube.
+Return ONLY valid JSON:
+{"winner":"A","winner_reason":"why","thumbnail_a":{"ctr_score":75,"strengths":["s1","s2","s3"],"weaknesses":["w1","w2"],"color_analysis":"colors","text_analysis":"text","face_emotion":"face","improvements":["i1","i2","i3"]},"thumbnail_b":{"ctr_score":82,"strengths":["s1","s2","s3"],"weaknesses":["w1","w2"],"color_analysis":"colors","text_analysis":"text","face_emotion":"face","improvements":["i1","i2","i3"]},"general_tips":["t1","t2","t3"]}"""
+        raw=_gemini_vision(p,[t1,t2])
+    else:
+        p="""Analyze this YouTube thumbnail for Indian YouTube CTR.
+Return ONLY valid JSON:
+{"ctr_score":75,"grade":"B+","strengths":["s1","s2","s3"],"weaknesses":["w1","w2"],"color_analysis":"colors","text_analysis":"text","face_emotion":"face","background":"bg","improvements":["i1","i2","i3","i4"],"viral_potential":"medium","overall":"2 sentence summary"}"""
+        raw=_gemini_vision(p,[t1])
+    r=_pj(raw)
+    log.info("Thumbnail result: %s", str(r)[:200])
+    return r if r else {"error":"Analysis failed. Try again.","ctr_score":0}
 
-# ══════════════════════════════════════════════════════════════════════
-# ROUTES
-# ══════════════════════════════════════════════════════════════════════
-
+# ── Routes ────────────────────────────────────────────────────────────
 @router.get("/quota")
-async def upload_quota_status(user_id: str):
-    plan = _get_user_plan(user_id)
-    return get_upload_status(user_id, plan)
-
+async def rquota(user_id:str): return get_upload_status(user_id,_gplan(user_id))
 
 @router.get("/best-time")
-async def best_time():
-    return get_best_upload_time()
-
+async def rbt(): return get_best_upload_time()
 
 @router.get("/job/{job_id}")
-async def get_job_status(job_id: str):
-    job = get_job(job_id)
-    if not job:
-        raise HTTPException(404, "Job not found")
-    return job
-
+async def rjob(job_id:str):
+    j=_gjob(job_id)
+    if not j: raise HTTPException(404,"Job not found")
+    return j
 
 @router.post("/seo")
-async def generate_seo_only(
-    user_id:    str = Form(...),
-    keyword:    str = Form(...),
-    video_type: str = Form(default="video"),
-    language:   str = Form(default="Hindi/English"),
-):
-    plan = _get_user_plan(user_id)
-    if not _is_pro_or_above(plan):
-        raise HTTPException(403, "SEO generation requires Pro or Premium plan")
-    seo = generate_viral_seo(keyword, video_type, language, _is_premium(plan))
-    return {"seo": seo, "plan": plan}
-
+async def rseo(user_id:str=Form(...),keyword:str=Form(...),video_type:str=Form(default="video"),language:str=Form(default="Hindi/English")):
+    plan=_gplan(user_id)
+    if plan=="free": raise HTTPException(403,"Requires Pro plan")
+    return {"seo":gen_seo(keyword,video_type,language,"premium" in plan),"plan":plan}
 
 @router.post("/thumbnail")
-async def analyze_thumbnail(
-    user_id:    str                  = Form(...),
-    thumbnail1: UploadFile           = File(...),
-    thumbnail2: Optional[UploadFile] = File(default=None),
-):
-    plan = _get_user_plan(user_id)
-    if not _is_pro_or_above(plan):
-        raise HTTPException(403, "Thumbnail analysis requires Pro or Premium plan")
-    thumb1_bytes = await thumbnail1.read()
-    thumb2_bytes = (await thumbnail2.read()) if thumbnail2 else None
-    result = analyze_thumbnails(thumb1_bytes, thumb2_bytes)
-    return {"analysis": result, "plan": plan, "mode": "compare" if thumb2_bytes else "single"}
-
+async def rthumb(user_id:str=Form(...),thumbnail1:UploadFile=File(...),thumbnail2:Optional[UploadFile]=File(default=None)):
+    plan=_gplan(user_id)
+    if plan=="free": raise HTTPException(403,"Requires Pro plan")
+    t1=await thumbnail1.read()
+    t2=None
+    if thumbnail2 is not None:
+        t2=await thumbnail2.read()
+        if len(t2)==0: t2=None
+    log.info("Thumbnail analyze: t1=%d bytes, t2=%s bytes", len(t1), len(t2) if t2 else "none")
+    r=analyze_thumbnails(t1,t2)
+    return {"analysis":r,"plan":plan,"mode":"compare" if t2 else "single"}
 
 @router.post("/auto")
-async def auto_upload(
-    user_id:       str        = Form(...),
-    keyword:       str        = Form(...),
-    video_type:    str        = Form(default="video"),
-    schedule_type: str        = Form(default="now"),
-    custom_time:   str        = Form(default=""),
-    privacy:       str        = Form(default="public"),
-    language:      str        = Form(default="Hindi/English"),
-    video:         UploadFile = File(...),
-):
-    plan = _get_user_plan(user_id)
-    if not _is_pro_or_above(plan):
-        raise HTTPException(403, detail={"error": "upgrade_required", "message": "Auto-upload requires Pro (₹499/mo) or Premium (₹2999/mo)"})
-
-    quota = get_upload_status(user_id, plan)
-    if not quota["can_upload"]:
-        raise HTTPException(429, detail={"error": "quota_exceeded", "message": f"Monthly upload limit reached ({quota['limit']}/month). Resets {quota['reset_date'][:10]}", "remaining": 0, "reset_date": quota["reset_date"]})
-
-    video_bytes = await video.read()
-    if len(video_bytes) > 256 * 1024 * 1024:
-        raise HTTPException(413, "Video too large. Max 256 MB.")
-
-    is_short = video_type.lower() == "short"
-
-    schedule_utc   = None
-    best_time_info = None
-    if schedule_type == "best":
-        best_time_info = get_best_upload_time()
-        schedule_utc   = best_time_info["utc_iso"]
-    elif schedule_type == "custom" and custom_time:
+async def rauto(user_id:str=Form(...),keyword:str=Form(...),video_type:str=Form(default="video"),schedule_type:str=Form(default="now"),custom_time:str=Form(default=""),privacy:str=Form(default="public"),language:str=Form(default="Hindi/English"),video:UploadFile=File(...)):
+    plan=_gplan(user_id)
+    if plan=="free": raise HTTPException(403,detail={"error":"upgrade_required","message":"Requires Pro or Premium"})
+    q=get_upload_status(user_id,plan)
+    if not q["can_upload"]: raise HTTPException(429,detail={"error":"quota_exceeded","message":"Monthly limit reached"})
+    vb=await video.read()
+    if len(vb)>256*1024*1024: raise HTTPException(413,"Max 256 MB")
+    isshort=video_type.lower()=="short"
+    su=bt=None
+    if schedule_type=="best": bt=get_best_upload_time(); su=bt["utc_iso"]
+    elif schedule_type=="custom" and custom_time:
         try:
-            dt = datetime.fromisoformat(custom_time)
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone(timedelta(hours=5, minutes=30)))
-            schedule_utc = dt.astimezone(timezone.utc).isoformat()
-        except Exception:
-            raise HTTPException(400, "Invalid custom_time format")
-
-    job_id = _new_job(user_id)
-    threading.Thread(
-        target=_upload_worker,
-        kwargs=dict(
-            job_id=job_id, user_id=user_id, plan=plan,
-            video_bytes=video_bytes, keyword=keyword,
-            video_type=video_type, language=language,
-            privacy=privacy, schedule_utc=schedule_utc,
-            is_short=is_short, best_time_info=best_time_info,
-        ),
-        daemon=True,
-    ).start()
-
-    return {"job_id": job_id, "status": "queued", "message": "Upload started! AI SEO generating…", "quota": quota, "plan": plan}
+            dt=datetime.fromisoformat(custom_time)
+            if dt.tzinfo is None: dt=dt.replace(tzinfo=timezone(timedelta(hours=5,minutes=30)))
+            su=dt.astimezone(timezone.utc).isoformat()
+        except: raise HTTPException(400,"Invalid time format")
+    jid=_new_job(user_id)
+    threading.Thread(target=_upload_worker,daemon=True,kwargs=dict(jid=jid,uid=user_id,plan=plan,vbytes=vb,kw=keyword,vt=video_type,lang=language,priv=privacy,sched=su,isshort=isshort,btime=bt)).start()
+    return {"job_id":jid,"status":"queued","message":"Upload started!","quota":q,"plan":plan}

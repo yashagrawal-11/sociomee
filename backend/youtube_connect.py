@@ -134,15 +134,28 @@ def _get_credentials(user_id: str):
         scopes        = record.get("scopes", YT_SCOPES),
     )
 
-    # Auto-refresh if expired
+    # Auto-refresh if expired - with timeout
     if creds.expired and creds.refresh_token:
         try:
-            creds.refresh(Request())
-            record["access_token"] = creds.token
-            record["token_expiry"] = creds.expiry.isoformat() if creds.expiry else ""
-            data[user_id] = record
-            _save(data)
-            log.info("YouTube token refreshed for user=%s", user_id)
+            import threading, requests
+            result = [None]
+            def _refresh():
+                try:
+                    creds.refresh(Request())
+                    result[0] = "ok"
+                except Exception as e:
+                    result[0] = str(e)
+            t = threading.Thread(target=_refresh, daemon=True)
+            t.start()
+            t.join(timeout=20)
+            if result[0] == "ok":
+                record["access_token"] = creds.token
+                record["token_expiry"] = creds.expiry.isoformat() if creds.expiry else ""
+                data[user_id] = record
+                _save(data)
+                log.info("YouTube token refreshed for user=%s", user_id)
+            else:
+                log.warning("YouTube token refresh failed or timed out: %s", result[0])
         except Exception as e:
             log.warning("YouTube token refresh failed for user=%s: %s", user_id, e)
 
