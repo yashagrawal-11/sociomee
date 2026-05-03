@@ -1,20 +1,20 @@
 """
-youtube_upload.py — SocioMee YouTube Auto-Upload (No-SEO Fast Version)
-=======================================================================
-Plans:
-  - Free          : upload blocked
-  - Pro           : 4 uploads/month reset monthly
-  - Premium       : 15 uploads/month reset monthly
+youtube_upload.py — SocioMee YouTube Auto-Upload (Async Job System)
+====================================================================
+Flow:
+  POST /auto      → validates, reads video, starts background thread → returns job_id instantly
+  GET  /job/{id}  → frontend polls this every 3s → returns status/progress/result
 
-SEO generation removed temporarily — upload works first, SEO added later.
-Upload quota tracked in data/upload_quota.json
+This means ANY video size works — browser never times out.
 """
 
 from __future__ import annotations
 
+import io
 import json
 import logging
 import threading
+import uuid
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Dict, Optional
@@ -27,16 +27,51 @@ router = APIRouter(prefix="/youtube/upload", tags=["youtube-upload"])
 
 # ── Upload quota per plan per month ───────────────────────────────────
 UPLOAD_QUOTA: Dict[str, int] = {
-    "free":              0,
-    "pro_monthly":       4,
-    "pro_annual":        4,
-    "premium_monthly":   15,
-    "premium_annual":    15,
+    "free":            0,
+    "pro_monthly":     4,
+    "pro_annual":      4,
+    "premium_monthly": 15,
+    "premium_annual":  15,
 }
 
 QUOTA_FILE = Path(__file__).parent / "data" / "upload_quota.json"
 QUOTA_FILE.parent.mkdir(exist_ok=True)
 _lock = threading.Lock()
+
+# ── In-memory job store ───────────────────────────────────────────────
+_jobs: Dict[str, dict] = {}
+_jobs_lock = threading.Lock()
+
+
+# ══════════════════════════════════════════════════════════════════════
+# JOB HELPERS
+# ══════════════════════════════════════════════════════════════════════
+
+def _new_job(user_id: str) -> str:
+    job_id = str(uuid.uuid4())
+    with _jobs_lock:
+        _jobs[job_id] = {
+            "job_id":     job_id,
+            "user_id":    user_id,
+            "status":     "queued",
+            "progress":   0,
+            "message":    "Queued…",
+            "result":     None,
+            "error":      None,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+    return job_id
+
+
+def _update_job(job_id: str, **kwargs):
+    with _jobs_lock:
+        if job_id in _jobs:
+            _jobs[job_id].update(kwargs)
+
+
+def get_job(job_id: str) -> Optional[dict]:
+    with _jobs_lock:
+        return _jobs.get(job_id)
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -163,50 +198,34 @@ def get_best_upload_time() -> dict:
 
 
 # ══════════════════════════════════════════════════════════════════════
-# CATEGORY MAP
+# UPLOAD WORKER — runs in background thread
 # ══════════════════════════════════════════════════════════════════════
 
-CATEGORY_MAP = {
-    "film & animation": "1",   "music": "10",        "pets & animals": "15",
-    "sports": "17",            "travel": "19",        "gaming": "20",
-    "people & blogs": "22",    "comedy": "23",        "entertainment": "24",
-    "news & politics": "25",   "howto & style": "26", "education": "27",
-    "science & technology": "28",
-}
-
-
-def _get_category_id(name: str) -> str:
-    n = name.lower()
-    for k, v in CATEGORY_MAP.items():
-        if k in n:
-            return v
-    return "22"
-
-
-# ══════════════════════════════════════════════════════════════════════
-# YOUTUBE UPLOAD  — simple, no chunking, no resumable
-# ══════════════════════════════════════════════════════════════════════
-
-def _upload_to_youtube(
-    user_id:      str,
-    video_bytes:  bytes,
-    title:        str,
-    description:  str,
-    tags:         list,
-    category_id:  str,
-    privacy:      str,
-    schedule_utc: Optional[str],
-    is_short:     bool,
-) -> dict:
+def _upload_worker(
+    job_id:         str,
+    user_id:        str,
+    plan:           str,
+    video_bytes:    bytes,
+    title:          str,
+    description:    str,
+    tags:           list,
+    category_id:    str,
+    privacy:        str,
+    schedule_utc:   Optional[str],
+    is_short:       bool,
+    best_time_info: Optional[dict],
+):
     try:
-        import io
+        _update_job(job_id, status="uploading", progress=10, message="Connecting to YouTube…")
+
         import youtube_connect as ytc
         from googleapiclient.http import MediaIoBaseUpload
 
         creds   = ytc._get_credentials(user_id)
         youtube = ytc._build_youtube_client(creds)
 
-        # Shorts formatting
+        _update_job(job_id, progress=25, message="Preparing video…")
+
         if is_short:
             if "#Shorts" not in title:
                 title = (title[:52] + " #Shorts") if len(title) > 52 else (title + " #Shorts")
@@ -220,37 +239,49 @@ def _upload_to_youtube(
                 "categoryId":  category_id,
             },
             "status": {
-                "privacyStatus":          "private" if schedule_utc else privacy,
+                "privacyStatus":           "private" if schedule_utc else privacy,
                 "selfDeclaredMadeForKids": False,
             },
         }
         if schedule_utc:
             body["status"]["publishAt"] = schedule_utc
 
-        # ── KEY FIX: chunksize=-1 (single request), resumable=False ──
-        media = MediaIoBaseUpload(
+        _update_job(job_id, progress=40, message="Uploading to YouTube…")
+
+        media   = MediaIoBaseUpload(
             io.BytesIO(video_bytes),
             mimetype="video/*",
             chunksize=-1,
             resumable=False,
         )
-
         request  = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
-        response = request.execute()   # single blocking call, no chunked loop
+        response = request.execute()
 
         vid_id = response["id"]
         url    = f"https://youtube.com/shorts/{vid_id}" if is_short else f"https://youtube.com/watch?v={vid_id}"
-        return {
+
+        _update_job(job_id, progress=90, message="Finalising…")
+
+        _use_upload_quota(user_id, plan)
+        new_quota = get_upload_status(user_id, plan)
+
+        result = {
             "success":   True,
             "video_id":  vid_id,
             "video_url": url,
             "title":     title,
             "scheduled": schedule_utc,
+            "best_time": best_time_info,
+            "quota":     new_quota,
+            "plan":      plan,
         }
 
+        _update_job(job_id, status="done", progress=100, message="Upload complete!", result=result)
+        log.info("Upload done — job=%s video=%s", job_id, vid_id)
+
     except Exception as e:
-        log.error("YouTube upload failed: %s", e)
-        raise HTTPException(500, f"Upload failed: {str(e)}")
+        log.error("Upload worker failed — job=%s error=%s", job_id, e)
+        _update_job(job_id, status="error", progress=0, message="Upload failed", error=str(e))
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -259,15 +290,22 @@ def _upload_to_youtube(
 
 @router.get("/quota")
 async def upload_quota_status(user_id: str):
-    """Get upload quota for user."""
     plan = _get_user_plan(user_id)
     return get_upload_status(user_id, plan)
 
 
 @router.get("/best-time")
 async def best_time():
-    """Get next best upload time slot."""
     return get_best_upload_time()
+
+
+@router.get("/job/{job_id}")
+async def get_job_status(job_id: str):
+    """Frontend polls this every 3 seconds."""
+    job = get_job(job_id)
+    if not job:
+        raise HTTPException(404, "Job not found")
+    return job
 
 
 @router.post("/auto")
@@ -282,9 +320,7 @@ async def auto_upload(
     video:         UploadFile = File(...),
 ):
     """
-    Auto-upload to YouTube.
-    Steps: plan check → quota check → read video → upload → deduct quota
-    SEO generation skipped for now (will be added back once upload is stable).
+    Reads video, validates, starts background upload, returns job_id INSTANTLY.
     """
     # 1. Plan check
     plan = _get_user_plan(user_id)
@@ -309,15 +345,13 @@ async def auto_upload(
     if len(video_bytes) > 256 * 1024 * 1024:
         raise HTTPException(413, "Video too large. Max 256 MB.")
 
-    is_short = video_type.lower() == "short"
-
-    # 4. Basic title/description from topic (no AI, instant)
+    is_short    = video_type.lower() == "short"
     title       = topic[:100]
     description = f"{topic}\n\nPosted via SocioMee — AI Content Platform for Indian Creators\nsociomee.in"
     tags        = [w for w in topic.split() if len(w) > 2][:10]
-    category_id = "22"  # People & Blogs default
+    category_id = "22"
 
-    # 5. Schedule
+    # 4. Schedule
     schedule_utc   = None
     best_time_info = None
     if schedule_type == "best":
@@ -325,7 +359,6 @@ async def auto_upload(
         schedule_utc   = best_time_info["utc_iso"]
     elif schedule_type == "custom" and custom_time:
         try:
-            from datetime import datetime
             dt = datetime.fromisoformat(custom_time)
             if dt.tzinfo is None:
                 dt = dt.replace(tzinfo=timezone(timedelta(hours=5, minutes=30)))
@@ -333,20 +366,19 @@ async def auto_upload(
         except Exception:
             raise HTTPException(400, "Invalid custom_time. Use ISO format e.g. 2026-04-28T20:00:00")
 
-    # 6. Upload
-    result = _upload_to_youtube(
-        user_id, video_bytes, title, description,
-        tags, category_id, privacy, schedule_utc, is_short
-    )
+    # 5. Create job + fire background thread
+    job_id = _new_job(user_id)
+    threading.Thread(
+        target=_upload_worker,
+        kwargs=dict(
+            job_id=job_id, user_id=user_id, plan=plan,
+            video_bytes=video_bytes, title=title, description=description,
+            tags=tags, category_id=category_id, privacy=privacy,
+            schedule_utc=schedule_utc, is_short=is_short,
+            best_time_info=best_time_info,
+        ),
+        daemon=True,
+    ).start()
 
-    # 7. Deduct quota
-    _use_upload_quota(user_id, plan)
-    new_quota = get_upload_status(user_id, plan)
-
-    return {
-        **result,
-        "seo":       None,
-        "best_time": best_time_info,
-        "quota":     new_quota,
-        "plan":      plan,
-    }
+    # 6. Return instantly
+    return {"job_id": job_id, "status": "queued", "message": "Upload started!", "quota": quota, "plan": plan}
