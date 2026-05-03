@@ -119,7 +119,7 @@ function GrowthPrediction({ prediction }) {
           { label:"New Subscribers", value:`+${prediction.new_subscribers}`, col:C.success },
           { label:"Est. Revenue", value:prediction.revenue_estimate, col:C.warn },
           { label:"Expected CTR", value:prediction.estimated_ctr, col:C.teal },
-          { label:"Watch Time", value:`${prediction.watch_time_hours}h`, col:C.purple },
+          { label:"Watch Time", value:`${prediction.watch_time_hours ?? 0}h`, col:C.purple },
         ].map((s,i) => (
           <div key={i} style={{ background:C.glass, borderRadius:"10px", padding:"8px 10px", border:`1px solid ${C.hairline}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <span style={{ fontSize:"10px", color:C.muted }}>{s.label}</span>
