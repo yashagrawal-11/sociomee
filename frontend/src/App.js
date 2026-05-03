@@ -1060,7 +1060,7 @@ export default function App() {
                 <label style={{ fontSize:"10.5px",fontWeight:"800",letterSpacing:"1.2px",textTransform:"uppercase",color:C.muted,marginBottom:"9px",display:"block" }}>Platform</label>
                 <div style={{ display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"7px" }}>
                   {PLATFORMS.map(p => (
-                    <button key={p.id} onClick={()=>setPlatform(p.id)} style={{ padding:"9px 4px",borderRadius:"10px",border:`1.5px solid ${platform===p.id?p.color:C.hairline}`,background:platform===p.id?p.color+"16":C.pillBg,color:platform===p.id?p.color:C.muted,fontWeight:"700",fontSize:"11px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s",display:"flex",flexDirection:"column",alignItems:"center",gap:"4px" }}>
+                    <button key={p.id} onClick={()=>setPlatform(p.id)} style={{ padding:"9px 4px",borderRadius:"10px",border:`1.5px solid ${platform===p.id?p.color:p.color+"55"}`,background:platform===p.id?p.color+"16":p.color+"08",boxShadow:platform===p.id?`0 0 12px ${p.color}66`:`0 0 6px ${p.color}33`,color:platform===p.id?p.color:C.muted,fontWeight:"700",fontSize:"11px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s",display:"flex",flexDirection:"column",alignItems:"center",gap:"4px" }}>
                       <img src={p.img} alt={p.label} style={{ width:"22px",height:"22px",objectFit:"contain",filter:platform===p.id?"none":"grayscale(40%) opacity(0.7)",transition:"all 0.15s" }} onError={e=>{ e.target.style.display="none"; e.target.nextSibling.style.display="block"; }}/>
                       <span style={{ display:"none",fontSize:"14px" }}>{p.label.charAt(0)}</span>
                       <span style={{ fontSize:"10px" }}>{p.label}</span>
