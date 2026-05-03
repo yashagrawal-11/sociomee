@@ -1,16 +1,9 @@
 """
 youtube_upload.py — SocioMee YouTube Auto-Upload + AI SEO + Thumbnail Analyzer
-===============================================================================
-Features:
-  - POST /auto            → async upload with AI SEO from keyword
-  - GET  /job/{id}        → poll upload progress
-  - POST /seo             → generate viral SEO from keyword only (no upload)
-  - POST /thumbnail       → compare 2 thumbnails, give CTR advice
 """
 
 from __future__ import annotations
 
-import base64
 import io
 import json
 import logging
@@ -193,11 +186,10 @@ def get_best_upload_time() -> dict:
 
 
 # ══════════════════════════════════════════════════════════════════════
-# GEMINI AI — SEO + THUMBNAIL
+# GEMINI AI
 # ══════════════════════════════════════════════════════════════════════
 
 def _gemini_text(prompt: str, max_tokens: int = 2048) -> str:
-    """Call Gemini 1.5 Flash for text generation."""
     try:
         import google.generativeai as genai
         api_key = os.getenv("GOOGLE_AI_API_KEY", "")
@@ -216,7 +208,6 @@ def _gemini_text(prompt: str, max_tokens: int = 2048) -> str:
 
 
 def _gemini_vision(prompt: str, images: List[bytes]) -> str:
-    """Call Gemini 1.5 Flash with image(s) for vision tasks."""
     try:
         import google.generativeai as genai
         api_key = os.getenv("GOOGLE_AI_API_KEY", "")
@@ -224,12 +215,10 @@ def _gemini_vision(prompt: str, images: List[bytes]) -> str:
             raise ValueError("GOOGLE_AI_API_KEY not set")
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel("gemini-1.5-flash")
-
         parts = []
         for img_bytes in images:
             parts.append({"mime_type": "image/jpeg", "data": img_bytes})
         parts.append(prompt)
-
         resp = model.generate_content(parts)
         return resp.text.strip()
     except Exception as e:
@@ -238,7 +227,6 @@ def _gemini_vision(prompt: str, images: List[bytes]) -> str:
 
 
 def _parse_json(raw: str) -> dict:
-    """Safely extract JSON from Gemini response."""
     try:
         match = re.search(r'\{[\s\S]*\}', raw)
         if match:
@@ -249,58 +237,171 @@ def _parse_json(raw: str) -> dict:
 
 
 # ══════════════════════════════════════════════════════════════════════
+# DESCRIPTION TEMPLATE
+# ══════════════════════════════════════════════════════════════════════
+
+def _build_description(title: str, about: str, keyword: str, queries: List[str], hashtags: List[str]) -> str:
+    queries_text = "\n".join(queries) if queries else f"{keyword}\n{keyword} tips\n{keyword} tutorial"
+    hashtags_text = " ".join(hashtags[:3]) if hashtags else f"#{keyword.replace(' ','')} #india #youtube"
+
+    return f"""{title}
+
+{about}
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+📌 CHAPTERS
+━━━━━━━━━━━━━━━━━━━━━━━━
+00:00 Intro
+00:30 Main Content
+02:00 Key Points
+04:00 Conclusion
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+🔗 CONNECT WITH ME
+━━━━━━━━━━━━━━━━━━━━━━━━
+Instagram:
+Facebook:
+Twitter / X:
+Telegram:
+WhatsApp Channel:
+Snapchat:
+Pinterest:
+LinkedIn:
+Website:
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+❓ YOUR QUERIES
+━━━━━━━━━━━━━━━━━━━━━━━━
+{queries_text}
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+{hashtags_text}
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+{about}
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ COPYRIGHT DISCLAIMER
+━━━━━━━━━━━━━━━━━━━━━━━━
+Copyright Disclaimer under Section 107 of the copyright act 1976, allowance is made for fair use for purposes such as criticism, comment, news reporting, scholarship, and research. Fair use is a use permitted by copyright statute that might otherwise be infringing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+🤖 Uploaded & Optimized by SocioMee AI
+India's #1 AI Content Platform for Creators
+👉 sociomee.in
+━━━━━━━━━━━━━━━━━━━━━━━━"""
+
+
+# ══════════════════════════════════════════════════════════════════════
 # AI SEO GENERATION
 # ══════════════════════════════════════════════════════════════════════
 
 def generate_viral_seo(keyword: str, video_type: str = "video", language: str = "Hindi/English", is_premium: bool = False) -> dict:
-    """Generate full viral YouTube SEO from a single keyword using Gemini."""
-
     extra = ""
     if is_premium:
-        extra = """
-  "hook": "exact first 15 seconds script to hook viewers instantly",
-  "thumbnail_idea": "specific thumbnail concept: background color, text overlay, emotion/expression",
+        extra = """,
+  "hook": "exact first 15 seconds script to hook viewers",
+  "thumbnail_idea": "specific thumbnail concept with colors, text, expression",
   "best_title_alternatives": ["alt title 1", "alt title 2", "alt title 3"],
-  "upload_tip": "one specific tip to maximize this video's reach","""
+  "upload_tip": "one specific tip to maximize this video's reach"
+"""
 
-    prompt = f"""You are India's #1 YouTube SEO expert who has helped 500+ Indian creators go viral.
+    prompt = f"""You are India's #1 YouTube SEO expert. A creator wants to make a YouTube {video_type} about: "{keyword}"
+Target: Indian viewers | Language: {language}
 
-A creator wants to make a YouTube {video_type} about: "{keyword}"
-Target audience: Indian viewers
-Language: {language} (Hinglish mix works great)
-
-Generate VIRAL-OPTIMIZED YouTube SEO metadata. Think like MrBeast meets Indian YouTube.
+Generate VIRAL-OPTIMIZED YouTube SEO. Think MrBeast meets Indian YouTube.
 
 Rules:
-- Title must create CURIOSITY or SHOCK — use numbers, power words, emotional triggers
-- Description must have keywords naturally, timestamps, and strong CTA
-- Tags must mix Hindi/English keywords Indians actually search
-- Use trending Indian YouTube patterns
+- Title: curiosity + shock + numbers/power words, under 60 chars
+- About: 3-4 sentences describing the video value naturally with keywords
+- Queries: exactly 10 search queries Indians type to find this content (one per line)
+- Tags: 20 mix of Hindi+English keywords
+- Hashtags: exactly 3 most relevant
 
-Return ONLY valid JSON, no markdown, no explanation:
+Return ONLY valid JSON, no markdown:
 {{
-  "title": "viral title under 60 chars with emotional hook",
-  "description": "200 word description with keywords, [00:00 Intro] [00:30 Main] timestamps, subscribe CTA at end",
+  "title": "viral title under 60 chars",
+  "about": "3-4 sentence engaging description of what viewers will learn/get from this video",
+  "queries": ["query 1", "query 2", "query 3", "query 4", "query 5", "query 6", "query 7", "query 8", "query 9", "query 10"],
   "tags": ["tag1","tag2","tag3","tag4","tag5","tag6","tag7","tag8","tag9","tag10","tag11","tag12","tag13","tag14","tag15","tag16","tag17","tag18","tag19","tag20"],
+  "hashtags": ["#hashtag1","#hashtag2","#hashtag3"],
   "category": "Education",
-  "hashtags": ["#hashtag1","#hashtag2","#hashtag3","#hashtag4","#hashtag5"],
   "seo_score": 92,
-  "why_viral": "one sentence explaining why this will trend"{extra}
+  "why_viral": "one sentence why this will trend"{extra}
 }}"""
 
     raw    = _gemini_text(prompt, max_tokens=2000)
     result = _parse_json(raw)
 
     if not result.get("title"):
-        # Fallback if Gemini fails
         result = {
-            "title":       f"{keyword} | Must Watch 2025",
-            "description": f"{keyword}\n\nWatch this video about {keyword}. Like, share and subscribe!\n\n[00:00 Intro]\n[00:30 Main Content]\n\n#shorts #india #youtube",
-            "tags":        [keyword, "india", "youtube", "viral", "trending", "2025"],
-            "category":    "People & Blogs",
-            "hashtags":    [f"#{keyword.replace(' ','')}", "#india", "#youtube", "#trending", "#viral"],
-            "seo_score":   60,
-            "why_viral":   "Trending topic for Indian audience",
+            "title":    f"{keyword} | Must Watch 2025",
+            "about":    f"In this video, we explore everything about {keyword}. This is a must-watch for anyone interested in {keyword}. Watch till the end for the best tips and tricks!",
+            "queries":  [f"{keyword}", f"{keyword} tips", f"{keyword} tutorial", f"how to {keyword}", f"best {keyword}", f"{keyword} 2025", f"{keyword} in hindi", f"{keyword} guide", f"learn {keyword}", f"{keyword} for beginners"],
+            "tags":     [keyword, "india", "youtube", "viral", "trending", "2025", "hindi", "tips", "tutorial", "guide"],
+            "hashtags": [f"#{keyword.replace(' ','')}", "#india", "#youtube"],
+            "category": "People & Blogs",
+            "seo_score": 60,
+            "why_viral": "Trending topic for Indian audience",
+        }
+
+    # Build full description
+    result["description"] = _build_description(
+        title    = result.get("title", keyword),
+        about    = result.get("about", ""),
+        keyword  = keyword,
+        queries  = result.get("queries", []),
+        hashtags = result.get("hashtags", []),
+    )
+
+    return result
+
+
+# ══════════════════════════════════════════════════════════════════════
+# AI GROWTH PREDICTION
+# ══════════════════════════════════════════════════════════════════════
+
+def generate_growth_prediction(keyword: str, seo_score: int, channel_subs: int = 0) -> dict:
+    prompt = f"""You are a YouTube analytics expert for Indian creators.
+
+A creator just uploaded a video about: "{keyword}"
+Their channel has approximately {channel_subs} subscribers.
+The AI SEO score for this video is: {seo_score}/100
+
+Predict realistic growth for this video for Indian YouTube audience.
+
+Return ONLY valid JSON:
+{{
+  "views_7_days": 1200,
+  "views_30_days": 5000,
+  "views_90_days": 15000,
+  "new_subscribers": 45,
+  "estimated_ctr": "4.2%",
+  "watch_time_hours": 180,
+  "revenue_estimate": "₹150 - ₹400",
+  "viral_probability": "medium",
+  "peak_day": "Day 3-5",
+  "growth_tip": "one specific actionable tip to maximize this video's performance",
+  "competition_level": "low/medium/high"
+}}"""
+
+    raw    = _gemini_text(prompt, max_tokens=500)
+    result = _parse_json(raw)
+
+    if not result.get("views_7_days"):
+        base = max(100, channel_subs // 10)
+        result = {
+            "views_7_days":     base * 2,
+            "views_30_days":    base * 6,
+            "views_90_days":    base * 15,
+            "new_subscribers":  max(5, channel_subs // 50),
+            "estimated_ctr":    "3.5%",
+            "watch_time_hours": base // 2,
+            "revenue_estimate": "₹50 - ₹200",
+            "viral_probability": "medium",
+            "peak_day":         "Day 2-4",
+            "growth_tip":       "Share in WhatsApp groups and Instagram stories in first 24 hours for maximum reach.",
+            "competition_level": "medium",
         }
 
     return result
@@ -311,61 +412,54 @@ Return ONLY valid JSON, no markdown, no explanation:
 # ══════════════════════════════════════════════════════════════════════
 
 def analyze_thumbnails(thumb1_bytes: bytes, thumb2_bytes: Optional[bytes] = None) -> dict:
-    """Analyze 1 or 2 thumbnails and give CTR optimization advice."""
-
     if thumb2_bytes:
-        prompt = """You are a YouTube thumbnail expert who analyzes CTR optimization.
-I'm showing you 2 YouTube thumbnails (Thumbnail A and Thumbnail B).
-
-Analyze both deeply and return ONLY valid JSON:
+        prompt = """You are a YouTube thumbnail CTR expert for Indian creators.
+Analyze both thumbnails (A and B) and return ONLY valid JSON:
 {
-  "winner": "A or B",
-  "winner_reason": "one clear sentence why this wins",
+  "winner": "A",
+  "winner_reason": "clear one sentence why this wins",
   "thumbnail_a": {
     "ctr_score": 75,
     "strengths": ["strength 1", "strength 2", "strength 3"],
     "weaknesses": ["weakness 1", "weakness 2"],
-    "color_analysis": "brief color grading feedback",
-    "text_analysis": "feedback on text overlay if any",
-    "face_emotion": "feedback on face/expression if visible",
-    "improvements": ["specific improvement 1", "specific improvement 2", "specific improvement 3"]
+    "color_analysis": "color grading feedback",
+    "text_analysis": "text overlay feedback",
+    "face_emotion": "face/expression feedback",
+    "improvements": ["improvement 1", "improvement 2", "improvement 3"]
   },
   "thumbnail_b": {
     "ctr_score": 82,
     "strengths": ["strength 1", "strength 2", "strength 3"],
     "weaknesses": ["weakness 1", "weakness 2"],
-    "color_analysis": "brief color grading feedback",
-    "text_analysis": "feedback on text overlay if any",
-    "face_emotion": "feedback on face/expression if visible",
-    "improvements": ["specific improvement 1", "specific improvement 2", "specific improvement 3"]
+    "color_analysis": "color grading feedback",
+    "text_analysis": "text overlay feedback",
+    "face_emotion": "face/expression feedback",
+    "improvements": ["improvement 1", "improvement 2", "improvement 3"]
   },
   "general_tips": ["CTR tip 1 for Indian YouTube", "CTR tip 2", "CTR tip 3"]
 }"""
         raw = _gemini_vision(prompt, [thumb1_bytes, thumb2_bytes])
     else:
-        prompt = """You are a YouTube thumbnail expert who analyzes CTR optimization.
-Analyze this YouTube thumbnail deeply.
-
-Return ONLY valid JSON:
+        prompt = """You are a YouTube thumbnail CTR expert for Indian creators.
+Analyze this thumbnail deeply and return ONLY valid JSON:
 {
   "ctr_score": 75,
   "grade": "B+",
   "strengths": ["strength 1", "strength 2", "strength 3"],
   "weaknesses": ["weakness 1", "weakness 2"],
-  "color_analysis": "detailed color grading feedback — what works, what to change",
-  "text_analysis": "feedback on text overlay — size, font, placement, readability",
-  "face_emotion": "feedback on face/expression — does it create curiosity?",
-  "background": "feedback on background — too busy, too plain, good contrast?",
-  "improvements": ["very specific improvement 1", "very specific improvement 2", "very specific improvement 3", "specific improvement 4"],
-  "viral_potential": "low/medium/high",
-  "overall": "2 sentence summary of this thumbnail's CTR potential for Indian YouTube audience"
+  "color_analysis": "detailed color grading feedback",
+  "text_analysis": "text overlay feedback — size, font, placement",
+  "face_emotion": "face/expression feedback — does it create curiosity?",
+  "background": "background feedback",
+  "improvements": ["specific improvement 1", "specific improvement 2", "specific improvement 3", "improvement 4"],
+  "viral_potential": "medium",
+  "overall": "2 sentence summary of CTR potential for Indian YouTube"
 }"""
         raw = _gemini_vision(prompt, [thumb1_bytes])
 
     result = _parse_json(raw)
     if not result:
         result = {"error": "Could not analyze thumbnail. Please try again.", "ctr_score": 0}
-
     return result
 
 
@@ -403,12 +497,12 @@ def _upload_worker(
     try:
         _update_job(job_id, status="uploading", progress=10, message="Generating AI SEO…")
 
-        # Generate SEO with Gemini
         seo         = generate_viral_seo(keyword, video_type, language, _is_premium(plan))
         title       = seo.get("title", keyword)[:100]
-        description = seo.get("description", keyword)[:5000]
+        description = seo.get("description", "")[:5000]
         tags        = seo.get("tags", [keyword])[:30]
         category_id = _get_category_id(seo.get("category", "People & Blogs"))
+        seo_score   = seo.get("seo_score", 75)
 
         _update_job(job_id, progress=35, message="Connecting to YouTube…")
 
@@ -431,7 +525,7 @@ def _upload_worker(
                 "tags": tags, "categoryId": category_id,
             },
             "status": {
-                "privacyStatus": "private" if schedule_utc else privacy,
+                "privacyStatus":           "private" if schedule_utc else privacy,
                 "selfDeclaredMadeForKids": False,
             },
         }
@@ -442,20 +536,36 @@ def _upload_worker(
         request  = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
         response = request.execute()
 
-        _update_job(job_id, progress=90, message="Finalising…")
+        _update_job(job_id, progress=85, message="Generating growth prediction…")
 
-        vid_id    = response["id"]
-        url       = f"https://youtube.com/shorts/{vid_id}" if is_short else f"https://youtube.com/watch?v={vid_id}"
+        vid_id = response["id"]
+        url    = f"https://youtube.com/shorts/{vid_id}" if is_short else f"https://youtube.com/watch?v={vid_id}"
+
+        # Get channel subs for better prediction
+        channel_subs = 0
+        try:
+            ch_resp = youtube.channels().list(part="statistics", mine=True).execute()
+            channel_subs = int(ch_resp["items"][0]["statistics"].get("subscriberCount", 0))
+        except Exception:
+            pass
+
+        prediction = generate_growth_prediction(keyword, seo_score, channel_subs)
 
         _use_upload_quota(user_id, plan)
         new_quota = get_upload_status(user_id, plan)
 
         _update_job(job_id, status="done", progress=100, message="Upload complete! 🎉",
                     result={
-                        "success": True, "video_id": vid_id, "video_url": url,
-                        "title": title, "scheduled": schedule_utc,
-                        "best_time": best_time_info, "quota": new_quota,
-                        "plan": plan, "seo": seo,
+                        "success":    True,
+                        "video_id":   vid_id,
+                        "video_url":  url,
+                        "title":      title,
+                        "scheduled":  schedule_utc,
+                        "best_time":  best_time_info,
+                        "quota":      new_quota,
+                        "plan":       plan,
+                        "seo":        seo,
+                        "prediction": prediction,
                     })
         log.info("Upload done — job=%s video=%s", job_id, vid_id)
 
@@ -494,7 +604,6 @@ async def generate_seo_only(
     video_type: str = Form(default="video"),
     language:   str = Form(default="Hindi/English"),
 ):
-    """Generate viral SEO from keyword only — no upload needed."""
     plan = _get_user_plan(user_id)
     if not _is_pro_or_above(plan):
         raise HTTPException(403, "SEO generation requires Pro or Premium plan")
@@ -504,18 +613,15 @@ async def generate_seo_only(
 
 @router.post("/thumbnail")
 async def analyze_thumbnail(
-    user_id:    str                    = Form(...),
-    thumbnail1: UploadFile             = File(...),
-    thumbnail2: Optional[UploadFile]   = File(default=None),
+    user_id:    str                  = Form(...),
+    thumbnail1: UploadFile           = File(...),
+    thumbnail2: Optional[UploadFile] = File(default=None),
 ):
-    """Analyze 1 or 2 thumbnails for CTR optimization."""
     plan = _get_user_plan(user_id)
     if not _is_pro_or_above(plan):
         raise HTTPException(403, "Thumbnail analysis requires Pro or Premium plan")
-
     thumb1_bytes = await thumbnail1.read()
     thumb2_bytes = (await thumbnail2.read()) if thumbnail2 else None
-
     result = analyze_thumbnails(thumb1_bytes, thumb2_bytes)
     return {"analysis": result, "plan": plan, "mode": "compare" if thumb2_bytes else "single"}
 
@@ -531,7 +637,6 @@ async def auto_upload(
     language:      str        = Form(default="Hindi/English"),
     video:         UploadFile = File(...),
 ):
-    """Upload video with AI-generated viral SEO. Returns job_id instantly."""
     plan = _get_user_plan(user_id)
     if not _is_pro_or_above(plan):
         raise HTTPException(403, detail={"error": "upgrade_required", "message": "Auto-upload requires Pro (₹499/mo) or Premium (₹2999/mo)"})
@@ -573,4 +678,4 @@ async def auto_upload(
         daemon=True,
     ).start()
 
-    return {"job_id": job_id, "status": "queued", "message": "Upload started! AI SEO being generated…", "quota": quota, "plan": plan}
+    return {"job_id": job_id, "status": "queued", "message": "Upload started! AI SEO generating…", "quota": quota, "plan": plan}
