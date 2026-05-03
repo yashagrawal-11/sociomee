@@ -4,6 +4,7 @@ import YouTubeDashboard from "./YouTubeDashboard";
 import ThreadsDashboard from "./ThreadsDashboard";
 import InstagramDashboard from "./InstagramDashboard";
 import PinterestDashboard from "./PinterestDashboard";
+import LinkedInDashboard from "./LinkedInDashboard";
 
 // ══════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -69,7 +70,7 @@ const PLATFORMS = [
   {id:"linkedin",  label:"LinkedIn",  img:"/icons/linkedin.png",  color:"#0077b5"},
   {id:"reddit",    label:"Reddit",    img:"/icons/reddit.png",    color:"#ff4500"},
   {id:"facebook",  label:"Facebook",  img:"/icons/facebook.png",  color:"#1877f2"},
-  {id:"threads",   label:"Threads",   img:"/icons/threads.png",   color:"#000000"},
+  {id:"threads",   label:"Threads",   img:"/icons/threads.png",   color:"#ffffff"},
   {id:"pinterest", label:"Pinterest", img:"/icons/pinterest.png", color:"#e60023"},
   {id:"telegram",  label:"Telegram",  img:"/icons/telegram.png",  color:"#2aabee"},
 ];
@@ -1003,6 +1004,12 @@ export default function App() {
                 Pin
               </button>
 
+              {/* LinkedIn tab */}
+              <button onClick={() => toggleTab("linkedin")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="linkedin"?"#0077b5":C.hairline}`,background:activeTab==="linkedin"?"rgba(0,119,181,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="linkedin"?"#0077b5":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
+                <img src="/icons/linkedin.png" alt="LI" style={{width:12,height:12,objectFit:"contain"}} />
+                LI
+              </button>
+
               {!isPro && <button onClick={()=>openPricing("upgrade")} style={{ padding:"5px 10px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:C.white,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit" }}>✦ Pro</button>}
               <button onClick={logout} style={{ padding:"5px 10px",borderRadius:"99px",border:`1px solid ${C.hairline}`,background:"rgba(255,255,255,0.7)",color:C.muted,fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit" }}>Out</button>
             </div>
@@ -1037,6 +1044,13 @@ export default function App() {
         {activeTab === "pinterest" && isLoggedIn && (
           <Card style={{ marginBottom:"20px" }}>
             <PinterestDashboard user={user} topic={keyword} />
+          </Card>
+        )}
+
+        {/* ── LinkedIn Tab ── */}
+        {activeTab === "linkedin" && isLoggedIn && (
+          <Card style={{ marginBottom:"20px" }}>
+            <LinkedInDashboard user={user} topic={keyword} />
           </Card>
         )}
 
