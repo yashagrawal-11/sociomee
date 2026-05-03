@@ -66,8 +66,8 @@ const PERSONAS = [
 const PLATFORMS = [
   {id:"youtube",   label:"YouTube",   img:"/icons/youtube.png",   color:"#ff0000"},
   {id:"instagram", label:"Instagram", img:"/icons/instagram.png", color:"#e1306c"},
-  {id:"tiktok",    label:"TikTok",    img:"/icons/tiktok.png",    color:"#010101"},
-  {id:"x",         label:"X",         img:"/icons/x.png",         color:"#000000"},
+  {id:"linkedin",  label:"LinkedIn",  img:"/icons/linkedin.png",  color:"#0077b5"},
+  {id:"reddit",    label:"Reddit",    img:"/icons/reddit.png",    color:"#ff4500"},
   {id:"facebook",  label:"Facebook",  img:"/icons/facebook.png",  color:"#1877f2"},
   {id:"threads",   label:"Threads",   img:"/icons/threads.png",   color:"#000000"},
   {id:"pinterest", label:"Pinterest", img:"/icons/pinterest.png", color:"#e60023"},
