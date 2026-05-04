@@ -352,13 +352,17 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
           )}
 
           {/* Coupon code */}
-          <div style={{ background:`${C.purple}08`,border:`1.5px solid ${C.purple}22`,borderRadius:"14px",padding:"16px",marginBottom:"16px" }}>
-            <p style={{ fontSize:"11px",fontWeight:"800",color:C.purple,marginBottom:"10px",textTransform:"uppercase",letterSpacing:"1px" }}>🎟️ Have a Promo Code?</p>
-            <div style={{ display:"flex",gap:"8px" }}>
-              <input value={coupon} onChange={e => setCoupon(e.target.value.toUpperCase())} onKeyDown={e => e.key==="Enter" && applyCoupon()} placeholder="Enter code e.g. SOCIO10" style={{ flex:1,padding:"10px 14px",borderRadius:"10px",border:`1.5px solid ${C.hairline}`,background:C.glass,color:C.ink,fontSize:"13px",fontFamily:"inherit",outline:"none",letterSpacing:"1px",fontWeight:"700" }} />
-              <button onClick={applyCoupon} style={{ padding:"10px 18px",borderRadius:"10px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>Apply</button>
-            </div>
-            {couponMsg && <p style={{ fontSize:"12px",fontWeight:"700",color:couponMsg.startsWith("✅")?C.success:C.danger,marginTop:"8px" }}>{couponMsg}</p>}
+          <div style={{ marginBottom:"16px" }}>
+            <button onClick={() => setShowCoupon(s => !s)} style={{ background:"none",border:"none",color:C.purple,fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",padding:"4px 0",textDecoration:"underline" }}>🎟️ Have a promo code?</button>
+            {showCoupon && (
+              <div style={{ background:`${C.purple}08`,border:`1.5px solid ${C.purple}22`,borderRadius:"14px",padding:"16px",marginTop:"10px" }}>
+                <div style={{ display:"flex",gap:"8px" }}>
+                  <input value={coupon} onChange={e => setCoupon(e.target.value.toUpperCase())} onKeyDown={e => e.key==="Enter" && applyCoupon()} placeholder="Enter code e.g. SOCIO10" style={{ flex:1,padding:"10px 14px",borderRadius:"10px",border:`1.5px solid ${C.hairline}`,background:C.glass,color:C.ink,fontSize:"13px",fontFamily:"inherit",outline:"none",letterSpacing:"1px",fontWeight:"700" }} />
+                  <button onClick={applyCoupon} style={{ padding:"10px 18px",borderRadius:"10px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>Apply</button>
+                </div>
+                {couponMsg && <p style={{ fontSize:"12px",fontWeight:"700",color:couponMsg.startsWith("✅")?C.success:C.danger,marginTop:"8px" }}>{couponMsg}</p>}
+              </div>
+            )}
           </div>
 
           <p style={{ textAlign:"center",fontSize:"11px",color:C.muted }}>🔒 Secured by Razorpay · UPI, Cards, NetBanking · Instant activation</p>
@@ -1117,7 +1121,7 @@ export default function App() {
                 <p style={{ fontSize:"10.5px",color:C.muted }}>{user.email}</p>
               </div>
             </div>
-            <div style={{ display:"flex",gap:"6px",alignItems:"center",flexWrap:"wrap" }}>
+            <div style={{ display:"flex",gap:"4px",alignItems:"center",flexWrap:"wrap",justifyContent:"flex-end",maxWidth:"55vw" }}>
 
               {/* YouTube tab */}
               <button onClick={() => toggleTab("youtube")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="youtube"?"#ff0000":C.hairline}`,background:activeTab==="youtube"?"#ff000012":"rgba(255,255,255,0.7)",color:activeTab==="youtube"?"#ff0000":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
