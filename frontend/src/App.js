@@ -153,6 +153,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
   const [coupon,    setCoupon   ] = useState("");
   const [couponMsg, setCouponMsg] = useState("");
   const [discount,  setDiscount ] = useState(null);
+  const [showCoupon, setShowCoupon] = useState(false);
   const [billing,   setBilling  ] = useState("annual"); // default annual
 
   const COUPONS = {
