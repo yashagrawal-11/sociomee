@@ -226,7 +226,17 @@ function TopVideos({ videos }) {
 function FestivalCalendar() {
   C = getThemeC();
   const [selected, setSelected] = useState(null);
-  const festivals = getUpcomingFestivals();
+  const [festivals, setFestivals] = useState([]);
+  const [festLoading, setFestLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${BASE}/festivals/upcoming`)
+      .then(r => r.json())
+      .then(d => { setFestivals(d); setFestLoading(false); })
+      .catch(() => setFestLoading(false));
+  }, []);
+
+  if (festLoading) return <div style={{ textAlign:"center", padding:"40px", color:C.muted }}>Loading festivals…</div>;
 
   const urgencyColor = (days) => {
     if (days <= 0) return C.success;
