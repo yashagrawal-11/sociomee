@@ -5,6 +5,7 @@ import ThreadsDashboard from "./ThreadsDashboard";
 import InstagramDashboard from "./InstagramDashboard";
 import PinterestDashboard from "./PinterestDashboard";
 import LinkedInDashboard from "./LinkedInDashboard";
+import RedditDashboard from "./RedditDashboard";
 
 // ══════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -1198,6 +1199,13 @@ export default function App() {
         {activeTab === "pinterest" && isLoggedIn && (
           <Card style={{ marginBottom:"20px" }}>
             <PinterestDashboard user={user} topic={keyword} />
+          </Card>
+        )}
+
+        {/* ── Reddit Tab ── */}
+        {activeTab === "reddit" && isLoggedIn && (
+          <Card style={{ marginBottom:"20px" }}>
+            <RedditDashboard user={user} topic={keyword} />
           </Card>
         )}
 
