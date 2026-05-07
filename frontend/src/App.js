@@ -1159,6 +1159,12 @@ export default function App() {
                 Pin
               </button>
 
+              {/* Reddit tab */}
+              <button onClick={() => toggleTab("reddit")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="reddit"?"#ff4500":C.hairline}`,background:activeTab==="reddit"?"rgba(255,69,0,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="reddit"?"#ff4500":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
+                <img src="/icons/reddit.png" alt="Re" style={{width:12,height:12,objectFit:"contain"}} />
+                Re
+              </button>
+
               {/* LinkedIn tab */}
               <button onClick={() => toggleTab("linkedin")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="linkedin"?"#0077b5":C.hairline}`,background:activeTab==="linkedin"?"rgba(0,119,181,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="linkedin"?"#0077b5":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
                 <img src="/icons/linkedin.png" alt="LI" style={{width:12,height:12,objectFit:"contain"}} />
