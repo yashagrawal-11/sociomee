@@ -6,6 +6,7 @@ import InstagramDashboard from "./InstagramDashboard";
 import PinterestDashboard from "./PinterestDashboard";
 import LinkedInDashboard from "./LinkedInDashboard";
 import RedditDashboard from "./RedditDashboard";
+import HistoryPanel from "./HistoryPanel";
 
 // ══════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -1171,6 +1172,11 @@ export default function App() {
                 LI
               </button>
 
+              {/* History tab */}
+              <button onClick={() => toggleTab("history")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="history"?"#7c3aed":C.hairline}`,background:activeTab==="history"?"rgba(124,58,237,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="history"?"#7c3aed":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s" }}>
+                📋
+              </button>
+
               {!isPro && <button onClick={()=>openPricing("upgrade")} style={{ padding:"5px 10px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:C.white,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit" }}>✦ Pro</button>}
               <button onClick={logout} style={{ padding:"5px 10px",borderRadius:"99px",border:`1px solid ${C.hairline}`,background:"rgba(255,255,255,0.7)",color:C.muted,fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit" }}>Out</button>
             </div>
@@ -1219,6 +1225,13 @@ export default function App() {
         {activeTab === "linkedin" && isLoggedIn && (
           <Card style={{ marginBottom:"20px" }}>
             <LinkedInDashboard user={user} topic={keyword} />
+          </Card>
+        )}
+
+        {/* ── History Tab ── */}
+        {activeTab === "history" && isLoggedIn && (
+          <Card style={{ marginBottom:"20px" }}>
+            <HistoryPanel user={user} onReuse={(topic, platform) => { setKeyword(topic); setPlatform(platform); setActiveTab("generate"); }} />
           </Card>
         )}
 
