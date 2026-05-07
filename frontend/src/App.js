@@ -1114,7 +1114,7 @@ export default function App() {
       <div style={{ position:"fixed",top:"-160px",right:"-120px",width:"520px",height:"520px",borderRadius:"50%",background:C.blobA,pointerEvents:"none",zIndex:0,animation:"floatA 11s ease-in-out infinite",transition:"background 0.3s" }}/>
       <div style={{ position:"fixed",bottom:"-80px",left:"-80px",width:"420px",height:"420px",borderRadius:"50%",background:C.blobB,pointerEvents:"none",zIndex:0,animation:"floatB 13s ease-in-out infinite",transition:"background 0.3s" }}/>
 
-      <div style={{ width:"100%",maxWidth:"580px",position:"relative",zIndex:1 }}>
+      <div style={{ width:"100%",maxWidth:"1200px",position:"relative",zIndex:1 }}>
 
         {/* Brand */}
         <div style={{ marginBottom:"28px" }}>
