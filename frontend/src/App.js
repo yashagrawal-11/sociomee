@@ -1059,11 +1059,6 @@ export default function App() {
       .catch(() => {});
   }, [user]);
 
-  useEffect(() => {
-    const p = PERSONAS.find(p => p.id === personality);
-    if (p) setLanguage(p.lang);
-  }, [personality]);
-
   const openPricing = (mode="upgrade") => { setPricingMode(mode); setShowPricing(true); };
 
   const handlePaymentSuccess = res => {
@@ -1290,10 +1285,11 @@ export default function App() {
                 </div>
               </div>
 
-              <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"18px" }}>
+              <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"12px",marginBottom:"18px" }}>
                 {[
-                  { label:"Persona", value:personality, onChange:setPersonality, options:PERSONAS.map(p=>({ value:p.id,label:`${p.flag} ${p.label}` })) },
-                  { label:"Format",  value:formatType,  onChange:setFormatType,  options:[{ value:"long",label:"Long Form" },{ value:"short",label:"Short Form" }] },
+                  { label:"Persona",  value:personality, onChange:setPersonality, options:PERSONAS.map(p=>({ value:p.id,label:`${p.flag} ${p.label}` })) },
+                  { label:"Language", value:language,    onChange:setLanguage,    options:[{ value:"english",label:"🌍 English" },{ value:"hinglish",label:"🇮🇳 Hinglish" },{ value:"hindi",label:"हिंदी" },{ value:"marathi",label:"मराठी" },{ value:"tamil",label:"தமிழ்" }]},
+                  { label:"Format",   value:formatType,  onChange:setFormatType,  options:[{ value:"long",label:"Long Form" },{ value:"short",label:"Short Form" }] },
                 ].map(({ label,value,onChange,options }) => (
                   <div key={label}>
                     <label style={{ fontSize:"10.5px",fontWeight:"800",letterSpacing:"1.2px",textTransform:"uppercase",color:C.muted,marginBottom:"7px",display:"block" }}>{label}</label>
@@ -1303,7 +1299,6 @@ export default function App() {
                   </div>
                 ))}
               </div>
-
               {selPersona && (
                 <div style={{ display:"flex",alignItems:"center",gap:"8px",marginBottom:"16px",fontSize:"11.5px",color:C.muted,background:"rgba(124,58,237,0.06)",borderRadius:"8px",padding:"7px 12px" }}>
                   <span>{selPersona.flag}</span>
