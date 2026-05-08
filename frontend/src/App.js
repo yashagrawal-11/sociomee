@@ -83,6 +83,9 @@ const TONES = [
   {id:"emotional",emoji:"💖",color:"#ff3d8f"},
   {id:"informative",emoji:"📚",color:"#7c3aed"},
   {id:"aggressive",emoji:"⚡",color:"#6d28d9"},
+  {id:"sales",emoji:"💸",color:"#10b981"},
+  {id:"dramatic",emoji:"🎭",color:"#dc2626"},
+  {id:"casual",emoji:"😎",color:"#0891b2"},
 ];
 
 // ══════════════════════════════════════════════════════════════════════
