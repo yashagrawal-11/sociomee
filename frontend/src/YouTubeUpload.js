@@ -175,12 +175,107 @@ function VideoCard({ item, index, onUpdate, onRemove, bestTime, plan }) {
           </div>
 
           {/* SEO preview if generated */}
-          {item.seoGenerated && item.seo && (
-            <div style={{ background:`${C.purple}08`, border:`1px solid ${C.purple}22`, borderRadius:"10px", padding:"10px 12px", marginBottom:"8px" }}>
-              <div style={{ fontSize:"12px", fontWeight:"700", color:C.ink, marginBottom:"4px" }}>{item.seo.title}</div>
-              <div style={{ fontSize:"10px", color:C.muted }}>{item.seo.tags?.slice(0,5).join(", ")}</div>
-            </div>
-          )}
+{item.seoGenerated && item.seo && (
+  <div style={{ background:`${C.purple}08`, border:`1.5px solid ${C.purple}33`, borderRadius:"12px", padding:"14px", marginBottom:"8px" }}>
+    
+    {/* Score + Why viral */}
+    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"10px" }}>
+      <span style={{ fontSize:"10px", fontWeight:"900", color:C.purple, textTransform:"uppercase", letterSpacing:"1px" }}>🤖 AI SEO Pack</span>
+      {item.seo.seo_score && <SEOScore score={item.seo.seo_score} />}
+    </div>
+
+    {item.seo.why_viral && (
+      <div style={{ background:`${C.success}10`, border:`1px solid ${C.success}25`, borderRadius:"8px", padding:"8px 10px", marginBottom:"10px", fontSize:"11px", color:C.ink, fontStyle:"italic" }}>
+        💡 {item.seo.why_viral}
+      </div>
+    )}
+
+    {/* Title */}
+    <div style={{ marginBottom:"10px" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"3px" }}>
+        <span style={{ fontSize:"9px", fontWeight:"800", color:C.muted, textTransform:"uppercase", letterSpacing:"1px" }}>🎯 Viral Title</span>
+        <button onClick={() => navigator.clipboard.writeText(item.seo.title)} style={{ fontSize:"9px", padding:"1px 7px", borderRadius:"5px", border:`1px solid ${C.hairline}`, background:"transparent", color:C.muted, cursor:"pointer", fontFamily:"inherit" }}>Copy</button>
+      </div>
+      <div style={{ fontSize:"13px", fontWeight:"800", color:C.ink, lineHeight:1.4 }}>{item.seo.title}</div>
+      {item.seo.best_title_alternatives?.length > 0 && (
+        <div style={{ marginTop:"6px" }}>
+          {item.seo.best_title_alternatives.map((t,i) => (
+            <div key={i} style={{ fontSize:"11px", color:C.slate, padding:"2px 0", borderBottom:`1px solid ${C.hairline}` }}>→ {t}</div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    {/* Hook */}
+    {item.seo.hook && (
+      <div style={{ background:`${C.rose}10`, border:`1px solid ${C.rose}25`, borderRadius:"8px", padding:"8px 10px", marginBottom:"10px" }}>
+        <div style={{ fontSize:"9px", fontWeight:"800", color:C.rose, marginBottom:"3px", textTransform:"uppercase" }}>🎬 Opening Hook (first 15 sec)</div>
+        <div style={{ fontSize:"11.5px", color:C.ink, fontStyle:"italic" }}>"{item.seo.hook}"</div>
+      </div>
+    )}
+
+    {/* Thumbnail idea */}
+    {item.seo.thumbnail_idea && (
+      <div style={{ background:`${C.warn}10`, border:`1px solid ${C.warn}25`, borderRadius:"8px", padding:"8px 10px", marginBottom:"10px" }}>
+        <div style={{ fontSize:"9px", fontWeight:"800", color:C.warn, marginBottom:"3px", textTransform:"uppercase" }}>🖼️ Thumbnail Idea</div>
+        <div style={{ fontSize:"11.5px", color:C.ink }}>{item.seo.thumbnail_idea}</div>
+      </div>
+    )}
+
+    {/* Description */}
+    <div style={{ marginBottom:"10px" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"3px" }}>
+        <span style={{ fontSize:"9px", fontWeight:"800", color:C.muted, textTransform:"uppercase", letterSpacing:"1px" }}>📝 Full Description</span>
+        <button onClick={() => navigator.clipboard.writeText(item.seo.description)} style={{ fontSize:"9px", padding:"1px 7px", borderRadius:"5px", border:`1px solid ${C.hairline}`, background:"transparent", color:C.muted, cursor:"pointer", fontFamily:"inherit" }}>Copy</button>
+      </div>
+      <div style={{ fontSize:"10.5px", color:C.slate, lineHeight:1.6, maxHeight:"70px", overflow:"hidden", position:"relative", whiteSpace:"pre-wrap", background:C.glass, borderRadius:"6px", padding:"6px 8px" }}>
+        {item.seo.description}
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"24px", background:`linear-gradient(transparent,${C.glass})` }} />
+      </div>
+    </div>
+
+    {/* Tags */}
+    <div style={{ marginBottom:"10px" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"5px" }}>
+        <span style={{ fontSize:"9px", fontWeight:"800", color:C.muted, textTransform:"uppercase", letterSpacing:"1px" }}>🏷️ Tags ({item.seo.tags?.length})</span>
+        <button onClick={() => navigator.clipboard.writeText(item.seo.tags?.join(", "))} style={{ fontSize:"9px", padding:"1px 7px", borderRadius:"5px", border:`1px solid ${C.hairline}`, background:"transparent", color:C.muted, cursor:"pointer", fontFamily:"inherit" }}>Copy All</button>
+      </div>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:"3px" }}>
+        {(item.seo.tags||[]).map((tag,i) => (
+          <span key={i} style={{ padding:"2px 7px", borderRadius:"99px", background:`${C.purple}15`, color:C.purple, fontSize:"10px", fontWeight:"600" }}>{tag}</span>
+        ))}
+      </div>
+    </div>
+
+    {/* Hashtags */}
+    {item.seo.hashtags?.length > 0 && (
+      <div style={{ marginBottom:"10px" }}>
+        <span style={{ fontSize:"9px", fontWeight:"800", color:C.muted, textTransform:"uppercase", letterSpacing:"1px", display:"block", marginBottom:"4px" }}>🔖 Hashtags</span>
+        <div style={{ fontSize:"12px", color:C.teal, fontWeight:"700" }}>{item.seo.hashtags.join(" ")}</div>
+      </div>
+    )}
+
+    {/* Search queries */}
+    {item.seo.queries?.length > 0 && (
+      <div style={{ marginBottom:"10px" }}>
+        <span style={{ fontSize:"9px", fontWeight:"800", color:C.muted, textTransform:"uppercase", letterSpacing:"1px", display:"block", marginBottom:"5px" }}>🔍 Search Queries People Use</span>
+        <div style={{ display:"flex", flexWrap:"wrap", gap:"3px" }}>
+          {item.seo.queries.map((q,i) => (
+            <span key={i} style={{ padding:"2px 7px", borderRadius:"99px", background:`${C.teal}12`, color:C.teal, fontSize:"10px", fontWeight:"600" }}>{q}</span>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {/* Category */}
+    {item.seo.category && (
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <span style={{ fontSize:"9px", fontWeight:"800", color:C.muted, textTransform:"uppercase" }}>📂 Category</span>
+        <span style={{ fontSize:"11px", fontWeight:"700", color:C.ink }}>{item.seo.category}</span>
+      </div>
+    )}
+  </div>
+)}
 
           {/* Type + Language row */}
           <div style={{ display:"flex", gap:"6px", marginBottom:"8px" }}>
