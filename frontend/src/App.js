@@ -7,6 +7,7 @@ import PinterestDashboard from "./PinterestDashboard";
 import LinkedInDashboard from "./LinkedInDashboard";
 import RedditDashboard from "./RedditDashboard";
 import HistoryPanel from "./HistoryPanel";
+import TelegramScheduler from "./TelegramScheduler";
 
 // ══════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -1193,6 +1194,11 @@ export default function App() {
                 LI
               </button>
 
+              {/* Telegram Scheduler tab */}
+              <button onClick={() => toggleTab("tgschedule")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="tgschedule"?"#2aabee":C.hairline}`,background:activeTab==="tgschedule"?"rgba(42,171,238,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="tgschedule"?"#2aabee":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s" }}>
+                ✈️
+              </button>
+
               {/* History tab */}
               <button onClick={() => toggleTab("history")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="history"?"#7c3aed":C.hairline}`,background:activeTab==="history"?"rgba(124,58,237,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="history"?"#7c3aed":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s" }}>
                 📋
@@ -1246,6 +1252,13 @@ export default function App() {
         {activeTab === "linkedin" && isLoggedIn && (
           <Card style={{ marginBottom:"20px" }}>
             <LinkedInDashboard user={user} topic={keyword} />
+          </Card>
+        )}
+
+        {/* ── Telegram Scheduler Tab ── */}
+        {activeTab === "tgschedule" && isLoggedIn && (
+          <Card style={{ marginBottom:"20px" }}>
+            <TelegramScheduler user={user} />
           </Card>
         )}
 
