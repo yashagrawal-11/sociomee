@@ -1293,119 +1293,64 @@ export default function App() {
       </button>
 
       {/* SIDEBAR */}
-      <div id="app-sidebar" className={sidebarOpen?"open":""} style={{ width:"220px", flexShrink:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderRight:"1px solid rgba(124,58,237,0.12)", display:"flex", flexDirection:"column", position:"fixed", top:0, left:0, height:"100dvh", zIndex:99, padding:"20px 10px 0 10px", overflowY:"hidden", transition:"transform 0.3s ease", boxShadow:"none" }}>
+      <div id="app-sidebar" className={sidebarOpen?"open":""} style={{ width:"220px",flexShrink:0,background:"rgba(6,4,15,0.97)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderRight:"1px solid rgba(124,58,237,0.1)",display:"flex",flexDirection:"column",position:"fixed",top:0,left:0,height:"100dvh",zIndex:99,overflowY:"auto",overflowX:"hidden",scrollbarWidth:"none",msOverflowStyle:"none",transition:"transform 0.3s ease" }}>
 
-        <div style={{ padding:"0 4px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)", marginBottom:"8px", flexShrink:0 }}>
-          <div style={{ fontSize:"20px", fontWeight:"900", fontFamily:"'Orbitron',sans-serif", color:"#fff", letterSpacing:"2px" }}>SOCIOMEE</div>
+        {/* Logo */}
+        <div style={{padding:"20px 16px 16px",borderBottom:"1px solid rgba(255,255,255,0.05)",flexShrink:0}}>
+          <div style={{fontSize:"18px",fontWeight:"900",fontFamily:"'Orbitron',sans-serif",color:"#fff",letterSpacing:"2px"}}>SOCIOMEE</div>
         </div>
 
+        {/* Profile */}
         {isLoggedIn && (
-          <button onClick={()=>setProfilePanelOpen(p=>!p)} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"10px 12px", borderRadius:"10px", border:"none", background:profilePanelOpen?"rgba(124,58,237,0.12)":"transparent", cursor:"pointer", fontFamily:"inherit", width:"100%", textAlign:"left", marginBottom:"8px", flexShrink:0, transition:"all 0.15s" }}
-            onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}
-            onMouseLeave={e=>e.currentTarget.style.background=profilePanelOpen?"rgba(124,58,237,0.12)":"transparent"}>
+          <button onClick={()=>setProfilePanelOpen(p=>!p)} style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 16px",border:"none",background:profilePanelOpen?"rgba(124,58,237,0.1)":"transparent",cursor:"pointer",fontFamily:"inherit",width:"100%",textAlign:"left",flexShrink:0,transition:"all 0.15s",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
             {user?.picture
-              ? <img src={user.picture} alt="" referrerPolicy="no-referrer" style={{ width:"32px", height:"32px", borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
-              : <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", fontWeight:"800", color:"#fff", flexShrink:0 }}>{(user?.email||"U")[0].toUpperCase()}</div>
+              ? <img src={user.picture} alt="" referrerPolicy="no-referrer" style={{width:"34px",height:"34px",borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
+              : <div style={{width:"34px",height:"34px",borderRadius:"50%",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"13px",fontWeight:"800",color:"#fff",flexShrink:0}}>{(user?.email||"U")[0].toUpperCase()}</div>
             }
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontSize:"12px", fontWeight:"700", color:"#fff", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{user?.name||user?.email?.split("@")[0]||"User"}</div>
-              <div style={{ fontSize:"10px", color:"#a78bfa", fontWeight:"600" }}>✦ {creditStatus?.plan_label||"Free"}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:"12px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{user?.name||user?.email?.split("@")[0]||"User"}</div>
+              <div style={{fontSize:"10px",color:"#a78bfa",fontWeight:"600"}}>✦ {creditStatus?.plan_label||"Free"}</div>
             </div>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" style={{ transform:profilePanelOpen?"rotate(180deg)":"rotate(0deg)", transition:"transform 0.2s", flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" style={{transform:profilePanelOpen?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
         )}
 
-        {profilePanelOpen && (
-          <div onClick={()=>setProfilePanelOpen(false)} style={{ position:"fixed",inset:0,zIndex:198 }}/>
-        )}
-        <div style={{ position:"fixed",bottom:0,left:0,width:"220px",zIndex:199,overflow:"hidden",background:"rgba(10,8,20,0.98)",backdropFilter:"blur(24px)",border:"1px solid rgba(124,58,237,0.25)",borderBottom:"none",borderRadius:"16px 16px 0 0",padding:"20px 16px 28px",scrollbarWidth:"none",msOverflowStyle:"none",transform:profilePanelOpen?"translateY(0)":"translateY(100%)",transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)",boxShadow:"none" }}>
-          <div style={{ width:"36px",height:"4px",borderRadius:"99px",background:"rgba(255,255,255,0.15)",margin:"0 auto 20px" }}/>
-          <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"16px" }}>
-            <div style={{ display:"flex",alignItems:"center",gap:"8px" }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              <span style={{ fontSize:"12px",fontWeight:"700",color:"rgba(255,255,255,0.8)" }}>Plans</span>
-            </div>
-            <span style={{ fontSize:"11px",fontWeight:"800",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>✦ {creditStatus?.plan_label||"Free"}</span>
-          </div>
-          <div style={{ marginBottom:"16px" }}>
-            <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px" }}>
-              <span style={{ fontSize:"11px",fontWeight:"600",color:"rgba(255,255,255,0.4)" }}>Usage</span>
-              <span style={{ fontSize:"11px",fontWeight:"700",color:"#a78bfa" }}>{creditStatus?.credits_remaining||0} / {creditStatus?.monthly_limit||20}</span>
-            </div>
-            <div style={{ height:"5px",borderRadius:"99px",background:"rgba(255,255,255,0.08)" }}>
-              <div style={{ height:"100%",borderRadius:"99px",background:"linear-gradient(90deg,#7c3aed,#ff3d8f)",width:`${Math.min(100,((creditStatus?.credits_remaining||0)/(creditStatus?.monthly_limit||20))*100)}%`,transition:"width 0.3s" }}/>
-            </div>
-            {creditStatus?.next_reset && <div style={{ fontSize:"10px",color:"rgba(255,255,255,0.25)",marginTop:"5px" }}>Resets {new Date(creditStatus.next_reset).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}</div>}
-          </div>
-          <div style={{ height:"1px",background:"rgba(255,255,255,0.07)",marginBottom:"14px" }}/>
-          <button onClick={()=>{setChannelSettingsOpen(true);setProfilePanelOpen(false);}}
-            style={{ display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.75)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"10px",transition:"all 0.15s" }}
-            onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.12)"}
-            onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.04)"}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-            Channel Settings
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" style={{marginLeft:"auto"}}><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"10px",background:"rgba(255,255,255,0.03)" }}>
-            <div style={{ display:"flex",alignItems:"center",gap:"8px",color:"rgba(255,255,255,0.6)",fontSize:"12px",fontWeight:"600" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              Language
-            </div>
-            <button onClick={()=>setLangMenuOpen(l=>!l)} style={{ background:"rgba(124,58,237,0.12)",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"6px",padding:"4px 8px",color:"#a78bfa",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit" }}>
-              {LANGS.find(l=>l.code===UI_LANG)?.label||"English"}
-            </button>
-          </div>
-          {langMenuOpen && (
-            <div style={{ background:"rgba(8,6,18,0.98)",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"10px",padding:"6px",marginTop:"6px",boxShadow:"0 8px 32px rgba(0,0,0,0.8)" }}>
-              {LANGS.map(({code,label})=>{ const isActive=UI_LANG===code; return (
-                <button key={code} onClick={()=>{ localStorage.setItem("sociomee_lang",code); window.location.reload(); }}
-                  style={{ display:"flex",alignItems:"center",gap:"8px",width:"100%",padding:"8px 10px",borderRadius:"8px",border:"none",background:isActive?"rgba(124,58,237,0.15)":"transparent",color:isActive?"#a78bfa":"rgba(255,255,255,0.7)",fontSize:"12px",fontWeight:isActive?"700":"500",cursor:"pointer",fontFamily:"inherit",textAlign:"left" }}
-                  onMouseEnter={e=>{ if(!isActive) e.currentTarget.style.background="rgba(255,255,255,0.06)"; }}
-                  onMouseLeave={e=>{ if(!isActive) e.currentTarget.style.background="transparent"; }}>
-                  <span>{label}</span>
-                  {isActive&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="3" style={{marginLeft:"auto"}}><polyline points="20 6 9 17 4 12"/></svg>}
-                </button>
-              );})}
-            </div>
-          )}
-        </div>
+        {/* Nav */}
+        <nav style={{flex:1,display:"flex",flexDirection:"column",padding:"8px 8px",gap:"1px",overflowY:"auto",overflowX:"hidden",scrollbarWidth:"none",msOverflowStyle:"none"}}>
 
-        <nav style={{ flex:1, display:"flex", flexDirection:"column", gap:"1px", overflowY:"auto", paddingBottom:"4px", scrollbarWidth:"none", msOverflowStyle:"none" }}>
-          <button onClick={()=>{setActiveTab("generate");setSidebarOpen(false);}} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"9px 12px", borderRadius:"8px", border:"none", borderLeft:activeTab==="generate"?"3px solid #7c3aed":"3px solid transparent", background:activeTab==="generate"?"rgba(124,58,237,0.12)":"transparent", color:activeTab==="generate"?"#c4b5fd":"rgba(255,255,255,0.45)", fontSize:"13px", fontWeight:"600", cursor:"pointer", fontFamily:"inherit", textAlign:"left", width:"100%", transition:"all 0.15s" }}>
+          {/* Generate */}
+          <button onClick={()=>{setActiveTab("generate");setSidebarOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",padding:"9px 12px",borderRadius:"8px",border:"none",background:activeTab==="generate"?"rgba(124,58,237,0.15)":"transparent",color:activeTab==="generate"?"#c4b5fd":"rgba(255,255,255,0.45)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s",borderLeft:activeTab==="generate"?"3px solid #7c3aed":"3px solid transparent"}}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            {t("generate")}
+            Generate
           </button>
 
-          <div style={{ fontSize:"9px", fontWeight:"700", color:"rgba(255,255,255,0.18)", letterSpacing:"1.5px", padding:"12px 12px 4px", textTransform:"uppercase" }}>{t("channels")}</div>
+          {/* Channels label */}
+          <div style={{fontSize:"9px",fontWeight:"700",color:"rgba(255,255,255,0.18)",letterSpacing:"1.5px",padding:"12px 12px 4px",textTransform:"uppercase"}}>Channels</div>
 
           {CHANNELS.map(ch=>(
-            <button key={ch.id} onClick={()=>{ toggleTab(ch.id); setSidebarOpen(false); }}
-              style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"9px 12px", borderRadius:"8px", border:"none", borderLeft:activeTab===ch.id?`3px solid ${ch.color}`:"3px solid transparent", background:activeTab===ch.id?`${ch.color}14`:"transparent", color:activeTab===ch.id?ch.color:"rgba(255,255,255,0.4)", fontSize:"13px", fontWeight:"600", cursor:"pointer", fontFamily:"inherit", textAlign:"left", width:"100%", transition:"all 0.15s" }}>
-              <span style={{ display:"flex", alignItems:"center", gap:"8px" }}>{ch.icon}{ch.label}</span>
-              {!isPro && <span style={{ fontSize:"7px", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", color:"#fff", padding:"2px 5px", borderRadius:"3px", fontWeight:"700", flexShrink:0 }}>PRO</span>}
+            <button key={ch.id} onClick={()=>{toggleTab(ch.id);setSidebarOpen(false);}}
+              style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 12px",borderRadius:"8px",border:"none",borderLeft:activeTab===ch.id?`3px solid ${ch.color}`:"3px solid transparent",background:activeTab===ch.id?`${ch.color}14`:"transparent",color:activeTab===ch.id?ch.color:"rgba(255,255,255,0.4)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}>
+              <span style={{display:"flex",alignItems:"center",gap:"8px"}}>{ch.icon}{ch.label}</span>
             </button>
           ))}
 
-          {/* TOOLS - Collapsible Groups */}
-          <div style={{fontSize:"9px",fontWeight:"700",color:"rgba(255,255,255,0.18)",letterSpacing:"1.5px",padding:"12px 12px 4px",textTransform:"uppercase"}}>TOOLS</div>
+          {/* Tools label */}
+          <div style={{fontSize:"9px",fontWeight:"700",color:"rgba(255,255,255,0.18)",letterSpacing:"1.5px",padding:"12px 12px 4px",textTransform:"uppercase"}}>Tools</div>
 
           {/* YouTube Tools */}
           <button onClick={()=>toggleGroup("youtube")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.youtube?"rgba(255,0,0,0.06)":"transparent",color:openGroups.youtube?"#ff6b6b":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s"}}>
-            <span style={{display:"flex",alignItems:"center",gap:"8px"}}>
-              <img src="/icons/youtube.png" style={{width:14,height:14,objectFit:"contain"}} alt="yt"/>
-              YouTube Tools
-            </span>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/youtube.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>YouTube Tools</span>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.youtube?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           {openGroups.youtube && (
             <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(255,0,0,0.15)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
               {[
-                {tab:"videoclipper",  label:"Video Clipper",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0 0 10 9.87v4.263a1 1 0 0 0 1.555.832l3.197-2.132a1 1 0 0 0 0-1.664z"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>},
-                {tab:"subtitles",     label:"Subtitles",        icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/></svg>},
-                {tab:"hookgenerator", label:"Hook Generator",   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
-                {tab:"thumbnail",     label:"Thumbnail Studio", icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>},
-                {tab:"translator",    label:"Translator",       icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
-                {tab:"texttaudio",    label:"Text to Audio",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>},
+                {tab:"videoclipper",label:"Video Clipper",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0 0 10 9.87v4.263a1 1 0 0 0 1.555.832l3.197-2.132a1 1 0 0 0 0-1.664z"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>},
+                {tab:"subtitles",label:"Subtitles",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/></svg>},
+                {tab:"hookgenerator",label:"Hook Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
+                {tab:"thumbnail",label:"Thumbnail Studio",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>},
+                {tab:"translator",label:"Translator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+                {tab:"texttaudio",label:"Text to Audio",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>},
               ].map(item=>(
                 <button key={item.tab} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
                   style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #7c3aed":"2px solid transparent",background:activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent",color:activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
@@ -1419,20 +1364,17 @@ export default function App() {
 
           {/* Instagram Tools */}
           <button onClick={()=>toggleGroup("instagram")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.instagram?"rgba(225,48,108,0.06)":"transparent",color:openGroups.instagram?"#f472b6":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
-            <span style={{display:"flex",alignItems:"center",gap:"8px"}}>
-              <img src="/icons/instagram.png" style={{width:14,height:14,objectFit:"contain"}} alt="ig"/>
-              Instagram Tools
-            </span>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/instagram.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>Instagram Tools</span>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.instagram?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           {openGroups.instagram && (
             <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(225,48,108,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
               {[
-                {tab:"hashtags",      label:"Hashtag Generator", icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg>},
-                {tab:"biowriter",     label:"Bio Writer",        icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
-                {tab:"hookgenerator", label:"Hook Generator",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
-                {tab:"translator",    label:"Translator",        icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
-                {tab:"texttaudio",    label:"Text to Audio",     icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>},
+                {tab:"hashtags",label:"Hashtag Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg>},
+                {tab:"biowriter",label:"Bio Writer",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
+                {tab:"hookgenerator",label:"Hook Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
+                {tab:"translator",label:"Translator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+                {tab:"texttaudio",label:"Text to Audio",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>},
               ].map(item=>(
                 <button key={item.tab+"-ig"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
                   style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #e1306c":"2px solid transparent",background:activeTab===item.tab?"rgba(225,48,108,0.1)":"transparent",color:activeTab===item.tab?"#f9a8d4":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
@@ -1446,19 +1388,16 @@ export default function App() {
 
           {/* Analytics & Tools */}
           <button onClick={()=>toggleGroup("analytics")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.analytics?"rgba(124,58,237,0.06)":"transparent",color:openGroups.analytics?"#a78bfa":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
-            <span style={{display:"flex",alignItems:"center",gap:"8px"}}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              Analytics & Tools
-            </span>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Analytics & Tools</span>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.analytics?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           {openGroups.analytics && (
             <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(124,58,237,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
               {[
-                {tab:"history",  label:"History",         fn:()=>toggleTab("history"),  icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
-                {tab:"seo",      label:"SEO Analyzer",    fn:()=>{setYoutubeInitialTab("seo");setActiveTab("youtube");setSidebarOpen(false);},   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>},
-                {tab:"calendar", label:"Content Calendar",fn:()=>{setYoutubeInitialTab("festival");setActiveTab("youtube");setSidebarOpen(false);},icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
-                {tab:"guides",   label:"Guides & Blog",   fn:()=>window.open("https://sociomee.in/blog","_blank"), icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>},
+                {tab:"history",label:"History",fn:()=>toggleTab("history"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
+                {tab:"seo",label:"SEO Analyzer",fn:()=>{setYoutubeInitialTab("seo");setActiveTab("youtube");setSidebarOpen(false);},icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>},
+                {tab:"calendar",label:"Content Calendar",fn:()=>{setYoutubeInitialTab("festival");setActiveTab("youtube");setSidebarOpen(false);},icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
+                {tab:"guides",label:"Guides & Blog",fn:()=>window.open("https://sociomee.in/blog","_blank"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>},
               ].map(item=>(
                 <button key={item.tab} onClick={item.fn}
                   style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #7c3aed":"2px solid transparent",background:activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent",color:activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
@@ -1471,12 +1410,12 @@ export default function App() {
           )}
         </nav>
 
-        <div style={{ height:"1px", background:"rgba(255,255,255,0.06)", margin:"4px 0", flexShrink:0 }}/>
-
-        <div style={{ display:"flex", flexDirection:"column", gap:"6px", padding:"12px 0 16px", flexShrink:0 }}>
-          {!isPro&&<a href="https://sociomee.in/pricing" style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"10px", borderRadius:"99px", background:"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:"#fff", fontSize:"13px", fontWeight:"700", textDecoration:"none", boxShadow:"0 0 20px rgba(124,58,237,0.35)", margin:"0 2px" }}>{t("upgrade")}</a>}
-          <button onClick={logout} style={{ padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", backdropFilter:"blur(10px)", color:"rgba(255,255,255,0.4)", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", margin:"0 2px" }}>{t("signout")}</button>
+        {/* Bottom */}
+        <div style={{flexShrink:0,borderTop:"1px solid rgba(255,255,255,0.05)",padding:"12px 8px"}}>
+          {!isPro&&<a href="https://sociomee.in/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"10px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontSize:"13px",fontWeight:"700",textDecoration:"none",boxShadow:"0 0 20px rgba(124,58,237,0.35)",marginBottom:"8px"}}>✦ Upgrade to Pro</a>}
+          <button onClick={logout} style={{width:"100%",padding:"9px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>Sign out</button>
         </div>
+
       </div>
 
       {/* MAIN CONTENT */}
