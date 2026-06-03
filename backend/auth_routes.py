@@ -1,4 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request, status
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+limiter = Limiter(key_func=get_remote_address)
 from fastapi.responses import RedirectResponse
 from dotenv import load_dotenv
 from urllib.parse import urlencode
@@ -61,7 +64,8 @@ def decode_jwt_token(token: str) -> dict:
 
 # GOOGLE LOGIN
 @router.get("/google/login")
-def google_login():
+@limiter.limit("10/minute")
+def google_login(request: Request):
     if not GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=500, detail="Google Client ID not configured")
 
@@ -139,19 +143,32 @@ async def google_callback(code: str):
 @router.get("/me")
 def get_me(request: Request):
     auth_header = request.headers.get("Authorization", "")
-
     if not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing token")
-
     token = auth_header.split(" ")[1]
-
     try:
         payload = decode_jwt_token(token)
+        import json as _json
+        from pathlib import Path as _Path
+        _quota_file = _Path(__file__).parent / "data" / "upload_quota.json"
+        try:
+            _quota = _json.loads(_quota_file.read_text()) if _quota_file.exists() else {}
+            _uq = _quota.get(payload.get("user_id", ""), {})
+            _sp = _uq.get("plan", "")
+            if _sp.startswith("premium"): payload["plan"] = "premium"
+            elif _sp.startswith("pro"): payload["plan"] = "pro"
+        except Exception:
+            pass
+        # Always inject live plan from credits
+        try:
+            from credits_manager import get_credit_status
+            live = get_credit_status(payload.get("user_id",""))
+            payload["plan"] = live.get("plan", payload.get("plan","free"))
+        except:
+            pass
         return payload
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
-
-
 # REFRESH
 @router.post("/refresh-token")
 def refresh_token(request: Request):
@@ -172,3 +189,192 @@ def refresh_token(request: Request):
 @router.post("/logout")
 def logout():
     return {"message": "Logged out"}
+
+
+# ══════════════════════════════════════════════════════════════════════
+# GITHUB OAuth
+# ══════════════════════════════════════════════════════════════════════
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
+GITHUB_REDIRECT_URI = os.getenv("GITHUB_REDIRECT_URI", "https://sociomee.in/api/auth/github/callback")
+
+@router.get("/github/login")
+@limiter.limit("10/minute")
+def github_login(request: Request):
+    if not GITHUB_CLIENT_ID:
+        raise HTTPException(status_code=500, detail="GitHub Client ID not configured")
+    params = {
+        "client_id": GITHUB_CLIENT_ID,
+        "redirect_uri": GITHUB_REDIRECT_URI,
+        "scope": "user:email",
+    }
+    url = "https://github.com/login/oauth/authorize?" + urlencode(params)
+    return {"url": url}
+
+@router.get("/github/callback")
+async def github_callback(code: str):
+    if not code:
+        raise HTTPException(status_code=400, detail="Missing authorization code")
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            token_res = await client.post(
+                "https://github.com/login/oauth/access_token",
+                data={
+                    "client_id": GITHUB_CLIENT_ID,
+                    "client_secret": GITHUB_CLIENT_SECRET,
+                    "code": code,
+                    "redirect_uri": GITHUB_REDIRECT_URI,
+                },
+                headers={"Accept": "application/json"},
+            )
+        token_data = token_res.json()
+        access_token = token_data.get("access_token")
+        if not access_token:
+            raise HTTPException(status_code=400, detail="No access token from GitHub")
+
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            user_res = await client.get(
+                "https://api.github.com/user",
+                headers={"Authorization": f"Bearer {access_token}", "Accept": "application/json"},
+            )
+            email_res = await client.get(
+                "https://api.github.com/user/emails",
+                headers={"Authorization": f"Bearer {access_token}", "Accept": "application/json"},
+            )
+
+        user_data = user_res.json()
+        emails = email_res.json()
+        primary_email = ""
+        if isinstance(emails, list):
+            for e in emails:
+                if e.get("primary") and e.get("verified"):
+                    primary_email = e.get("email", "")
+                    break
+            if not primary_email and emails:
+                primary_email = emails[0].get("email", "")
+
+        user_payload = {
+            "user_id": f"gh_{user_data.get('id', '')}",
+            "email": primary_email or user_data.get("email") or f"gh_{user_data.get('id')}@github.local",
+            "name": user_data.get("name") or user_data.get("login", "GitHub User"),
+            "picture": user_data.get("avatar_url", ""),
+            "provider": "github",
+            "plan": "free",
+        }
+        token = create_jwt_token(user_payload)
+        return RedirectResponse(
+            url=f"{FRONTEND_CALLBACK_URL}?token={token}",
+            status_code=302,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ══════════════════════════════════════════════════════════════════════
+# EMAIL / PASSWORD AUTH
+# ══════════════════════════════════════════════════════════════════════
+import hashlib, secrets, json
+from pathlib import Path
+from pydantic import BaseModel
+
+USERS_FILE = Path(__file__).parent / "data" / "users.json"
+
+def _load_users():
+    try: return json.loads(USERS_FILE.read_text()) if USERS_FILE.exists() else {}
+    except: return {}
+
+def _save_users(d):
+    USERS_FILE.parent.mkdir(exist_ok=True)
+    USERS_FILE.write_text(json.dumps(d, indent=2))
+
+def _hash_pw(pw): return hashlib.sha256(pw.encode()).hexdigest()
+
+class RegisterBody(BaseModel):
+    name: str
+    email: str
+    password: str
+
+class LoginBody(BaseModel):
+    email: str
+    password: str
+
+class ForgotBody(BaseModel):
+    email: str
+
+class ResetBody(BaseModel):
+    email: str
+    otp: str
+    new_password: str
+
+@router.post("/register")
+@limiter.limit("3/minute")
+def register(body: RegisterBody, request: Request):
+    if len(body.password) < 6:
+        raise HTTPException(400, "Password must be at least 6 characters")
+    users = _load_users()
+    email = body.email.lower().strip()
+    if email in users:
+        raise HTTPException(400, "Email already registered. Please login.")
+    user_id = hashlib.md5(email.encode()).hexdigest()
+    users[email] = {
+        "user_id": user_id,
+        "name": body.name.strip(),
+        "email": email,
+        "password": _hash_pw(body.password),
+        "provider": "email",
+        "picture": "",
+        "plan": "free",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    _save_users(users)
+    # Send welcome email
+    try:
+        from email_service import send_welcome_email
+        send_welcome_email(email, users[email].get("name", email.split("@")[0]))
+    except Exception:
+        pass
+    payload = {k: v for k, v in users[email].items() if k != "password"}
+    token = create_jwt_token(payload)
+    return {"token": token, "user": payload}
+
+@router.post("/login")
+@limiter.limit("5/minute")
+def login_email(body: LoginBody, request: Request):
+    users = _load_users()
+    email = body.email.lower().strip()
+    user = users.get(email)
+    if not user or user.get("password") != _hash_pw(body.password):
+        raise HTTPException(401, "Invalid email or password")
+    payload = {k: v for k, v in user.items() if k != "password"}
+    token = create_jwt_token(payload)
+    return {"token": token, "user": payload}
+
+@router.post("/forgot-password")
+@limiter.limit("3/minute")
+def forgot_password(body: ForgotBody, request: Request):
+    users = _load_users()
+    email = body.email.lower().strip()
+    if email not in users:
+        return {"message": "If this email exists, an OTP has been sent."}
+    otp = str(secrets.randbelow(900000) + 100000)
+    users[email]["reset_otp"] = _hash_pw(otp)
+    users[email]["reset_expiry"] = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
+    _save_users(users)
+    return {"message": "OTP generated", "otp": otp, "dev_mode": True}
+
+@router.post("/reset-password")
+def reset_password(body: ResetBody):
+    users = _load_users()
+    email = body.email.lower().strip()
+    user = users.get(email)
+    if not user:
+        raise HTTPException(400, "Invalid request")
+    if user.get("reset_otp") != _hash_pw(body.otp):
+        raise HTTPException(400, "Invalid OTP")
+    expiry = datetime.fromisoformat(user.get("reset_expiry", "2000-01-01T00:00:00+00:00"))
+    if datetime.now(timezone.utc) > expiry:
+        raise HTTPException(400, "OTP expired. Request a new one.")
+    users[email]["password"] = _hash_pw(body.new_password)
+    users[email].pop("reset_otp", None)
+    users[email].pop("reset_expiry", None)
+    _save_users(users)
+    return {"message": "Password reset successful. Please login."}

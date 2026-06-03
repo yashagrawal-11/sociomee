@@ -86,11 +86,14 @@ def _gemini_text(prompt, max_tokens=2048):
 
 def _gemini_vision(prompt, images):
     try:
-        import google.generativeai as genai
+        import google.generativeai as genai, base64
         k=os.getenv("GOOGLE_AI_API_KEY","")
         if not k: return ""
         genai.configure(api_key=k)
-        parts=[{"mime_type":"image/jpeg","data":img} for img in images]
+        parts=[]
+        for img in images:
+            b64 = base64.b64encode(img).decode() if isinstance(img, bytes) else img
+            parts.append({"mime_type":"image/jpeg","data":b64})
         parts.append(prompt)
         return genai.GenerativeModel("gemini-2.0-flash").generate_content(parts).text.strip()
     except Exception as e:
@@ -144,7 +147,7 @@ Website:
 
 🤖 Uploaded by SocioMee AI · sociomee.in"""
 
-def gen_seo(kw,vt="video",lang="Hindi/English",prem=False):
+def gen_seo(kw,vt="video",lang="Hindi/English",prem=True):
     extra = ',\n  "hook":"15 sec script",\n  "thumbnail_idea":"thumbnail concept",\n  "best_title_alternatives":["a","b","c"]' if prem else ""
     prompt=f"""YouTube SEO expert for Indian creators. Video about: "{kw}" | Type: {vt} | Language: {lang}
 Return ONLY valid JSON:
@@ -248,7 +251,7 @@ async def rjob(job_id:str):
 async def rseo(user_id:str=Form(...),keyword:str=Form(...),video_type:str=Form(default="video"),language:str=Form(default="Hindi/English")):
     plan=_gplan(user_id)
     if plan=="free": raise HTTPException(403,"Requires Pro plan")
-    return {"seo":gen_seo(keyword,video_type,language,"premium" in plan),"plan":plan}
+    return {"seo":gen_seo(keyword,video_type,language,True),"plan":plan}
 
 @router.post("/thumbnail")
 async def rthumb(user_id:str=Form(...),thumbnail1:UploadFile=File(...),thumbnail2:Optional[UploadFile]=File(default=None)):
@@ -283,3 +286,12 @@ async def rauto(user_id:str=Form(...),keyword:str=Form(...),video_type:str=Form(
     jid=_new_job(user_id)
     threading.Thread(target=_upload_worker,daemon=True,kwargs=dict(jid=jid,uid=user_id,plan=plan,vbytes=vb,kw=keyword,vt=video_type,lang=language,priv=privacy,sched=su,isshort=isshort,btime=bt)).start()
     return {"job_id":jid,"status":"queued","message":"Upload started!","quota":q,"plan":plan}
+
+@router.get("/history")
+async def rhistory(user_id: str):
+    """Return all completed upload jobs for a user, newest first."""
+    with _jlock:
+        all_jobs = _ljobs()
+    user_jobs = [j for j in all_jobs.values() if j.get("user_id") == user_id and j.get("status") == "done"]
+    user_jobs.sort(key=lambda x: x.get("job_id", ""), reverse=True)
+    return {"history": user_jobs, "total": len(user_jobs)}

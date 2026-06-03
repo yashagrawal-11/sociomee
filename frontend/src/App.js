@@ -4,10 +4,18 @@ import YouTubeDashboard from "./YouTubeDashboard";
 import ThreadsDashboard from "./ThreadsDashboard";
 import InstagramDashboard from "./InstagramDashboard";
 import PinterestDashboard from "./PinterestDashboard";
-import LinkedInDashboard from "./LinkedInDashboard";
 import RedditDashboard from "./RedditDashboard";
 import HistoryPanel from "./HistoryPanel";
 import TelegramScheduler from "./TelegramScheduler";
+import DiscordScheduler from "./DiscordScheduler";
+import Translator from "./Translator";
+import VideoClipper from "./VideoClipper";
+import SubtitleGenerator from "./SubtitleGenerator";
+import HashtagGenerator from "./HashtagGenerator";
+import TextToAudio from "./TextToAudio";
+import HookGenerator from "./HookGenerator";
+import BioWriter from "./BioWriter";
+import LinkedInDashboard from "./LinkedInDashboard";
 
 // ══════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -686,7 +694,7 @@ function TGIcon({ size=16, color="#fff" }) {
 // TELEGRAM CONNECT + SEND
 // ══════════════════════════════════════════════════════════════════════
 function TelegramSend({ result, platform, user }) {
-  const userId = user?.user_id || "";
+  const userId = localStorage.getItem("sociomee_user_id") || user?.user_id || "";
   const [tgStatus,    setTgStatus   ] = useState("checking");
   const [tgInfo,      setTgInfo     ] = useState(null);
   const [connectLink, setConnectLink] = useState("");
@@ -990,16 +998,157 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user })
 // ══════════════════════════════════════════════════════════════════════
 // MAIN APP
 // ══════════════════════════════════════════════════════════════════════
+const TRANS = {
+  en: { generate:"Generate", channels:"Channels", tools:"Tools", history:"History", thumbnail:"Thumbnail Studio", seo:"SEO Analyzer", calendar:"Content Calendar", guides:"Guides & Blog", signout:"Sign out", upgrade:"✦ Upgrade to Pro", translator:"Translator", videoclipper:"Video Clipper", subtitles:"Subtitles", hashtags:"Hashtags", language:"Language", channelSettings:"Channel Settings", oneTopicInfinite:"One Topic. Infinite Content." },
+  hi: { generate:"जनरेट करें", channels:"चैनल", tools:"टूल्स", history:"इतिहास", thumbnail:"थंबनेल स्टूडियो", seo:"SEO एनालाइज़र", calendar:"कंटेंट कैलेंडर", guides:"गाइड्स और ब्लॉग", signout:"साइन आउट", upgrade:"✦ Pro में अपग्रेड करें", translator:"अनुवादक", videoclipper:"वीडियो क्लिपर", subtitles:"सबटाइटल्स", hashtags:"हैशटैग्स", language:"भाषा", channelSettings:"चैनल सेटिंग्स", oneTopicInfinite:"एक Topic. Infinite Content." },
+  mr: { generate:"निर्माण करा", channels:"चॅनेल", tools:"साधने", history:"इतिहास", thumbnail:"थंबनेल स्टुडिओ", seo:"SEO विश्लेषक", calendar:"कंटेंट कॅलेंडर", guides:"मार्गदर्शक", signout:"साइन आउट", upgrade:"✦ Pro मध्ये अपग्रेड करा", translator:"अनुवादक", videoclipper:"व्हिडिओ क्लिपर", subtitles:"उपशीर्षके", hashtags:"हॅशटॅग्स", language:"भाषा", channelSettings:"चॅनेल सेटिंग्ज", oneTopicInfinite:"एक Topic. Infinite Content." },
+  ta: { generate:"உருவாக்கு", channels:"சேனல்கள்", tools:"கருவிகள்", history:"வரலாறு", thumbnail:"தம்ப்நெயில் ஸ்டுடியோ", seo:"SEO பகுப்பாய்வி", calendar:"உள்ளடக்க நாட்காட்டி", guides:"வழிகாட்டிகள்", signout:"வெளியேறு", upgrade:"✦ Pro க்கு மேம்படுத்து", translator:"மொழிபெயர்ப்பாளர்", videoclipper:"வீடியோ கிளிப்பர்", subtitles:"வசனங்கள்", hashtags:"ஹேஷ்டேக்கள்", language:"மொழி", channelSettings:"சேனல் அமைப்புகள்", oneTopicInfinite:"ஒரு தலைப்பு. Infinite Content." },
+  bn: { generate:"তৈরি করুন", channels:"চ্যানেল", tools:"সরঞ্জাম", history:"ইতিহাস", thumbnail:"থাম্বনেইল স্টুডিও", seo:"SEO বিশ্লেষক", calendar:"কন্টেন্ট ক্যালেন্ডার", guides:"গাইড", signout:"সাইন আউট", upgrade:"✦ Pro তে আপগ্রেড করুন", translator:"অনুবাদক", videoclipper:"ভিডিও ক্লিপার", subtitles:"সাবটাইটেল", hashtags:"হ্যাশট্যাগ", language:"ভাষা", channelSettings:"চ্যানেল সেটিংস", oneTopicInfinite:"এক বিষয়. Infinite Content." },
+};
+
+function ComingSoonCard({ platform, icon, color, message }) {
+  return (
+    <div style={{ textAlign:"center", padding:"60px 20px" }}>
+      <div style={{ width:"80px", height:"80px", borderRadius:"50%", background:`${color}15`, border:`2px solid ${color}30`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px" }}>
+        <img src={icon} alt={platform} style={{ width:"40px", height:"40px", objectFit:"contain" }} onError={e=>e.target.style.display="none"} />
+      </div>
+      <h2 style={{ fontSize:"20px", fontWeight:"800", color:"#fff", fontFamily:"'Orbitron',sans-serif", letterSpacing:"2px", marginBottom:"12px", textTransform:"uppercase" }}>{platform}</h2>
+      <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", background:"rgba(124,58,237,0.1)", border:"1.5px solid rgba(124,58,237,0.3)", borderRadius:"99px", padding:"6px 18px", marginBottom:"16px" }}>
+        <span style={{ width:"8px", height:"8px", borderRadius:"50%", background:"#a78bfa", animation:"pulse 1.5s infinite" }}/>
+        <span style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"2px", color:"#a78bfa", textTransform:"uppercase" }}>Coming Soon</span>
+      </div>
+      <p style={{ fontSize:"14px", color:"rgba(255,255,255,0.4)", maxWidth:"400px", margin:"0 auto", lineHeight:"1.7" }}>{message}</p>
+    </div>
+  );
+}
+
+
+function CustomSelect({ value, onChange, options, label }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const selected = options.find(o => o.id === value);
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+  return (
+    <div ref={ref} style={{ position:"relative", userSelect:"none" }}>
+      <button onClick={() => setOpen(o => !o)} style={{ width:"100%", padding:"10px 16px", borderRadius:"99px", border:`1.5px solid ${open ? "rgba(124,58,237,0.9)" : "rgba(124,58,237,0.3)"}`, background: open ? "rgba(124,58,237,0.2)" : "rgba(124,58,237,0.08)", color:"#fff", fontSize:"13px", fontFamily:"inherit", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"8px", boxShadow: open ? "0 0 16px rgba(124,58,237,0.4)" : "none", transition:"all 0.2s", outline:"none" }}>
+        <span style={{ fontWeight:"600" }}>{selected?.label || label}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition:"transform 0.2s", flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      {open && (
+        <div style={{ position:"absolute", top:"calc(100% + 8px)", left:0, right:0, zIndex:999, background:"rgba(10,8,20,0.98)", border:"1px solid rgba(124,58,237,0.35)", borderRadius:"16px", padding:"8px", backdropFilter:"blur(30px)", boxShadow:"0 16px 50px rgba(0,0,0,0.9), 0 0 30px rgba(124,58,237,0.2)", maxHeight:"260px", overflowY:"auto", scrollbarWidth:"none", msOverflowStyle:"none" }}>
+          {options.map((opt) => {
+            const isActive = opt.id === value;
+            return (
+              <button key={opt.id} onClick={() => { onChange(opt.id); setOpen(false); }} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", padding:"9px 12px", borderRadius:"8px", border:"none", background: isActive ? "linear-gradient(135deg,rgba(124,58,237,0.3),rgba(255,61,143,0.15))" : "transparent", color: isActive ? "#c4b5fd" : "rgba(255,255,255,0.65)", fontSize:"13px", fontWeight: isActive ? "700" : "500", cursor:"pointer", fontFamily:"inherit", textAlign:"left", borderLeft: isActive ? "2px solid #7c3aed" : "2px solid transparent", transition:"all 0.12s" }}>
+                <span>{opt.label}</span>
+                {isActive && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+function ChannelSettingsModal({ user, onClose, BASE }) {
+  const userId = localStorage.getItem("sociomee_user_id") || user?.user_id || "";
+  const [ytChannel, setYtChannel] = useState(null);
+  const [tgStatus, setTgStatus] = useState(null);
+  const [dcStatus, setDcStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const token = localStorage.getItem("sociomee_token") || "";
+    Promise.allSettled([
+      fetch(BASE+"/youtube/channel/"+userId, { headers:{ Authorization:"Bearer "+token } }).then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch(BASE+"/telegram/connect-status?user_id="+userId).then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch(BASE+"/discord/status?user_id="+userId).then(r=>r.ok?r.json():null).catch(()=>null),
+    ]).then(([yt,tg,dc]) => {
+      if (yt.value&&yt.value.title) setYtChannel(yt.value);
+      if (tg.value) setTgStatus(tg.value);
+      if (dc.value) setDcStatus(dc.value);
+      setLoading(false);
+    });
+  }, [userId]);
+  const disconnectYT = async () => { const t=localStorage.getItem("sociomee_token")||""; await fetch(BASE+"/youtube/disconnect/"+userId,{method:"POST",headers:{Authorization:"Bearer "+t}}).catch(()=>{}); setYtChannel(null); };
+  const disconnectTG = async () => { await fetch(BASE+"/telegram/disconnect?user_id="+userId,{method:"POST"}).catch(()=>{}); setTgStatus({connected:false}); };
+  const RemoveBtn = ({onClick}) => <button onClick={onClick} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,61,143,0.2)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,61,143,0.08)"} style={{padding:"6px 14px",borderRadius:"99px",border:"1.5px solid rgba(255,61,143,0.4)",background:"rgba(255,61,143,0.08)",color:"#ff3d8f",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>Remove</button>;
+  const DisconnectBtn = ({onClick}) => <button onClick={onClick} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.25)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} style={{padding:"6px 14px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.4)",background:"rgba(124,58,237,0.1)",color:"#a78bfa",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>Disconnect</button>;
+  const YTIcon = ({s=20}) => <svg viewBox="0 0 24 24" width={s} height={s}><path fill="#ff0000" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8z"/><path fill="#fff" d="M9.8 15.5V8.5l6.4 3.5-6.4 3.5z"/></svg>;
+  const TGSvg = ({s=20}) => <svg viewBox="0 0 24 24" width={s} height={s} fill="#2aabee"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>;
+  const DCSvg = ({s=20}) => <svg viewBox="0 0 24 24" width={s} height={s} fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>;
+  const Row = ({icon,name,sub,onRemove,accent}) => (
+    <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:accent+"08",border:"1px solid "+accent+"20",marginBottom:"8px"}}>
+      <div style={{width:"38px",height:"38px",borderRadius:"50%",background:accent+"15",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{icon}</div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{name}</div>
+        {sub&&<div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{sub}</div>}
+      </div>
+      {onRemove&&<RemoveBtn onClick={onRemove}/>}
+    </div>
+  );
+  const Sec = ({icon,label,count,children}) => (
+    <div style={{marginBottom:"20px"}}>
+      <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}}>
+        {icon}
+        <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.3)"}}>{label}</span>
+        <span style={{fontSize:"10px",fontWeight:"700",color:"#a78bfa",marginLeft:"auto"}}>{count}/5</span>
+      </div>
+      {children}
+    </div>
+  );
+  return (
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"460px",background:"rgba(10,8,20,0.98)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"20px",padding:"24px",maxHeight:"82vh",overflowY:"auto",scrollbarWidth:"none",msOverflowStyle:"none",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 60px rgba(124,58,237,0.12)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"4px"}}>
+          <div>
+            <h2 style={{fontSize:"16px",fontWeight:"800",color:"#fff",margin:0}}>Channel Settings</h2>
+            <p style={{fontSize:"11px",color:"rgba(255,255,255,0.3)",marginTop:"2px"}}>Plan: {user?.plan_label||"Free"} · Manage connected accounts</p>
+          </div>
+          <button onClick={onClose} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+        </div>
+        <div style={{height:"1px",background:"rgba(255,255,255,0.07)",margin:"16px 0"}}/>
+        {loading ? <div style={{textAlign:"center",padding:"40px",color:"rgba(255,255,255,0.3)",fontSize:"13px"}}>Loading...</div> : (<>
+          <Sec icon={<img src="/icons/youtube.png" style={{width:20,height:20,objectFit:"contain"}} alt="yt"/>} label="YouTube Channels" count={ytChannel?1:0}>
+            {ytChannel ? <Row icon={ytChannel.thumbnail?<img src={ytChannel.thumbnail} style={{width:38,height:38,borderRadius:"50%",objectFit:"cover"}} alt=""/>:<YTIcon/>} name={ytChannel.title||"Channel"} sub={(ytChannel.subscribers?Number(ytChannel.subscribers).toLocaleString()+" subs":"")} onRemove={disconnectYT} accent="#ff0000"/> : <div style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",padding:"8px 0"}}>No YouTube channels connected</div>}
+          </Sec>
+          <Sec icon={<img src="/icons/telegram.png" style={{width:20,height:20,objectFit:"contain"}} alt="tg"/>} label="Telegram" count={tgStatus?.connected?1:0}>
+            {tgStatus?.connected ? (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(42,171,238,0.05)",border:"1px solid rgba(42,171,238,0.15)",marginBottom:"8px"}}><div style={{width:"38px",height:"38px",borderRadius:"50%",background:"rgba(42,171,238,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><img src="/icons/telegram.png" style={{width:22,height:22,objectFit:"contain"}} alt="tg"/></div><div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff"}}>{"@"+(tgStatus.telegram_username||tgStatus.full_name||"Connected")}</div>{tgStatus.channel&&<div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{tgStatus.channel}</div>}</div><DisconnectBtn onClick={disconnectTG}/></div>) : <div style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",padding:"8px 0"}}>No Telegram connected</div>}
+          </Sec>
+          <Sec icon={<img src="/icons/discord.png" style={{width:20,height:20,objectFit:"contain"}} alt="discord"/>} label="Discord" count={dcStatus?.connected||dcStatus?.webhook_url?1:0}>
+            {dcStatus?.connected||dcStatus?.webhook_url ? (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(88,101,242,0.05)",border:"1px solid rgba(88,101,242,0.15)",marginBottom:"8px"}}><div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{dcStatus.server_name||"Discord Server"}</div><div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{dcStatus.channel_name||"Channel connected"}</div></div><DisconnectBtn onClick={()=>setDcStatus(null)}/></div>) : <div style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",padding:"8px 0"}}>No Discord connected</div>}
+          </Sec>
+          <div style={{height:"1px",background:"rgba(255,255,255,0.07)",marginBottom:"16px"}}/>
+          <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.2)",marginBottom:"12px"}}>Other Accounts</div>
+          {[{name:"Threads",icon:"/icons/threads.png"},{name:"Instagram",icon:"/icons/instagram.png"},{name:"Pinterest",icon:"/icons/pinterest.png"}].map(a=>(
+            <div key={a.name} style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
+              <img src={a.icon} style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt={a.name}/>
+              <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>{a.name}</span>
+              <span style={{fontSize:"10px",color:"rgba(255,255,255,0.2)",fontWeight:"600",background:"rgba(255,255,255,0.05)",padding:"3px 8px",borderRadius:"99px"}}>Coming Soon</span>
+            </div>
+          ))}
+        </>)}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const { user, token, isLoggedIn, logout, refreshToken } = useAuth();
-
   const tokenRef = useRef(token);
   useEffect(() => { tokenRef.current = token; }, [token]);
 
   const apiFetch = useCallback(async (path, body) => {
     const headers = { "Content-Type":"application/json" };
     if (tokenRef.current) headers["Authorization"] = `Bearer ${tokenRef.current}`;
-    const res = await fetch(`${BASE}${path}`, { method:"POST",headers,body:JSON.stringify(body) });
+    const res = await fetch(`${BASE}${path}`, { method:"POST", headers, body:JSON.stringify(body) });
     if (!res.ok) {
       const t = await res.text().catch(()=>`HTTP ${res.status}`);
       let d=t; try{ d=JSON.parse(t).detail||t; } catch{}
@@ -1007,21 +1156,6 @@ export default function App() {
     }
     return res.json();
   }, []);
-
-  // ── Dark mode ──────────────────────────────────────────────────────
-  const [dark, setDark] = useState(() => localStorage.getItem("sm_theme") === "dark");
-  C = dark ? { ...DARK_THEME } : { ...LIGHT_THEME };
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-    document.body.style.background = C.pageBg;
-  }, [dark]);
-
-  const toggleTheme = () => setDark(d => {
-    const next = !d;
-    localStorage.setItem("sm_theme", next ? "dark" : "light");
-    return next;
-  });
 
   const [keyword,      setKeyword    ] = useState("");
   const [platform,     setPlatform   ] = useState("youtube");
@@ -1035,29 +1169,43 @@ export default function App() {
   const [creditStatus, setCreditStatus] = useState(null);
   const [showPricing,  setShowPricing] = useState(false);
   const [pricingMode,  setPricingMode] = useState("upgrade");
-  const [btnHov,       setBtnHov     ] = useState(false);
   const [activeTab,    setActiveTab  ] = useState("generate");
+  const [sidebarOpen,  setSidebarOpen] = useState(false);
+  const [profilePanelOpen, setProfilePanelOpen] = useState(false);
+  const [channelSettingsOpen, setChannelSettingsOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [openGroups, setOpenGroups] = useState({youtube:true, instagram:false, analytics:false});
+  const toggleGroup = (g) => setOpenGroups(prev=>({...prev,[g]:!prev[g]}));
+  const [youtubeInitialTab, setYoutubeInitialTab] = useState("analytics");
   const resultRef = useRef(null);
 
   const plan  = creditStatus?.plan || user?.plan || "free";
   const isPro = plan !== "free";
+  const UI_LANG = localStorage.getItem("sociomee_lang") || "en";
+  const t = (k) => TRANS[UI_LANG]?.[k] || TRANS.en[k] || k;
+
+  const LANGS = [
+    { code:"en", label:"English" },
+    { code:"hi", label:"हिंदी" },
+    { code:"mr", label:"मराठी" },
+    { code:"ta", label:"தமிழ்" },
+    { code:"bn", label:"বাংলা" },
+  ];
+
+  useEffect(() => {
+    document.body.classList.toggle("sidebar-open", sidebarOpen);
+    document.body.style.overflow = sidebarOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [sidebarOpen]);
 
   useEffect(() => {
     if (!user?.user_id) return;
-    fetch(`${BASE}/credits/${user.user_id}`)
+    fetch(`${BASE}/credits/${user.user_id}`, { headers:{ Authorization:`Bearer ${localStorage.getItem("sociomee_token")||""}` } })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (!d) return;
-        setCreditStatus({
-          plan:              d.plan              || "free",
-          plan_label:        d.plan_label        || "Free",
-          credits_remaining: d.credits_remaining !== undefined ? d.credits_remaining : d.credits !== undefined ? d.credits : d.credits_left !== undefined ? d.credits_left : 20,
-          credits:           d.credits_remaining ?? d.credits ?? d.credits_left ?? 20,
-          monthly_limit:     d.monthly_limit !== undefined ? (d.monthly_limit===30?20:d.monthly_limit) : d.daily_limit !== undefined ? (d.daily_limit===30?20:d.daily_limit) : 20,
-          next_reset:        d.next_reset || d.resets_at || "",
-        });
-      })
-      .catch(() => {});
+        setCreditStatus({ plan:d.plan||"free", plan_label:d.plan_label||"Free", credits_remaining:d.credits_remaining??d.credits??20, credits:d.credits_remaining??d.credits??20, monthly_limit:d.monthly_limit??20, next_reset:d.next_reset||"" });
+      }).catch(()=>{});
   }, [user]);
 
   const openPricing = (mode="upgrade") => { setPricingMode(mode); setShowPricing(true); };
@@ -1074,312 +1222,430 @@ export default function App() {
     if (!keyword.trim()) { setError("Please enter a keyword or topic."); return; }
     if (!platform)       { setError("Please select a platform."); return; }
     if (!tone)           { setError("Please choose a tone."); return; }
-    const currentCredits = creditStatus?.credits_remaining ?? creditStatus?.credits_left ?? creditStatus?.credits ?? 20;
+    const currentCredits = creditStatus?.credits_remaining ?? creditStatus?.credits ?? 20;
     if (Number(currentCredits) <= 0) { openPricing("nocredits"); return; }
     setError(""); setLoading(true); setResult(null);
     try {
       let data;
       if (platform === "youtube") {
-        try { data = await apiFetch("/generate-full-content", { topic:keyword.trim(),persona:personality,language,country:"in",platform }); }
-        catch { data = await apiFetch("/generate-platform-content", { topic:keyword.trim(),platform,tone,personality,format_type:formatType,language }); }
+        try { data = await apiFetch("/generate-full-content", { topic:keyword.trim(), persona:personality, language, country:"in", platform }); }
+        catch { data = await apiFetch("/generate-platform-content", { topic:keyword.trim(), platform, tone, personality, format_type:formatType, language }); }
       } else {
-        data = await apiFetch("/generate-platform-content", { topic:keyword.trim(),platform,tone,personality,format_type:formatType,language });
+        data = await apiFetch("/generate-platform-content", { topic:keyword.trim(), platform, tone, personality, format_type:formatType, language });
       }
       if (data?.credit_status) setCreditStatus(data.credit_status);
-      else if (data?.credits !== undefined) setCreditStatus(prev => prev ? {...prev,credits_remaining:data.credits,credits:data.credits} : null);
       if (user?.user_id) {
-        fetch(`${BASE}/credits/${user.user_id}`).then(r=>r.ok?r.json():null).then(d=>{
-          if(!d) return;
-          setCreditStatus({ plan:d.plan||"free", plan_label:d.plan_label||"Free", credits_remaining:d.credits_remaining??d.credits??d.credits_left??20, credits:d.credits_remaining??d.credits??d.credits_left??20, monthly_limit:(d.monthly_limit??d.daily_limit??20)===30?20:(d.monthly_limit??d.daily_limit??20), next_reset:d.next_reset||d.resets_at||"" });
-        }).catch(()=>{});
+        fetch(`${BASE}/credits/${user.user_id}`).then(r=>r.ok?r.json():null).then(d=>{ if(d) setCreditStatus({ plan:d.plan||"free", plan_label:d.plan_label||"Free", credits_remaining:d.credits_remaining??d.credits??20, credits:d.credits_remaining??d.credits??20, monthly_limit:d.monthly_limit??20, next_reset:d.next_reset||"" }); }).catch(()=>{});
       }
       if (data?.error && data?.credits <= 0) { openPricing("nocredits"); setLoading(false); return; }
       if (data?.error) { setError(data.error); setLoading(false); return; }
       setResult(data);
-      setTimeout(() => resultRef.current?.scrollIntoView({ behavior:"smooth",block:"start" }), 120);
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior:"smooth", block:"start" }), 120);
     } catch(e) {
-      setError(e.message || "Something went wrong. Is the backend running?");
+      setError(e.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   }, [keyword, platform, tone, personality, language, formatType, apiFetch, creditStatus, user]);
 
   const selPersona = PERSONAS.find(p => p.id === personality);
-  const toggleTab = (tab) => setActiveTab(t => t === tab ? "generate" : tab);
+  const toggleTab = (tab) => { setActiveTab(tab); setSidebarOpen(false); };
+
+  const PAGE_TITLES = {
+    generate:"App | SocioMee", youtube:"YouTube | SocioMee",
+    threads:"Threads | SocioMee", instagram:"Instagram | SocioMee",
+    pinterest:"Pinterest | SocioMee", reddit:"Reddit | SocioMee",
+    tgschedule:"Telegram | SocioMee", discord:"Discord | SocioMee",
+    history:"History | SocioMee", thumbnail:"Thumbnail Studio | SocioMee",
+    translator:"Translator | SocioMee", videoclipper:"Video Clipper | SocioMee",
+    subtitles:"Subtitles | SocioMee", hashtags:"Hashtag Generator | SocioMee",
+    texttaudio:"Text to Audio | SocioMee", hookgenerator:"Hook Generator | SocioMee",
+    biowriter:"Bio Writer | SocioMee",
+  };
+  useEffect(() => { document.title = PAGE_TITLES[activeTab] || "SocioMee"; }, [activeTab]);
+
+  const sbBtn = (tab, label, icon) => (
+    <button key={tab} onClick={()=>toggleTab(tab)}
+      style={{ display:"flex", alignItems:"center", gap:"10px", padding:"9px 12px", borderRadius:"8px", border:"none", borderLeft:activeTab===tab?"3px solid #7c3aed":"3px solid transparent", background:activeTab===tab?"rgba(124,58,237,0.12)":"transparent", color:activeTab===tab?"#c4b5fd":"rgba(255,255,255,0.4)", fontSize:"13px", fontWeight:"600", cursor:"pointer", fontFamily:"inherit", textAlign:"left", width:"100%", transition:"all 0.15s" }}
+      onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.05)";e.currentTarget.style.color="rgba(255,255,255,0.75)";}}
+      onMouseLeave={e=>{e.currentTarget.style.background=activeTab===tab?"rgba(124,58,237,0.12)":"transparent";e.currentTarget.style.color=activeTab===tab?"#c4b5fd":"rgba(255,255,255,0.4)";}}>
+      {icon}{label}
+    </button>
+  );
+
+  const CHANNELS = [
+    { id:"youtube",    label:"YouTube",   color:"#ff0000", icon:<img src="/icons/youtube.png"   style={{width:16,height:16,objectFit:"contain"}} alt="yt"/> },
+    { id:"threads",    label:"Threads",   color:"#ffffff", icon:<img src="/icons/threads.png"   style={{width:16,height:16,objectFit:"contain"}} alt="threads"/> },
+    { id:"instagram",  label:"Instagram", color:"#e1306c", icon:<img src="/icons/instagram.png" style={{width:16,height:16,objectFit:"contain"}} alt="ig"/> },
+    { id:"pinterest",  label:"Pinterest", color:"#e60023", icon:<img src="/icons/pinterest.png" style={{width:16,height:16,objectFit:"contain"}} alt="pin"/> },
+    { id:"reddit",     label:"Reddit",    color:"#ff4500", icon:<img src="/icons/reddit.png"    style={{width:16,height:16,objectFit:"contain"}} alt="reddit"/> },
+    { id:"tgschedule", label:"Telegram",  color:"#2aabee", icon:<img src="/icons/telegram.png"  style={{width:16,height:16,objectFit:"contain"}} alt="tg"/> },
+    { id:"discord",    label:"Discord",   color:"#5865F2", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg> },
+  ];
 
   return (
-    <div style={{ minHeight:"100vh",background:C.pageBg,display:"flex",justifyContent:"center",alignItems:"flex-start",fontFamily:"'DM Sans','Syne',sans-serif",padding:"52px 16px 120px",position:"relative",overflow:"hidden",transition:"background 0.3s ease,color 0.3s ease",color:C.ink }}>
+    <div style={{ minHeight:"100vh", background:"#0a0a0a", display:"flex", fontFamily:"'DM Sans','Syne',sans-serif", color:"#fff", overflowX:"clip", width:"100%", position:"relative" }}>
 
-      <div style={{ position:"fixed",top:"-160px",right:"-120px",width:"520px",height:"520px",borderRadius:"50%",background:C.blobA,pointerEvents:"none",zIndex:0,animation:"floatA 11s ease-in-out infinite",transition:"background 0.3s" }}/>
-      <div style={{ position:"fixed",bottom:"-80px",left:"-80px",width:"420px",height:"420px",borderRadius:"50%",background:C.blobB,pointerEvents:"none",zIndex:0,animation:"floatB 13s ease-in-out infinite",transition:"background 0.3s" }}/>
+      {sidebarOpen && <div onClick={()=>setSidebarOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.65)", backdropFilter:"blur(4px)", zIndex:98 }}/>}
 
-      <div style={{ width:"100%",maxWidth:"1200px",position:"relative",zIndex:1 }}>
+      <button onClick={()=>setSidebarOpen(s=>!s)} id="hamburger-btn" style={{ position:"fixed", top:"16px", left:"16px", zIndex:101, background:"rgba(124,58,237,0.15)", border:"1px solid rgba(124,58,237,0.3)", borderRadius:"10px", padding:"8px", cursor:"pointer", display:"none", flexDirection:"column", gap:"4px", alignItems:"center" }}>
+        <span style={{ width:"18px", height:"2px", background:"#a78bfa", display:"block" }}/><span style={{ width:"18px", height:"2px", background:"#a78bfa", display:"block" }}/><span style={{ width:"18px", height:"2px", background:"#a78bfa", display:"block" }}/>
+      </button>
 
-        {/* Brand */}
-        <div style={{ marginBottom:"28px" }}>
-          <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"14px" }}>
-            <div style={{ display:"inline-flex",alignItems:"center",gap:"8px",background:`linear-gradient(135deg,${C.rose},${C.purple})`,color:"#fff",fontSize:"10px",fontWeight:"900",letterSpacing:"2.5px",textTransform:"uppercase",padding:"5px 14px",borderRadius:"99px" }}>✦ AI Content Studio</div>
-            <button onClick={toggleTheme} title={dark?"Switch to Light":"Switch to Dark"} style={{ display:"flex",alignItems:"center",gap:"8px",padding:"5px 10px 5px 6px",borderRadius:"99px",border:`1.5px solid ${dark?"rgba(167,139,250,0.3)":C.hairline}`,background:dark?"rgba(30,20,55,0.85)":"rgba(255,255,255,0.85)",cursor:"pointer",fontFamily:"inherit",backdropFilter:"blur(10px)",transition:"all 0.25s ease",boxShadow:dark?"0 0 14px rgba(167,139,250,0.25)":"0 2px 8px rgba(0,0,0,0.08)" }}>
-              <div style={{ position:"relative",width:"40px",height:"22px",borderRadius:"99px",background:dark?"linear-gradient(135deg,#7c3aed,#a78bfa)":"rgba(200,190,220,0.5)",transition:"background 0.3s ease",flexShrink:0 }}>
-                <div style={{ position:"absolute",top:"3px",left:dark?"20px":"3px",width:"16px",height:"16px",borderRadius:"50%",background:"#fff",boxShadow:"0 1px 4px rgba(0,0,0,0.25)",transition:"left 0.25s ease",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"9px",lineHeight:1 }}>
-                  {dark ? "🌙" : "☀️"}
-                </div>
-              </div>
-              <span style={{ fontSize:"11px",fontWeight:"800",color:dark?C.slate:"#8b6b9a",letterSpacing:"0.3px",userSelect:"none" }}>{dark?"Dark":"Light"}</span>
-            </button>
-          </div>
-          <h1 style={{ fontSize:"clamp(34px,8vw,52px)",fontWeight:"900",color:C.ink,lineHeight:1.0,letterSpacing:"-2px",marginBottom:"8px",fontFamily:"'Syne',sans-serif",transition:"color 0.3s" }}>SocioMee<span style={{ color:C.rose }}>.</span></h1>
-          <p style={{ fontSize:"14px",color:C.muted,lineHeight:1.6,transition:"color 0.3s" }}>Transform any topic into a complete content pack — scripts, SEO, and metadata for every platform.</p>
+      {/* SIDEBAR */}
+      <div id="app-sidebar" className={sidebarOpen?"open":""} style={{ width:"220px", flexShrink:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderRight:"1px solid rgba(124,58,237,0.12)", display:"flex", flexDirection:"column", position:"fixed", top:0, left:0, height:"100dvh", zIndex:99, padding:"20px 10px 0 10px", overflowY:"hidden", transition:"transform 0.3s ease", boxShadow:"none" }}>
+
+        <div style={{ padding:"0 4px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)", marginBottom:"8px", flexShrink:0 }}>
+          <div style={{ fontSize:"20px", fontWeight:"900", fontFamily:"'Orbitron',sans-serif", color:"#fff", letterSpacing:"2px" }}>SOCIOMEE</div>
         </div>
 
-        {/* User header */}
-        {isLoggedIn && user && (
-          <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",background:C.glass,backdropFilter:"blur(12px)",border:`1px solid ${C.hairline}`,borderRadius:"14px",padding:"10px 16px",marginBottom:"14px" }}>
-            <div style={{ display:"flex",alignItems:"center",gap:"10px" }}>
-              {user.picture
-                ? <img src={user.picture} alt="" referrerPolicy="no-referrer" crossOrigin="anonymous" style={{ width:"32px",height:"32px",borderRadius:"50%",border:`2px solid ${C.purple}33`,objectFit:"cover" }} onError={e=>{ e.target.style.display="none"; e.target.nextSibling.style.display="flex"; }}/>
-                : null
-              }
-              <div style={{ width:"32px",height:"32px",borderRadius:"50%",background:`linear-gradient(135deg,${C.purple},${C.rose})`,display:user.picture?"none":"flex",alignItems:"center",justifyContent:"center",color:C.white,fontSize:"14px",fontWeight:"800",flexShrink:0 }}>{(user.name||user.email||"U").charAt(0).toUpperCase()}</div>
-              <div>
-                <p style={{ fontSize:"13px",fontWeight:"700",color:C.ink,lineHeight:1.2 }}>{user.name||user.email}</p>
-                <p style={{ fontSize:"10.5px",color:C.muted }}>{user.email}</p>
-              </div>
+        {isLoggedIn && (
+          <button onClick={()=>setProfilePanelOpen(p=>!p)} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"10px 12px", borderRadius:"10px", border:"none", background:profilePanelOpen?"rgba(124,58,237,0.12)":"transparent", cursor:"pointer", fontFamily:"inherit", width:"100%", textAlign:"left", marginBottom:"8px", flexShrink:0, transition:"all 0.15s" }}
+            onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}
+            onMouseLeave={e=>e.currentTarget.style.background=profilePanelOpen?"rgba(124,58,237,0.12)":"transparent"}>
+            {user?.picture
+              ? <img src={user.picture} alt="" referrerPolicy="no-referrer" style={{ width:"32px", height:"32px", borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
+              : <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", fontWeight:"800", color:"#fff", flexShrink:0 }}>{(user?.email||"U")[0].toUpperCase()}</div>
+            }
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:"12px", fontWeight:"700", color:"#fff", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{user?.name||user?.email?.split("@")[0]||"User"}</div>
+              <div style={{ fontSize:"10px", color:"#a78bfa", fontWeight:"600" }}>✦ {creditStatus?.plan_label||"Free"}</div>
             </div>
-            <div style={{ display:"flex",gap:"4px",alignItems:"center",flexWrap:"wrap",justifyContent:"flex-end",maxWidth:"55vw" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" style={{ transform:profilePanelOpen?"rotate(180deg)":"rotate(0deg)", transition:"transform 0.2s", flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        )}
 
-              {/* YouTube tab */}
-              <button onClick={() => toggleTab("youtube")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="youtube"?"#ff0000":C.hairline}`,background:activeTab==="youtube"?"#ff000012":"rgba(255,255,255,0.7)",color:activeTab==="youtube"?"#ff0000":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
-                <svg viewBox="0 0 24 24" width="12" height="12" fill={activeTab==="youtube"?"#ff0000":C.muted}>
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-                YT
-              </button>
-
-              {/* Threads tab */}
-              <button onClick={() => toggleTab("threads")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="threads"?"#000":C.hairline}`,background:activeTab==="threads"?"rgba(0,0,0,0.08)":"rgba(255,255,255,0.7)",color:activeTab==="threads"?C.ink:C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
-                <svg viewBox="0 0 192 192" width="12" height="12" fill={activeTab==="threads"?C.ink:C.muted}>
-                  <path d="M141.537 88.988a66.667 66.667 0 0 0-2.518-1.143c-1.482-27.307-16.403-42.94-41.457-43.1h-.34c-14.986 0-27.449 6.396-35.12 18.036l13.779 9.452c5.73-8.695 14.724-10.548 21.348-10.548h.229c8.249.053 14.474 2.452 18.503 7.129 2.932 3.405 4.893 8.111 5.864 14.05-7.314-1.243-15.224-1.626-23.68-1.14-23.82 1.371-39.134 15.264-38.105 34.568.522 9.792 5.4 18.216 13.735 23.719 7.047 4.652 16.124 6.927 25.557 6.412 12.458-.683 22.231-5.436 29.049-14.127 5.178-6.6 8.452-15.153 9.899-25.93 5.937 3.583 10.337 8.298 12.767 13.966 4.132 9.635 4.373 25.468-8.546 38.376-11.319 11.308-24.925 16.2-45.488 16.351-22.809-.169-40.06-7.484-51.275-21.742C35.236 139.966 29.808 120.682 29.605 96c.203-24.682 5.63-43.966 16.133-57.317C56.954 24.425 74.206 17.11 97.015 16.94c22.975.17 40.526 7.52 52.171 21.847 5.71 7.026 10.015 15.86 12.853 26.162l16.147-4.308c-3.44-12.68-8.853-23.606-16.219-32.668C147.036 9.607 125.202.195 97.101 0h-.186C68.841.195 47.238 9.636 32.899 28.047 20.17 44.346 13.643 67.352 13.404 96v.004c.239 28.648 6.766 51.664 19.495 68.047C47.238 182.364 68.841 191.805 96.915 192h.186c24.692-.187 42.038-6.61 56.328-20.868 18.806-18.777 18.274-42.922 12.078-57.564-4.451-10.376-13.031-18.752-23.97-23.58z"/>
-                </svg>
-                Threads
-              </button>
-
-              {/* Instagram tab */}
-              <button onClick={() => toggleTab("instagram")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="instagram"?"#e1306c":C.hairline}`,background:activeTab==="instagram"?"rgba(225,48,108,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="instagram"?"#e1306c":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke={activeTab==="instagram"?"#e1306c":C.muted} strokeWidth="2">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                  <circle cx="12" cy="12" r="5"/>
-                  <circle cx="17.5" cy="6.5" r="1" fill={activeTab==="instagram"?"#e1306c":C.muted} stroke="none"/>
-                </svg>
-                IG
-              </button>
-
-              {/* Pinterest tab */}
-              <button onClick={() => toggleTab("pinterest")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="pinterest"?"#e60023":C.hairline}`,background:activeTab==="pinterest"?"rgba(230,0,35,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="pinterest"?"#e60023":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
-                <svg viewBox="0 0 24 24" width="12" height="12" fill={activeTab==="pinterest"?"#e60023":C.muted}>
-                  <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
-                </svg>
-                Pin
-              </button>
-
-              {/* Reddit tab */}
-              <button onClick={() => toggleTab("reddit")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="reddit"?"#ff4500":C.hairline}`,background:activeTab==="reddit"?"rgba(255,69,0,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="reddit"?"#ff4500":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
-                <img src="/icons/reddit.png" alt="Re" style={{width:12,height:12,objectFit:"contain"}} />
-                Re
-              </button>
-
-              {/* LinkedIn tab */}
-              <button onClick={() => toggleTab("linkedin")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="linkedin"?"#0077b5":C.hairline}`,background:activeTab==="linkedin"?"rgba(0,119,181,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="linkedin"?"#0077b5":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px",transition:"all 0.15s" }}>
-                <img src="/icons/linkedin.png" alt="LI" style={{width:12,height:12,objectFit:"contain"}} />
-                LI
-              </button>
-
-              {/* Telegram Scheduler tab */}
-              <button onClick={() => toggleTab("tgschedule")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="tgschedule"?"#2aabee":C.hairline}`,background:activeTab==="tgschedule"?"rgba(42,171,238,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="tgschedule"?"#2aabee":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s" }}>
-                ✈️
-              </button>
-
-              {/* History tab */}
-              <button onClick={() => toggleTab("history")} style={{ padding:"5px 10px",borderRadius:"99px",border:`1.5px solid ${activeTab==="history"?"#7c3aed":C.hairline}`,background:activeTab==="history"?"rgba(124,58,237,0.1)":"rgba(255,255,255,0.7)",color:activeTab==="history"?"#7c3aed":C.muted,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s" }}>
-                📋
-              </button>
-
-              {!isPro && <button onClick={()=>openPricing("upgrade")} style={{ padding:"5px 10px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:C.white,fontSize:"11px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit" }}>✦ Pro</button>}
-              <button onClick={logout} style={{ padding:"5px 10px",borderRadius:"99px",border:`1px solid ${C.hairline}`,background:"rgba(255,255,255,0.7)",color:C.muted,fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit" }}>Out</button>
+        {profilePanelOpen && (
+          <div onClick={()=>setProfilePanelOpen(false)} style={{ position:"fixed",inset:0,zIndex:198 }}/>
+        )}
+        <div style={{ position:"fixed",bottom:0,left:0,width:"220px",zIndex:199,overflow:"hidden",background:"rgba(10,8,20,0.98)",backdropFilter:"blur(24px)",border:"1px solid rgba(124,58,237,0.25)",borderBottom:"none",borderRadius:"16px 16px 0 0",padding:"20px 16px 28px",scrollbarWidth:"none",msOverflowStyle:"none",transform:profilePanelOpen?"translateY(0)":"translateY(100%)",transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)",boxShadow:"none" }}>
+          <div style={{ width:"36px",height:"4px",borderRadius:"99px",background:"rgba(255,255,255,0.15)",margin:"0 auto 20px" }}/>
+          <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"16px" }}>
+            <div style={{ display:"flex",alignItems:"center",gap:"8px" }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span style={{ fontSize:"12px",fontWeight:"700",color:"rgba(255,255,255,0.8)" }}>Plans</span>
             </div>
+            <span style={{ fontSize:"11px",fontWeight:"800",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>✦ {creditStatus?.plan_label||"Free"}</span>
           </div>
-        )}
-
-        {/* Credit badge */}
-        <CreditBadge creditStatus={creditStatus} onUpgradeClick={()=>openPricing("upgrade")}/>
-
-        {/* ── YouTube Tab ── */}
-        {activeTab === "youtube" && isLoggedIn && (
-          <Card style={{ marginBottom:"20px" }}>
-            <YouTubeDashboard user={user} topic={keyword} />
-          </Card>
-        )}
-
-        {/* ── Threads Tab ── */}
-        {activeTab === "threads" && isLoggedIn && (
-          <Card style={{ marginBottom:"20px" }}>
-            <ThreadsDashboard user={user} topic={keyword} />
-          </Card>
-        )}
-
-        {/* ── Instagram Tab ── */}
-        {activeTab === "instagram" && isLoggedIn && (
-          <Card style={{ marginBottom:"20px" }}>
-            <InstagramDashboard user={user} topic={keyword} />
-          </Card>
-        )}
-
-        {/* ── Pinterest Tab ── */}
-        {activeTab === "pinterest" && isLoggedIn && (
-          <Card style={{ marginBottom:"20px" }}>
-            <PinterestDashboard user={user} topic={keyword} />
-          </Card>
-        )}
-
-        {/* ── Reddit Tab ── */}
-        {activeTab === "reddit" && isLoggedIn && (
-          <Card style={{ marginBottom:"20px" }}>
-            <RedditDashboard user={user} topic={keyword} />
-          </Card>
-        )}
-
-        {/* ── LinkedIn Tab ── */}
-        {activeTab === "linkedin" && isLoggedIn && (
-          <Card style={{ marginBottom:"20px" }}>
-            <LinkedInDashboard user={user} topic={keyword} />
-          </Card>
-        )}
-
-        {/* ── Telegram Scheduler Tab ── */}
-        {activeTab === "tgschedule" && isLoggedIn && (
-          <Card style={{ marginBottom:"20px" }}>
-            <TelegramScheduler user={user} />
-          </Card>
-        )}
-
-        {/* ── History Tab ── */}
-        {activeTab === "history" && isLoggedIn && (
-          <Card style={{ marginBottom:"20px" }}>
-            <HistoryPanel user={user} onReuse={(topic, platform) => { setKeyword(topic); setPlatform(platform); setActiveTab("generate"); }} />
-          </Card>
-        )}
-
-        {/* ── Content Generator Tab ── */}
-        {activeTab === "generate" && (
-          <>
-            <Card>
-              <div style={{ marginBottom:"18px" }}>
-                <label style={{ fontSize:"10.5px",fontWeight:"800",letterSpacing:"1.2px",textTransform:"uppercase",color:C.muted,marginBottom:"7px",display:"block" }}>Keyword / Topic</label>
-                <input
-                  placeholder="e.g. skincare routine, crypto scam, fake influencers…"
-                  value={keyword} onChange={e=>setKeyword(e.target.value)}
-                  onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-                  style={{ width:"100%",padding:"13px 16px",borderRadius:"12px",border:`1.5px solid ${C.hairline}`,outline:"none",fontSize:"14px",fontWeight:"500",color:C.ink,background:C.inputBg,backdropFilter:"blur(8px)",boxSizing:"border-box",fontFamily:"inherit",transition:"border 0.2s,box-shadow 0.2s" }}
-                  onFocus={e=>{ e.target.style.border=`1.5px solid ${C.purple}`; e.target.style.boxShadow=`0 0 0 3px ${C.purple}18`; }}
-                  onBlur={e =>{ e.target.style.border=`1.5px solid ${C.hairline}`; e.target.style.boxShadow="none"; }}
-                />
-              </div>
-
-              <div style={{ marginBottom:"18px" }}>
-                <label style={{ fontSize:"10.5px",fontWeight:"800",letterSpacing:"1.2px",textTransform:"uppercase",color:C.muted,marginBottom:"9px",display:"block" }}>Platform</label>
-                <div style={{ display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"7px" }}>
-                  {PLATFORMS.map(p => (
-                    <button key={p.id} onClick={()=>setPlatform(p.id)} style={{ padding:"9px 4px",borderRadius:"10px",border:`1.5px solid ${platform===p.id?p.color:p.color+"55"}`,background:platform===p.id?p.color+"16":p.color+"08",boxShadow:platform===p.id?`0 0 12px ${p.color}66`:`0 0 6px ${p.color}33`,color:platform===p.id?p.color:C.muted,fontWeight:"700",fontSize:"11px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s",display:"flex",flexDirection:"column",alignItems:"center",gap:"4px" }}>
-                      <img src={p.img} alt={p.label} style={{ width:"22px",height:"22px",objectFit:"contain",filter:platform===p.id?"none":"grayscale(40%) opacity(0.7)",transition:"all 0.15s" }} onError={e=>{ e.target.style.display="none"; e.target.nextSibling.style.display="block"; }}/>
-                      <span style={{ display:"none",fontSize:"14px" }}>{p.label.charAt(0)}</span>
-                      <span style={{ fontSize:"10px" }}>{p.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"12px",marginBottom:"18px" }}>
-                {[
-                  { label:"Persona",  value:personality, onChange:setPersonality, options:PERSONAS.map(p=>({ value:p.id,label:`${p.flag} ${p.label}` })) },
-                  { label:"Language", value:language,    onChange:setLanguage,    options:[{ value:"english",label:"🌍 English" },{ value:"hinglish",label:"🇮🇳 Hinglish" },{ value:"hindi",label:"हिंदी" },{ value:"marathi",label:"मराठी" },{ value:"tamil",label:"தமிழ்" }]},
-                  { label:"Format",   value:formatType,  onChange:setFormatType,  options:[{ value:"long",label:"Long Form" },{ value:"short",label:"Short Form" }] },
-                ].map(({ label,value,onChange,options }) => (
-                  <div key={label}>
-                    <label style={{ fontSize:"10.5px",fontWeight:"800",letterSpacing:"1.2px",textTransform:"uppercase",color:C.muted,marginBottom:"7px",display:"block" }}>{label}</label>
-                    <select value={value} onChange={e=>onChange(e.target.value)} style={{ width:"100%",padding:"12px 14px",borderRadius:"12px",border:`1.5px solid ${C.hairline}`,outline:"none",fontSize:"13px",fontWeight:"600",color:C.ink,background:C.selectBg,cursor:"pointer",boxSizing:"border-box",appearance:"none",fontFamily:"inherit",backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237c3aed'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`,backgroundRepeat:"no-repeat",backgroundPosition:"right 12px center",backgroundSize:"18px" }}>
-                      {options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                ))}
-              </div>
-              {selPersona && (
-                <div style={{ display:"flex",alignItems:"center",gap:"8px",marginBottom:"16px",fontSize:"11.5px",color:C.muted,background:"rgba(124,58,237,0.06)",borderRadius:"8px",padding:"7px 12px" }}>
-                  <span>{selPersona.flag}</span>
-                  <span><strong style={{ color:C.slate }}>{selPersona.label}</strong> · {language==="hinglish"?"Hinglish":"English"} · Auto-selected</span>
-                </div>
-              )}
-
-              <div style={{ marginBottom:"20px" }}>
-                <label style={{ fontSize:"10.5px",fontWeight:"800",letterSpacing:"1.2px",textTransform:"uppercase",color:C.muted,marginBottom:"9px",display:"block" }}>Tone</label>
-                <div style={{ display:"flex",gap:"8px",flexWrap:"wrap" }}>
-                  {TONES.map(({ id,emoji,color }) => (
-                    <button key={id} onClick={()=>setTone(id)} style={{ padding:"8px 15px",borderRadius:"99px",border:`1.5px solid ${tone===id?color:C.hairline}`,background:tone===id?color+"18":C.pillBg,color:tone===id?color:C.muted,fontWeight:"700",fontSize:"12.5px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s" }}>
-                      {emoji} {id.charAt(0).toUpperCase()+id.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {error && <div style={{ background:C.danger+"20",border:`1px solid ${C.danger}44`,borderRadius:"12px",padding:"12px 16px",color:C.danger,fontSize:"13px",fontWeight:"600",marginBottom:"14px" }}>⚠ {error}</div>}
-
-              <button onClick={handleSubmit} disabled={loading} onMouseEnter={()=>setBtnHov(true)} onMouseLeave={()=>setBtnHov(false)}
-                style={{ width:"100%",padding:"15px",borderRadius:"14px",border:"none",background:`linear-gradient(135deg,${C.rose},${C.purple})`,color:C.white,fontWeight:"800",fontSize:"15px",cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:btnHov&&!loading?`0 18px 40px ${C.rose}55`:`0 10px 28px ${C.rose}44`,transform:btnHov&&!loading?"translateY(-2px)":"none",opacity:loading?0.75:1,transition:"all 0.15s" }}>
-                {loading?"Generating…":"✦ Generate Content"}
-              </button>
-
-              {platform==="youtube" && (
-                <div style={{ marginTop:"12px",display:"flex",alignItems:"center",gap:"8px",background:`${C.purple}10`,border:`1px solid ${C.purple}25`,borderRadius:"10px",padding:"9px 14px" }}>
-                  <span style={{ fontSize:"13px" }}>🔬</span>
-                  <div>
-                    <span style={{ fontSize:"11.5px",fontWeight:"700",color:C.purple }}>Full AI Pipeline · 6 Engines</span>
-                    <p style={{ fontSize:"10.5px",color:C.muted,marginTop:"1px" }}>GNews → DeepSeek → Gemma{!isPro?" · 500-word preview on Free":" · Full 3000-word script"}</p>
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            {loading && <Card style={{ marginTop:"20px" }}><Spinner label={platform==="youtube"?"Running 6-engine pipeline…":"Generating content…"}/></Card>}
-
-            <div ref={resultRef}>
-              <ResultPanel result={result} platform={platform} keyword={keyword} isPro={isPro} onUpgradeClick={()=>openPricing("upgrade")} user={user}/>
+          <div style={{ marginBottom:"16px" }}>
+            <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px" }}>
+              <span style={{ fontSize:"11px",fontWeight:"600",color:"rgba(255,255,255,0.4)" }}>Usage</span>
+              <span style={{ fontSize:"11px",fontWeight:"700",color:"#a78bfa" }}>{creditStatus?.credits_remaining||0} / {creditStatus?.monthly_limit||20}</span>
             </div>
-          </>
-        )}
+            <div style={{ height:"5px",borderRadius:"99px",background:"rgba(255,255,255,0.08)" }}>
+              <div style={{ height:"100%",borderRadius:"99px",background:"linear-gradient(90deg,#7c3aed,#ff3d8f)",width:`${Math.min(100,((creditStatus?.credits_remaining||0)/(creditStatus?.monthly_limit||20))*100)}%`,transition:"width 0.3s" }}/>
+            </div>
+            {creditStatus?.next_reset && <div style={{ fontSize:"10px",color:"rgba(255,255,255,0.25)",marginTop:"5px" }}>Resets {new Date(creditStatus.next_reset).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}</div>}
+          </div>
+          <div style={{ height:"1px",background:"rgba(255,255,255,0.07)",marginBottom:"14px" }}/>
+          <button onClick={()=>{setChannelSettingsOpen(true);setProfilePanelOpen(false);}}
+            style={{ display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.75)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"10px",transition:"all 0.15s" }}
+            onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.12)"}
+            onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.04)"}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            Channel Settings
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" style={{marginLeft:"auto"}}><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"10px",background:"rgba(255,255,255,0.03)" }}>
+            <div style={{ display:"flex",alignItems:"center",gap:"8px",color:"rgba(255,255,255,0.6)",fontSize:"12px",fontWeight:"600" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              Language
+            </div>
+            <button onClick={()=>setLangMenuOpen(l=>!l)} style={{ background:"rgba(124,58,237,0.12)",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"6px",padding:"4px 8px",color:"#a78bfa",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit" }}>
+              {LANGS.find(l=>l.code===UI_LANG)?.label||"English"}
+            </button>
+          </div>
+          {langMenuOpen && (
+            <div style={{ background:"rgba(8,6,18,0.98)",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"10px",padding:"6px",marginTop:"6px",boxShadow:"0 8px 32px rgba(0,0,0,0.8)" }}>
+              {LANGS.map(({code,label})=>{ const isActive=UI_LANG===code; return (
+                <button key={code} onClick={()=>{ localStorage.setItem("sociomee_lang",code); window.location.reload(); }}
+                  style={{ display:"flex",alignItems:"center",gap:"8px",width:"100%",padding:"8px 10px",borderRadius:"8px",border:"none",background:isActive?"rgba(124,58,237,0.15)":"transparent",color:isActive?"#a78bfa":"rgba(255,255,255,0.7)",fontSize:"12px",fontWeight:isActive?"700":"500",cursor:"pointer",fontFamily:"inherit",textAlign:"left" }}
+                  onMouseEnter={e=>{ if(!isActive) e.currentTarget.style.background="rgba(255,255,255,0.06)"; }}
+                  onMouseLeave={e=>{ if(!isActive) e.currentTarget.style.background="transparent"; }}>
+                  <span>{label}</span>
+                  {isActive&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="3" style={{marginLeft:"auto"}}><polyline points="20 6 9 17 4 12"/></svg>}
+                </button>
+              );})}
+            </div>
+          )}
+        </div>
 
-        <p style={{ textAlign:"center",color:C.muted,fontSize:"11.5px",marginTop:"32px" }}>SocioMee · AI Content Studio · Built with 💜</p>
+        <nav style={{ flex:1, display:"flex", flexDirection:"column", gap:"1px", overflowY:"auto", paddingBottom:"4px", scrollbarWidth:"none", msOverflowStyle:"none" }}>
+          <button onClick={()=>{setActiveTab("generate");setSidebarOpen(false);}} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"9px 12px", borderRadius:"8px", border:"none", borderLeft:activeTab==="generate"?"3px solid #7c3aed":"3px solid transparent", background:activeTab==="generate"?"rgba(124,58,237,0.12)":"transparent", color:activeTab==="generate"?"#c4b5fd":"rgba(255,255,255,0.45)", fontSize:"13px", fontWeight:"600", cursor:"pointer", fontFamily:"inherit", textAlign:"left", width:"100%", transition:"all 0.15s" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            {t("generate")}
+          </button>
+
+          <div style={{ fontSize:"9px", fontWeight:"700", color:"rgba(255,255,255,0.18)", letterSpacing:"1.5px", padding:"12px 12px 4px", textTransform:"uppercase" }}>{t("channels")}</div>
+
+          {CHANNELS.map(ch=>(
+            <button key={ch.id} onClick={()=>{ toggleTab(ch.id); setSidebarOpen(false); }}
+              style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"9px 12px", borderRadius:"8px", border:"none", borderLeft:activeTab===ch.id?`3px solid ${ch.color}`:"3px solid transparent", background:activeTab===ch.id?`${ch.color}14`:"transparent", color:activeTab===ch.id?ch.color:"rgba(255,255,255,0.4)", fontSize:"13px", fontWeight:"600", cursor:"pointer", fontFamily:"inherit", textAlign:"left", width:"100%", transition:"all 0.15s" }}>
+              <span style={{ display:"flex", alignItems:"center", gap:"8px" }}>{ch.icon}{ch.label}</span>
+              {!isPro && <span style={{ fontSize:"7px", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", color:"#fff", padding:"2px 5px", borderRadius:"3px", fontWeight:"700", flexShrink:0 }}>PRO</span>}
+            </button>
+          ))}
+
+          {/* TOOLS - Collapsible Groups */}
+          <div style={{fontSize:"9px",fontWeight:"700",color:"rgba(255,255,255,0.18)",letterSpacing:"1.5px",padding:"12px 12px 4px",textTransform:"uppercase"}}>TOOLS</div>
+
+          {/* YouTube Tools */}
+          <button onClick={()=>toggleGroup("youtube")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.youtube?"rgba(255,0,0,0.06)":"transparent",color:openGroups.youtube?"#ff6b6b":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}>
+              <img src="/icons/youtube.png" style={{width:14,height:14,objectFit:"contain"}} alt="yt"/>
+              YouTube Tools
+            </span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.youtube?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.youtube && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(255,0,0,0.15)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"videoclipper",  label:"Video Clipper",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0 0 10 9.87v4.263a1 1 0 0 0 1.555.832l3.197-2.132a1 1 0 0 0 0-1.664z"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>},
+                {tab:"subtitles",     label:"Subtitles",        icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/></svg>},
+                {tab:"hookgenerator", label:"Hook Generator",   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
+                {tab:"thumbnail",     label:"Thumbnail Studio", icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>},
+                {tab:"translator",    label:"Translator",       icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+                {tab:"texttaudio",    label:"Text to Audio",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>},
+              ].map(item=>(
+                <button key={item.tab} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #7c3aed":"2px solid transparent",background:activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent",color:activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Instagram Tools */}
+          <button onClick={()=>toggleGroup("instagram")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.instagram?"rgba(225,48,108,0.06)":"transparent",color:openGroups.instagram?"#f472b6":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}>
+              <img src="/icons/instagram.png" style={{width:14,height:14,objectFit:"contain"}} alt="ig"/>
+              Instagram Tools
+            </span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.instagram?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.instagram && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(225,48,108,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"hashtags",      label:"Hashtag Generator", icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg>},
+                {tab:"biowriter",     label:"Bio Writer",        icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
+                {tab:"hookgenerator", label:"Hook Generator",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
+                {tab:"translator",    label:"Translator",        icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+                {tab:"texttaudio",    label:"Text to Audio",     icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>},
+              ].map(item=>(
+                <button key={item.tab+"-ig"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #e1306c":"2px solid transparent",background:activeTab===item.tab?"rgba(225,48,108,0.1)":"transparent",color:activeTab===item.tab?"#f9a8d4":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#f9a8d4":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(225,48,108,0.1)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Analytics & Tools */}
+          <button onClick={()=>toggleGroup("analytics")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.analytics?"rgba(124,58,237,0.06)":"transparent",color:openGroups.analytics?"#a78bfa":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Analytics & Tools
+            </span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.analytics?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.analytics && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(124,58,237,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"history",  label:"History",         fn:()=>toggleTab("history"),  icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
+                {tab:"seo",      label:"SEO Analyzer",    fn:()=>{setYoutubeInitialTab("seo");setActiveTab("youtube");setSidebarOpen(false);},   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>},
+                {tab:"calendar", label:"Content Calendar",fn:()=>{setYoutubeInitialTab("festival");setActiveTab("youtube");setSidebarOpen(false);},icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
+                {tab:"guides",   label:"Guides & Blog",   fn:()=>window.open("https://sociomee.in/blog","_blank"), icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>},
+              ].map(item=>(
+                <button key={item.tab} onClick={item.fn}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #7c3aed":"2px solid transparent",background:activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent",color:activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </nav>
+
+        <div style={{ height:"1px", background:"rgba(255,255,255,0.06)", margin:"4px 0", flexShrink:0 }}/>
+
+        <div style={{ display:"flex", flexDirection:"column", gap:"6px", padding:"12px 0 16px", flexShrink:0 }}>
+          {!isPro&&<a href="https://sociomee.in/pricing" style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"10px", borderRadius:"99px", background:"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:"#fff", fontSize:"13px", fontWeight:"700", textDecoration:"none", boxShadow:"0 0 20px rgba(124,58,237,0.35)", margin:"0 2px" }}>{t("upgrade")}</a>}
+          <button onClick={logout} style={{ padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", backdropFilter:"blur(10px)", color:"rgba(255,255,255,0.4)", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", margin:"0 2px" }}>{t("signout")}</button>
+        </div>
       </div>
 
+      {/* MAIN CONTENT */}
+      <div id="main-content" style={{ marginLeft:"220px", flex:1, padding:"28px 32px 80px", minHeight:"100vh", overflowX:"hidden" }}>
+        <div style={{ maxWidth:"860px", margin:"0 auto" }}>
+
+          <div style={{ marginBottom:"28px" }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", color:"#fff", fontSize:"10px", fontWeight:"900", letterSpacing:"2.5px", textTransform:"uppercase", padding:"5px 14px", borderRadius:"99px", marginBottom:"12px" }}>✦ AI CONTENT STUDIO</div>
+            <h1 style={{ fontSize:"clamp(32px,5vw,52px)", fontWeight:"900", fontFamily:"'Orbitron',sans-serif", color:"#fff", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"6px" }}>SOCIOMEE</h1>
+            <p style={{ fontSize:"15px", color:"rgba(255,255,255,0.35)" }}>{t("oneTopicInfinite")}</p>
+          </div>
+
+          {!isLoggedIn && (
+            <div style={{ textAlign:"center", padding:"60px 20px" }}>
+              <h2 style={{ color:"#fff", fontFamily:"'Orbitron',sans-serif", fontSize:"22px", marginBottom:"12px" }}>Welcome to SocioMee</h2>
+              <p style={{ color:"rgba(255,255,255,0.4)", marginBottom:"24px" }}>Please log in to access all tools.</p>
+              <a href="/app/login" style={{ padding:"12px 32px", borderRadius:"99px", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", color:"#fff", fontWeight:"800", textDecoration:"none", fontSize:"14px" }}>Log In</a>
+            </div>
+          )}
+
+          {activeTab==="generate" && isLoggedIn && (
+            <>
+              <div style={{ background:"rgba(255,255,255,0.04)", border:"1.5px solid rgba(255,255,255,0.08)", borderRadius:"18px", padding:"24px", backdropFilter:"blur(16px)", marginBottom:"20px" }}>
+
+                {/* Keyword Input */}
+                <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>KEYWORD / TOPIC</div>
+                <input value={keyword} onChange={e=>setKeyword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
+                  placeholder="e.g. skincare routine, crypto scam, fake influencers..."
+                  style={{ width:"100%", padding:"14px 22px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.25)", outline:"none", fontSize:"15px", color:"#fff", background:"rgba(255,255,255,0.05)", fontFamily:"inherit", boxSizing:"border-box", marginBottom:"20px", transition:"border 0.2s" }}
+                  onFocus={e=>e.target.style.borderColor="#7c3aed"} onBlur={e=>e.target.style.borderColor="rgba(124,58,237,0.25)"}/>
+
+                {/* Platform Grid */}
+                <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>PLATFORM</div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"8px", marginBottom:"20px" }}>
+                  {PLATFORMS.map(p=>(
+                    <button key={p.id} onClick={()=>setPlatform(p.id)}
+                      style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"6px", padding:"12px 8px", borderRadius:"22px", border:`1.5px solid ${platform===p.id?p.color:"rgba(255,255,255,0.08)"}`, background:platform===p.id?`${p.color}18`:"rgba(255,255,255,0.03)", color:platform===p.id?p.color:"rgba(255,255,255,0.5)", fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", boxShadow:platform===p.id?`0 0 12px ${p.color}30`:"none" }}>
+                      <img src={p.img} alt={p.label} style={{ width:"22px", height:"22px", objectFit:"contain" }} onError={e=>e.target.style.display="none"}/>
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Persona, Language, Format row */}
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"16px", marginBottom:"20px" }}>
+                  <div>
+                    <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"8px" }}>PERSONA</div>
+                    <CustomSelect value={personality} onChange={setPersonality} label="Select Persona" options={PERSONAS.map(p => ({ id:p.id, label:p.label }))}/>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"8px" }}>LANGUAGE</div>
+                    <CustomSelect value={language} onChange={setLanguage} label="Select Language" options={[{id:"hinglish",label:"Hinglish"},{id:"hindi",label:"Hindi"},{id:"english",label:"English"},{id:"marathi",label:"Marathi"},{id:"tamil",label:"Tamil"},{id:"bengali",label:"Bengali"}]}/>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"8px" }}>FORMAT</div>
+                    <CustomSelect value={formatType} onChange={setFormatType} label="Select Format" options={[{id:"long",label:"Long Form"},{id:"short",label:"Short Form"},{id:"thread",label:"Thread"},{id:"reel",label:"Reel Script"}]}/>
+                  </div>
+                </div>
+
+                {/* Tone Pills */}
+                <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>TONE</div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:"8px", marginBottom:"16px" }}>
+                  {[
+                    {id:"bold",label:"Bold",emoji:"🔥"},{id:"funny",label:"Funny",emoji:"😂"},
+                    {id:"emotional",label:"Emotional",emoji:"💖"},{id:"informative",label:"Informative",emoji:"📚"},
+                    {id:"aggressive",label:"Aggressive",emoji:"⚡"},{id:"sales",label:"Sales",emoji:"💸"},
+                    {id:"dramatic",label:"Dramatic",emoji:"🎭"},{id:"casual",label:"Casual",emoji:"😎"},
+                    {id:"motivational",label:"Motivational",emoji:"🚀"},{id:"storytelling",label:"Storytelling",emoji:"📖"},
+                    {id:"educational",label:"Educational",emoji:"🎓"},{id:"trending",label:"Trending",emoji:"📈"},
+                    {id:"cinematic",label:"Cinematic",emoji:"🎬"},
+                  ].map(tn=>(
+                    <button key={tn.id} onClick={()=>setTone(tn.id)}
+                      style={{ padding:"7px 14px", borderRadius:"99px", border:`1.5px solid ${tone===tn.id?"rgba(124,58,237,0.7)":"rgba(255,255,255,0.1)"}`, background:tone===tn.id?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)", color:tone===tn.id?"#c4b5fd":"rgba(255,255,255,0.6)", fontSize:"12px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", boxShadow:tone===tn.id?"0 0 10px rgba(124,58,237,0.3)":"none" }}>
+                      {tn.emoji} {tn.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Persona info line */}
+                {selPersona && (
+                  <div style={{ fontSize:"12px", color:"rgba(255,255,255,0.35)", marginBottom:"16px", fontWeight:"600" }}>
+                    <span style={{ color:"#a78bfa", fontWeight:"700" }}>{selPersona.flag} {selPersona.label}</span>
+                    {" · "}{language.charAt(0).toUpperCase()+language.slice(1)}{" · Auto-selected"}
+                  </div>
+                )}
+
+                {error && <div style={{ background:"rgba(248,113,113,0.1)", border:"1px solid rgba(248,113,113,0.3)", borderRadius:"10px", padding:"12px 16px", marginBottom:"16px", color:"#f87171", fontSize:"13px" }}>⚠ {error}</div>}
+
+                {/* Generate Button - Glass style */}
+                <button onClick={handleSubmit} disabled={loading||!keyword.trim()}
+                  className="gen-btn"
+                  style={{ width:"100%", padding:"16px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.6)", background:loading||!keyword.trim()?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.15)", backdropFilter:"blur(16px)", color:"#fff", fontWeight:"800", fontSize:"15px", cursor:loading||!keyword.trim()?"not-allowed":"pointer", fontFamily:"inherit", boxShadow:loading||!keyword.trim()?"none":"0 0 24px rgba(124,58,237,0.5),0 0 60px rgba(124,58,237,0.2)", transition:"all 0.3s", opacity:loading||!keyword.trim()?0.5:1, letterSpacing:"1px" }}>
+                  {loading ? (
+                    <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"10px" }}>
+                      <span style={{ width:"16px", height:"16px", borderRadius:"50%", border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#fff", animation:"spin 0.7s linear infinite", display:"inline-block" }}/>
+                      {platform==="youtube"?"Running 6-engine pipeline…":"Generating content…"}
+                    </span>
+                  ) : "✦ Generate Content"}
+                </button>
+              </div>
+
+              {loading && (
+                <div style={{ background:"rgba(255,255,255,0.04)", border:"1.5px solid rgba(255,255,255,0.08)", borderRadius:"18px", padding:"32px", marginBottom:"20px", textAlign:"center" }}>
+                  <div style={{ width:"40px", height:"40px", borderRadius:"50%", border:"3px solid rgba(124,58,237,0.2)", borderTopColor:"#7c3aed", animation:"spin 0.7s linear infinite", margin:"0 auto 16px" }}/>
+                  <p style={{ color:"rgba(255,255,255,0.5)", fontSize:"14px" }}>{platform==="youtube"?"Running 6-engine AI pipeline…":"Generating your content…"}</p>
+                </div>
+              )}
+
+              <div ref={resultRef}>
+                {result && <ResultPanel result={result} platform={platform} keyword={keyword} isPro={isPro} onUpgradeClick={()=>openPricing("upgrade")} user={user}/>}
+              </div>
+            </>
+          )}
+
+          {activeTab==="youtube"    && isLoggedIn && <YouTubeDashboard user={user} initialTab={youtubeInitialTab}/>}
+          {activeTab==="threads"    && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Threads" icon="/icons/threads.png" color="#ffffff" message="Threads integration coming soon! Schedule posts, analyze engagement and grow your audience."/></div>}
+          {activeTab==="instagram"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Instagram" icon="/icons/instagram.png" color="#e1306c" message="Instagram integration coming soon. Direct posting, Reels analytics and hashtag performance."/></div>}
+          {activeTab==="pinterest"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Pinterest" icon="/icons/pinterest.png" color="#e60023" message="Pinterest integration coming soon. Schedule pins and grow your Pinterest presence."/></div>}
+          {activeTab==="reddit"     && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Reddit" icon="/icons/reddit.png" color="#ff4500" message="Reddit integration coming soon. Post to subreddits and track upvotes."/></div>}
+          {activeTab==="tgschedule" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TelegramScheduler user={user}/></div>}
+          {activeTab==="discord"    && isLoggedIn && <DiscordScheduler user={user}/>}
+          {activeTab==="history"    && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HistoryPanel user={user} onReuse={(topic,platform)=>{ setKeyword(topic); setPlatform(platform); setActiveTab("generate"); }}/></div>}
+          {activeTab==="translator" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><Translator user={user}/></div>}
+          {activeTab==="videoclipper"&&isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><VideoClipper user={user}/></div>}
+          {activeTab==="subtitles"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><SubtitleGenerator user={user}/></div>}
+          {activeTab==="hashtags"   && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HashtagGenerator user={user}/></div>}
+          {activeTab==="texttaudio" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TextToAudio user={user}/></div>}
+          {activeTab==="hookgenerator"&&isLoggedIn&& <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HookGenerator user={user}/></div>}
+          {activeTab==="biowriter"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><BioWriter user={user}/></div>}
+          {activeTab==="thumbnail"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px",textAlign:"center",padding:"40px"}}><div style={{fontSize:"32px",marginBottom:"12px"}}>🖼️</div><h2 style={{color:"#fff",fontFamily:"'Orbitron',sans-serif",fontSize:"18px",marginBottom:"8px"}}>Thumbnail Studio</h2><p style={{color:"rgba(255,255,255,0.4)",fontSize:"14px"}}>Open YouTube Dashboard and go to the Optimize tab to analyze thumbnails.</p></div>}
+
+          <p style={{ textAlign:"center", color:"rgba(255,255,255,0.2)", fontSize:"11.5px", marginTop:"32px" }}>SocioMee · AI Content Studio · Built with 💜</p>
+        </div>
+      </div>
+
+      {channelSettingsOpen && (
+        <ChannelSettingsModal user={{...user, plan_label: creditStatus?.plan_label||"Free"}} onClose={()=>setChannelSettingsOpen(false)} BASE={BASE}/>
+      )}
       {showPricing && (
         <PricingPopup
           mode={pricingMode}
           userId={user?.user_id||localStorage.getItem("sociomee_user_id")||"default_user"}
-          email={user?.email  ||localStorage.getItem("sociomee_email")  ||""}
+          email={user?.email||localStorage.getItem("sociomee_email")||""}
           onClose={()=>setShowPricing(false)}
           onSuccess={handlePaymentSuccess}
         />
       )}
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;transition:background-color 0.25s ease,border-color 0.25s ease,color 0.2s ease}
-        select option{background:${dark?"#1a0f35":"#ffffff"};color:${dark?"#ede8ff":"#0d0015"}}
-        input::placeholder{color:${dark?"rgba(157,134,200,0.6)":"rgba(139,107,154,0.6)"}}
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800;900&family=Orbitron:wght@400;700;900&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0;}
+        @keyframes shimmer{to{background-position:400px 0;}}
+        @keyframes spin{to{transform:rotate(360deg);}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
         @keyframes floatA{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
         @keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(16px)}}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        ::-webkit-scrollbar{width:5px}
-        ::-webkit-scrollbar-track{background:transparent}
-        ::-webkit-scrollbar-thumb{background:${dark?"rgba(167,139,250,0.35)":"rgba(124,58,237,0.3)"};border-radius:99px}
+        #app-sidebar{transform:translateX(0);}
+        #hamburger-btn{display:none;}
+        nav::-webkit-scrollbar{display:none;} html,body,#root{overflow-x:hidden!important;} ::-webkit-scrollbar:horizontal{height:0!important;display:none!important;}
+        input::placeholder{color:rgba(255,255,255,0.25);}
+        .gen-btn:hover:not(:disabled){background:rgba(124,58,237,0.25)!important;border-color:rgba(124,58,237,1)!important;box-shadow:0 0 40px rgba(124,58,237,0.8),0 0 80px rgba(124,58,237,0.3)!important;transform:translateY(-2px);}
+        select{appearance:none;-webkit-appearance:none;}
+        select option{background:#0a0a0a;color:#fff;}
+        html,body{overflow-x:hidden!important;} @media(max-width:768px){
+          #app-sidebar{transform:translateX(-100%);width:240px!important;}
+          #app-sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,0.5);}
+          #main-content{margin-left:0!important;padding:60px 16px 80px!important;}
+          #hamburger-btn{display:flex!important;}
+        }
       `}</style>
     </div>
   );

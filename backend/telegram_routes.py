@@ -158,3 +158,39 @@ def bot_status():
         return {"connected": False, "error": data.get("description", "")}
     except Exception as e:
         return {"connected": False, "error": str(e)}
+
+# ── Multi-channel routes ──────────────────────────────────────────────
+@router.get("/channels")
+def get_channels(user_id: str = Query(...)):
+    try:
+        tc = _tc()
+        channels = tc.get_channels(user_id)
+        limit = tc.get_channel_limit(user_id)
+        return {"channels": channels, "limit": limit, "total": len(channels)}
+    except Exception as e:
+        raise HTTPException(400, str(e))
+
+@router.post("/add-channel")
+def add_channel(user_id: str = Query(...), channel: str = Query(...)):
+    try:
+        tc = _tc()
+        return tc.add_channel_multi(user_id, channel)
+    except Exception as e:
+        raise HTTPException(400, str(e))
+
+@router.post("/verify-channel-multi")
+def verify_channel_multi(user_id: str = Query(...), channel: str = Query(...)):
+    try:
+        tc = _tc()
+        return tc.verify_channel_multi(user_id, channel)
+    except Exception as e:
+        raise HTTPException(400, str(e))
+
+@router.post("/remove-channel-multi")
+def remove_channel_multi(user_id: str = Query(...), channel: str = Query(...)):
+    try:
+        tc = _tc()
+        tc.remove_channel_multi(user_id, channel)
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(400, str(e))

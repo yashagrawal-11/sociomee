@@ -4,10 +4,29 @@ body {
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+*, *:focus, *:active {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+button:focus, a:focus, input:focus {
+  outline: none !important;
+  box-shadow: none;
+}
+
+html, body, #root {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+::-webkit-scrollbar:horizontal {
+  display: none !important;
+  height: 0 !important;
 }

@@ -684,3 +684,18 @@ async def publish(user_id: str, payload: dict):
         "url":     f"https://www.instagram.com/p/{post_id}/",
         "message": "Posted successfully to Instagram!",
     }
+@router.post("/deauth")
+async def deauth():
+    return {"success": True}
+
+@router.get("/deauth")
+async def deauth_get():
+    return {"success": True}
+
+@router.post("/delete")
+async def delete_data():
+    return {"success": True}
+
+@router.get("/delete")
+async def delete_data_get():
+    return {"success": True}

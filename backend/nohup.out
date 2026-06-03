@@ -1,0 +1,315 @@
+nohup: ignoring input
+INFO:     Started server process [176724]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+CLIENT ID: 517099702570-e90p257ovct0pt3in89hogtr1nn6edmm.apps.googleusercontent.com
+JWT: 263d7fc55125bcbce12a398faef1c944d69ab07ec3a8c45004df50e6caa7bbcc
+INFO:     127.0.0.1:40620 - "POST /promo/validate HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60984 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60986 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60994 - "POST /streaks/login/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:32778 - "POST /fingerprint/register HTTP/1.0" 200 OK
+INFO:     127.0.0.1:32782 - "GET /credits/112040558777568963466 HTTP/1.0" 401 Unauthorized
+INFO:     127.0.0.1:32794 - "GET /streaks/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:34822 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:34832 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:34840 - "POST /streaks/login/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43108 - "POST /fingerprint/register HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43124 - "GET /credits/112040558777568963466 HTTP/1.0" 401 Unauthorized
+INFO:     127.0.0.1:43128 - "GET /streaks/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52128 - "GET /auth/github/login HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52030 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52042 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38370 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38382 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:50370 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:50372 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:50378 - "POST /streaks/login/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:50390 - "POST /fingerprint/register HTTP/1.0" 200 OK
+INFO:     127.0.0.1:50404 - "GET /streaks/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:50408 - "GET /credits/112040558777568963466 HTTP/1.0" 401 Unauthorized
+INFO:     127.0.0.1:41658 - "GET /history/112040558777568963466 HTTP/1.0" 200 OK
+/var/www/sociomee/backend/venv/lib/python3.10/site-packages/google/api_core/_python_version_support.py:273: FutureWarning: You are using a Python version (3.10.12) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2026-10-04). Please upgrade to the latest Python version, or at least Python 3.11, to continue receiving updates for google.api_core past that date.
+  warnings.warn(message, FutureWarning)
+2026-06-03 11:50:18 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 11:50:18 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:41660 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41666 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 11:50:19 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 11:50:19 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+2026-06-03 11:50:20 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 11:50:20 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:41674 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41680 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40016 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40022 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40026 - "POST /streaks/login/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40034 - "GET /credits/112040558777568963466 HTTP/1.0" 401 Unauthorized
+INFO:     127.0.0.1:40038 - "POST /fingerprint/register HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40046 - "GET /streaks/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:35026 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:35036 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:35042 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53642 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53644 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53646 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57516 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57518 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57530 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43398 - "GET /history/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 12:48:43 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 12:48:43 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:45594 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45604 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 12:48:44 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 12:48:44 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+2026-06-03 12:48:45 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 12:48:45 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:45616 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45632 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-03 12:49:08 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 12:49:09 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:40122 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40136 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 12:49:09 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 12:49:09 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+2026-06-03 12:49:10 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 12:49:11 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:40140 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40144 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:54190 - "GET /history/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 12:52:30 [WARNING] telegram_connect — Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:52448 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52460 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52464 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38714 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38728 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38742 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 13:08:44 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 13:08:44 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:48552 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:48556 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 13:08:45 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 13:08:45 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+2026-06-03 13:08:46 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 13:08:46 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:48564 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:48578 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-03 13:08:49 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 13:08:49 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:48582 - "GET /youtube/all-videos/112040558777568963466?max_results=50 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:34982 - "GET /telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:34994 - "GET /discord/status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46312 - "GET /history/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 13:09:08 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 13:09:08 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:46328 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46336 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 13:09:08 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 13:09:08 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+2026-06-03 13:09:09 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 13:09:10 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:46338 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46342 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-03 13:09:20 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 13:09:20 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:39882 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:39884 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 13:09:21 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 13:09:21 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+2026-06-03 13:09:22 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 13:09:22 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:39888 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:39904 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-03 13:09:23 [INFO] httpx — HTTP Request: GET https://www.googleapis.com/calendar/v3/calendars/en.indian%23holiday%40group.v.calendar.google.com/events?key=AIzaSyBYoXmAu8c5WeYXNyjMVqWwLXrozs-_LAs&timeMin=2026-01-01T00:00:00Z&timeMax=2026-12-31T23:59:59Z&singleEvents=true&orderBy=startTime&maxResults=100 "HTTP/1.1 200 OK"
+[festivals] Fetched 55 festivals from Google Calendar
+INFO:     127.0.0.1:48450 - "GET /festivals/upcoming HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49004 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49010 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49014 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46542 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46548 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46562 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33490 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33502 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33516 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36670 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36678 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36694 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:58464 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:58468 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:58484 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33018 - "GET /youtube/channels?user_id=112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:33024 - "GET /telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33028 - "GET /discord/status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 14:03:07 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 14:03:07 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:45626 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45634 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 14:03:08 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 14:03:08 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+2026-06-03 14:03:09 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 14:03:09 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:45638 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45652 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-03 14:03:16 [INFO] youtube_connect — YouTube disconnected for user=112040558777568963466 channel=UC1wmEu0r1Q4ZriRAURayFsA
+INFO:     127.0.0.1:44338 - "DELETE /youtube/disconnect-channel/112040558777568963466?channel_id=UC1wmEu0r1Q4ZriRAURayFsA HTTP/1.0" 200 OK
+2026-06-03 14:03:16 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 14:03:16 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:44344 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44350 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 14:03:17 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 14:03:17 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:44382 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-03 14:03:18 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 14:03:18 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:44366 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+2026-06-03 14:03:22 [INFO] youtube_connect — YouTube disconnected for user=112040558777568963466 channel=UCNJh6zR5CtMW0Ly_8szyuKw
+INFO:     127.0.0.1:56368 - "DELETE /youtube/disconnect-channel/112040558777568963466?channel_id=UCNJh6zR5CtMW0Ly_8szyuKw HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56378 - "GET /youtube/auth-url?redirect_uri=https%3A%2F%2Fsociomee.in%2Fyoutube%2Fcallback HTTP/1.0" 200 OK
+INFO:     127.0.0.1:55552 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:55568 - "GET /auth/me HTTP/1.0" 200 OK
+2026-06-03 14:03:40 [INFO] youtube_connect — YouTube tokens stored for user=112040558777568963466 channel=UC1wmEu0r1Q4ZriRAURayFsA (1 total)
+2026-06-03 14:03:40 [INFO] youtube_routes — YouTube connected — user=112040558777568963466 channel=UC1wmEu0r1Q4ZriRAURayFsA subs=1120
+INFO:     127.0.0.1:55574 - "POST /youtube/connect HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42674 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42676 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42690 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42698 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42700 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42702 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42708 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42748 - "GET /youtube/channels?user_id=112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:42762 - "GET /telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42768 - "GET /discord/status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:48740 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:48746 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:48752 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 14:38:20 [WARNING] telegram_connect — Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:44850 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44860 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44870 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44060 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44070 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44072 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44074 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44084 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44086 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53642 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53652 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53668 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44314 - "GET /youtube/channels?user_id=112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:44326 - "GET /telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44342 - "GET /discord/status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56698 - "GET /youtube/channels?user_id=112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:56700 - "GET /telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56712 - "GET /discord/status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56174 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56184 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60950 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60972 - "GET /telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 16:39:09 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+INFO:     127.0.0.1:60978 - "GET /discord/status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 16:39:10 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:60964 - "GET /youtube/channel/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 16:43:52 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 16:43:52 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:49136 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43580 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 16:43:53 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 16:43:53 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+2026-06-03 16:43:54 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 16:43:54 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:43592 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43600 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52228 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52242 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52256 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 16:45:43 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+INFO:     127.0.0.1:42202 - "GET /telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 16:45:43 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:42208 - "GET /discord/status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42188 - "GET /youtube/channel/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49106 - "GET /discord/status?user_id=default_user HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49108 - "GET /youtube/channel/default_user HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:49110 - "GET /telegram/connect-status?user_id=default_user HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41828 - "GET /.env HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:41842 - "GET /v1/.env HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:41858 - "GET /v2/.env HTTP/1.0" 404 Not Found
+2026-06-03 17:06:16 [WARNING] telegram_connect — Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:53334 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53336 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53348 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41858 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41864 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41866 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33956 - "GET /telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33982 - "GET /discord/status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 17:27:15 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 17:27:15 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:33966 - "GET /youtube/channel/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44192 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44198 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44202 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:39540 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:39554 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:39556 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:39576 - "GET /discord/status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 17:53:39 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+INFO:     127.0.0.1:39592 - "GET /telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 17:53:39 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:39568 - "GET /youtube/channel/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:32876 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:32888 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:32896 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60442 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60444 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:55946 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42064 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42072 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42078 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:37666 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:37680 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:37686 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49502 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49514 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40654 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:54874 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:54876 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:54882 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36470 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36476 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36488 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53852 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53860 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53862 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 18:10:02 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 18:10:03 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:57164 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57176 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 18:10:03 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 18:10:03 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+2026-06-03 18:10:04 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 18:10:05 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:57182 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57194 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33408 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33422 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33436 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 18:11:37 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 18:11:37 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:33446 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33462 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-03 18:11:38 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 18:11:38 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+2026-06-03 18:11:39 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-03 18:11:39 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:33468 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33482 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49756 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49772 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49774 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49534 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49536 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49538 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK

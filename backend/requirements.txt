@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+httpx
+requests
+openai
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+razorpay
+slowapi
+python-dotenv
+aiofiles
+Pillow

@@ -368,3 +368,89 @@ def start_polling():
     _polling_thread = threading.Thread(target=_poll_loop, daemon=True, name="telegram-poll")
     _polling_thread.start()
     log.info("Telegram polling thread started")
+
+# ── Multi-channel support ─────────────────────────────────────────────
+CHANNEL_LIMITS = {
+    "free":             1,
+    "pro_monthly":      2,
+    "pro_annual":       2,
+    "premium_monthly":  5,
+    "premium_annual":   5,
+}
+
+def get_channel_limit(user_id: str) -> int:
+    try:
+        from credits_manager import get_credit_status
+        plan = get_credit_status(user_id).get("plan", "free")
+        return CHANNEL_LIMITS.get(plan, 1)
+    except:
+        return 1
+
+def get_channels(user_id: str) -> list:
+    accounts = _load(DATA_FILE)
+    if user_id not in accounts:
+        return []
+    record = accounts[user_id]
+    # Migrate old single channel format
+    if "channel" in record and "channels" not in record:
+        channels = []
+        if record.get("channel"):
+            channels = [{"username": record["channel"], "verified": record.get("channel_verified", False), "added_at": record.get("connected_at", "")}]
+        record["channels"] = channels
+        record.pop("channel", None)
+        record.pop("channel_verified", None)
+        accounts[user_id] = record
+        _save(DATA_FILE, accounts)
+    return record.get("channels", [])
+
+def add_channel_multi(user_id: str, channel: str) -> Dict[str, Any]:
+    accounts = _load(DATA_FILE)
+    if user_id not in accounts:
+        raise ValueError("Telegram not connected yet.")
+    limit = get_channel_limit(user_id)
+    channels = get_channels(user_id)
+    if len(channels) >= limit:
+        raise ValueError(f"Channel limit reached ({limit}). Upgrade your plan to add more.")
+    channel = channel.strip()
+    if not channel.startswith("@"):
+        channel = "@" + channel
+    if any(c["username"] == channel for c in channels):
+        raise ValueError(f"{channel} is already added.")
+    channels.append({"username": channel, "verified": False, "added_at": datetime.now(timezone.utc).isoformat()})
+    accounts = _load(DATA_FILE)
+    accounts[user_id]["channels"] = channels
+    _save(DATA_FILE, accounts)
+    return {"success": True, "channel": channel, "total": len(channels), "limit": limit}
+
+def verify_channel_multi(user_id: str, channel: str) -> Dict[str, Any]:
+    conn = get_connection(user_id)
+    if not conn:
+        raise ValueError("Telegram not connected.")
+    channel = channel.strip()
+    if not channel.startswith("@"):
+        channel = "@" + channel
+    try:
+        send_message(chat_id=channel, text="\u2705 <b>SocioMee Channel Connected!</b>\\n\\nYour channel is now linked to SocioMee.\\n\\n\u26a1 Powered by <b>SocioMee AI</b>")
+        accounts = _load(DATA_FILE)
+        channels = get_channels(user_id)
+        for c in channels:
+            if c["username"] == channel:
+                c["verified"] = True
+        accounts[user_id]["channels"] = channels
+        _save(DATA_FILE, accounts)
+        return {"success": True, "channel": channel}
+    except Exception as e:
+        err = str(e)
+        if "chat not found" in err.lower():
+            raise ValueError(f"Channel {channel} not found.")
+        elif "not enough rights" in err.lower() or "forbidden" in err.lower():
+            raise ValueError(f"@sociomee_bot is not admin in {channel}.")
+        raise ValueError(f"Failed: {err}")
+
+def remove_channel_multi(user_id: str, channel: str) -> None:
+    accounts = _load(DATA_FILE)
+    if user_id not in accounts:
+        return
+    channels = get_channels(user_id)
+    accounts[user_id]["channels"] = [c for c in channels if c["username"] != channel]
+    _save(DATA_FILE, accounts)

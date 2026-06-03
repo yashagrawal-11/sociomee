@@ -16,6 +16,7 @@ Required .env additions (do NOT reuse GOOGLE_ vars):
 from __future__ import annotations
 
 import json
+import re
 import logging
 import os
 from datetime import datetime, timezone, timedelta
@@ -121,9 +122,18 @@ def _get_credentials(user_id: str):
     _assert_yt_env()
 
     data   = _load()
-    record = data.get(user_id)
-    if not record:
+    raw = data.get(user_id)
+    if not raw:
         raise ValueError("YouTube account not connected. Please connect first.")
+    # Support multi-channel structure
+    if "channels" in raw:
+        active_id = raw.get("active_channel_id", "")
+        channels = raw.get("channels", [])
+        record = next((c for c in channels if c.get("channel_id") == active_id), channels[0] if channels else None)
+        if not record:
+            raise ValueError("No active YouTube channel found.")
+    else:
+        record = raw  # legacy flat record
 
     creds = Credentials(
         token         = record.get("access_token"),
@@ -135,7 +145,7 @@ def _get_credentials(user_id: str):
     )
 
     # Auto-refresh if expired - with timeout
-    if creds.expired and creds.refresh_token:
+    if (creds.expired or not creds.valid) and creds.refresh_token:
         try:
             import threading, requests
             result = [None]
@@ -151,7 +161,13 @@ def _get_credentials(user_id: str):
             if result[0] == "ok":
                 record["access_token"] = creds.token
                 record["token_expiry"] = creds.expiry.isoformat() if creds.expiry else ""
-                data[user_id] = record
+                # Save back into multi-channel structure
+                raw2 = data.get(user_id, {})
+                if "channels" in raw2:
+                    raw2["channels"] = [record if c.get("channel_id") == record.get("channel_id") else c for c in raw2["channels"]]
+                    data[user_id] = raw2
+                else:
+                    data[user_id] = record
                 _save(data)
                 log.info("YouTube token refreshed for user=%s", user_id)
             else:
@@ -258,6 +274,11 @@ def exchange_code(code: str, redirect_uri: str = "") -> Dict[str, str]:
     }
 
 
+def _plan_channel_limit(plan: str) -> int:
+    """Return max YouTube channels allowed per plan."""
+    return {"free": 1, "pro_monthly": 2, "pro_annual": 2, "premium_monthly": 5, "premium_annual": 5}.get(plan, 1)
+
+
 def store_youtube_tokens(
     user_id:       str,
     access_token:  str,
@@ -268,9 +289,13 @@ def store_youtube_tokens(
     subscribers:   int = 0,
     total_views:   int = 0,
     video_count:   int = 0,
-) -> None:
+    plan:          str = "free",
+) -> dict:
+    """Add or update a channel for a user. Returns {ok, error, count}."""
     data = _load()
-    data[user_id] = {
+    user_data = data.get(user_id)
+
+    new_channel = {
         "access_token":  access_token,
         "refresh_token": refresh_token,
         "channel_id":    channel_id,
@@ -283,26 +308,121 @@ def store_youtube_tokens(
         "connected_at":  datetime.now(timezone.utc).isoformat(),
         "yt_client_id":  _yt_client_id()[:12] + "…",
     }
+
+    # Migrate legacy flat record → multi-channel structure
+    if user_data and "channels" not in user_data:
+        user_data = {
+            "active_channel_id": user_data.get("channel_id", ""),
+            "channels": [user_data]
+        }
+
+    if not user_data:
+        user_data = {"active_channel_id": channel_id, "channels": []}
+
+    channels = user_data.get("channels", [])
+    limit = _plan_channel_limit(plan)
+
+    # Check if channel already connected — update it
+    existing_ids = [c.get("channel_id") for c in channels]
+    if channel_id in existing_ids:
+        channels = [new_channel if c.get("channel_id") == channel_id else c for c in channels]
+        user_data["channels"] = channels
+        user_data["active_channel_id"] = channel_id
+        data[user_id] = user_data
+        _save(data)
+        log.info("YouTube tokens updated for user=%s channel=%s", user_id, channel_id)
+        return {"ok": True, "count": len(channels)}
+
+    # Check limit
+    if len(channels) >= limit:
+        return {"ok": False, "error": f"Plan limit reached ({limit} channels). Upgrade to add more.", "limit": limit}
+
+    # Add new channel
+    channels.append(new_channel)
+    user_data["channels"] = channels
+    user_data["active_channel_id"] = channel_id
+    data[user_id] = user_data
     _save(data)
-    log.info("YouTube tokens stored for user=%s channel=%s", user_id, channel_id)
+    log.info("YouTube tokens stored for user=%s channel=%s (%d total)", user_id, channel_id, len(channels))
+    return {"ok": True, "count": len(channels)}
 
 
 def is_connected(user_id: str) -> bool:
-    return user_id in _load()
-
-
-def disconnect(user_id: str) -> None:
     data = _load()
-    data.pop(user_id, None)
+    raw = data.get(user_id)
+    if not raw:
+        return False
+    if "channels" in raw:
+        return len(raw.get("channels", [])) > 0
+    return True
+
+
+def get_connected_channels(user_id: str) -> list:
+    """Return list of all connected channels for a user."""
+    data = _load()
+    raw = data.get(user_id)
+    if not raw:
+        return []
+    if "channels" in raw:
+        return raw.get("channels", [])
+    return [raw]  # legacy
+
+
+def get_active_channel_id(user_id: str) -> str:
+    data = _load()
+    raw = data.get(user_id, {})
+    if "channels" in raw:
+        return raw.get("active_channel_id", "")
+    return raw.get("channel_id", "")
+
+
+def set_active_channel(user_id: str, channel_id: str) -> bool:
+    data = _load()
+    raw = data.get(user_id)
+    if not raw or "channels" not in raw:
+        return False
+    ids = [c.get("channel_id") for c in raw.get("channels", [])]
+    if channel_id not in ids:
+        return False
+    raw["active_channel_id"] = channel_id
+    data[user_id] = raw
     _save(data)
-    log.info("YouTube disconnected for user=%s", user_id)
+    return True
+
+
+def disconnect(user_id: str, channel_id: str = None) -> None:
+    data = _load()
+    raw = data.get(user_id)
+    if not raw:
+        return
+    if channel_id and "channels" in raw:
+        raw["channels"] = [c for c in raw["channels"] if c.get("channel_id") != channel_id]
+        if raw["channels"]:
+            if raw.get("active_channel_id") == channel_id:
+                raw["active_channel_id"] = raw["channels"][0]["channel_id"]
+            data[user_id] = raw
+        else:
+            data.pop(user_id, None)
+    else:
+        data.pop(user_id, None)
+    _save(data)
+    log.info("YouTube disconnected for user=%s channel=%s", user_id, channel_id)
 
 
 def get_channel_info(user_id: str) -> Dict[str, Any]:
     data   = _load()
-    record = data.get(user_id, {})
-    if not record:
+    raw = data.get(user_id, {})
+    if not raw:
         raise ValueError("YouTube account not connected.")
+    # Multi-channel: get active channel record
+    if "channels" in raw:
+        active_id = raw.get("active_channel_id", "")
+        channels = raw.get("channels", [])
+        record = next((ch for ch in channels if ch.get("channel_id") == active_id), channels[0] if channels else None)
+        if not record:
+            raise ValueError("No active channel found.")
+    else:
+        record = raw  # legacy flat
 
     try:
         creds   = _get_credentials(user_id)
@@ -348,9 +468,18 @@ def get_channel_info(user_id: str) -> Dict[str, Any]:
 
 def get_analytics(user_id: str, days: int = 30) -> Dict[str, Any]:
     data   = _load()
-    record = data.get(user_id, {})
-    if not record:
+    raw = data.get(user_id, {})
+    if not raw:
         raise ValueError("YouTube account not connected.")
+    # Multi-channel: get active channel record
+    if "channels" in raw:
+        active_id = raw.get("active_channel_id", "")
+        channels = raw.get("channels", [])
+        record = next((ch for ch in channels if ch.get("channel_id") == active_id), channels[0] if channels else None)
+        if not record:
+            raise ValueError("No active channel found.")
+    else:
+        record = raw
 
     channel_id = record.get("channel_id", "")
     end_date   = datetime.now(timezone.utc).date()
@@ -420,7 +549,11 @@ def get_top_videos(user_id: str, max_results: int = 10) -> List[Dict]:
         creds   = _get_credentials(user_id)
         youtube = _build_youtube_client(creds)
         data    = _load()
-        channel_id = data.get(user_id, {}).get("channel_id", "")
+        raw = _load().get(user_id, {})
+        active_id = raw.get("active_channel_id", "")
+        _chs = raw.get("channels", [])
+        _rec = next((c for c in _chs if c.get("channel_id")==active_id), _chs[0] if _chs else {})
+        channel_id = _rec.get("channel_id", "")
 
         search_resp = youtube.search().list(
             part="id,snippet",
@@ -465,6 +598,124 @@ def get_top_videos(user_id: str, max_results: int = 10) -> List[Dict]:
         log.warning("get_top_videos error: %s", e)
         return []
 
+
+
+def _parse_duration_secs(dur):
+    """Parse ISO 8601 duration PT#H#M#S to seconds."""
+    if not dur or dur == "P0D":
+        return 0
+    h = int(re.search(r'(\d+)H', dur).group(1)) if 'H' in dur else 0
+    m = int(re.search(r'(\d+)M', dur).group(1)) if 'M' in dur else 0
+    s = int(re.search(r'(\d+)S', dur).group(1)) if 'S' in dur else 0
+    return h*3600 + m*60 + s
+
+def _vtype(item):
+    """Detect video type: short, live, or video."""
+    snip = item.get("snippet", {})
+    live = snip.get("liveBroadcastContent", "none")
+    if live in ("live", "completed"):
+        return "live"
+    dur = item.get("contentDetails", {}).get("duration", "")
+    secs = _parse_duration_secs(dur)
+    # Check title for live keywords regardless of duration
+    title = snip.get("title", "").lower()
+    live_keywords = ["is live", "live stream", "livestream", "live!", "live -", "- live"]
+    if any(kw in title for kw in live_keywords):
+        return "live"
+    # Duration-based detection
+    if 0 < secs <= 60:
+        return "short"
+    # Very long or zero duration with stream in title
+    if (secs == 0 or secs > 7200) and "stream" in title:
+        return "live"
+    return "video"
+
+
+def get_all_videos(user_id: str, max_results: int = 50) -> List[Dict]:
+    """Fetch all uploaded videos via uploads playlist."""
+    try:
+        creds   = _get_credentials(user_id)
+        youtube = _build_youtube_client(creds)
+        raw = _load().get(user_id, {})
+        active_id = raw.get("active_channel_id", "")
+        _chs = raw.get("channels", [])
+        _rec = next((c for c in _chs if c.get("channel_id")==active_id), _chs[0] if _chs else {})
+        channel_id = _rec.get("channel_id", "") if _rec else ""
+        ch_resp = youtube.channels().list(
+            part="contentDetails",
+            id=channel_id,
+        ).execute()
+        items = ch_resp.get("items", [])
+        if not items:
+            return []
+        uploads_playlist = items[0]["contentDetails"]["relatedPlaylists"]["uploads"]
+
+        # Fetch playlist items
+        video_ids = []
+        next_page = None
+        while len(video_ids) < max_results:
+            pl_resp = youtube.playlistItems().list(
+                part="contentDetails",
+                playlistId=uploads_playlist,
+                maxResults=min(50, max_results - len(video_ids)),
+                pageToken=next_page,
+            ).execute()
+            for item in pl_resp.get("items", []):
+                vid = item["contentDetails"].get("videoId")
+                if vid:
+                    video_ids.append(vid)
+            next_page = pl_resp.get("nextPageToken")
+            if not next_page:
+                break
+
+        if not video_ids:
+            return []
+
+        # Fetch stats in batches of 50
+        videos = []
+        for i in range(0, len(video_ids), 50):
+            batch = video_ids[i:i+50]
+            stats_resp = youtube.videos().list(
+                part="snippet,statistics,contentDetails",
+                id=",".join(batch),
+            ).execute()
+            for item in stats_resp.get("items", []):
+                stats = item.get("statistics", {})
+                snip  = item.get("snippet", {})
+                views   = int(stats.get("viewCount",    0))
+                likes   = int(stats.get("likeCount",    0))
+                comments= int(stats.get("commentCount", 0))
+                eng     = round((likes + comments) / max(views, 1) * 100, 2)
+                videos.append({
+                    "video_id":    item["id"],
+                    "title":       snip.get("title", ""),
+                    "thumbnail":   snip.get("thumbnails", {}).get("medium", {}).get("url", ""),
+                    "published_at":snip.get("publishedAt", "")[:10],
+                    "views":       views,
+                    "likes":       likes,
+                    "comments":    comments,
+                    "engagement":  eng,
+                    "url":         f"https://youtube.com/watch?v={item['id']}",
+                    "description": snip.get("description", "")[:200],
+                    "tags":        snip.get("tags", [])[:10],
+                    "video_type":  _vtype(item),
+
+
+
+
+
+
+
+
+
+
+
+                })
+        videos.sort(key=lambda x: x["views"], reverse=True)
+        return videos
+    except Exception as e:
+        log.warning("get_all_videos error: %s", e)
+        return []
 
 def get_growth_prediction(
     user_id:      str,

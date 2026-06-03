@@ -56,12 +56,48 @@ try:
 except Exception as e:
     log.warning("pinterest_routes failed: %s", e); _HAS_PINTEREST_ROUTES = False; pinterest_router = None
 
+# ── Festival router ──────────────────────────────────────────────────
+try:
+    from festival_routes import router as festival_router
+    _HAS_FESTIVAL_ROUTES = True
+except Exception as e:
+    log.warning("festival_routes failed: %s", e); _HAS_FESTIVAL_ROUTES = False; festival_router = None
+
+# ── History router ───────────────────────────────────────────────────
+try:
+    from history_routes import router as history_router
+    _HAS_HISTORY = True
+except Exception as e:
+    log.warning("history_routes failed: %s", e); _HAS_HISTORY = False; history_router = None
+
 # ── Telegram router ───────────────────────────────────────────────────
 try:
     from telegram_routes import router as telegram_router
     _HAS_TG_ROUTES = True
 except Exception as e:
     log.warning("telegram_routes failed: %s", e); _HAS_TG_ROUTES = False; telegram_router = None
+
+
+# ── WhatsApp router ───────────────────────────────────────────────────
+try:
+    from whatsapp_routes import router as whatsapp_router
+    _HAS_WA_ROUTES = True
+except Exception as e:
+    log.warning("whatsapp_routes failed: %s", e); _HAS_WA_ROUTES = False; whatsapp_router = None
+
+# ── TikTok router ─────────────────────────────────────────────────────
+try:
+    from tiktok_routes import router as tiktok_router
+    _HAS_TT_ROUTES = True
+except Exception as e:
+    log.warning("tiktok_routes failed: %s", e); _HAS_TT_ROUTES = False; tiktok_router = None
+try:
+    from telegram_scheduler import router as tg_sched_router
+    from discord_routes import router as discord_router
+    from streak_routes import router as streak_router
+    _HAS_TG_SCHED = True
+except Exception as e:
+    log.warning("telegram_scheduler failed: %s", e); _HAS_TG_SCHED = False; tg_sched_router = None
 
 # ── Start Telegram polling on startup ─────────────────────────────────
 try:
@@ -141,6 +177,18 @@ RZP_SECRET  = os.getenv("RAZORPAY_KEY_SECRET",  "")
 # ══════════════════════════════════════════════════════════════════════
 # ── Rate limiter ──────────────────────────────────────────────────────
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/hour"])
+try:
+    from referral_routes import router as referral_router
+    _HAS_REFERRAL = True
+except Exception as e:
+    print("referral_routes failed:", e); _HAS_REFERRAL = False; referral_router = None
+
+try:
+    from fingerprint_routes import router as fp_router
+    _HAS_FP = True
+except Exception as e:
+    print("fingerprint_routes failed:", e); _HAS_FP = False; fp_router = None
+
 app = FastAPI(title="SocioMee API", version="3.0.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -157,6 +205,14 @@ if _HAS_YT_ROUTES and yt_router is not None:
 # Threads router
 if _HAS_THREADS_ROUTES and threads_router is not None:
     app.include_router(threads_router)
+# WhatsApp router
+if _HAS_WA_ROUTES and whatsapp_router is not None:
+    app.include_router(whatsapp_router)
+
+# TikTok router
+if _HAS_TT_ROUTES and tiktok_router is not None:
+    app.include_router(tiktok_router)
+
 
 # Instagram router
 if _HAS_INSTAGRAM_ROUTES and instagram_router is not None:
@@ -165,10 +221,31 @@ if _HAS_INSTAGRAM_ROUTES and instagram_router is not None:
 # Pinterest router
 if _HAS_PINTEREST_ROUTES and pinterest_router is not None:
     app.include_router(pinterest_router)
+if _HAS_FESTIVAL_ROUTES and festival_router is not None:
+    app.include_router(festival_router)
+if _HAS_HISTORY and history_router is not None:
+    app.include_router(history_router)
+if _HAS_REFERRAL and referral_router is not None:
+    app.include_router(referral_router)
+if _HAS_FP and fp_router is not None:
+    app.include_router(fp_router)
 
 # Telegram router
+if _HAS_TG_SCHED:
+    try:
+        from telegram_scheduler import restore_scheduled_jobs
+        restore_scheduled_jobs()
+    except Exception as e:
+        log.warning("restore_scheduled_jobs failed: %s", e)
 if _HAS_TG_ROUTES and telegram_router is not None:
     app.include_router(telegram_router)
+if _HAS_TG_SCHED and tg_sched_router is not None:
+    app.include_router(tg_sched_router)
+    try:
+        app.include_router(discord_router)
+        app.include_router(streak_router)
+    except Exception as e:
+        print(f"Discord router skip: {e}")
 
 # ── CORS ─────────────────────────────────────────────────────────────
 ALLOWED_ORIGINS = [
@@ -413,7 +490,10 @@ def home(): return {"message": "SocioMee API v3 🚀", "status": "ok"}
 def health(): return {"status": "ok"}
 
 @app.get("/credits/{user_id}")
-def get_credits(user_id: str):
+def get_credits(user_id: str, request: Request):
+    auth = request.headers.get("Authorization","")
+    if not auth.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Unauthorized")
     try: return get_credit_status(user_id)
     except Exception as e: raise HTTPException(500, str(e))
 
@@ -435,7 +515,16 @@ def gen_full(request: Request, payload: FullContentRequest, user: dict = Depends
         raw = _generate_full_content(topic=payload.topic.strip(), persona=payload.persona.strip().lower(),
                                      language=payload.language.strip().lower(), country=payload.country.strip().lower())
     except Exception as e: raise HTTPException(500, str(e))
-    return _attach_credits(_normalize(raw, payload, payload.platform.strip().lower()), user["user_id"])
+    normalized = _normalize(raw, payload, payload.platform.strip().lower())
+    try:
+        from history_routes import save_generation
+        save_generation(user["user_id"], payload.topic, payload.platform,
+            normalized.get("best_title",""), normalized.get("script_text","")[:300],
+            normalized.get("seo_hashtags",[]), normalized.get("word_count",0),
+            normalized.get("language","hinglish"))
+    except Exception as _he:
+        log.warning("history save failed: %s", _he)
+    return _attach_credits(normalized, user["user_id"])
 
 @app.post("/generate-platform-content")
 @limiter.limit("10/minute")
@@ -539,6 +628,21 @@ def verify_payment(payload: VerifyPaymentRequest):
         total = PLAN_LIMITS.get(plan, 200)
         msg = f"Welcome to {info['label']}! Your plan is now active."
     log.info("Payment verified: user=%s plan=%s", payload.user_id, plan)
+    # Send payment confirmation email
+    try:
+        from email_service import send_payment_confirmation
+        plan_info = PLAN_PRICES.get(plan, {})
+        amount_inr = plan_info.get("amount", 0) // 100
+        send_payment_confirmation(
+            to_email=payload.email,
+            name=payload.email.split("@")[0],
+            plan_label=info["label"],
+            credits=total,
+            amount=amount_inr,
+            payment_id=payload.razorpay_payment_id,
+        )
+    except Exception as _e:
+        log.warning("Payment email failed: %s", _e)
     return {"success": True, "message": msg, "plan": plan, "plan_label": info["label"], "credits": total, "credit_status": get_credit_status(payload.user_id)}
 
 # ── Admin ─────────────────────────────────────────────────────────────
@@ -566,3 +670,353 @@ def admin_bonus(p: BonusRequest, _=Depends(_require_admin)):
 def admin_usage(_=Depends(_require_admin)):
     try: return get_all_usage()
     except Exception as e: raise HTTPException(500, str(e))
+
+# ── Google Translate Proxy (no API key needed) ─────────────────────
+@app.post("/translate")
+async def translate_text(request: Request):
+    import httpx, urllib.parse
+    body = await request.json()
+    text = body.get("text", "").strip()
+    target_lang = body.get("target_lang", "hi")
+    if not text:
+        raise HTTPException(status_code=400, detail="No text provided")
+    
+    lang_map = {"hi":"hi","mr":"mr","ta":"ta","bn":"bn","gu":"gu","te":"te"}
+    tl = lang_map.get(target_lang, "hi")
+    
+    source_lang = body.get("source_lang", "auto")
+    sl = source_lang if source_lang != "en" else "en"
+    encoded = urllib.parse.quote(text)
+    url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sl}&tl={tl}&dt=t&q={encoded}"
+    
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.get(url, headers={"User-Agent":"Mozilla/5.0"})
+    
+    if resp.status_code != 200:
+        raise HTTPException(status_code=502, detail="Translation service error")
+    
+    data = resp.json()
+    translated = "".join(part[0] for part in data[0] if part[0])
+    return {"translated": translated, "lang": target_lang}
+
+# ── Subtitle Generator (AssemblyAI) ───────────────────────────────────
+@app.post("/subtitles/upload")
+async def upload_for_subtitles(request: Request, file: UploadFile = File(...), lang: str = Form("auto")):
+    import httpx, os
+    api_key = os.environ.get("ASSEMBLYAI_API_KEY", "dfb838cf9697411685a0e9a0923008e1")
+
+    contents = await file.read()
+    print(f"[SUBTITLE] File: {file.filename}, Size: {len(contents)} bytes, Content-Type: {file.content_type}")
+    if not contents or len(contents) < 1000:
+        raise HTTPException(status_code=400, detail=f"File is empty or too small ({len(contents)} bytes). Please try again.")
+
+    # Map lang codes
+    lang_map = {"en":"en","hi":"hi","auto":None,"mr":"hi","ta":"ta","bn":"bn","gu":"gu","te":"te"}
+    language_code = lang_map.get(lang, None)
+
+    async with httpx.AsyncClient(timeout=180) as client:
+        # Step 1: Upload raw bytes to AssemblyAI
+        upload_resp = await client.post(
+            "https://api.assemblyai.com/v2/upload",
+            headers={"authorization": api_key, "content-type": "application/octet-stream"},
+            content=contents
+        )
+        if upload_resp.status_code != 200:
+            raise HTTPException(status_code=502, detail=f"Upload failed: {upload_resp.text}")
+        upload_url = upload_resp.json()["upload_url"]
+
+        # Step 2: Request transcription
+        payload = {
+            "audio_url": upload_url,
+            "punctuate": True,
+            "format_text": True,
+        }
+        if language_code:
+            payload["language_code"] = language_code
+        else:
+            payload["language_detection"] = True
+
+        transcript_resp = await client.post(
+            "https://api.assemblyai.com/v2/transcript",
+            headers={"authorization": api_key, "content-type": "application/json"},
+            json=payload
+        )
+        if transcript_resp.status_code != 200:
+            raise HTTPException(status_code=502, detail=f"Transcription request failed: {transcript_resp.text}")
+        transcript_id = transcript_resp.json()["id"]
+        return {"transcript_id": transcript_id}
+
+@app.get("/subtitles/status/{transcript_id}")
+async def subtitle_status(transcript_id: str):
+    import httpx, os
+    api_key = os.environ.get("ASSEMBLYAI_API_KEY", "dfb838cf9697411685a0e9a0923008e1")
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.get(
+            f"https://api.assemblyai.com/v2/transcript/{transcript_id}",
+            headers={"authorization": api_key}
+        )
+        data = resp.json()
+        status = data.get("status")
+        if status == "completed":
+            words = data.get("words", [])
+            text  = data.get("text", "")
+
+            def ms_to_srt(ms):
+                s = ms // 1000
+                ms_r = ms % 1000
+                return f"{s//3600:02}:{(s%3600)//60:02}:{s%60:02},{ms_r:03}"
+
+            chunk_size = 10
+            chunks = [words[i:i+chunk_size] for i in range(0, len(words), chunk_size)]
+
+            srt = ""
+            for i, chunk in enumerate(chunks):
+                if not chunk: continue
+                srt += f"{i+1}\n{ms_to_srt(chunk[0]['start'])} --> {ms_to_srt(chunk[-1]['end'])}\n{' '.join(w['text'] for w in chunk)}\n\n"
+
+            import urllib.parse
+            srt_en = ""
+            translated_text = ""
+            try:
+                import httpx as _hx
+                # Add context hint to preserve proper nouns like game names, creator names
+                context_text = text.replace("GT", "GTA").replace("dhani", "Dhoni")
+                encoded = urllib.parse.quote(context_text)
+                tr = await _hx.AsyncClient(timeout=30).get(
+                    f"https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q={encoded}",
+                    headers={"User-Agent":"Mozilla/5.0"}
+                )
+                tr_data = tr.json()
+                translated_text = "".join(part[0] for part in tr_data[0] if part[0])
+                tr_words = translated_text.split()
+                valid_chunks = [c for c in chunks if c]
+                wpc = max(1, len(tr_words) // max(1, len(valid_chunks)))
+                idx2 = 0
+                for i, chunk in enumerate(chunks):
+                    if not chunk: continue
+                    cw = tr_words[idx2:idx2+wpc]
+                    idx2 += wpc
+                    if cw:
+                        srt_en += f"{i+1}\n{ms_to_srt(chunk[0]['start'])} --> {ms_to_srt(chunk[-1]['end'])}\n{' '.join(cw)}\n\n"
+            except Exception as e:
+                print(f"[SUBTITLE] Translation error: {e}")
+
+            return {"status":"completed","text":text,"srt":srt,"srt_en":srt_en,"translated_text":translated_text,"words":len(words)}
+        return {"status": status}
+
+# ── Hashtag Generator (Real trending from best-hashtags.com) ─────────
+@app.post("/hashtags/generate")
+async def generate_hashtags(request: Request):
+    import httpx, re
+    from bs4 import BeautifulSoup
+    body = await request.json()
+    keyword = body.get("keyword", "").strip()
+    platform = body.get("platform", "instagram")
+    if not keyword:
+        raise HTTPException(status_code=400, detail="Keyword required")
+
+    kw_slug = keyword.lower().replace(" ", "")
+    hashtags = []
+
+    async with httpx.AsyncClient(timeout=20, follow_redirects=True) as client:
+        # Scrape real trending hashtags from best-hashtags.com
+        try:
+            url = f"https://best-hashtags.com/hashtag/{kw_slug}/"
+            r = await client.get(url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            })
+            if r.status_code == 200:
+                soup = BeautifulSoup(r.text, "html.parser")
+                # Find all hashtag text blocks (they're in p1 tag boxes)
+                tag_boxes = soup.find_all("div", class_="p1")
+                for box in tag_boxes[:2]:  # First 2 sets
+                    text = box.get_text()
+                    found = re.findall(r"#\w+", text)
+                    for tag in found:
+                        if tag not in hashtags:
+                            hashtags.append(tag.lower())
+                # Also get recommended hashtags from sidebar
+                sidebar = soup.find_all("li")
+                for li in sidebar:
+                    a = li.find("a")
+                    if a and a.get_text().startswith("#"):
+                        tag = a.get_text().strip().lower()
+                        if tag not in hashtags:
+                            hashtags.append(tag)
+        except Exception as e:
+            print(f"[HASHTAG] Scrape error: {e}")
+
+    # If scraping failed or not enough, add platform-specific power tags
+    platform_tags = {
+        "instagram": ["#reels","#instadaily","#explore","#viral","#trending","#instagood",
+                      "#fyp","#foryou","#india","#indiancreator","#instagram","#reelsindia",
+                      "#viralreels","#reelsviral","#instagramreels","#explorepage",
+                      "#followforfollowback","#likeforlikes","#photography","#love"],
+        "youtube":   ["#youtube","#shorts","#viral","#trending","#youtuber","#subscribe",
+                      "#youtubeshorts","#india","#hindivideo","#youtubeindia","#viralvideo",
+                      "#youtubevideos","#ytshorts","#newvideo","#vlog","#youtubecreatorsforchange"],
+        "twitter":   ["#trending","#viral","#india","#twitter","#thread","#twitterindia",
+                      "#tweet","#news","#indiatweets","#breakingnews"],
+        "linkedin":  ["#linkedin","#professional","#career","#business","#india","#growth",
+                      "#networking","#jobs","#hiring","#motivation","#startup","#entrepreneurship"],
+    }
+
+    # Merge scraped + platform tags, keyword first
+    kw_tag = f"#{kw_slug}"
+    final = [kw_tag] if kw_tag not in hashtags else []
+    final += hashtags
+    for tag in platform_tags.get(platform, []):
+        if tag not in final:
+            final.append(tag)
+
+    # Clean and limit
+    cleaned = []
+    for tag in final:
+        t = re.sub(r"[^\w#]", "", tag)
+        if t.startswith("#") and 2 < len(t) < 36:
+            cleaned.append(t)
+
+    return {"hashtags": cleaned[:30], "keyword": keyword, "platform": platform}
+
+# ── Hook Generator (Free - template based) ────────────────────────────
+@app.post("/hooks/generate")
+async def generate_hooks(request: Request):
+    import random
+    body = await request.json()
+    topic = body.get("topic", "").strip()
+    platform = body.get("platform", "youtube")
+    tone = body.get("tone", "curiosity")
+    language = body.get("language", "hinglish")
+
+    if not topic:
+        raise HTTPException(status_code=400, detail="Topic required")
+
+    t = topic.lower()
+    T = topic.title()
+
+    # Hook templates by style
+    templates = {
+        "curiosity": [
+            f"Nobody tells you this about {t}...",
+            f"The {t} secret nobody is talking about",
+            f"What they don't want you to know about {t}",
+            f"I discovered something shocking about {t}",
+            f"The hidden truth about {t} that changed everything",
+            f"Why everyone is wrong about {t}",
+            f"The {t} mistake 99% of people make",
+            f"This {t} hack will blow your mind",
+            f"I wish someone told me this about {t} earlier",
+            f"The real reason {t} doesn't work for most people",
+        ],
+        "shock": [
+            f"I wasted ₹50,000 on {t} before learning this",
+            f"{T} is lying to you — here's proof",
+            f"Stop doing {t} right now — watch this first",
+            f"I tried {t} for 30 days — the results shocked me",
+            f"This {t} mistake is costing you money",
+            f"Warning: {T} is not what you think",
+            f"The dark side of {t} nobody shows you",
+            f"I almost quit {t} until I discovered this",
+            f"{T} destroyed my life — here's what I learned",
+            f"This is what {t} does to your body/mind/money",
+        ],
+        "pov": [
+            f"POV: You finally figured out {t}",
+            f"POV: You discovered the secret to {t}",
+            f"POV: Your {t} journey just changed forever",
+            f"Day 1 of learning {t} vs Day 30",
+            f"Me before {t} vs me after {t}",
+            f"POV: You're watching this before starting {t}",
+            f"That moment when {t} finally clicks",
+            f"POV: You just found the best {t} guide",
+            f"POV: You wish you knew this about {t} earlier",
+            f"Imagine if {t} was actually this simple",
+        ],
+        "number": [
+            f"5 {t} mistakes you're making right now",
+            f"10 things I learned from {t} in 30 days",
+            f"3 {t} hacks that changed my life",
+            f"7 reasons why your {t} isn't working",
+            f"Top 5 {t} secrets experts use",
+            f"I tried 10 {t} methods — here's what works",
+            f"5 signs you're doing {t} wrong",
+            f"3 {t} tips that got me 10x results",
+            f"The only 5 things you need for {t}",
+            f"7 {t} facts that will shock you",
+        ],
+        "story": [
+            f"How {t} completely changed my life in 30 days",
+            f"My {t} journey from zero to results",
+            f"The day {t} changed everything for me",
+            f"From broke to successful using {t} — my story",
+            f"I failed at {t} 10 times before this worked",
+            f"How I mastered {t} in just 30 days",
+            f"The moment I realized {t} was the answer",
+            f"My honest {t} journey — the good and bad",
+            f"How {t} saved me ₹1 lakh",
+            f"The {t} journey nobody talks about honestly",
+        ],
+        "question": [
+            f"Are you making this {t} mistake?",
+            f"Why is nobody talking about this {t} secret?",
+            f"What if {t} could change your life?",
+            f"Have you tried this {t} hack yet?",
+            f"Is {t} really worth it in 2025?",
+            f"Why does {t} work for some but not others?",
+            f"What happens when you do {t} every day?",
+            f"Can {t} really make a difference?",
+            f"Are you ready to transform your {t}?",
+            f"What's stopping you from succeeding at {t}?",
+        ],
+        "hinglish": [
+            f"Yaar, ye {t} wali baat kisi ne nahi batai",
+            f"{T} ka ye secret ab tak chupaaya gaya tha",
+            f"Bhai, {t} mein ye galti mat karna",
+            f"₹500 mein {t} ka ye jugaad try karo",
+            f"Maine {t} try kiya aur ye hua...",
+            f"{T} ke baare mein sach janke shock ho jaoge",
+            f"Ye {t} hack dekho, life badal jaayegi",
+            f"Bina paise ke {t} kaise karein — full guide",
+            f"{T} mein itna paisa kyun waste karte ho?",
+            f"Ab {t} easy ho gaya — dekho kaise",
+        ],
+    }
+
+    # Platform specific additions
+    platform_prefix = {
+        "instagram": ["Reels mein viral hoga ye {t} content", "Save karo ye {t} tips"],
+        "youtube": [f"Watch till end for the best {t} hack", f"This {t} video will change how you think"],
+        "linkedin": [f"After 10 years in {t}, here's what I learned", f"Unpopular opinion about {t}:"],
+    }
+
+    # Pick templates based on tone
+    chosen = templates.get(tone, templates["curiosity"])
+    if language == "hinglish":
+        chosen = chosen + templates.get("hinglish", [])
+
+    # Mix and get 10 unique hooks
+    random.shuffle(chosen)
+    hooks = chosen[:10]
+
+    # Add platform specific if available
+    plat_hooks = platform_prefix.get(platform, [])
+    for ph in plat_hooks:
+        if len(hooks) < 10:
+            hooks.append(ph.format(t=t, T=T) if "{t}" in ph or "{T}" in ph else ph)
+
+    return {"hooks": hooks[:10], "topic": topic, "platform": platform, "tone": tone}
+
+# ── Promo Code Validator ──────────────────────────────────────────────
+PROMO_CODES = {
+    "PRODUCTHUNT": {"plan": "pro", "months": 1, "discount": 100, "desc": "1 month Pro free for Product Hunt community"},
+    "BIRTHDAY11":  {"plan": "pro", "months": 1, "discount": 100, "desc": "Birthday special - 1 month Pro free"},
+    "SOCIOMEE50":  {"plan": "pro", "months": 1, "discount": 50,  "desc": "50% off Pro plan"},
+}
+
+@app.post("/promo/validate")
+async def validate_promo(request: Request):
+    body = await request.json()
+    code = body.get("code", "").strip().upper()
+    if code in PROMO_CODES:
+        return {"valid": True, "promo": PROMO_CODES[code], "code": code}
+    raise HTTPException(status_code=404, detail="Invalid promo code")

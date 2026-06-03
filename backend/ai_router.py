@@ -346,6 +346,17 @@ def _build_prompt(data: dict) -> str:
     language    = data.get("language",    "hinglish")
     format_type = data.get("format_type", "long")
     tone        = data.get("tone",        "default")
+    tone_rules = {
+        "bold":        "Be direct, confident, powerful. Strong statements. No hedging.",
+        "funny":       "Use wit, humor, relatable jokes. Light-hearted but informative.",
+        "emotional":   "Connect deeply. Use personal stories, empathy, human moments.",
+        "informative": "Clear, factual, educational. Data-driven. Teach step by step.",
+        "aggressive":  "High energy, provocative, challenging. Push boundaries.",
+        "sales":       "Persuasive, benefit-focused, urgency-driven. Clear CTA. Sell the value.",
+        "dramatic":    "Cinematic storytelling. Build tension. Emotional highs and lows. Suspense.",
+        "casual":      "Chill, conversational, like talking to a friend. Simple words, relatable.",
+    }
+    tone_rule = tone_rules.get(tone, "Natural, engaging, authentic tone.")
 
     style = _PERSONA_STYLES.get(personality, _DEFAULT_STYLE)
 
@@ -368,7 +379,8 @@ def _build_prompt(data: dict) -> str:
 
     return (
         f"You are: {style}\n\n"
-        f"Topic: {topic} | Platform: {platform} | Language: {language} | Format: {format_type} | Tone: {tone}\n\n"
+        f"Topic: {topic} | Platform: {platform} | Language: {language} | Format: {format_type}\n\n"
+        f"TONE INSTRUCTION: {tone_rule}\n\n"
         f"EVIDENCE-FIRST MANDATE:\n"
         f"- NEVER open with a generic topic introduction\n"
         f"- Open with the most specific, striking fact about this topic\n"

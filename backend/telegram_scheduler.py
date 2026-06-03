@@ -339,3 +339,42 @@ async def schedule_send(
         _schedule_send(jid, run_at, user_id, text, media_type, media_path, caption or text[:200], targets)
         ist_str = run_at.astimezone(IST).strftime("%d %b %Y at %I:%M %p IST")
         return {"job_id": jid, "status": "scheduled", "message": f"Scheduled for {ist_str}", "scheduled_at": run_at.isoformat(), "targets": targets}
+
+@router.post("/ai-caption")
+async def ai_caption(
+    user_id: str = Form(...),
+    topic:   str = Form(...),
+    platform_type: str = Form(default="channel"),
+    language: str = Form(default="Hindi/English"),
+):
+    import re as _re, json as _json
+    import re as _re2, json as _json2
+    import google.generativeai as _genai
+    _genai.configure(api_key=os.getenv("GOOGLE_AI_API_KEY",""))
+    def _gemini(p):
+        return _genai.GenerativeModel("gemini-1.5-flash").generate_content(p).text.strip()
+
+    prompt = (
+        f"You are a Telegram content expert for Indian creators.\n"
+        f"Topic: \"{topic}\" | Platform: {platform_type} | Language: {language}\n\n"
+        "Write a viral Telegram post. Return ONLY valid JSON:\n"
+        "{\"caption\": \"full post with emojis max 200 words\","
+        "\"hook\": \"2 powerful lines that stop scrolling\","
+        "\"hashtags\": [\"#tag1\",\"#tag2\",\"#tag3\",\"#tag4\",\"#tag5\"],"
+        "\"cta\": \"strong call to action\","
+        "\"best_time\": \"best day and time IST\","
+        "\"viral_tip\": \"one specific viral tip\","
+        "\"poll_idea\": \"engaging poll question\"}"
+    )
+    try:
+        if not _gemini: raise ValueError("No AI")
+        resp = _gemini(prompt)
+        if hasattr(resp, "text"): resp = resp.text
+        resp = str(resp).strip()
+        m = _re.search(r'\{[\s\S]*\}', resp)
+        data = _json.loads(m.group()) if m else {}
+        if not data.get("caption"): raise ValueError("empty")
+    except Exception as ex:
+        log.warning("ai_caption fallback: %s", ex)
+        data = {"caption":f"🔥 {topic}\n\nEverything about {topic}!\n\n#{topic.replace(' ','')} #India #Trending","hook":f"🚨 {topic} — Must see!","hashtags":[f"#{topic.replace(' ','')}","#India","#Trending","#Viral","#MustRead"],"cta":"👥 Forward to 5 friends!","best_time":"Tuesday 8PM IST","viral_tip":"Post 7-9PM IST for max reach","poll_idea":f"What do you think about {topic}?"}
+    return {"caption_data": data, "topic": topic}

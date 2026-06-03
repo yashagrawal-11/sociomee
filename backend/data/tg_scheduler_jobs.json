@@ -1,0 +1,232 @@
+{
+  "c1592862-86f3-49a8-881d-328a11fb2fbf": {
+    "job_id": "c1592862-86f3-49a8-881d-328a11fb2fbf",
+    "created_at": "2026-05-08T18:55:11.155391+00:00",
+    "user_id": "112040558777568963466",
+    "text": "",
+    "caption": "SocioMee Full Logo",
+    "media_type": "photo",
+    "media_path": "/var/www/sociomee/backend/data/tg_media/c2e95365_socio.jpeg",
+    "media_filename": "socio.jpeg",
+    "targets": [
+      "7552297590"
+    ],
+    "schedule_type": "now",
+    "status": "done",
+    "results": [
+      {
+        "target": "7552297590",
+        "ok": true,
+        "type": "photo"
+      }
+    ],
+    "sent_at": "2026-05-08T18:55:43.049962+00:00"
+  },
+  "f90ef698-158f-499e-8abf-59d0ba67fce7": {
+    "job_id": "f90ef698-158f-499e-8abf-59d0ba67fce7",
+    "created_at": "2026-05-08T18:58:12.684959+00:00",
+    "user_id": "112040558777568963466",
+    "text": "",
+    "caption": "socio",
+    "media_type": "video",
+    "media_path": "/var/www/sociomee/backend/data/tg_media/aa4755ab_vid.mp4",
+    "media_filename": "vid.mp4",
+    "targets": [
+      "7552297590"
+    ],
+    "schedule_type": "now",
+    "status": "done",
+    "results": [
+      {
+        "target": "7552297590",
+        "ok": true,
+        "type": "video"
+      }
+    ],
+    "sent_at": "2026-05-08T19:00:15.883858+00:00"
+  },
+  "1c9d4127-f63c-4929-8a76-b6ec32fe2d87": {
+    "job_id": "1c9d4127-f63c-4929-8a76-b6ec32fe2d87",
+    "created_at": "2026-05-09T06:12:08.408040+00:00",
+    "user_id": "112040558777568963466",
+    "text": "sociomate",
+    "caption": "sociomate",
+    "media_type": "video",
+    "media_path": "/var/www/sociomee/backend/data/tg_media/bfda177f_vid.mp4",
+    "media_filename": "vid.mp4",
+    "targets": [
+      "7552297590"
+    ],
+    "schedule_type": "now",
+    "status": "done",
+    "results": [
+      {
+        "target": "7552297590",
+        "ok": true,
+        "type": "video"
+      }
+    ],
+    "sent_at": "2026-05-09T06:14:12.494635+00:00"
+  },
+  "4025522f-ba04-4246-97db-11b9f9e6d84f": {
+    "job_id": "4025522f-ba04-4246-97db-11b9f9e6d84f",
+    "created_at": "2026-05-09T06:12:09.304281+00:00",
+    "user_id": "112040558777568963466",
+    "text": "sociomate io",
+    "caption": "sociomate io",
+    "media_type": "photo",
+    "media_path": "/var/www/sociomee/backend/data/tg_media/33243415_socio.jpeg",
+    "media_filename": "socio.jpeg",
+    "targets": [
+      "7552297590"
+    ],
+    "schedule_type": "now",
+    "status": "done",
+    "results": [
+      {
+        "target": "7552297590",
+        "ok": true,
+        "type": "photo"
+      }
+    ],
+    "sent_at": "2026-05-09T06:12:17.892962+00:00"
+  },
+  "5c512454-8fd2-47b3-b317-b8a982373327": {
+    "job_id": "5c512454-8fd2-47b3-b317-b8a982373327",
+    "created_at": "2026-05-09T06:12:10.324799+00:00",
+    "user_id": "112040558777568963466",
+    "text": "sociomate ai",
+    "caption": "sociomate ai",
+    "media_type": "photo",
+    "media_path": "/var/www/sociomee/backend/data/tg_media/88175277_Screenshot (740).png",
+    "media_filename": "Screenshot (740).png",
+    "targets": [
+      "7552297590"
+    ],
+    "schedule_type": "now",
+    "status": "done",
+    "results": [
+      {
+        "target": "7552297590",
+        "ok": true,
+        "type": "photo"
+      }
+    ],
+    "sent_at": "2026-05-09T06:12:43.345694+00:00"
+  },
+  "5352d11b-f358-4ec0-84ef-c13cdbf0e95c": {
+    "job_id": "5352d11b-f358-4ec0-84ef-c13cdbf0e95c",
+    "created_at": "2026-05-09T06:12:11.246402+00:00",
+    "user_id": "112040558777568963466",
+    "text": "sociomee",
+    "caption": "sociomee",
+    "media_type": "photo",
+    "media_path": "/var/www/sociomee/backend/data/tg_media/56286470_Screenshot (739).png",
+    "media_filename": "Screenshot (739).png",
+    "targets": [
+      "7552297590"
+    ],
+    "schedule_type": "now",
+    "status": "done",
+    "results": [
+      {
+        "target": "7552297590",
+        "ok": true,
+        "type": "photo"
+      }
+    ],
+    "sent_at": "2026-05-09T06:12:46.428655+00:00"
+  },
+  "1294cfa1-8076-4261-a60a-d1fa518761dc": {
+    "job_id": "1294cfa1-8076-4261-a60a-d1fa518761dc",
+    "created_at": "2026-05-09T06:12:12.122556+00:00",
+    "user_id": "112040558777568963466",
+    "text": "sociomee io",
+    "caption": "sociomee io",
+    "media_type": "photo",
+    "media_path": "/var/www/sociomee/backend/data/tg_media/dc9fa37d_linkedin.png",
+    "media_filename": "linkedin.png",
+    "targets": [
+      "7552297590"
+    ],
+    "schedule_type": "now",
+    "status": "done",
+    "results": [
+      {
+        "target": "7552297590",
+        "ok": true,
+        "type": "photo"
+      }
+    ],
+    "sent_at": "2026-05-09T06:12:44.029091+00:00"
+  },
+  "56b7a104-283a-498c-90ac-96299e850dd9": {
+    "job_id": "56b7a104-283a-498c-90ac-96299e850dd9",
+    "created_at": "2026-05-09T06:12:13.028748+00:00",
+    "user_id": "112040558777568963466",
+    "text": "sociomee ai",
+    "caption": "sociomee ai",
+    "media_type": "photo",
+    "media_path": "/var/www/sociomee/backend/data/tg_media/75148a2f_head logo.png",
+    "media_filename": "head logo.png",
+    "targets": [
+      "7552297590"
+    ],
+    "schedule_type": "now",
+    "status": "done",
+    "results": [
+      {
+        "target": "7552297590",
+        "ok": true,
+        "type": "photo"
+      }
+    ],
+    "sent_at": "2026-05-09T06:12:15.759873+00:00"
+  },
+  "b4b0ffbb-f986-4886-b8ec-bcc94bb128e1": {
+    "job_id": "b4b0ffbb-f986-4886-b8ec-bcc94bb128e1",
+    "created_at": "2026-05-09T06:12:13.913861+00:00",
+    "user_id": "112040558777568963466",
+    "text": "sociomee tool",
+    "caption": "sociomee tool",
+    "media_type": "photo",
+    "media_path": "/var/www/sociomee/backend/data/tg_media/ef1d2c5d_Untitled design.png",
+    "media_filename": "Untitled design.png",
+    "targets": [
+      "7552297590"
+    ],
+    "schedule_type": "now",
+    "status": "done",
+    "results": [
+      {
+        "target": "7552297590",
+        "ok": true,
+        "type": "photo"
+      }
+    ],
+    "sent_at": "2026-05-09T06:12:45.527693+00:00"
+  },
+  "2d6eb964-0964-4587-b52b-726287bacd5f": {
+    "job_id": "2d6eb964-0964-4587-b52b-726287bacd5f",
+    "created_at": "2026-05-09T06:12:15.146025+00:00",
+    "user_id": "112040558777568963466",
+    "text": "sociomee saas",
+    "caption": "sociomee saas",
+    "media_type": "photo",
+    "media_path": "/var/www/sociomee/backend/data/tg_media/fb232892_Screenshot (738).png",
+    "media_filename": "Screenshot (738).png",
+    "targets": [
+      "7552297590"
+    ],
+    "schedule_type": "now",
+    "status": "done",
+    "results": [
+      {
+        "target": "7552297590",
+        "ok": true,
+        "type": "photo"
+      }
+    ],
+    "sent_at": "2026-05-09T06:12:48.190473+00:00"
+  }
+}

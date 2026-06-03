@@ -50,8 +50,8 @@ function QuotaBar({ quota, plan }) {
     <div style={{ background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:"12px", padding:"12px 16px", marginBottom:"16px" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"6px" }}>
         <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-          <span style={{ fontSize:"12px", fontWeight:"700", color:C.ink }}>📤 Monthly Uploads</span>
-          <span style={{ padding:"2px 10px", borderRadius:"99px", fontSize:"10px", fontWeight:"800", letterSpacing:"0.8px", textTransform:"uppercase", background:isPremium?"linear-gradient(135deg,#f59e0b,#ef4444)":`${C.purple}22`, color:isPremium?"white":C.purple, border:isPremium?"none":`1px solid ${C.purple}44` }}>{isPremium?"⭐ PREMIUM":"✦ PRO"}</span>
+          <span style={{ fontSize:"12px", fontWeight:"700", color:C.ink }}>📤 {yt("मासिक अपलोड","मासिक अपलोड","Monthly Uploads")}</span>
+          <span style={{ padding:"2px 10px", borderRadius:"99px", fontSize:"10px", fontWeight:"800", letterSpacing:"0.8px", textTransform:"uppercase", background:isPremium?"linear-gradient(135deg,#7c3aed,#a78bfa)":C.purple+"22", color:"white", border:"none", boxShadow:isPremium?"0 0 14px rgba(124,58,237,0.6), 0 0 30px rgba(124,58,237,0.3)":"none" }}>{isPremium?"⭐ PREMIUM":"✦ PRO"}</span>
         </div>
         <span style={{ fontSize:"12px", fontWeight:"800", color:col }}>{quota.used}/{quota.limit}</span>
       </div>
@@ -561,7 +561,7 @@ function BulkUpload({ userId, plan, quota, setQuota, bestTime }) {
           style={{ border:`2px dashed ${dragOver?C.yt:C.purple}55`, borderRadius:"16px", padding:"24px", textAlign:"center", cursor:"pointer", background:dragOver?`${C.yt}08`:`${C.purple}04`, transition:"all 0.2s", marginBottom:"14px" }}>
           <input ref={fileRef} type="file" accept="video/*" multiple style={{ display:"none" }} onChange={e=>addFiles(e.target.files)} />
           <div style={{ fontSize:"28px", marginBottom:"6px" }}>📹</div>
-          <div style={{ fontSize:"14px", fontWeight:"800", color:C.ink }}>Drop videos here or click to select</div>
+          <div style={{ fontSize:"14px", fontWeight:"800", color:C.ink }}>{yt("वीडियो यहाँ छोड़ें या क्लिक करें","व्हिडिओ येथे टाका किंवा क्लिक करा","Drop videos here or click to select")}</div>
           <div style={{ fontSize:"11px", color:C.muted, marginTop:"4px" }}>Up to {maxVideos-videos.length} video{maxVideos-videos.length!==1?"s":""} · MP4, MOV, AVI · Max 256 MB each</div>
         </div>
       )}
@@ -773,6 +773,9 @@ function ThumbnailAnalyzer({ userId }) {
 // ══════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ══════════════════════════════════════════════════════════════════════
+const YT_LANG = () => localStorage.getItem("sociomee_lang") || "en";
+const yt = (hi, mr, en) => YT_LANG()==="hi"?hi:YT_LANG()==="mr"?mr:en;
+
 export default function YouTubeUpload({ user }) {
   const C      = getC();
   const userId = user?.user_id || localStorage.getItem("sociomee_user_id") || "";
@@ -793,7 +796,7 @@ export default function YouTubeUpload({ user }) {
   return (
     <div style={{ fontFamily:"'DM Sans',sans-serif", paddingBottom:"20px" }}>
       <div style={{ display:"flex", gap:"4px", marginBottom:"16px", background:`${C.purple}08`, borderRadius:"12px", padding:"4px" }}>
-        {[["upload","📤 Bulk Upload"],["history","📜 History"],["seo","🤖 SEO AI"],["thumb","🖼️ Thumbnail"]].map(([id,label]) => (
+        {[["upload","Upload"],["history","History"],["seo","SEO AI"],["thumb","Thumbnail"]].map(([id,label]) => (
           <button key={id} onClick={()=>setActiveTab(id)}
             style={{ flex:1, padding:"8px 4px", borderRadius:"9px", border:"none", background:activeTab===id?C.glass:"transparent", color:activeTab===id?C.purple:C.muted, fontWeight:activeTab===id?"800":"600", fontSize:"11px", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", boxShadow:activeTab===id?"0 1px 4px rgba(0,0,0,0.08)":"none" }}>
             {label}

@@ -288,6 +288,9 @@ export default function InstagramDashboard({ user, topic = "" }) {
   };
 
   const handleConnect = async () => {
+    // Coming Soon
+    alert("Instagram integration is coming soon! 🚀\nWe are working on it and will notify you when it\'s ready.");
+    return;
     setConnecting(true);
     try {
       const r = await fetch(`${BASE}/instagram/auth-url?user_id=${userId}`);
