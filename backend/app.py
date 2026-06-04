@@ -18,14 +18,15 @@ log = logging.getLogger("app")
 
 try:
     from auth_routes import router as auth_router
+    _HAS_AUTH = True
+except Exception as e:
+    log.warning("auth_routes failed: %s", e); _HAS_AUTH = False; auth_router = None
+
 try:
     from push_routes import router as push_router
     _HAS_PUSH = True
 except Exception as _pe:
     log.warning('push_routes failed: %s', _pe); _HAS_PUSH = False; push_router = None
-    _HAS_AUTH = True
-except Exception as e:
-    log.warning("auth_routes failed: %s", e); _HAS_AUTH = False; auth_router = None
 
 # ── YouTube upload router ────────────────────────────────────────────
 try:

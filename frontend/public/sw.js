@@ -6,7 +6,7 @@ self.addEventListener("push",e=>{
   let data={};
   try{data=e.data.json();}catch{data={title:"SocioMee",body:e.data.text()};}
   const title=data.title||"SocioMee";
-  const options={body:data.body||"",icon:"/icons/youtube.png",badge:"/icons/youtube.png",tag:data.tag||"sociomee",renotify:true,requireInteraction:data.requireInteraction||false,data:{url:data.url||"https://sociomee.in/app"},vibrate:[200,100,200]};
+  const options={body:data.body||"",icon:"/logo192.png",badge:"/favicon.png",badge:"/icons/youtube.png",tag:data.tag||"sociomee",renotify:true,requireInteraction:data.requireInteraction||false,data:{url:data.url||"https://sociomee.in/app"},vibrate:[200,100,200]};
   e.waitUntil(self.registration.showNotification(title,options));
 });
 self.addEventListener("notificationclick",e=>{
