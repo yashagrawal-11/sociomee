@@ -11,11 +11,35 @@ function Router() {
   const { isLoggedIn, loading } = useAuth();
   const path = window.location.pathname;
 
+  const pulse = {animation:"pulse 1.5s ease-in-out infinite",background:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)",backgroundSize:"200% 100%"};
   if (loading) return (
-    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"16px", background:"linear-gradient(135deg,#f5f3ff,#fff0f7)", fontFamily:"sans-serif" }}>
-      <div style={{ width:"44px", height:"44px", borderRadius:"50%", border:"3px solid rgba(124,58,237,0.2)", borderTopColor:"#7c3aed", animation:"spin 0.7s linear infinite" }}/>
-      <p style={{ color:"#8b6b9a", fontSize:"14px", fontWeight:"600", margin:0 }}>Loading SocioMee…</p>
-      <style>{"@keyframes spin{to{transform:rotate(360deg)}}*{box-sizing:border-box;margin:0;padding:0}"}</style>
+    <div style={{display:"flex",minHeight:"100vh",background:"#0a0a0a",fontFamily:"sans-serif"}}>
+      <div style={{width:"220px",flexShrink:0,background:"rgba(6,4,15,0.97)",borderRight:"1px solid rgba(124,58,237,0.1)",padding:"20px 16px",display:"flex",flexDirection:"column",gap:"12px"}}>
+        <div style={{height:"22px",borderRadius:"6px",width:"110px",...pulse}}/>
+        <div style={{height:"44px",borderRadius:"10px",marginTop:"4px",...pulse}}/>
+        <div style={{height:"12px",borderRadius:"4px",width:"60px",marginTop:"12px",...pulse}}/>
+        {[1,2,3,4,5,6,7].map(i=><div key={i} style={{height:"32px",borderRadius:"8px",...pulse}}/>)}
+        <div style={{height:"12px",borderRadius:"4px",width:"50px",marginTop:"4px",...pulse}}/>
+        {[1,2,3].map(i=><div key={i} style={{height:"28px",borderRadius:"6px",...pulse}}/>)}
+      </div>
+      <div style={{flex:1,padding:"48px 32px"}}>
+        <div style={{maxWidth:"860px",margin:"0 auto",display:"flex",flexDirection:"column",gap:"20px"}}>
+          <div style={{height:"40px",borderRadius:"8px",width:"260px",...pulse}}/>
+          <div style={{height:"18px",borderRadius:"4px",width:"160px",...pulse}}/>
+          <div style={{height:"54px",borderRadius:"99px",...pulse,marginTop:"4px"}}/>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"8px"}}>
+            {[1,2,3,4,5,6,7,8].map(i=><div key={i} style={{height:"70px",borderRadius:"28px",...pulse}}/>)}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"16px"}}>
+            {[1,2,3].map(i=><div key={i} style={{height:"44px",borderRadius:"99px",...pulse}}/>)}
+          </div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
+            {[1,2,3,4,5,6,7,8,9,10].map(i=><div key={i} style={{height:"34px",width:"80px",borderRadius:"99px",...pulse}}/>)}
+          </div>
+          <div style={{height:"54px",borderRadius:"99px",...pulse}}/>
+        </div>
+      </div>
+      <style>{"@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}*{box-sizing:border-box;margin:0;padding:0}"}</style>
     </div>
   );
 

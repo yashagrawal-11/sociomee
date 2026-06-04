@@ -56,7 +56,7 @@ const DARK_THEME = {
   warn:"#fbbf24",    danger:"#f87171",
 };
 
-let C = { ...LIGHT_THEME };
+let C = { ...DARK_THEME };
 
 const BASE = "https://sociomee.in/api";
 
@@ -78,7 +78,7 @@ const PERSONAS = [
 const PLATFORMS = [
   {id:"youtube",   label:"YouTube",   img:"/icons/youtube.png",   color:"#ff0000"},
   {id:"instagram", label:"Instagram", img:"/icons/instagram.png", color:"#e1306c"},
-  {id:"linkedin",  label:"LinkedIn",  img:"/icons/linkedin.png",  color:"#0077b5"},
+  {id:"linkedin",  label:"LinkedIn",  img:"/icons/linkedin.png?v=2",  color:"#0077b5"},
   {id:"reddit",    label:"Reddit",    img:"/icons/reddit.png",    color:"#ff4500"},
   {id:"facebook",  label:"Facebook",  img:"/icons/facebook.png",  color:"#1877f2"},
   {id:"threads",   label:"Threads",   img:"/icons/threads.png",   color:"#ffffff"},
@@ -628,7 +628,7 @@ function ThumbnailStudio({ keyword, title, isPro, onUpgradeClick }) {
       </div>
       {preview && <div style={{ background:"#0f0f10",borderRadius:"12px",padding:"10px",marginTop:"10px" }}><img src={preview} alt="preview" style={{ width:"100%",borderRadius:"8px",aspectRatio:"16/9",objectFit:"cover",display:"block" }}/></div>}
       {err && <div style={{ marginTop:"8px",padding:"8px 12px",background:C.danger+"14",borderRadius:"8px",fontSize:"12.5px",color:C.danger,fontWeight:"600" }}>⚠ {err}</div>}
-      <button onClick={analyze} disabled={loading||!file} style={{ width:"100%",marginTop:"10px",padding:"12px",borderRadius:"12px",border:"none",background:loading||!file?"rgba(124,58,237,0.3)":`linear-gradient(135deg,${C.purple},${C.rose})`,color:C.white,fontWeight:"800",fontSize:"14px",cursor:loading||!file?"not-allowed":"pointer",fontFamily:"inherit" }}>{loading?"Analyzing…":"✦ Analyze Thumbnail"}</button>
+      <button onClick={analyze} disabled={loading||!file} style={{ width:"100%",marginTop:"10px",padding:"12px",borderRadius:"12px",border:"none",border:"1.5px solid rgba(124,58,237,0.6)",background:loading||!file?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.15)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading||!file?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading||!file?"none":"0 0 24px rgba(124,58,237,0.5)" }}>{loading?"Analyzing…":"✦ Analyze Thumbnail"}</button>
       {result && (
         <div style={{ marginTop:"14px" }}>
           {result.fit_score!==undefined && (
@@ -1023,31 +1023,73 @@ function ComingSoonCard({ platform, icon, color, message }) {
 }
 
 
-function CustomSelect({ value, onChange, options, label }) {
+function CustomSelect({ value, onChange, options, label, grid=false, centered=false }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const selected = options.find(o => o.id === value);
+
   useEffect(() => {
-    const handleClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
   return (
     <div ref={ref} style={{ position:"relative", userSelect:"none" }}>
-      <button onClick={() => setOpen(o => !o)} style={{ width:"100%", padding:"10px 16px", borderRadius:"99px", border:`1.5px solid ${open ? "rgba(124,58,237,0.9)" : "rgba(124,58,237,0.3)"}`, background: open ? "rgba(124,58,237,0.2)" : "rgba(124,58,237,0.08)", color:"#fff", fontSize:"13px", fontFamily:"inherit", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"8px", boxShadow: open ? "0 0 16px rgba(124,58,237,0.4)" : "none", transition:"all 0.2s", outline:"none" }}>
-        <span style={{ fontWeight:"600" }}>{selected?.label || label}</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition:"transform 0.2s", flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
+      <button onClick={() => setOpen(o => !o)} style={{
+        width:"100%", padding:"11px 16px", borderRadius:"99px",
+        border:`1.5px solid ${open ? "rgba(124,58,237,0.9)" : "rgba(124,58,237,0.3)"}`,
+        background: open ? "rgba(124,58,237,0.2)" : "rgba(124,58,237,0.08)",
+        backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)",
+        color:"#fff", fontSize:"13px", fontFamily:"inherit", cursor:"pointer",
+        display:"flex", alignItems:"center",
+        justifyContent: centered ? "center" : "space-between",
+        gap:"8px", boxShadow: open ? "0 0 20px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" : "inset 0 1px 0 rgba(255,255,255,0.05)",
+        transition:"all 0.2s", outline:"none"
+      }}>
+        {centered && <span style={{flex:1}}/>}
+        <span style={{ fontWeight:"600", color: selected ? "#fff" : "rgba(255,255,255,0.4)" }}>{selected?.label || label}</span>
+        {centered && <span style={{flex:1, display:"flex", justifyContent:"flex-end"}}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition:"transform 0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>
+        </span>}
+        {!centered && <>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition:"transform 0.2s", flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
+        </>}
       </button>
       {open && (
-        <div style={{ position:"absolute", top:"calc(100% + 8px)", left:0, right:0, zIndex:999, background:"rgba(10,8,20,0.98)", border:"1px solid rgba(124,58,237,0.35)", borderRadius:"16px", padding:"8px", backdropFilter:"blur(30px)", boxShadow:"0 16px 50px rgba(0,0,0,0.9), 0 0 30px rgba(124,58,237,0.2)", maxHeight:"260px", overflowY:"auto", scrollbarWidth:"none", msOverflowStyle:"none" }}>
-          {options.map((opt) => {
+        <div style={{
+          position:"absolute", top:"calc(100% + 8px)", left:0, right:0, zIndex:999,
+          background:"rgba(8,5,20,0.98)", border:"1px solid rgba(124,58,237,0.35)",
+          borderRadius:"16px", padding:"6px",
+          backdropFilter:"blur(40px)", WebkitBackdropFilter:"blur(40px)",
+          boxShadow:"0 20px 60px rgba(0,0,0,0.9), 0 0 40px rgba(124,58,237,0.2), inset 0 1px 0 rgba(255,255,255,0.05)",
+          maxHeight:"280px", overflowY:"auto", scrollbarWidth:"none", msOverflowStyle:"none",
+          display: grid ? "grid" : "block",
+          gridTemplateColumns: grid ? "1fr 1fr" : "unset",
+          gap: grid ? "1px" : "0",
+          overflow: grid ? "hidden" : "auto",
+        }}>
+          {options.map((opt, i) => {
             const isActive = opt.id === value;
+            const isLastOdd = grid && i === options.length - 1 && options.length % 2 !== 0;
             return (
-              <button key={opt.id} onClick={() => { onChange(opt.id); setOpen(false); }} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", padding:"9px 12px", borderRadius:"8px", border:"none", background: isActive ? "linear-gradient(135deg,rgba(124,58,237,0.3),rgba(255,61,143,0.15))" : "transparent", color: isActive ? "#c4b5fd" : "rgba(255,255,255,0.65)", fontSize:"13px", fontWeight: isActive ? "700" : "500", cursor:"pointer", fontFamily:"inherit", textAlign:"left", borderLeft: isActive ? "2px solid #7c3aed" : "2px solid transparent", transition:"all 0.12s" }}>
+              <button key={opt.id} onClick={() => { onChange(opt.id); setOpen(false); }}
+                style={{
+                  display:"flex", alignItems:"center", justifyContent: grid ? "flex-start" : "space-between",
+                  width:"100%", padding: grid ? "10px 12px" : "9px 12px",
+                  border:"none", gridColumn: isLastOdd ? "1 / -1" : "auto",
+                  background: isActive ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.02)",
+                  color: isActive ? "#c4b5fd" : "rgba(255,255,255,0.65)",
+                  fontSize:"12.5px", fontWeight: isActive ? "700" : "500",
+                  cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+                  borderLeft: grid ? "none" : isActive ? "2px solid #7c3aed" : "2px solid transparent",
+                  transition:"all 0.12s",
+                  borderRadius: grid ? "0" : "8px",
+                }}
+                onMouseEnter={e=>{ if(!isActive){ e.currentTarget.style.background="rgba(124,58,237,0.12)"; e.currentTarget.style.color="#fff"; }}}
+                onMouseLeave={e=>{ if(!isActive){ e.currentTarget.style.background="rgba(255,255,255,0.02)"; e.currentTarget.style.color="rgba(255,255,255,0.65)"; }}}>
                 <span>{opt.label}</span>
-                {isActive && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                {!grid && isActive && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
               </button>
             );
           })}
@@ -1056,7 +1098,6 @@ function CustomSelect({ value, onChange, options, label }) {
     </div>
   );
 }
-
 
 function ChannelSettingsModal({ user, onClose, BASE }) {
   const userId = localStorage.getItem("sociomee_user_id") || user?.user_id || "";
@@ -1067,11 +1108,11 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
   useEffect(() => {
     const token = localStorage.getItem("sociomee_token") || "";
     Promise.allSettled([
-      fetch(BASE+"/youtube/channel/"+userId, { headers:{ Authorization:"Bearer "+token } }).then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch(BASE+"/youtube/status/"+userId, { headers:{ Authorization:"Bearer "+token } }).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(BASE+"/telegram/connect-status?user_id="+userId).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(BASE+"/discord/status?user_id="+userId).then(r=>r.ok?r.json():null).catch(()=>null),
     ]).then(([yt,tg,dc]) => {
-      if (yt.value&&yt.value.title) setYtChannel(yt.value);
+      if (yt.value?.connected) { const ch = yt.value.channels?.[0] || yt.value; setYtChannel({title: ch.channel_title||ch.title||ch.name, thumbnail: ch.thumbnail_url||ch.thumbnail, subscribers: ch.subscribers, channel_id: ch.channel_id}); } else if (yt.value?.channel_title||yt.value?.title) setYtChannel(yt.value);
       if (tg.value) setTgStatus(tg.value);
       if (dc.value) setDcStatus(dc.value);
       setLoading(false);
@@ -1117,13 +1158,13 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
         <div style={{height:"1px",background:"rgba(255,255,255,0.07)",margin:"16px 0"}}/>
         {loading ? <div style={{textAlign:"center",padding:"40px",color:"rgba(255,255,255,0.3)",fontSize:"13px"}}>Loading...</div> : (<>
           <Sec icon={<img src="/icons/youtube.png" style={{width:20,height:20,objectFit:"contain"}} alt="yt"/>} label="YouTube Channels" count={ytChannel?1:0}>
-            {ytChannel ? <Row icon={ytChannel.thumbnail?<img src={ytChannel.thumbnail} style={{width:38,height:38,borderRadius:"50%",objectFit:"cover"}} alt=""/>:<YTIcon/>} name={ytChannel.title||"Channel"} sub={(ytChannel.subscribers?Number(ytChannel.subscribers).toLocaleString()+" subs":"")} onRemove={disconnectYT} accent="#ff0000"/> : <div style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",padding:"8px 0"}}>No YouTube channels connected</div>}
+            {ytChannel ? (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,0,0,0.05)",border:"1px solid rgba(255,0,0,0.15)",marginBottom:"8px"}}>{ytChannel.thumbnail?<img src={ytChannel.thumbnail} style={{width:38,height:38,borderRadius:"50%",objectFit:"cover",flexShrink:0}} alt=""/>:<YTIcon/>}<div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ytChannel.title||"Channel"}</div><div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{ytChannel.subscribers?Number(ytChannel.subscribers).toLocaleString()+" subs":""}</div></div><DisconnectBtn onClick={disconnectYT}/></div>) : <div style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",padding:"8px 0"}}>No YouTube channels connected</div>}
           </Sec>
           <Sec icon={<img src="/icons/telegram.png" style={{width:20,height:20,objectFit:"contain"}} alt="tg"/>} label="Telegram" count={tgStatus?.connected?1:0}>
             {tgStatus?.connected ? (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(42,171,238,0.05)",border:"1px solid rgba(42,171,238,0.15)",marginBottom:"8px"}}><div style={{width:"38px",height:"38px",borderRadius:"50%",background:"rgba(42,171,238,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><img src="/icons/telegram.png" style={{width:22,height:22,objectFit:"contain"}} alt="tg"/></div><div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff"}}>{"@"+(tgStatus.telegram_username||tgStatus.full_name||"Connected")}</div>{tgStatus.channel&&<div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{tgStatus.channel}</div>}</div><DisconnectBtn onClick={disconnectTG}/></div>) : <div style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",padding:"8px 0"}}>No Telegram connected</div>}
           </Sec>
-          <Sec icon={<img src="/icons/discord.png" style={{width:20,height:20,objectFit:"contain"}} alt="discord"/>} label="Discord" count={dcStatus?.connected||dcStatus?.webhook_url?1:0}>
-            {dcStatus?.connected||dcStatus?.webhook_url ? (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(88,101,242,0.05)",border:"1px solid rgba(88,101,242,0.15)",marginBottom:"8px"}}><div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{dcStatus.server_name||"Discord Server"}</div><div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{dcStatus.channel_name||"Channel connected"}</div></div><DisconnectBtn onClick={()=>setDcStatus(null)}/></div>) : <div style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",padding:"8px 0"}}>No Discord connected</div>}
+          <Sec icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>} label="Discord" count={dcStatus?.connected||dcStatus?.webhook_url?1:0}>
+            {dcStatus?.connected||dcStatus?.webhook_url ? (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(88,101,242,0.05)",border:"1px solid rgba(88,101,242,0.15)",marginBottom:"8px"}}><div style={{width:"38px",height:"38px",borderRadius:"50%",background:"rgba(88,101,242,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="20" height="20" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg></div><div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{dcStatus.server_name||"Discord Server"}</div><div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{dcStatus.channel_name||"Channel connected"}</div></div><DisconnectBtn onClick={()=>setDcStatus(null)}/></div>) : <div style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",padding:"8px 0"}}>No Discord connected</div>}
           </Sec>
           <div style={{height:"1px",background:"rgba(255,255,255,0.07)",marginBottom:"16px"}}/>
           <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.2)",marginBottom:"12px"}}>Other Accounts</div>
@@ -1140,8 +1181,42 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
   );
 }
 
+
+function SkeletonScreen() {
+  const pulse = {animation:'pulse 1.5s ease-in-out infinite',background:'linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)',backgroundSize:'200% 100%'};
+  return (
+    <div style={{display:'flex',minHeight:'100vh',background:'#0a0a0a'}}>
+      <div style={{width:'220px',flexShrink:0,background:'rgba(6,4,15,0.97)',borderRight:'1px solid rgba(124,58,237,0.1)',padding:'20px 16px',display:'flex',flexDirection:'column',gap:'12px'}}>
+        <div style={{height:'22px',borderRadius:'6px',width:'110px',...pulse}}/>
+        <div style={{height:'44px',borderRadius:'10px',marginTop:'4px',...pulse}}/>
+        <div style={{height:'12px',borderRadius:'4px',width:'60px',marginTop:'12px',...pulse}}/>
+        {[1,2,3,4,5,6,7].map(i=><div key={i} style={{height:'32px',borderRadius:'8px',...pulse}}/>)}
+        <div style={{height:'12px',borderRadius:'4px',width:'50px',marginTop:'4px',...pulse}}/>
+        {[1,2,3].map(i=><div key={i} style={{height:'28px',borderRadius:'6px',...pulse}}/>)}
+      </div>
+      <div style={{flex:1,padding:'48px 32px'}}>
+        <div style={{maxWidth:'860px',margin:'0 auto',display:'flex',flexDirection:'column',gap:'20px'}}>
+          <div style={{height:'40px',borderRadius:'8px',width:'260px',...pulse}}/>
+          <div style={{height:'18px',borderRadius:'4px',width:'160px',...pulse}}/>
+          <div style={{height:'54px',borderRadius:'99px',...pulse,marginTop:'4px'}}/>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'8px'}}>
+            {[1,2,3,4,5,6,7,8].map(i=><div key={i} style={{height:'70px',borderRadius:'28px',...pulse}}/>)}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'16px'}}>
+            {[1,2,3].map(i=><div key={i} style={{height:'44px',borderRadius:'99px',...pulse}}/>)}
+          </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
+            {[1,2,3,4,5,6,7,8,9,10].map(i=><div key={i} style={{height:'34px',width:'80px',borderRadius:'99px',...pulse}}/>)}
+          </div>
+          <div style={{height:'54px',borderRadius:'99px',...pulse}}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
-  const { user, token, isLoggedIn, logout, refreshToken } = useAuth();
+  const { user, token, isLoggedIn, logout, refreshToken, loading: authLoading } = useAuth();
   const tokenRef = useRef(token);
   useEffect(() => { tokenRef.current = token; }, [token]);
 
@@ -1159,7 +1234,7 @@ export default function App() {
 
   const [keyword,      setKeyword    ] = useState("");
   const [platform,     setPlatform   ] = useState("youtube");
-  const [tone,         setTone       ] = useState("");
+  const [tone,         setTone       ] = useState("casual");
   const [personality,  setPersonality] = useState("dhruvrathee");
   const [language,     setLanguage   ] = useState("hinglish");
   const [formatType,   setFormatType ] = useState("long");
@@ -1174,6 +1249,8 @@ export default function App() {
   const [profilePanelOpen, setProfilePanelOpen] = useState(false);
   const [channelSettingsOpen, setChannelSettingsOpen] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [showUsagePopup, setShowUsagePopup] = useState(false);
+  const [showPlansPopup, setShowPlansPopup] = useState(false);
   const [openGroups, setOpenGroups] = useState({youtube:true, instagram:false, analytics:false});
   const toggleGroup = (g) => setOpenGroups(prev=>({...prev,[g]:!prev[g]}));
   const [youtubeInitialTab, setYoutubeInitialTab] = useState("analytics");
@@ -1191,6 +1268,27 @@ export default function App() {
     { code:"ta", label:"தமிழ்" },
     { code:"bn", label:"বাংলা" },
   ];
+
+  useEffect(() => {
+    let startX = 0; let startY = 0;
+    const ts = (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; };
+    const tm = (e) => {
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if (Math.abs(dx) > Math.abs(dy) && startX < 40 && dx > 10) e.preventDefault();
+    };
+    const te = (e) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) < Math.abs(dy)) return;
+      if (dx > 60 && startX < 40) setSidebarOpen(true);
+      if (dx < -60) setSidebarOpen(false);
+    };
+    document.addEventListener("touchstart", ts, {passive:true});
+    document.addEventListener("touchmove", tm, {passive:false});
+    document.addEventListener("touchend", te, {passive:true});
+    return () => { document.removeEventListener("touchstart",ts); document.removeEventListener("touchmove",tm); document.removeEventListener("touchend",te); };
+  }, []);
 
   useEffect(() => {
     document.body.classList.toggle("sidebar-open", sidebarOpen);
@@ -1283,26 +1381,28 @@ export default function App() {
     { id:"discord",    label:"Discord",   color:"#5865F2", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg> },
   ];
 
+  if (authLoading) return <SkeletonScreen/>;
   return (
     <div style={{ minHeight:"100vh", background:"#0a0a0a", display:"flex", fontFamily:"'DM Sans','Syne',sans-serif", color:"#fff", overflowX:"clip", width:"100%", position:"relative" }}>
 
       {sidebarOpen && <div onClick={()=>setSidebarOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.65)", backdropFilter:"blur(4px)", zIndex:98 }}/>}
 
-      <button onClick={()=>setSidebarOpen(s=>!s)} id="hamburger-btn" style={{ position:"fixed", top:"16px", left:"16px", zIndex:101, background:"rgba(124,58,237,0.15)", border:"1px solid rgba(124,58,237,0.3)", borderRadius:"10px", padding:"8px", cursor:"pointer", display:"none", flexDirection:"column", gap:"4px", alignItems:"center" }}>
-        <span style={{ width:"18px", height:"2px", background:"#a78bfa", display:"block" }}/><span style={{ width:"18px", height:"2px", background:"#a78bfa", display:"block" }}/><span style={{ width:"18px", height:"2px", background:"#a78bfa", display:"block" }}/>
+      <button onClick={()=>setSidebarOpen(s=>!s)} id="hamburger-btn" className={sidebarOpen?"hidden":""} style={{ position:"absolute", top:"14px", left:"14px", zIndex:101, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"8px", padding:"6px", cursor:"pointer", display:"none", flexDirection:"column", gap:"3px", alignItems:"center" }}>
+        <span style={{ width:"14px", height:"1.5px", background:"rgba(255,255,255,0.7)", display:"block", borderRadius:"2px" }}/><span style={{ width:"14px", height:"1.5px", background:"rgba(255,255,255,0.7)", display:"block", borderRadius:"2px" }}/><span style={{ width:"14px", height:"1.5px", background:"rgba(255,255,255,0.7)", display:"block", borderRadius:"2px" }}/>
       </button>
 
       {/* SIDEBAR */}
-      <div id="app-sidebar" className={sidebarOpen?"open":""} style={{ width:"220px",flexShrink:0,background:"rgba(6,4,15,0.97)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderRight:"1px solid rgba(124,58,237,0.1)",display:"flex",flexDirection:"column",position:"fixed",top:0,left:0,height:"100dvh",zIndex:99,overflowY:"auto",overflowX:"hidden",scrollbarWidth:"none",msOverflowStyle:"none",transition:"transform 0.3s ease" }}>
+      <div id="app-sidebar" className={sidebarOpen?"open":""} style={{ width:"220px",flexShrink:0,background:"rgba(6,4,15,0.97)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderRight:"1px solid rgba(124,58,237,0.1)",display:"flex",flexDirection:"column",position:"fixed",top:0,left:0,height:"100dvh",zIndex:99,overflowY:"auto",overflowX:"hidden",scrollbarWidth:"none",msOverflowStyle:"none",transition:"transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
 
         {/* Logo */}
-        <div style={{padding:"20px 16px 16px",borderBottom:"1px solid rgba(255,255,255,0.05)",flexShrink:0}}>
-          <div style={{fontSize:"18px",fontWeight:"900",fontFamily:"'Orbitron',sans-serif",color:"#fff",letterSpacing:"2px"}}>SOCIOMEE</div>
+        <div style={{padding:"16px 16px 14px",borderBottom:"1px solid rgba(255,255,255,0.05)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{fontSize:"16px",fontWeight:"900",fontFamily:"'Orbitron',sans-serif",color:"#fff",letterSpacing:"2px"}}>SOCIOMEE</div>
+          {sidebarOpen && <button onClick={()=>setSidebarOpen(false)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",width:"28px",height:"28px",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"rgba(255,255,255,0.5)",fontSize:"14px",fontWeight:"300"}}>✕</button>}
         </div>
 
         {/* Profile */}
         {isLoggedIn && (
-          <button onClick={()=>setProfilePanelOpen(p=>!p)} style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 16px",border:"none",background:profilePanelOpen?"rgba(124,58,237,0.1)":"transparent",cursor:"pointer",fontFamily:"inherit",width:"100%",textAlign:"left",flexShrink:0,transition:"all 0.15s",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+          <button onClick={()=>{ if(isPro){ if(profilePanelOpen){ setProfilePanelOpen(false); setLangMenuOpen(false); } else setProfilePanelOpen(true); } else window.location.href="https://sociomee.in/pricing"; }} style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 16px",border:"none",background:profilePanelOpen?"rgba(124,58,237,0.1)":"transparent",cursor:"pointer",fontFamily:"inherit",width:"100%",textAlign:"left",flexShrink:0,transition:"all 0.15s",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
             {user?.picture
               ? <img src={user.picture} alt="" referrerPolicy="no-referrer" style={{width:"34px",height:"34px",borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
               : <div style={{width:"34px",height:"34px",borderRadius:"50%",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"13px",fontWeight:"800",color:"#fff",flexShrink:0}}>{(user?.email||"U")[0].toUpperCase()}</div>
@@ -1418,13 +1518,119 @@ export default function App() {
 
       </div>
 
+      {/* PROFILE SLIDE-UP OVERLAY */}
+      {profilePanelOpen && <div onClick={()=>setProfilePanelOpen(false)} style={{position:"fixed",inset:0,zIndex:198}}/>}
+      <div style={{position:"fixed",bottom:"60px",left:0,width:"220px",zIndex:199,background:"rgba(10,8,20,0.98)",backdropFilter:"blur(24px)",border:"1px solid rgba(124,58,237,0.25)",borderRadius:"16px 16px 0 0",padding:"16px 14px 20px",transform:profilePanelOpen?"translateY(0)":"translateY(120%)",visibility:profilePanelOpen?"visible":"hidden",pointerEvents:profilePanelOpen?"all":"none",transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
+        <div style={{width:"32px",height:"3px",borderRadius:"99px",background:"rgba(255,255,255,0.12)",margin:"0 auto 14px"}}/>
+        <button onClick={()=>{setShowPlansPopup(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span style={{flex:1}}>Plans</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button onClick={()=>{setShowUsagePopup(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span style={{flex:1}}>Usage</span>
+          <span style={{fontSize:"11px",color:"#a78bfa",fontWeight:"700"}}>{creditStatus?.credits_remaining||0}/{creditStatus?.monthly_limit||20}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button onClick={()=>{setChannelSettingsOpen(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          <span style={{flex:1}}>Channel Settings</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div style={{position:"relative"}}><button onClick={()=>setLangMenuOpen(l=>!l)} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:langMenuOpen?"0 0 10px 10px":"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span style={{flex:1}}>Language</span>
+          <span style={{fontSize:"11px",color:"#a78bfa",fontWeight:"700"}}>{LANGS.find(l=>l.code===UI_LANG)?.label||"English"}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" style={{transform:langMenuOpen?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        {langMenuOpen && (
+          <div style={{position:"absolute",bottom:"100%",left:0,right:0,background:"rgba(8,6,18,0.98)",border:"1px solid rgba(124,58,237,0.2)",borderBottom:"none",borderRadius:"10px 10px 0 0",padding:"6px 6px 4px",zIndex:300}}>
+            {LANGS.map(({code,label})=>{ const isActive=UI_LANG===code; return (
+              <button key={code} onClick={()=>{localStorage.setItem("sociomee_lang",code);window.location.reload();}} style={{display:"flex",alignItems:"center",gap:"8px",width:"100%",padding:"8px 10px",borderRadius:"8px",border:"none",background:isActive?"rgba(124,58,237,0.15)":"transparent",color:isActive?"#a78bfa":"rgba(255,255,255,0.6)",fontSize:"12px",fontWeight:isActive?"700":"500",cursor:"pointer",fontFamily:"inherit",textAlign:"left"}} onMouseEnter={e=>{if(!isActive)e.currentTarget.style.background="rgba(255,255,255,0.05)";}} onMouseLeave={e=>{if(!isActive)e.currentTarget.style.background="transparent";}}>
+                <span>{label}</span>
+                {isActive&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="3" style={{marginLeft:"auto"}}><polyline points="20 6 9 17 4 12"/></svg>}
+              </button>
+            );})}
+          </div>
+        )}
+        </div>
+      </div>
+
+      {/* USAGE POPUP */}
+      {showPlansPopup && (
+        <div onClick={()=>setShowPlansPopup(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+          <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"400px",background:"rgba(10,8,20,0.98)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"20px",padding:"24px",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 60px rgba(124,58,237,0.12)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"20px"}}>
+              <div><h2 style={{fontSize:"16px",fontWeight:"800",color:"#fff",margin:0}}>Your Plan</h2><p style={{fontSize:"11px",color:"rgba(255,255,255,0.3)",marginTop:"3px"}}>Manage your subscription</p></div>
+              <button onClick={()=>setShowPlansPopup(false)} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+            </div>
+            <div style={{background:"linear-gradient(135deg,rgba(124,58,237,0.15),rgba(255,61,143,0.08))",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"16px",padding:"20px",marginBottom:"16px"}}>
+              <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"}}>Current Plan</div>
+              <div style={{fontSize:"24px",fontWeight:"900",color:"#fff",marginBottom:"4px"}}>✦ {creditStatus?.plan_label||"Free"}</div>
+              <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>{creditStatus?.credits_remaining||0} of {creditStatus?.monthly_limit||20} credits remaining</div>
+            </div>
+            {plan==="free" && (
+              <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+                <a href="https://sociomee.in/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"800",fontSize:"14px",textDecoration:"none",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>✦ Upgrade to Pro — ₹499/mo</a>
+                <a href="https://sociomee.in/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.6)",fontWeight:"700",fontSize:"14px",textDecoration:"none"}}>View All Plans</a>
+              </div>
+            )}
+            {plan==="pro" && (
+              <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+                <a href="https://sociomee.in/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"800",fontSize:"14px",textDecoration:"none",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>⬆ Upgrade to Premium — ₹1,999/mo</a>
+                <button style={{padding:"13px",borderRadius:"99px",background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.3)",color:"#a78bfa",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit"}}>Cancel Subscription</button>
+              </div>
+            )}
+            {(plan==="premium"||plan==="premium_annual") && (
+              <button style={{width:"100%",padding:"13px",borderRadius:"99px",background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.3)",color:"#a78bfa",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit"}}>Cancel Subscription</button>
+            )}
+          </div>
+        </div>
+      )}
+      {showUsagePopup && (
+        <div onClick={()=>setShowUsagePopup(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+          <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"400px",background:"rgba(10,8,20,0.98)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"20px",padding:"24px",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 60px rgba(124,58,237,0.12)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"20px"}}>
+              <div><h2 style={{fontSize:"16px",fontWeight:"800",color:"#fff",margin:0}}>Credit Usage</h2><p style={{fontSize:"11px",color:"rgba(255,255,255,0.3)",marginTop:"3px"}}>Track your credit usage and history</p></div>
+              <button onClick={()=>setShowUsagePopup(false)} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"20px"}}>
+              <div style={{background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"14px",padding:"16px"}}>
+                <div style={{fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.35)",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"8px"}}>Credits Left</div>
+                <div style={{fontSize:"28px",fontWeight:"900",color:"#fff"}}>{creditStatus?.credits_remaining||0}</div>
+                <div style={{fontSize:"11px",color:"rgba(255,255,255,0.3)"}}>of {creditStatus?.monthly_limit||20}</div>
+              </div>
+              <div style={{background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"14px",padding:"16px"}}>
+                <div style={{fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.35)",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"8px"}}>Plan</div>
+                <div style={{fontSize:"16px",fontWeight:"900",color:"#fff"}}>{creditStatus?.plan_label||"Free"}</div>
+                <div style={{fontSize:"11px",color:"rgba(255,255,255,0.3)",marginTop:"4px"}}>Current plan</div>
+              </div>
+            </div>
+            <div style={{marginBottom:"16px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:"8px"}}>
+                <span style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>Used this month</span>
+                <span style={{fontSize:"12px",fontWeight:"700",color:"#a78bfa"}}>{(creditStatus?.monthly_limit||20)-(creditStatus?.credits_remaining||0)}</span>
+              </div>
+              <div style={{height:"8px",borderRadius:"99px",background:"rgba(255,255,255,0.08)"}}>
+                <div style={{height:"100%",borderRadius:"99px",background:"linear-gradient(90deg,#7c3aed,#ff3d8f)",width:`${Math.min(100,(((creditStatus?.monthly_limit||20)-(creditStatus?.credits_remaining||0))/(creditStatus?.monthly_limit||20))*100)}%`,transition:"width 0.3s"}}/>
+              </div>
+            </div>
+            <div style={{background:"rgba(255,255,255,0.03)",borderRadius:"12px",padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>Resets on</span>
+              <span style={{fontSize:"12px",fontWeight:"700",color:"#fff"}}>{creditStatus?.next_reset?new Date(creditStatus.next_reset).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}):"Monthly"}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MAIN CONTENT */}
-      <div id="main-content" style={{ marginLeft:"220px", flex:1, padding:"28px 32px 80px", minHeight:"100vh", overflowX:"hidden" }}>
+      <div id="main-content" style={{ marginLeft:"220px", flex:1, padding:"48px 32px 80px", minHeight:"100vh", overflowX:"hidden" }}>
         <div style={{ maxWidth:"860px", margin:"0 auto" }}>
 
           <div style={{ marginBottom:"28px" }}>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", color:"#fff", fontSize:"10px", fontWeight:"900", letterSpacing:"2.5px", textTransform:"uppercase", padding:"5px 14px", borderRadius:"99px", marginBottom:"12px" }}>✦ AI CONTENT STUDIO</div>
-            <h1 style={{ fontSize:"clamp(32px,5vw,52px)", fontWeight:"900", fontFamily:"'Orbitron',sans-serif", color:"#fff", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"6px" }}>SOCIOMEE</h1>
+            
+            <h1 style={{ fontSize:"clamp(28px,4vw,44px)", fontWeight:"700", fontFamily:"'Orbitron',sans-serif", color:"#fff", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"6px" }}>SOCIOMEE</h1>
             <p style={{ fontSize:"15px", color:"rgba(255,255,255,0.35)" }}>{t("oneTopicInfinite")}</p>
           </div>
 
@@ -1449,18 +1655,17 @@ export default function App() {
 
                 {/* Platform Grid */}
                 <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>PLATFORM</div>
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"8px", marginBottom:"20px" }}>
+                <div className="platform-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"8px", marginBottom:"20px" }}>
                   {PLATFORMS.map(p=>(
                     <button key={p.id} onClick={()=>setPlatform(p.id)}
-                      style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"6px", padding:"12px 8px", borderRadius:"22px", border:`1.5px solid ${platform===p.id?p.color:"rgba(255,255,255,0.08)"}`, background:platform===p.id?`${p.color}18`:"rgba(255,255,255,0.03)", color:platform===p.id?p.color:"rgba(255,255,255,0.5)", fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", boxShadow:platform===p.id?`0 0 12px ${p.color}30`:"none" }}>
-                      <img src={p.img} alt={p.label} style={{ width:"22px", height:"22px", objectFit:"contain" }} onError={e=>e.target.style.display="none"}/>
-                      {p.label}
+                      style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"6px", padding:"12px 8px", borderRadius:"28px", border:`1.5px solid ${platform===p.id?p.color:"rgba(255,255,255,0.08)"}`, background:platform===p.id?`${p.color}18`:"rgba(255,255,255,0.03)", color:platform===p.id?p.color:"rgba(255,255,255,0.5)", fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", boxShadow:platform===p.id?`0 0 12px ${p.color}30`:"none" }}>
+                      <img src={p.img} alt={p.label} style={{ width:"22px", height:"22px", objectFit:"contain" }} onError={e=>e.target.style.display="none"}/><span className="platform-label">{p.label}</span>
                     </button>
                   ))}
                 </div>
 
-                {/* Persona, Language, Format row */}
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"16px", marginBottom:"20px" }}>
+                {/* DESKTOP: Persona Language Format in one row */}
+                <div className="plf-desktop" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"16px", marginBottom:"20px" }}>
                   <div>
                     <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"8px" }}>PERSONA</div>
                     <CustomSelect value={personality} onChange={setPersonality} label="Select Persona" options={PERSONAS.map(p => ({ id:p.id, label:p.label }))}/>
@@ -1475,9 +1680,21 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Tone Pills */}
+                {/* MOBILE: Persona + Language side by side, smaller font */}
+                <div className="plf-mobile" style={{ display:"none", gap:"8px", marginBottom:"16px" }}>
+                  <div style={{ flex:"3" }}>
+                    <div style={{ fontSize:"9px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"6px" }}>PERSONA</div>
+                    <CustomSelect value={personality} onChange={setPersonality} label="Persona" options={PERSONAS.map(p => ({ id:p.id, label:p.label }))}/>
+                  </div>
+                  <div style={{ flex:"2" }}>
+                    <div style={{ fontSize:"9px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"6px" }}>LANGUAGE</div>
+                    <CustomSelect value={language} onChange={setLanguage} label="Language" options={[{id:"hinglish",label:"Hinglish"},{id:"hindi",label:"Hindi"},{id:"english",label:"English"},{id:"marathi",label:"Marathi"},{id:"tamil",label:"Tamil"},{id:"bengali",label:"Bengali"}]}/>
+                  </div>
+                </div>
+
+                {/* TONE - Pills desktop, Dropdown mobile */}
                 <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>TONE</div>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:"8px", marginBottom:"16px" }}>
+                <div className="tone-pills" style={{ display:"flex", flexWrap:"wrap", gap:"8px", marginBottom:"16px" }}>
                   {[
                     {id:"bold",label:"Bold",emoji:"🔥"},{id:"funny",label:"Funny",emoji:"😂"},
                     {id:"emotional",label:"Emotional",emoji:"💖"},{id:"informative",label:"Informative",emoji:"📚"},
@@ -1493,6 +1710,23 @@ export default function App() {
                     </button>
                   ))}
                 </div>
+                <div className="tone-dropdown" style={{ display:"none", marginBottom:"16px", width:"100%" }}>
+                  <CustomSelect centered={true} value={tone} onChange={setTone} grid={true} label="😎 Casual" options={[
+                    {id:"bold",label:"🔥 Bold"},{id:"funny",label:"😂 Funny"},
+                    {id:"emotional",label:"💖 Emotional"},{id:"informative",label:"📚 Informative"},
+                    {id:"aggressive",label:"⚡ Aggressive"},{id:"sales",label:"💸 Sales"},
+                    {id:"dramatic",label:"🎭 Dramatic"},{id:"casual",label:"😎 Casual"},
+                    {id:"motivational",label:"🚀 Motivational"},{id:"storytelling",label:"📖 Storytelling"},
+                    {id:"educational",label:"🎓 Educational"},{id:"cinematic",label:"🎬 Cinematic"},
+                  ]}/>
+                </div>
+
+                {/* FORMAT - mobile only dropdown (desktop is in PLF row) */}
+                <div className="format-mobile-only" style={{ display:"none", marginBottom:"16px" }}>
+                  <div style={{ fontSize:"9px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"6px" }}>FORMAT</div>
+                  <CustomSelect centered={true} value={formatType} onChange={setFormatType} grid={true} label="Long Form" options={[{id:"long",label:"Long Form"},{id:"short",label:"Short Form"},{id:"thread",label:"Thread"},{id:"reel",label:"Reel Script"}]}/>
+                </div>
+
 
                 {/* Persona info line */}
                 {selPersona && (
@@ -1507,7 +1741,7 @@ export default function App() {
                 {/* Generate Button - Glass style */}
                 <button onClick={handleSubmit} disabled={loading||!keyword.trim()}
                   className="gen-btn"
-                  style={{ width:"100%", padding:"16px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.6)", background:loading||!keyword.trim()?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.15)", backdropFilter:"blur(16px)", color:"#fff", fontWeight:"800", fontSize:"15px", cursor:loading||!keyword.trim()?"not-allowed":"pointer", fontFamily:"inherit", boxShadow:loading||!keyword.trim()?"none":"0 0 24px rgba(124,58,237,0.5),0 0 60px rgba(124,58,237,0.2)", transition:"all 0.3s", opacity:loading||!keyword.trim()?0.5:1, letterSpacing:"1px" }}>
+                  style={{ width:"100%", padding:"16px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.6)", background:loading||!keyword.trim()?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.15)", backdropFilter:"blur(16px)", color:"#fff", fontWeight:"800", fontSize:"15px", cursor:"pointer", fontFamily:"inherit", boxShadow:loading||!keyword.trim()?"none":"0 0 24px rgba(124,58,237,0.5),0 0 60px rgba(124,58,237,0.2)", transition:"all 0.3s", opacity:loading||!keyword.trim()?0.5:1, letterSpacing:"1px" }}>
                   {loading ? (
                     <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"10px" }}>
                       <span style={{ width:"16px", height:"16px", borderRadius:"50%", border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#fff", animation:"spin 0.7s linear infinite", display:"inline-block" }}/>
@@ -1579,11 +1813,11 @@ export default function App() {
         .gen-btn:hover:not(:disabled){background:rgba(124,58,237,0.25)!important;border-color:rgba(124,58,237,1)!important;box-shadow:0 0 40px rgba(124,58,237,0.8),0 0 80px rgba(124,58,237,0.3)!important;transform:translateY(-2px);}
         select{appearance:none;-webkit-appearance:none;}
         select option{background:#0a0a0a;color:#fff;}
-        html,body{overflow-x:hidden!important;} @media(max-width:768px){
+        html,body{overflow-x:hidden!important;} @media(max-width:768px){ .tone-pills{display:none!important;} .tone-dropdown{display:block!important;} .format-mobile-only{display:block!important;} .plf-desktop{display:none!important;} .plf-mobile{display:flex!important;} .plf-mobile button{font-size:11px!important;padding:9px 10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;} .platform-grid button{border-radius:50%!important;width:48px!important;height:48px!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;} .platform-grid button img{width:24px!important;height:24px!important;} .platform-label{display:none!important;} .platform-grid{gap:6px!important;} .custom-select-btn{padding:7px 10px!important;font-size:11px!important;} .custom-select-drop{font-size:11px!important;} .persona-lang-grid{grid-template-columns:1fr!important;gap:8px!important;} 
           #app-sidebar{transform:translateX(-100%);width:240px!important;}
           #app-sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,0.5);}
           #main-content{margin-left:0!important;padding:60px 16px 80px!important;}
-          #hamburger-btn{display:flex!important;}
+          #hamburger-btn{display:flex!important;} #hamburger-btn.hidden{display:none!important;}
         }
       `}</style>
     </div>
