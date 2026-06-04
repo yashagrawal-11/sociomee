@@ -9,6 +9,13 @@ import json
 import threading
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+try:
+    from push_routes import notify_out_of_credits, notify_credits_restored
+    _HAS_PUSH = True
+except Exception:
+    _HAS_PUSH = False
+    def notify_out_of_credits(u): pass
+    def notify_credits_restored(u, c=20): pass
 from typing import Any, Dict, Optional
 
 # ── Plan config ───────────────────────────────────────────────────────
@@ -125,8 +132,11 @@ def _check_and_reset(record: Dict[str, Any]) -> Dict[str, Any]:
         now     = datetime.now(timezone.utc)
         if (now - last_dt).days >= 30:
             plan = record.get("plan", "free")
-            record["credits_remaining"] = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
+            new_credits = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
+            record["credits_remaining"] = new_credits
             record["last_reset"]        = _now_iso()
+            try: notify_credits_restored(user_id, new_credits)
+            except Exception: pass
     except Exception:
         pass
     return record
@@ -181,6 +191,8 @@ def use_credit(user_id: str) -> bool:
         if credits <= 0:
             data[user_id] = record
             _save(data)
+            try: notify_out_of_credits(user_id)
+            except Exception: pass
             return False
         record["credits_remaining"] = credits - 1
         data[user_id] = record

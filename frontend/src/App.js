@@ -16,7 +16,11 @@ import TextToAudio from "./TextToAudio";
 import HookGenerator from "./HookGenerator";
 import BioWriter from "./BioWriter";
 import LinkedInDashboard from "./LinkedInDashboard";
+import { initPush } from "./PushNotifications";
 import { TelegramHookGenerator, TelegramPollGenerator, TelegramBestTime } from "./TelegramTools";
+import { PinterestPinDesc, PinterestBoardNames, PinterestHashtags, PinterestBestTime } from "./PinterestTools";
+import { ThreadsGenerator, ThreadsBio, ThreadsHook } from "./ThreadsTools";
+import { RedditTitle, RedditSubfinder, RedditBestTime } from "./RedditTools";
 
 // ══════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -1227,7 +1231,7 @@ export default function App() {
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [showUsagePopup, setShowUsagePopup] = useState(false);
   const [showPlansPopup, setShowPlansPopup] = useState(false);
-  const [openGroups, setOpenGroups] = useState({youtube:true, instagram:false, analytics:false});
+  const [openGroups, setOpenGroups] = useState({youtube:true, instagram:false, telegram:false, pinterest:false, threads:false, reddit:false, analytics:false});
   const toggleGroup = (g) => setOpenGroups(prev=>({...prev,[g]:!prev[g]}));
   const [youtubeInitialTab, setYoutubeInitialTab] = useState("analytics");
   const resultRef = useRef(null);
@@ -1281,6 +1285,11 @@ export default function App() {
         setCreditStatus({ plan:d.plan||"free", plan_label:d.plan_label||"Free", credits_remaining:d.credits_remaining??d.credits??20, credits:d.credits_remaining??d.credits??20, monthly_limit:d.monthly_limit??20, next_reset:d.next_reset||"" });
       }).catch(()=>{});
   }, [user]);
+
+  // Init push notifications
+  useEffect(() => {
+    if (user?.user_id) initPush(user.user_id);
+  }, [user?.user_id]);
 
   const openPricing = (mode="upgrade") => { setPricingMode(mode); setShowPricing(true); };
 
@@ -1481,6 +1490,80 @@ export default function App() {
                   style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #2aabee":"2px solid transparent",background:activeTab===item.tab?"rgba(37,199,220,0.1)":"transparent",color:activeTab===item.tab?"#7dd3fc":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
                   onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#7dd3fc":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(37,199,220,0.1)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          
+          {/* Pinterest Tools */}
+          <button onClick={()=>toggleGroup("pinterest")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.pinterest?"rgba(230,0,35,0.06)":"transparent",color:openGroups.pinterest?"#ff6b8a":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/pinterest.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>Pinterest Tools</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.pinterest?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.pinterest && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(230,0,35,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"pt-pindesc",label:"Pin Description",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
+                {tab:"pt-board",label:"Board Names",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>},
+                {tab:"pt-hashtag",label:"Hashtag Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg>},
+                {tab:"pt-besttime",label:"Best Time to Post",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
+                {tab:"translator",label:"Translator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+                {tab:"texttaudio",label:"Text to Audio",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>},
+              ].map(item=>(
+                <button key={item.tab+"-pt"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #e60023":"2px solid transparent",background:activeTab===item.tab?"rgba(230,0,35,0.1)":"transparent",color:activeTab===item.tab?"#ff6b8a":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#ff6b8a":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(230,0,35,0.1)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Threads Tools */}
+          <button onClick={()=>toggleGroup("threads")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.threads?"rgba(255,255,255,0.06)":"transparent",color:openGroups.threads?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/threads.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>Threads Tools</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.threads?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.threads && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(255,255,255,0.12)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"th-thread",label:"Thread Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>},
+                {tab:"th-bio",label:"Bio Writer",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
+                {tab:"th-hook",label:"Hook Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
+                {tab:"translator",label:"Translator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+                {tab:"texttaudio",label:"Text to Audio",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>},
+              ].map(item=>(
+                <button key={item.tab+"-th"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #ffffff":"2px solid transparent",background:activeTab===item.tab?"rgba(255,255,255,0.08)":"transparent",color:activeTab===item.tab?"#ffffff":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#ffffff":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(255,255,255,0.08)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Reddit Tools */}
+          <button onClick={()=>toggleGroup("reddit")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.reddit?"rgba(255,69,0,0.06)":"transparent",color:openGroups.reddit?"#fb923c":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/reddit.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>Reddit Tools</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.reddit?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.reddit && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(255,69,0,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"rd-title",label:"Post Title Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
+                {tab:"rd-subreddit",label:"Subreddit Finder",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>},
+                {tab:"rd-besttime",label:"Best Time to Post",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
+                {tab:"translator",label:"Translator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+                {tab:"texttaudio",label:"Text to Audio",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>},
+              ].map(item=>(
+                <button key={item.tab+"-rd"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #ff4500":"2px solid transparent",background:activeTab===item.tab?"rgba(255,69,0,0.1)":"transparent",color:activeTab===item.tab?"#fb923c":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#fb923c":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(255,69,0,0.1)":"transparent";}}>
                   {item.icon}{item.label}
                 </button>
               ))}
@@ -1780,6 +1863,16 @@ export default function App() {
       {activeTab==="tg-poll"     && isLoggedIn && <TelegramPollGenerator userId={user?.id||localStorage.getItem("sociomee_user_id")||""}/>}
       {activeTab==="tg-besttime" && isLoggedIn && <TelegramBestTime userId={user?.id||localStorage.getItem("sociomee_user_id")||""}/>}
       {activeTab==="tg-scheduler"&& isLoggedIn && <TelegramScheduler user={user}/>}
+      {activeTab==="pt-pindesc"   && isLoggedIn && <PinterestPinDesc/>}
+      {activeTab==="pt-board"     && isLoggedIn && <PinterestBoardNames/>}
+      {activeTab==="pt-hashtag"   && isLoggedIn && <PinterestHashtags/>}
+      {activeTab==="pt-besttime"  && isLoggedIn && <PinterestBestTime/>}
+      {activeTab==="th-thread"    && isLoggedIn && <ThreadsGenerator/>}
+      {activeTab==="th-bio"       && isLoggedIn && <ThreadsBio/>}
+      {activeTab==="th-hook"      && isLoggedIn && <ThreadsHook/>}
+      {activeTab==="rd-title"     && isLoggedIn && <RedditTitle/>}
+      {activeTab==="rd-subreddit" && isLoggedIn && <RedditSubfinder/>}
+      {activeTab==="rd-besttime"  && isLoggedIn && <RedditBestTime/>}
       {activeTab==="hashtags"   && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HashtagGenerator user={user}/></div>}
           {activeTab==="texttaudio" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TextToAudio user={user}/></div>}
           {activeTab==="hookgenerator"&&isLoggedIn&& <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HookGenerator user={user}/></div>}
