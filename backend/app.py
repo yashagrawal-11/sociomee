@@ -400,38 +400,108 @@ def _generate_titles_with_scores(topic: str, persona: str, language: str) -> lis
     return result
 
 def _generate_yt_description(topic: str, hook: str, structure: dict, titles_with_score: list) -> str:
+    import requests as _r, re as _re, os as _os
     t = topic.strip(); tc = t.title()
     kp = structure.get("key_points", [])
     best_title = titles_with_score[0]["title"] if titles_with_score else tc
-    queries = [t, t+" explained", t+" full analysis", t+" truth revealed",
-               t+" in hindi", t+" documentary", "about "+t, t+" real story",
-               t+" latest news", t+" investigation", t+" facts", "why "+t,
-               "how "+t, t+" 2024", t+" 2025"]
-    seen = set(); unique_q = []
-    for q in queries:
-        if q not in seen: seen.add(q); unique_q.append(q)
-    unique_q = unique_q[:12]
-    timestamps = ["00:00 - Introduction", "00:00 - Background"]
-    for i, point in enumerate(kp[:5], 1):
-        label = str(point)[:55].strip() if point else "Part "+str(i)
-        timestamps.append("00:00 - "+label)
-    timestamps.append("00:00 - Conclusion")
-    kp_bullets = "\n".join("- "+str(kp_item)[:80] for kp_item in kp[:5] if kp_item)
     NL = "\n"
-    desc = (
-        best_title + NL + NL +
-        "ABOUT THIS VIDEO" + NL +
-        (hook or "Aaj hum "+t+" ke baare mein ek honest aur detailed analysis karenge.") + NL + NL +
-        "Is video mein aap janenge:" + NL +
-        (kp_bullets or tc+" ki poori kahani") + NL + NL +
-        "YOUR QUERIES" + NL +
-        NL.join(unique_q) + NL + NL +
-        "TIMESTAMPS" + NL +
-        NL.join(timestamps) + NL + NL +
-        "Subscribe karein aur bell icon dabayein." + NL +
-        tc + " Analysis | All Rights Reserved."
-    )
-    return desc.strip()
+
+    # Generate with Gemini
+    try:
+        api_key = _os.environ.get("GOOGLE_API_KEY","")
+        kp_text = ", ".join(str(p) for p in kp[:5] if p)
+        prompt = f"""Write a professional YouTube video description for:
+Topic: {t}
+Title: {best_title}
+
+Use EXACTLY this format (no markdown, no asterisks, plain text only):
+
+{best_title}
+
+ABOUT THIS VIDEO
+[Write 2-3 engaging sentences in Hinglish about what this video covers, why it matters, and what viewer will learn. Make it specific to {t}.]
+
+IS VIDEO MEIN AAP JANENGE
+- [Point 1 specific to {t}]
+- [Point 2 specific to {t}]
+- [Point 3 specific to {t}]
+- [Point 4 specific to {t}]
+- [Point 5 specific to {t}]
+
+YOUR QUERIES
+{t}
+{t} explained
+{t} full analysis
+{t} truth revealed
+{t} in hindi
+{t} 2024
+{t} real story
+{t} investigation
+about {t}
+{t} facts
+
+TIMESTAMPS
+00:00 - Introduction
+00:30 - Background
+02:00 - [Section specific to {t}]
+05:00 - [Section specific to {t}]
+08:00 - [Section specific to {t}]
+12:00 - Conclusion
+
+HASHTAGS
+#{t.lower().replace(' ','')} #viralvideo #trending #youtube #india #facts #analysis #investigation #hinglish #viral
+
+DISCLAIMER
+This video is for educational and informational purposes only. All information is based on publicly available sources. We do not claim ownership of any third-party content shown. Copyright © SocioMee 2024.
+
+Write the ABOUT THIS VIDEO and IS VIDEO MEIN AAP JANENGE sections with content specific to {t}. Keep rest exactly as shown."""
+
+        resp = _r.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
+            headers={"Content-Type":"application/json"},
+            json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":1500,"temperature":0.7}},
+            timeout=30
+        )
+        data = resp.json()
+        if "candidates" in data:
+            raw = data["candidates"][0]["content"]["parts"][0]["text"]
+            # Clean any markdown
+            raw = _re.sub(r"\*\*(.*?)\*\*", r"\1", raw)
+            raw = _re.sub(r"\*(.*?)\*", r"\1", raw)
+            raw = _re.sub(r"^(Okay|Sure|Here|Alright)[^\n]*\n", "", raw.strip(), flags=_re.IGNORECASE)
+            return raw.strip()
+    except Exception as e:
+        log.warning("Gemini description failed: %s", e)
+
+    # Fallback
+    queries = [t, t+" explained", t+" full analysis", t+" truth revealed", t+" in hindi",
+               t+" documentary", "about "+t, t+" real story", t+" latest news", t+" facts"]
+    kp_bullets = NL.join(f"• {str(p)[:80]}" for p in kp[:5] if p)
+    hashtags = f"#{t.lower().replace(' ','')} #viralvideo #trending #youtube #india #facts #analysis #viral"
+    return f"""{best_title}
+
+ABOUT THIS VIDEO
+Aaj hum {t} ke baare mein ek honest aur detailed analysis karenge. Is video mein hum sab angles cover karenge bina kisi bias ke.
+
+IS VIDEO MEIN AAP JANENGE
+{kp_bullets or f"• {tc} ki poori kahani"}
+
+YOUR QUERIES
+{NL.join(queries)}
+
+TIMESTAMPS
+00:00 - Introduction
+00:30 - Background
+02:00 - Main Analysis
+08:00 - Key Findings
+12:00 - Conclusion
+
+HASHTAGS
+{hashtags}
+
+DISCLAIMER
+This video is for educational and informational purposes only. All information is based on publicly available sources. Copyright © SocioMee 2024."""
+
 
 def _normalize(raw: dict, payload: FullContentRequest, platform: str = "youtube") -> dict:
     structure = raw.get("structure", {}); seo_scores = raw.get("seo_scores", [])

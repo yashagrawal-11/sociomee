@@ -326,7 +326,45 @@ def generate_script(
     if language not in SUPPORTED_LANGUAGES:
         language = "hinglish"
 
-    # Offline fallback when no NVIDIA key
+    # Use Gemini 2.5 Flash for script generation
+    import requests as _gr, os as _os
+    gemini_key = _os.getenv("GOOGLE_API_KEY", _os.getenv("GOOGLE_AI_API_KEY",""))
+    if gemini_key:
+        try:
+            voice_g = PERSONA_VOICE_GUIDES.get(persona if isinstance(persona,str) else "default", PERSONA_VOICE_GUIDES["default"])
+            struct_brief = _format_structure(structure) if structure else ""
+            lang_inst = "Hinglish (Hindi grammar, English for technical terms)" if language=="hinglish" else "English only, conversational"
+            prompt = f"""Write a {min_words}-{max_words} word YouTube script about: "{topic}"
+
+Persona/Voice style: {voice_g[:300] if isinstance(voice_g,str) else str(voice_g)[:300]}
+Language: {lang_inst}
+Structure outline: {struct_brief[:500]}
+
+Requirements:
+- Start with a strong hook (first 30 seconds)  
+- Include natural transitions between sections
+- Add audience engagement (questions, call to action)
+- End with strong conclusion and subscribe CTA
+- Write in spoken/conversational style
+- Minimum {min_words} words
+- NO markdown formatting, write as pure script text
+- Label sections like: [HOOK], [INTRO], [MAIN CONTENT], [CONCLUSION]"""
+
+            resp = _gr.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}",
+                headers={"Content-Type":"application/json"},
+                json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":8000,"temperature":0.85}},
+                timeout=120
+            )
+            data = resp.json()
+            if "candidates" in data:
+                script = data["candidates"][0]["content"]["parts"][0]["text"]
+                if len(script.split()) >= 100:
+                    return script
+        except Exception as e:
+            pass
+
+    # Offline fallback
     if not NVIDIA_API_KEY or _requests is None:
         return _offline_script(topic, structure, persona, language)
 

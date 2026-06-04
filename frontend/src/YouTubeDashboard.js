@@ -285,6 +285,45 @@ function GrowthPrediction({ prediction, topic }) {
   );
 }
 
+
+function VideoDonut({ label, center, sub, data }) {
+  const [active, setActive] = useState(null);
+  const filtered = data.filter(x=>x.value>0);
+  const highlighted = active !== null ? filtered[active] : null;
+  const PURPLE = ["#7c3aed","#9333ea","#a78bfa","#6d28d9","#c4b5fd"];
+  const FADED = "rgba(124,58,237,0.18)";
+  const coloredData = filtered.map((x,i)=>({...x}));
+  return (
+    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"14px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center"}}>
+      <div style={{fontSize:"9px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>{label}</div>
+      <div style={{position:"relative"}}>
+        <RechartsPie width={170} height={170}>
+          <Pie data={coloredData} cx={85} cy={85} innerRadius={54} outerRadius={76} paddingAngle={3} dataKey="value" strokeWidth={0}
+            onMouseEnter={(_,i)=>setActive(i)} onMouseLeave={()=>setActive(null)} style={{cursor:"pointer"}}>
+            {coloredData.map((x,xi)=><Cell key={xi} fill={x.color} opacity={active===null||active===xi?1:0.15}/>)}
+          </Pie>
+        </RechartsPie>
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"72px"}}>
+          {highlighted ? (
+            <div style={{fontSize:"11px",fontWeight:"800",color:"#fff",lineHeight:1.3}}>{highlighted.name}</div>
+          ) : (<>
+            <div style={{fontSize:"15px",fontWeight:"900",color:"#fff",lineHeight:1}}>{center}</div>
+            <div style={{fontSize:"8px",color:"rgba(255,255,255,0.4)",marginTop:"2px"}}>{sub}</div>
+          </>)}
+        </div>
+      </div>
+      <div style={{display:"flex",justifyContent:"center",gap:"6px",marginTop:"10px",flexWrap:"wrap"}}>
+        {coloredData.map((x,xi)=>(
+          <div key={xi} style={{display:"flex",alignItems:"center",gap:"3px",opacity:active===null||active===xi?1:0.4}}>
+            <div style={{width:"7px",height:"7px",borderRadius:"50%",background:x.color,flexShrink:0}}/>
+            <span style={{fontSize:"9px",color:"rgba(255,255,255,0.7)",fontWeight:"600"}}>{x.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function TopVideos({ videos }) {
   C = getThemeC();
   const [expanded, setExpanded] = useState(null);
@@ -349,7 +388,79 @@ function TopVideos({ videos }) {
             {isOpen && (
               <div style={{ borderTop:`1px solid ${C.hairline}`, padding:"14px" }}>
                 <div style={{ display:"flex", gap:"8px", flexWrap:"wrap", marginBottom:"12px" }}>
-                  {[{icon:"👁️",label:yt("व्यूज़","व्ह्यूज","Views"),val:fmt(v.views),color:C.purple},{icon:"👍",label:"Likes",val:fmt(v.likes),color:C.success},{icon:"💬",label:"Comments",val:fmt(v.comments),color:C.teal},{icon:"📊",label:"Eng. Rate",val:`${eng}%`,color:"#f59e0b"},{icon:"❤️",label:"Like Rate",val:`${v.views>0?(v.likes/v.views*100).toFixed(2):0}%`,color:"#ff6eb5"}].map(({icon,label,val,color})=>(
+                  {/* Video Analytics Donuts */}
+                  {(()=>{
+                    const likeRate = v.views>0?+(v.likes/v.views*100).toFixed(2):0;
+                    const commentRate = v.views>0?+(v.comments/v.views*100).toFixed(2):0;
+                    const engRate = +eng;
+                    const perfScore = Math.round(v.views/maxViews*100);
+                    const aiTip = engRate>5?"🔥 Top performer! Replicate this video format immediately.":engRate>2?"💡 Good engagement. Add stronger end screen CTA to boost subs.":likeRate>5?"👍 Good like ratio but low comments. Ask questions in video.":"📌 Low engagement. Improve thumbnail & hook in first 5 seconds.";
+                    
+                    const donuts = [
+                      {
+                        label:"Like vs View",
+                        center:`${likeRate}%`,
+                        sub:"Like Rate",
+                        data:[
+                          {name:"Liked",value:v.likes||0,color:"#7c3aed"},
+                          {name:"Not liked",value:Math.max(0,v.views-v.likes),color:"rgba(124,58,237,0.25)"},
+                        ]
+                      },
+                      {
+                        label:"Engagement",
+                        center:`${engRate}%`,
+                        sub:"Eng. Rate",
+                        data:[
+                          {name:"Likes",value:v.likes||0,color:"#7c3aed"},
+                          {name:"Comments",value:(v.comments||0)*5,color:"#9333ea"},
+                          {name:"Passive",value:Math.max(0,v.views-v.likes-(v.comments||0)*5),color:"rgba(124,58,237,0.25)"},
+                        ]
+                      },
+                      {
+                        label:"Performance",
+                        center:`${perfScore}%`,
+                        sub:"vs Best",
+                        data:[
+                          {name:"This video",value:v.views||0,color:"#7c3aed"},
+                          {name:"Best video",value:Math.max(0,maxViews-v.views),color:"rgba(255,255,255,0.06)"},
+                        ]
+                      },
+                      {
+                        label:"Comment Rate",
+                        center:`${commentRate}%`,
+                        sub:"Comment/View",
+                        data:[
+                          {name:"Commented",value:v.comments||0,color:"#a78bfa"},
+                          {name:"Silent",value:Math.max(0,v.views-v.comments),color:"rgba(124,58,237,0.25)"},
+                        ]
+                      },
+                    ];
+
+                    return (
+                      <div style={{marginBottom:"16px",padding:"16px",background:"rgba(124,58,237,0.04)",borderRadius:"14px",border:"1px solid rgba(124,58,237,0.12)"}}>
+                        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"16px",width:"100%"}}>
+                          {donuts.map((d,di)=>(
+                            <VideoDonut key={di} label={d.label} center={d.center} sub={d.sub} data={d.data} color={d.data[0]?.color||"#7c3aed"}/>
+                          ))}
+                        </div>
+                        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"8px",marginBottom:"10px",width:"100%"}}>
+                          {[
+                            {label:"Views",val:fmt(v.views),color:"#7c3aed"},
+                            {label:"Likes",val:fmt(v.likes),color:"#9333ea"},
+                            {label:"Comments",val:fmt(v.comments||0),color:"#a78bfa"},
+                            {label:"Eng. Rate",val:`${eng}%`,color:"#c4b5fd"},
+                          ].map(({label,val,color})=>(
+                            <div key={label} style={{background:"rgba(124,58,237,0.08)",borderRadius:"8px",padding:"8px",textAlign:"center"}}>
+                              <div style={{fontSize:"9px",color:"rgba(255,255,255,0.4)",marginBottom:"3px"}}>{label}</div>
+                              <div style={{fontSize:"13px",fontWeight:"800",color}}>{val}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{fontSize:"11px",color:"rgba(255,255,255,0.55)",background:"rgba(124,58,237,0.08)",borderRadius:"8px",padding:"8px 12px",borderLeft:"2px solid #7c3aed"}}>✦ {aiTip}</div>
+                      </div>
+                    );
+                  })()}
+                  {[].map(({icon,label,val,color})=>(
                     <div key={label} style={{ flex:"1 1 70px", background:`${color}10`, border:`1px solid ${color}25`, borderRadius:"10px", padding:"8px 6px", textAlign:"center" }}>
                       <div style={{ fontSize:"15px" }}>{icon}</div>
                       <div style={{ fontSize:"12px", fontWeight:"800", color, marginTop:"2px" }}>{val}</div>

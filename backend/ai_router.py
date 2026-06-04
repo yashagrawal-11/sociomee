@@ -28,6 +28,10 @@ Pipeline:
 """
 
 from __future__ import annotations
+try:
+    from ai_scriptwriter import generate_script as _generate_script
+except Exception as _e:
+    def _generate_script(*a, **kw): return ""
 
 import json
 import os
@@ -176,11 +180,51 @@ def generate_full_content(
         )
     except Exception as exc:
         errors.append(f"structure_engine: {exc}")
-        # Evidence-aware fallback — use best available fact as hook
+        # Gemini-powered structure with persona-specific hook
         best_fact = (research.get("facts") or [""])[0]
         best_num  = (research.get("numbers") or [""])[0]
+        
+        # Generate persona-specific hook using Gemini
+        persona_hooks = {
+            "dhruvrathee": f"Namaskar doston. Aaj hum {topic} ke baare mein woh sach baat karenge jo mainstream media aapko nahi batata. Evidence dekhte hain.",
+            "carryminati": f"Bhai, {topic} ka scene dekh ke dimaag hil gaya mera. Yeh kya ho raha hai seriously?",
+            "samayraina": f"Toh haan... {topic}. [pause] Maine socha nahi tha ki aaj iss topic pe baat karni padegi.",
+            "rebelkid": f"Okay so {topic} — yeh topic bahut log avoid karte hain. Main nahi karunga.",
+            "mrbeast": f"We spent 30 days investigating {topic} and what we found will SHOCK you!",
+            "alexhormozi": f"Here is the uncomfortable truth about {topic} that nobody wants to admit.",
+            "default": f"Aaj hum {topic} ke baare mein seedha baat karte hain — bina sugarcoating ke.",
+        }
+        
+        # Try Gemini for better hook
+        try:
+            p_key = str(persona).lower().strip()
+            base_hook = persona_hooks.get(p_key, persona_hooks["default"])
+            hook_prompt = f"""Write a powerful YouTube video opening hook (2-3 sentences) for topic: "{topic}"
+Creator style: {p_key} (Indian YouTuber)
+Language: Hinglish (Hindi + English mix)
+The hook must:
+- Start with the creator's signature opening style
+- Create immediate curiosity or shock
+- Promise value to viewer
+- Be 40-60 words max
+Write ONLY the hook text, nothing else."""
+            
+            hook_resp = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}",
+                headers={"Content-Type":"application/json"},
+                json={"contents":[{"parts":[{"text":hook_prompt}]}],"generationConfig":{"maxOutputTokens":150,"temperature":0.9}},
+                timeout=15
+            )
+            hook_data = hook_resp.json()
+            if "candidates" in hook_data:
+                generated_hook = hook_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                if len(generated_hook) > 20:
+                    base_hook = generated_hook
+        except Exception:
+            pass
+        
         structure = {
-            "hook":       best_fact or best_num or f"The evidence on {topic} tells a specific story.",
+            "hook":       base_hook,
             "background": f"Background of {topic} — what the documented record shows.",
             "timeline":   research.get("timeline", [])[:5],
             "conflict":   (research.get("controversies") or [{}])[0].get("claim", ""),
