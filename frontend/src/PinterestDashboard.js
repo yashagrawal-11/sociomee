@@ -15,7 +15,7 @@ const BASE = "https://sociomee.in/api";
 const PINTEREST_RED = "#e60023";
 
 function getC() {
-  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  const dark = true;
   return dark ? {
     red:"#ff4060", redLight:"#ff6080", purple:"#a78bfa",
     orange:"#fb923c", teal:"#22d3ee", ink:"#ede8ff", slate:"#c4b5fd",

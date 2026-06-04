@@ -41,14 +41,14 @@ const LIGHT_THEME = {
 const DARK_THEME = {
   rose:"#ff6eb5",    roseXlt:"#1f0818",
   purple:"#a78bfa",  purpleXlt:"#150d2a",
-  teal:"#22d3ee",    ink:"#ede8ff",
-  slate:"#c4b5fd",   muted:"#9d86c8",
-  hairline:"rgba(167,139,250,0.15)",
-  glass:"rgba(22,14,42,0.82)",
+  teal:"#22d3ee",    ink:"rgba(255,255,255,0.9)",
+  slate:"rgba(255,255,255,0.6)",   muted:"rgba(255,255,255,0.4)",
+  hairline:"rgba(255,255,255,0.08)",
+  glass:"rgba(255,255,255,0.04)",
   inputBg:"rgba(15,8,30,0.9)",
   selectBg:"rgba(15,8,30,0.95)",
   pillBg:"rgba(255,255,255,0.06)",
-  pageBg:"radial-gradient(ellipse at 20% 0%,#150d2a 0%,#0d0820 35%,#1a0515 70%,#080310 100%)",
+  pageBg:"#0a0a0a",
   blobA:"radial-gradient(circle,#2d1a5055,transparent 68%)",
   blobB:"radial-gradient(circle,#2a081855,transparent 68%)",
   cardBorder:"rgba(167,139,250,0.15)",
@@ -797,34 +797,9 @@ function TelegramSend({ result, platform, user }) {
             </button>
             <span style={{ fontSize:"11.5px",color:C.success,fontWeight:"700" }}>✅ @{tgInfo?.telegram_username || tgInfo?.full_name || "Connected"}</span>
             {tgInfo?.channel_verified && <span style={{ fontSize:"11px",color:"#2aabee",fontWeight:"700" }}>+ {tgInfo.channel} 📢</span>}
-            <button onClick={handleDisconnect} style={{ fontSize:"11px",color:C.danger,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",textDecoration:"underline",marginLeft:"auto" }}>Disconnect</button>
+            <button onClick={handleDisconnect} style={{ fontSize:"11px",color:"#a78bfa",background:"rgba(124,58,237,0.12)",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"99px",padding:"5px 14px",cursor:"pointer",fontFamily:"inherit",fontWeight:"700",marginLeft:"auto" }}>Disconnect</button>
           </div>
           {sendMsg && <span style={{ fontSize:"12.5px",fontWeight:"600",color:sendStatus==="sent"?C.success:C.danger }}>{sendMsg}</span>}
-          <div style={{ background:`${C.teal}10`, border:`1px solid ${C.teal}30`, borderRadius:"12px", padding:"12px 14px" }}>
-            {!showChInput && !tgInfo?.channel_verified ? (
-              <button onClick={()=>setShowChInput(true)} style={{ fontSize:"12px",fontWeight:"700",color:"#2aabee",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit" }}>📢 + Also send to my Telegram Channel</button>
-            ) : tgInfo?.channel_verified ? (
-              <div style={{ display:"flex",alignItems:"center",gap:"8px",flexWrap:"wrap" }}>
-                <span style={{ fontSize:"12px",fontWeight:"700",color:C.success }}>📢 Channel: {tgInfo.channel} ✅</span>
-                <button onClick={handleRemoveChannel} style={{ fontSize:"11px",color:C.danger,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",textDecoration:"underline" }}>Remove</button>
-              </div>
-            ) : (
-              <div style={{ display:"flex",flexDirection:"column",gap:"8px" }}>
-                <p style={{ fontSize:"12px",color:C.slate,fontWeight:"600" }}>📢 Enter your channel username:</p>
-                <div style={{ display:"flex",gap:"8px",flexWrap:"wrap" }}>
-                  <input value={channel} onChange={e=>setChannel(e.target.value)} placeholder="@yourchannel" style={{ flex:1,minWidth:"140px",padding:"8px 12px",borderRadius:"99px",border:`1.5px solid ${C.hairline}`,background:C.glass,color:C.ink,fontSize:"13px",fontFamily:"inherit",outline:"none" }}/>
-                  <button onClick={handleSaveChannel} disabled={chStatus==="saving"||!channel.trim()} style={{ padding:"8px 16px",borderRadius:"99px",border:"none",background:"#2aabee",color:"#fff",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>{chStatus==="saving"?"Saving…":"Save"}</button>
-                </div>
-                {chMsg && <div style={{ fontSize:"12px",color:chStatus==="verified"?C.success:chStatus==="error"?C.danger:C.slate }}>{chMsg}</div>}
-                {chStatus==="saved" && (
-                  <div style={{ display:"flex",flexDirection:"column",gap:"6px" }}>
-                    <p style={{ fontSize:"11.5px",color:C.muted }}>1. Add <strong>@sociomee_bot</strong> as admin<br/>2. Click Verify</p>
-                    <button onClick={handleVerifyChannel} disabled={chStatus==="verifying"} style={{ alignSelf:"flex-start",padding:"8px 18px",borderRadius:"99px",border:"none",background:C.success,color:"#fff",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>{chStatus==="verifying"?"Verifying…":"✓ Verify Channel"}</button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
         </div>
       )}
       {tgStatus === "disconnected" && (
@@ -964,7 +939,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user })
       {result.search_queries?.length>0&&(
         <div style={{ marginBottom:"20px" }}>
           <SectionHead icon="🔍" title="SEO Queries" copyText={result.search_queries.join("\n")}/>
-          <div style={{ display:"flex",flexWrap:"wrap" }}>{result.search_queries.map((q,i)=><Pill key={i} color={C.teal}>{q}</Pill>)}</div>
+          <div style={{ display:"flex",flexWrap:"wrap" }}>{result.search_queries.map((q,i)=><Pill key={i} color={C.purple}>{q}</Pill>)}</div>
         </div>
       )}
 
@@ -984,7 +959,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user })
       
       <div style={{ display:"flex",justifyContent:"center",marginTop:"20px",marginBottom:"8px" }}>
         <button onClick={downloadPDF} style={{ display:"flex",alignItems:"center",gap:"8px",padding:"11px 28px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontWeight:"800",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",boxShadow:`0 4px 20px ${C.purple}44` }}>
-          ⬇ Download as PDF
+          Download as PDF
         </button>
       </div>
       

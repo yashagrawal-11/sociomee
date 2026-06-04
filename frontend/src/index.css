@@ -30,3 +30,9 @@ html, body, #root {
   display: none !important;
   height: 0 !important;
 }
+
+@media(max-width:768px){
+}
+
+html,body{background-color:#000000;}
+@media(max-width:768px){html,body{background-color:#000000;}:root{color-scheme:dark;}}

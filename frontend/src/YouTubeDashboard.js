@@ -66,8 +66,8 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
       .yt-channel-sub { font-size: 10px !important; }
 
       /* Tabs - compact scrollable */
-      .yt-tabs { gap: 4px !important; padding-bottom: 2px !important; }
-      .yt-tabs button { padding: 6px 10px !important; font-size: 10px !important; border-radius: 10px !important; }
+      .yt-tabs { gap: 4px !important; padding-bottom: 2px !important; overflow-x: auto !important; scrollbar-width: none !important; -ms-overflow-style: none !important; }
+      .yt-tabs button { padding: 6px 10px !important; font-size: 10px !important; border-radius: 99px !important; } .yt-video-tabs button { padding: 4px 8px !important; font-size: 9px !important; } .yt-score-label { display:none !important; } .yt-date { font-size:9px !important; }
 
       /* Stat cards - 2x2 grid */
       .yt-stat-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
@@ -103,16 +103,16 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
 function getThemeC() {
   const dark = document.documentElement.getAttribute("data-theme") === "dark";
   return dark ? {
-    rose:"#ff6eb5", purple:"#a78bfa", purpleXlt:"#150d2a",
-    teal:"#22d3ee", ink:"#ede8ff", slate:"#c4b5fd",
-    muted:"#9d86c8", hairline:"rgba(167,139,250,0.15)",
-    glass:"rgba(22,14,42,0.82)", white:"#ede8ff",
+    rose:"#ff6eb5", purple:"#a78bfa", purpleXlt:"rgba(124,58,237,0.08)",
+    teal:"#22d3ee", ink:"rgba(255,255,255,0.9)", slate:"rgba(255,255,255,0.6)",
+    muted:"rgba(255,255,255,0.4)", hairline:"rgba(255,255,255,0.08)",
+    glass:"rgba(255,255,255,0.04)", white:"#ffffff",
     success:"#34d399", warn:"#fbbf24", danger:"#f87171", yt:"#ff0000",
   } : {
-    rose:"#ff3d8f", purple:"#7c3aed", purpleXlt:"#f5f3ff",
-    teal:"#0891b2", ink:"#0d0015", slate:"#3b1f4e",
-    muted:"#8b6b9a", hairline:"rgba(124,58,237,0.12)",
-    glass:"rgba(255,255,255,0.68)", white:"#ffffff",
+    rose:"#ff3d8f", purple:"#7c3aed", purpleXlt:"rgba(124,58,237,0.08)",
+    teal:"#0891b2", ink:"rgba(255,255,255,0.9)", slate:"rgba(255,255,255,0.6)",
+    muted:"rgba(255,255,255,0.4)", hairline:"rgba(255,255,255,0.08)",
+    glass:"rgba(255,255,255,0.04)", white:"#ffffff",
     success:"#10b981", warn:"#f59e0b", danger:"#ef4444", yt:"#ff0000",
   };
 }
@@ -179,7 +179,7 @@ function calcMilestones(currentSubs, dailyGrowth) {
 // ── COMPONENTS ────────────────────────────────────────────────────────
 function StatCard({ icon, label, value, sub, color }) {
   return (
-    <div style={{ background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:"16px", padding:"18px 20px", flex:1, minWidth:"120px" }}>
+    <div style={{ background:"rgba(255,255,255,0.04)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"16px", padding:"18px 20px", flex:1, minWidth:"120px" }}>
       <div style={{ fontSize:"22px", marginBottom:"6px" }}>{icon}</div>
       <div style={{ fontSize:"22px", fontWeight:"900", color:color||C.purple, letterSpacing:"-1px", lineHeight:1 }}>{value}</div>
       <div style={{ fontSize:"11px", fontWeight:"700", color:C.muted, marginTop:"4px", textTransform:"uppercase", letterSpacing:"0.8px" }}>{label}</div>
@@ -232,10 +232,10 @@ function AnalyticsChart({ data, metric, color }) {
   return (
     <ResponsiveContainer width="100%" height={200}>
       <LineChart data={formatted} margin={{ top:5, right:10, left:-20, bottom:0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={C.hairline} />
-        <XAxis dataKey="date" tick={{ fontSize:10, fill:C.muted }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+        <XAxis dataKey="date" hide={true} />
         <YAxis tick={{ fontSize:10, fill:C.muted }} tickLine={false} axisLine={false} tickFormatter={fmt} />
-        <Tooltip contentStyle={{ background:C.white, border:`1px solid ${C.hairline}`, borderRadius:"10px", fontSize:"12px" }} formatter={(val) => [fmt(val), label]} />
+        <Tooltip contentStyle={{ background:"rgba(10,8,20,0.98)", border:`1px solid ${C.hairline}`, borderRadius:"10px", fontSize:"12px" }} formatter={(val) => [fmt(val), label]} />
         <Line type="monotone" dataKey={metric} stroke={color} strokeWidth={2.5} dot={false} activeDot={{ r:5, strokeWidth:0 }} />
       </LineChart>
     </ResponsiveContainer>
@@ -247,10 +247,10 @@ function GrowthPrediction({ prediction, topic }) {
   const { estimated_views, estimated_subs, virality_score, recommendation, next_milestone, best_upload_time, best_thumbnail_tip, growth_pct } = prediction;
   const col = virality_score >= 70 ? C.success : virality_score >= 50 ? C.warn : C.muted;
   return (
-    <div style={{ background:`linear-gradient(145deg,${C.purpleXlt},#fff0f7)`, border:`1.5px solid ${C.purple}33`, borderRadius:"16px", padding:"20px", marginBottom:"20px" }}>
+    <div style={{ background:"rgba(124,58,237,0.06)", border:`1.5px solid ${C.purple}33`, borderRadius:"16px", padding:"20px", marginBottom:"20px" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"14px" }}>
         <div>
-          <div style={{ fontSize:"11px", fontWeight:"900", letterSpacing:"1.5px", textTransform:"uppercase", color:C.purple, marginBottom:"4px" }}>✦ SocioMee AI Prediction</div>
+          
           <div style={{ fontSize:"14px", fontWeight:"700", color:C.ink }}>If you upload: <span style={{ color:C.purple }}>"{topic}"</span></div>
         </div>
         <div style={{ textAlign:"center", flexShrink:0 }}>
@@ -341,7 +341,7 @@ function TopVideos({ videos }) {
                   <div style={{ fontSize:"7px", color:C.muted }}>SCORE</div>
                 </div>
                 <div style={{ flex:1, height:"3px", background:C.hairline, borderRadius:"99px", overflow:"hidden" }}>
-                  <div style={{ height:"100%", width:`${Math.round(v.views/maxViews*100)}%`, background:`linear-gradient(90deg,${C.purple},#ff3d8f)`, borderRadius:"99px" }}/>
+                  <div style={{ height:"100%", width:`${Math.round(v.views/maxViews*100)}%`, background:"#7c3aed", borderRadius:"99px", boxShadow:"0 0 8px rgba(124,58,237,0.6)" }}/>
                 </div>
                 <div style={{ fontSize:"12px", fontWeight:"800", color:C.ink, flexShrink:0 }}>{fmt(v.views)} <span style={{ fontSize:"8px", color:C.muted, fontWeight:"400" }}>views</span></div>
               </div>
@@ -362,7 +362,7 @@ function TopVideos({ videos }) {
                     <span>Performance vs your best video</span><span>{Math.round(v.views/maxViews*100)}%</span>
                   </div>
                   <div style={{ height:"6px", background:C.hairline, borderRadius:"99px", overflow:"hidden" }}>
-                    <div style={{ height:"100%", width:`${v.views/maxViews*100}%`, background:`linear-gradient(90deg,${C.purple},#ff3d8f)`, borderRadius:"99px" }}/>
+                    <div style={{ height:"100%", width:`${v.views/maxViews*100}%`, background:"#7c3aed", borderRadius:"99px", boxShadow:"0 0 8px rgba(124,58,237,0.6)" }}/>
                   </div>
                 </div>
                 <div style={{ background:`${C.purple}10`, border:`1px solid ${C.purple}25`, borderRadius:"10px", padding:"10px 12px", display:"flex", gap:"8px", alignItems:"flex-start", marginBottom:"12px" }}>
@@ -423,8 +423,7 @@ function FestivalCalendar() {
     <div>
       {/* Header */}
       <div style={{ background:`linear-gradient(135deg,${C.purple}22,${C.rose}18)`, border:`1.5px solid ${C.purple}33`, borderRadius:"16px", padding:"16px 18px", marginBottom:"16px" }}>
-        <div style={{ fontSize:"11px", fontWeight:"900", letterSpacing:"1.5px", textTransform:"uppercase", color:C.purple, marginBottom:"6px" }}>{yt("✦ SocioMee त्योहार इंटेलिजेंस","✦ SocioMee सण इंटेलिजेंस","✦ SocioMee Festival Intelligence")}</div>
-        <div style={{ fontSize:"12px", fontWeight:"600", color:C.ink, lineHeight:1.6 }}>{yt("भारतीय त्योहारों के लिए कंटेंट प्लान करें — अधिकतम रीच के लिए 7-10 दिन पहले अपलोड करें 🚀","भारतीय सणांसाठी कंटेंट प्लान करा — जास्तीत जास्त रीचसाठी 7-10 दिवस आधी अपलोड करा 🚀","Plan content around Indian festivals — upload 7-10 days before for max reach 🚀")}</div>
+        <div style={{ fontSize:"15px", fontWeight:"800", color:"#fff", letterSpacing:"0.5px", textShadow:"0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(124,58,237,0.4)" }}>{yt("✦ SocioMee त्योहार इंटेलिजेंस","✦ SocioMee सण इंटेलिजेंस","✦ SocioMee Festival Intelligence")}</div>
       </div>
 
       {/* Festival cards */}
@@ -688,8 +687,8 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
       .yt-channel-sub { font-size: 10px !important; }
 
       /* Tabs - compact scrollable */
-      .yt-tabs { gap: 4px !important; padding-bottom: 2px !important; }
-      .yt-tabs button { padding: 6px 10px !important; font-size: 10px !important; border-radius: 10px !important; }
+      .yt-tabs { gap: 4px !important; padding-bottom: 2px !important; overflow-x: auto !important; scrollbar-width: none !important; -ms-overflow-style: none !important; }
+      .yt-tabs button { padding: 6px 10px !important; font-size: 10px !important; border-radius: 99px !important; } .yt-video-tabs button { padding: 4px 8px !important; font-size: 9px !important; } .yt-score-label { display:none !important; } .yt-date { font-size:9px !important; }
 
       /* Stat cards - 2x2 grid */
       .yt-stat-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
@@ -1589,6 +1588,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
   const [activeChannelId,setActiveChannelId] = useState("");
   const [channelMenuOpen,setChannelMenuOpen] = useState(false);
   const [analytics,      setAnalytics     ] = useState(null);
+  const [deepAnalytics, setDeepAnalytics] = useState(null);
   const [videos,         setVideos        ] = useState([]);
   const [prediction,     setPrediction    ] = useState(null);
   const [loading,        setLoading       ] = useState(true);
@@ -1617,6 +1617,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
       const [analyticsData, videosData] = await Promise.all([analyticsRes.json(), videosRes.json()]);
       setAnalytics(analyticsData);
       setVideos(videosData.videos || []);
+      fetch(`${BASE}/youtube/deep-analytics/${userId}?days=${days}`).then(r=>r.ok?r.json():null).then(d=>{if(d)setDeepAnalytics(d);}).catch(()=>{});
       if (topic) {
         const predRes = await fetch(`${BASE}/youtube/predict/${userId}?topic=${encodeURIComponent(topic)}`);
         setPrediction(await predRes.json());
@@ -1654,7 +1655,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
       <div style={{ position:"relative", marginBottom:"14px", zIndex:100 }}>
         <div className="yt-channel-header" style={{ display:"flex", alignItems:"center", gap:"10px", background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:"14px", padding:"10px 14px" }}>
           {channel?.thumbnail
-            ? <img src={channel.thumbnail} alt="" crossOrigin="anonymous" referrerPolicy="no-referrer" style={{ width:"36px", height:"36px", borderRadius:"50%", border:`2px solid ${C.yt}44`, objectFit:"cover", flexShrink:0 }} onError={e => { e.target.style.display="none"; }} />
+            ? <img src={channel.thumbnail} alt="" crossOrigin="anonymous" referrerPolicy="no-referrer" style={{ width:"36px", height:"36px", borderRadius:"50%", border:"2px solid rgba(255,255,255,0.2)", objectFit:"cover", flexShrink:0 }} onError={e => { e.target.style.display="none"; }} />
             : <div style={{ width:"36px", height:"36px", borderRadius:"50%", background:`linear-gradient(135deg,${C.yt},#cc0000)`, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:"16px", fontWeight:"900", flexShrink:0 }}>{(channel?.channel_title||"Y").charAt(0).toUpperCase()}</div>
           }
           <div style={{ flex:1, minWidth:0 }}>
@@ -1715,7 +1716,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
       </div>
 
       {/* Tabs */}
-      <div className="yt-tabs" style={{ display:"flex", gap:"6px", marginBottom:"20px", overflowX:"auto", flexWrap:"nowrap", paddingBottom:"4px" }}>
+      <div className="yt-tabs" style={{ display:"flex", gap:"6px", marginBottom:"20px", overflowX:"auto", flexWrap:"nowrap", paddingBottom:"4px", scrollbarWidth:"none", msOverflowStyle:"none" }} onWheel={(e)=>{ if(Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY * 0.8; }}>
         {[
           ["analytics",yt("विश्लेषण","विश्लेषण","Analytics")],
           ["optimize",yt("ऑप्टिमाइज़","ऑप्टिमाइझ","Optimize")],
@@ -1759,19 +1760,186 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
                 ))}
               </div>
             </div>
-            <div className="yt-chart-wrap" style={{ height:"200px" }}>
+            <div className="yt-chart-wrap" style={{ height:"200px", background:"transparent" }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={analytics?.chart_data||[]} margin={{top:4,right:4,left:-28,bottom:0}}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-                  <XAxis dataKey="date" tick={{fill:"rgba(255,255,255,0.25)",fontSize:9}} tickFormatter={d=>d?.slice(5)} axisLine={false} tickLine={false}/>
+                  <XAxis dataKey="date" hide={true}/>
                   <YAxis tick={{fill:"rgba(255,255,255,0.25)",fontSize:9}} axisLine={false} tickLine={false}/>
                   <Tooltip contentStyle={{background:"rgba(10,5,20,0.95)",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"12px",fontSize:"11px",boxShadow:"0 8px 32px rgba(0,0,0,0.4)"}} labelStyle={{color:"rgba(255,255,255,0.6)"}}/>
-                  <Line type="monotone" dataKey={activeChart==="views"?"views":"subs"} stroke={activeChart==="views"?"#7c3aed":"#10b981"} strokeWidth={2.5} dot={false} activeDot={{r:5,fill:activeChart==="views"?"#7c3aed":"#10b981",stroke:"#fff",strokeWidth:2}}/>
+                  <Line type="monotone" dataKey={activeChart==="views"?"views":activeChart==="subs"?"subs":"minutes"} stroke={activeChart==="views"?"#7c3aed":activeChart==="subs"?"#10b981":"#f59e0b"} strokeWidth={2.5} dot={false} activeDot={{r:5,fill:activeChart==="views"?"#7c3aed":activeChart==="subs"?"#10b981":"#f59e0b",stroke:"#fff",strokeWidth:2}}/>
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <p style={{ fontSize:"10px", color:C.muted, textAlign:"center", marginTop:"8px" }}>{yt("⚡ SocioMee AI — असली डेटा YouTube Analytics API से","⚡ SocioMee AI — खरा डेटा","⚡ SocioMee AI Prediction — real data loads from YouTube Analytics API")}</p>
+            
           </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"16px"}}>
+            {[
+              {label:"Watch Time",value:(analytics?.chart_data?Math.round(analytics.chart_data.reduce((a,r)=>a+(r.minutes||0),0)/60):0)+"h",sub:"Total minutes",color:"#f59e0b",icon:"⏱"},
+              {label:"Avg Daily",value:analytics?.chart_data?Math.round(analytics.chart_data.reduce((a,r)=>a+(r.views||0),0)/(analytics.chart_data.length||1)):0,sub:"Views per day",color:"#7c3aed",icon:"📊"},
+              {label:"Best Day",value:analytics?.chart_data?.length?analytics.chart_data.reduce((a,b)=>a.views>b.views?a:b).date?.slice(5):"—",sub:"Highest views",color:"#34d399",icon:"🚀"},
+              {label:"New Subs",value:"+"+(analytics?.total_subs||0),sub:"This period",color:"#ff6eb5",icon:"📈"},
+            ].map((s,i)=>(
+              <div key={i} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"14px"}}>
+                <div style={{fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"6px"}}>{s.icon} {s.label}</div>
+                <div style={{fontSize:"20px",fontWeight:"900",color:s.color}}>{s.value}</div>
+                <div style={{fontSize:"10px",color:"rgba(255,255,255,0.25)",marginTop:"2px"}}>{s.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {analytics?.chart_data?.length > 0 && (()=>{
+            const data = analytics.chart_data;
+            const totalViews = data.reduce((a,r)=>a+(r.views||0),0);
+            const maxDay = data.reduce((a,b)=>a.views>b.views?a:b);
+            const trend = data.slice(-7).reduce((a,r)=>a+(r.views||0),0) > data.slice(-14,-7).reduce((a,r)=>a+(r.views||0),0) ? "growing" : "declining";
+            const watchHours = Math.round(data.reduce((a,r)=>a+(r.minutes||0),0)/60);
+            const avgDuration = watchHours>0 && totalViews>0 ? Math.round((watchHours*60)/totalViews) : 0;
+            const insights = [
+              {icon:"🧠",title:"Momentum",value:trend==="growing"?"Growing":"Needs Boost",desc:trend==="growing"?"Last 7 days outperforming previous week. Keep uploading!":"Last 7 days below previous week. Try posting at 6-9 PM IST.",color:trend==="growing"?"#34d399":"#f59e0b"},
+              {icon:"⚡",title:"Avg Duration",value:avgDuration+" min",desc:avgDuration>=3?"Viewers watch "+avgDuration+"+ min. Algorithm loves you.":"Add strong hook in first 30 seconds to retain viewers.",color:avgDuration>=3?"#34d399":"#f59e0b"},
+              {icon:"🎯",title:"Best Day",value:maxDay.date?.slice(5)||"—",desc:"Your peak was "+maxDay.views+" views. Analyze that video and replicate it.",color:"#7c3aed"},
+              {icon:"💡",title:"Growth Tip",value:totalViews>500?"Strong":"Building",desc:totalViews>500?"Post Shorts + 1 long-form weekly for 3x growth.":"Post 3-4 Shorts this week for 10x more impressions.",color:"#a78bfa"},
+            ];
+            return (
+              <div style={{marginBottom:"20px"}}>
+                <div style={{fontSize:"13px",fontWeight:"800",color:"#fff",marginBottom:"12px",display:"flex",alignItems:"center",gap:"8px"}}>
+                  ✦ SocioMee AI Insights
+                  <span style={{fontSize:"10px",color:"#a78bfa",background:"rgba(124,58,237,0.12)",padding:"2px 8px",borderRadius:"99px",fontWeight:"600"}}>Live Analysis</span>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"10px"}}>
+                  {insights.map((ins,i)=>(
+                    <div key={i} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"14px",padding:"14px",borderLeft:"3px solid "+ins.color}}>
+                      <div style={{display:"flex",alignItems:"center",gap:"6px",marginBottom:"6px"}}>
+                        <span>{ins.icon}</span>
+                        <span style={{fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"0.8px"}}>{ins.title}</span>
+                      </div>
+                      <div style={{fontSize:"16px",fontWeight:"900",color:ins.color,marginBottom:"4px"}}>{ins.value}</div>
+                      <div style={{fontSize:"11px",color:"rgba(255,255,255,0.45)",lineHeight:1.5}}>{ins.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Deep Analytics Section */}
+          {deepAnalytics && (
+            <div style={{marginBottom:"20px"}}>
+              <div style={{fontSize:"13px",fontWeight:"800",color:"#fff",marginBottom:"12px",display:"flex",alignItems:"center",gap:"8px"}}>
+                📡 Deep Analytics
+                {deepAnalytics.is_mock && <span style={{fontSize:"9px",color:"rgba(255,255,255,0.3)",background:"rgba(255,255,255,0.05)",padding:"2px 8px",borderRadius:"99px"}}>Sample Data</span>}
+              </div>
+
+              {/* Traffic Sources */}
+              {deepAnalytics.traffic_sources?.length>0 && (
+                <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px",marginBottom:"12px"}}>
+                  <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>🔀 Traffic Sources</div>
+                  {deepAnalytics.traffic_sources.map((t,i)=>{
+                    const total = deepAnalytics.traffic_sources.reduce((a,x)=>a+x.views,0);
+                    const pct = Math.round(t.views/total*100);
+                    const labels = {YT_SEARCH:"YouTube Search",SUGGESTED_VIDEOS:"Suggested Videos",BROWSE_FEATURES:"Browse & Home",EXTERNAL:"External",NOTIFICATION:"Notifications",NO_LINK_EMBEDDED:"Embedded",PLAYLIST:"Playlist"};
+                    return (
+                      <div key={i} style={{marginBottom:"10px"}}>
+                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
+                          <span style={{fontSize:"12px",color:"rgba(255,255,255,0.7)",fontWeight:"600"}}>{labels[t.source]||t.source}</span>
+                          <span style={{fontSize:"12px",color:"#a78bfa",fontWeight:"700"}}>{pct}% · {t.views} views</span>
+                        </div>
+                        <div style={{height:"6px",borderRadius:"99px",background:"rgba(255,255,255,0.06)"}}>
+                          <div style={{height:"100%",width:pct+"%",borderRadius:"99px",background:"linear-gradient(90deg,#7c3aed,#a78bfa)",boxShadow:"0 0 8px rgba(124,58,237,0.5)"}}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Countries + Devices */}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"12px"}}>
+                {deepAnalytics.countries?.length>0 && (
+                  <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px"}}>
+                    <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>🌍 Top Countries</div>
+                    {deepAnalytics.countries.slice(0,5).map((ct,i)=>{
+                      const total = deepAnalytics.countries.reduce((a,x)=>a+x.views,0);
+                      const pct = Math.round(ct.views/total*100);
+                      const flags = {IN:"🇮🇳",US:"🇺🇸",GB:"🇬🇧",CA:"🇨🇦",AU:"🇦🇺",PK:"🇵🇰",BD:"🇧🇩",NP:"🇳🇵",SG:"🇸🇬",AE:"🇦🇪"};
+                      return (
+                        <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"8px"}}>
+                          <span style={{fontSize:"16px"}}>{flags[ct.country]||"🌐"}</span>
+                          <div style={{flex:1}}>
+                            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"2px"}}>
+                              <span style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",fontWeight:"600"}}>{ct.country}</span>
+                              <span style={{fontSize:"11px",color:"#a78bfa",fontWeight:"700"}}>{pct}%</span>
+                            </div>
+                            <div style={{height:"4px",borderRadius:"99px",background:"rgba(255,255,255,0.06)"}}>
+                              <div style={{height:"100%",width:pct+"%",borderRadius:"99px",background:"#7c3aed"}}/>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {deepAnalytics.devices?.length>0 && (
+                  <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px"}}>
+                    <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>📱 Devices</div>
+                    {deepAnalytics.devices.map((d,i)=>{
+                      const total = deepAnalytics.devices.reduce((a,x)=>a+x.views,0);
+                      const pct = Math.round(d.views/total*100);
+                      const icons = {MOBILE:"📱",COMPUTER:"💻",TABLET:"📟",TV:"📺",GAME_CONSOLE:"🎮"};
+                      return (
+                        <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"8px"}}>
+                          <span style={{fontSize:"16px"}}>{icons[d.device]||"📱"}</span>
+                          <div style={{flex:1}}>
+                            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"2px"}}>
+                              <span style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",fontWeight:"600"}}>{d.device}</span>
+                              <span style={{fontSize:"11px",color:"#34d399",fontWeight:"700"}}>{pct}%</span>
+                            </div>
+                            <div style={{height:"4px",borderRadius:"99px",background:"rgba(255,255,255,0.06)"}}>
+                              <div style={{height:"100%",width:pct+"%",borderRadius:"99px",background:"#34d399"}}/>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Search Terms */}
+              {deepAnalytics.search_terms?.length>0 && (
+                <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px",marginBottom:"12px"}}>
+                  <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>🔍 Top Search Terms</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
+                    {deepAnalytics.search_terms.map((s,i)=>(
+                      <div key={i} style={{background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"99px",padding:"5px 12px",display:"flex",alignItems:"center",gap:"6px"}}>
+                        <span style={{fontSize:"11px",color:"#c4b5fd",fontWeight:"600"}}>{s.term}</span>
+                        <span style={{fontSize:"10px",color:"rgba(255,255,255,0.35)",fontWeight:"700"}}>{s.views}v</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Age Gender */}
+              {deepAnalytics.age_gender?.length>0 && (
+                <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px"}}>
+                  <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>👥 Audience Demographics</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:"8px"}}>
+                    {deepAnalytics.age_gender.map((a,i)=>(
+                      <div key={i} style={{background:"rgba(255,255,255,0.02)",borderRadius:"10px",padding:"10px",textAlign:"center"}}>
+                        <div style={{fontSize:"10px",color:"rgba(255,255,255,0.35)",marginBottom:"4px"}}>{a.age?.replace("AGE_","").replace("_","-")} · {a.gender}</div>
+                        <div style={{fontSize:"16px",fontWeight:"900",color:a.gender==="male"?"#7c3aed":"#ff6eb5"}}>{Math.round(a.pct)}%</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <TopVideos videos={videos} />
         </>
       )}

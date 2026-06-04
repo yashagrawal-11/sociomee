@@ -14,7 +14,7 @@ import {
 const BASE = "https://sociomee.in/api";
 
 function getC() {
-  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  const dark = true;
   return dark ? {
     pink:"#f472b6", purple:"#a78bfa", purpleXlt:"#150d2a",
     orange:"#fb923c", teal:"#22d3ee", ink:"#ede8ff", slate:"#c4b5fd",

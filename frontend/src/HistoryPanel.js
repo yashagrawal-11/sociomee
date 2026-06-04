@@ -9,7 +9,7 @@ import { useState, useEffect, useCallback } from "react";
 const BASE = "https://sociomee.in/api";
 
 function getC() {
-  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  const dark = true;
   return dark ? {
     purple:"#a78bfa", rose:"#ff6eb5", teal:"#22d3ee",
     ink:"#ede8ff", slate:"#c4b5fd", muted:"#9d86c8",

@@ -13,7 +13,7 @@ import {
 } from "recharts";
 
 function getC() {
-  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  const dark = true;
   return dark ? {
     orange:"#ff6314", orangeDark:"#c94d0e", purpleXlt:"#150d0a",
     teal:"#22d3ee", ink:"#fff1ed", slate:"#ffc4a8",

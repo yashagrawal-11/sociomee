@@ -8,17 +8,17 @@ import { useState, useEffect, useRef } from "react";
 const BASE = "https://sociomee.in/api";
 
 function getC() {
-  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  const dark = true;
   return dark ? {
     rose:"#ff6eb5", purple:"#a78bfa", teal:"#22d3ee", ink:"#ede8ff",
     muted:"#9d86c8", hairline:"rgba(167,139,250,0.15)", glass:"rgba(22,14,42,0.82)",
     success:"#34d399", warn:"#fbbf24", danger:"#f87171", yt:"#ff0000",
     purpleXlt:"#150d2a", slate:"#c4b5fd", inputBg:"rgba(15,8,30,0.9)",
   } : {
-    rose:"#ff3d8f", purple:"#7c3aed", teal:"#0891b2", ink:"#0d0015",
-    muted:"#8b6b9a", hairline:"rgba(124,58,237,0.12)", glass:"rgba(255,255,255,0.92)",
+    rose:"#ff3d8f", purple:"#7c3aed", teal:"#0891b2", ink:"rgba(255,255,255,0.9)",
+    muted:"rgba(255,255,255,0.4)", hairline:"rgba(255,255,255,0.08)", glass:"rgba(255,255,255,0.04)",
     success:"#10b981", warn:"#f59e0b", danger:"#ef4444", yt:"#ff0000",
-    purpleXlt:"#f5f3ff", slate:"#3b1f4e", inputBg:"rgba(255,255,255,0.9)",
+    purpleXlt:"rgba(124,58,237,0.08)", slate:"rgba(255,255,255,0.6)", inputBg:"rgba(255,255,255,0.06)",
   };
 }
 
