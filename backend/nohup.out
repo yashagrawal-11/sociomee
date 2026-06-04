@@ -20,3 +20,86 @@ INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 CLIENT ID: 517099702570-e90p257ovct0pt3in89hogtr1nn6edmm.apps.googleusercontent.com
 JWT: 263d7fc55125bcbce12a398faef1c944d69ab07ec3a8c45004df50e6caa7bbcc
 INFO:     127.0.0.1:56250 - "GET /youtube/deep-analytics/110526241789090363358?days=28 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36642 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36646 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36656 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-04 08:25:33 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-04 08:25:33 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes profile, email.
+INFO:     127.0.0.1:36670 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36674 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+2026-06-04 08:25:34 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-04 08:25:34 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes profile, email.
+2026-06-04 08:25:35 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-04 08:25:35 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes profile, email.
+INFO:     127.0.0.1:36686 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36690 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-04 08:25:38 [INFO] google_auth_httplib2 — Refreshing credentials due to a 401 response. Attempt 1/2.
+2026-06-04 08:25:38 [WARNING] google.oauth2.credentials — Not all requested scopes were granted by the authorization server, missing scopes profile, email.
+2026-06-04 08:25:39 [INFO] youtube_connect — YouTube disconnected for user=112040558777568963466 channel=UC1wmEu0r1Q4ZriRAURayFsA
+INFO:     127.0.0.1:36714 - "DELETE /youtube/disconnect-channel/112040558777568963466?channel_id=UC1wmEu0r1Q4ZriRAURayFsA HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36722 - "GET /youtube/auth-url?redirect_uri=https%3A%2F%2Fsociomee.in%2Fyoutube%2Fcallback HTTP/1.0" 200 OK
+2026-06-04 08:25:41 [WARNING] youtube_routes — Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-05&endDate=2026-06-04&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     127.0.0.1:36702 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38780 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38784 - "GET /auth/me HTTP/1.0" 200 OK
+2026-06-04 08:25:56 [INFO] youtube_connect — YouTube tokens stored for user=112040558777568963466 channel=UC1wmEu0r1Q4ZriRAURayFsA (1 total)
+2026-06-04 08:25:56 [INFO] youtube_routes — YouTube connected — user=112040558777568963466 channel=UC1wmEu0r1Q4ZriRAURayFsA subs=1120
+INFO:     127.0.0.1:38790 - "POST /youtube/connect HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46382 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46388 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46402 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46418 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46424 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46442 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46434 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+2026-06-04 08:26:10 [WARNING] youtube_routes — Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-05&endDate=2026-06-04&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     127.0.0.1:46444 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52242 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52248 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52258 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40328 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40336 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40342 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40346 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40358 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40360 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40362 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-04 08:29:36 [WARNING] youtube_routes — Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-05&endDate=2026-06-04&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     127.0.0.1:38600 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56812 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56824 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56826 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56828 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56844 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56858 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56870 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-04 08:38:22 [WARNING] youtube_routes — Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-05&endDate=2026-06-04&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     127.0.0.1:56876 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60368 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60380 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60384 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60390 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60402 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60418 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60432 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-04 08:41:31 [WARNING] youtube_routes — Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-05&endDate=2026-06-04&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     127.0.0.1:60438 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42856 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42870 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42884 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42886 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42898 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42910 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42912 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-04 09:01:33 [WARNING] youtube_routes — Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-05&endDate=2026-06-04&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     127.0.0.1:42928 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:37972 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:37974 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:37980 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:37988 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38002 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38016 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38022 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+2026-06-04 09:08:32 [WARNING] telegram_connect — Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+2026-06-04 09:08:34 [WARNING] youtube_routes — Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-05&endDate=2026-06-04&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     127.0.0.1:38028 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK

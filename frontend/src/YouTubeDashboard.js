@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Pie, Cell, PieChart as RechartsPie,
   Tooltip, ResponsiveContainer,
 } from "recharts";
 import YouTubeUpload from "./YouTubeUpload";
@@ -1578,6 +1578,118 @@ function SentimentTab({ userId, channel, C }) {
 }
 
 
+
+
+function SimpleDonut({ data, title, centerLabel, colors }) {
+  const [active, setActive] = useState(null);
+  const total = data.reduce((a,d)=>a+d.value,0);
+  const pieData = data.map(d=>({...d, pct:Math.round(d.value/total*100)}));
+  const highlighted = active!==null ? pieData[active] : null;
+  return (
+    <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px"}}>
+      <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>{title}</div>
+      <div style={{display:"flex",alignItems:"center",gap:"16px",flexWrap:"wrap"}}>
+        <div style={{position:"relative",flexShrink:0}}>
+          <RechartsPie width={160} height={160}>
+            <Pie data={pieData} cx={80} cy={80} innerRadius={48} outerRadius={72} paddingAngle={2} dataKey="value" strokeWidth={0}
+              onMouseEnter={(_,i)=>setActive(i)} onMouseLeave={()=>setActive(null)}>
+              {pieData.map((_,i)=><Cell key={i} fill={colors[i%colors.length]} opacity={active===null||active===i?1:0.3}/>)}
+            </Pie>
+          </RechartsPie>
+          <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"60px"}}>
+            {highlighted ? (<>
+              <div style={{fontSize:"16px",fontWeight:"900",color:colors[active%colors.length],lineHeight:1}}>{highlighted.pct}%</div>
+              <div style={{fontSize:"8px",color:"rgba(255,255,255,0.5)",marginTop:"2px",lineHeight:1.2}}>{highlighted.name}</div>
+            </>) : (<>
+              <div style={{fontSize:"13px",fontWeight:"900",color:"#fff",lineHeight:1}}>{centerLabel}</div>
+            </>)}
+          </div>
+        </div>
+        <div style={{flex:1,minWidth:"120px",display:"flex",flexDirection:"column",gap:"6px"}}>
+          {pieData.map((d,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",padding:"3px 6px",borderRadius:"6px",background:active===i?"rgba(255,255,255,0.05)":"transparent",cursor:"pointer",transition:"all 0.15s"}}
+              onMouseEnter={()=>setActive(i)} onMouseLeave={()=>setActive(null)}>
+              <div style={{width:"8px",height:"8px",borderRadius:"50%",background:colors[i%colors.length],flexShrink:0,boxShadow:active===i?`0 0 6px ${colors[i%colors.length]}`:"none"}}/>
+              <span style={{fontSize:"11px",color:active===i?"#fff":"rgba(255,255,255,0.6)",flex:1,fontWeight:active===i?"700":"500"}}>{d.name}</span>
+              <span style={{fontSize:"11px",fontWeight:"700",color:colors[i%colors.length]}}>{d.pct}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
+  const [activeOuter, setActiveOuter] = useState(null);
+  const [activeInner, setActiveInner] = useState(null);
+  const highlighted = activeOuter!==null ? pieData[activeOuter] : null;
+  const highlightedInner = activeInner!==null ? innerData[activeInner] : null;
+  return (
+    <div style={{display:"flex",gap:"16px",alignItems:"flex-start",flexWrap:"wrap"}}>
+      <div style={{position:"relative"}}>
+        <RechartsPie width={240} height={240}>
+          <Pie data={pieData} cx={120} cy={120} innerRadius={80} outerRadius={110} paddingAngle={2} dataKey="value" strokeWidth={0}
+            onMouseEnter={(_,i)=>setActiveOuter(i)} onMouseLeave={()=>setActiveOuter(null)}>
+            {pieData.map((_,i)=><Cell key={"o"+i} fill={COLORS[i%COLORS.length]} opacity={activeOuter===null||activeOuter===i?1:0.3}/>)}
+          </Pie>
+          <Pie data={innerData} cx={120} cy={120} innerRadius={45} outerRadius={72} paddingAngle={3} dataKey="value" strokeWidth={0}
+            onMouseEnter={(_,i)=>setActiveInner(i)} onMouseLeave={()=>setActiveInner(null)}>
+            {innerData.map((d,i)=><Cell key={"i"+i} fill={d.color} opacity={activeInner===null||activeInner===i?1:0.3}/>)}
+          </Pie>
+        </RechartsPie>
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"80px"}}>
+          {highlighted ? (<>
+            <div style={{fontSize:"18px",fontWeight:"900",color:COLORS[activeOuter%COLORS.length],lineHeight:1}}>{highlighted.pct}%</div>
+            <div style={{fontSize:"9px",color:"rgba(255,255,255,0.6)",marginTop:"2px",lineHeight:1.3}}>{highlighted.name}</div>
+          </>) : highlightedInner ? (<>
+            <div style={{fontSize:"14px",fontWeight:"900",color:highlightedInner.color,lineHeight:1}}>AI</div>
+            <div style={{fontSize:"8px",color:"rgba(255,255,255,0.5)",marginTop:"2px",lineHeight:1.3}}>{highlightedInner.name}</div>
+          </>) : (<>
+            <div style={{fontSize:"20px",fontWeight:"900",color:"#fff",lineHeight:1}}>{topPct}%</div>
+            <div style={{fontSize:"9px",color:"#a78bfa",fontWeight:"700",marginTop:"2px"}}>TOP SOURCE</div>
+            <div style={{fontSize:"8px",color:"rgba(255,255,255,0.4)",marginTop:"1px"}}>{topLabel}</div>
+          </>)}
+        </div>
+      </div>
+      <div style={{flex:1,minWidth:"200px"}}>
+        <div style={{fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>Traffic Sources</div>
+        <div style={{display:"flex",flexDirection:"column",gap:"5px",marginBottom:"14px"}}>
+          {pieData.map((d,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",padding:"4px 8px",borderRadius:"8px",background:activeOuter===i?"rgba(255,255,255,0.06)":"transparent",cursor:"pointer"}}
+              onMouseEnter={()=>setActiveOuter(i)} onMouseLeave={()=>setActiveOuter(null)}>
+              <div style={{width:"10px",height:"10px",borderRadius:"50%",background:COLORS[i%COLORS.length],flexShrink:0,boxShadow:activeOuter===i?`0 0 8px ${COLORS[i%COLORS.length]}`:"none"}}/>
+              <span style={{fontSize:"11px",color:activeOuter===i?"#fff":"rgba(255,255,255,0.55)",flex:1,fontWeight:activeOuter===i?"700":"500"}}>{d.name}</span>
+              <span style={{fontSize:"11px",fontWeight:"700",color:COLORS[i%COLORS.length]}}>{d.pct}%</span>
+            </div>
+          ))}
+        </div>
+        <div style={{fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>✦ AI Prediction</div>
+        <div style={{display:"flex",flexDirection:"column",gap:"5px",marginBottom:"10px"}}>
+          {innerData.map((d,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",padding:"4px 8px",borderRadius:"8px",background:activeInner===i?"rgba(255,255,255,0.06)":"transparent",cursor:"pointer"}}
+              onMouseEnter={()=>setActiveInner(i)} onMouseLeave={()=>setActiveInner(null)}>
+              <div style={{width:"10px",height:"10px",borderRadius:"50%",background:d.color,flexShrink:0,boxShadow:activeInner===i?`0 0 8px ${d.color}`:"none"}}/>
+              <span style={{fontSize:"11px",color:activeInner===i?"#fff":"rgba(255,255,255,0.55)",flex:1,fontWeight:activeInner===i?"700":"500"}}>{d.name}</span>
+            </div>
+          ))}
+        </div>
+        {highlightedInner ? (
+          <div style={{background:"rgba(124,58,237,0.12)",border:"1px solid rgba(124,58,237,0.25)",borderRadius:"10px",padding:"10px 12px"}}>
+            <div style={{fontSize:"10px",fontWeight:"700",color:highlightedInner.color,marginBottom:"4px"}}>✦ {highlightedInner.name}</div>
+            <div style={{fontSize:"11px",color:"rgba(255,255,255,0.6)",lineHeight:1.5}}>{highlightedInner.pred}</div>
+          </div>
+        ) : (
+          <div style={{background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"10px",padding:"10px 12px"}}>
+            <div style={{fontSize:"10px",fontWeight:"700",color:"#a78bfa",marginBottom:"4px"}}>✦ AI Insight</div>
+            <div style={{fontSize:"11px",color:"rgba(255,255,255,0.6)",lineHeight:1.5}}>{aiTip}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function YouTubeDashboard({ user, topic = "", initialTab = "analytics" }) {
   C = getThemeC();
   const userId = user?.user_id || localStorage.getItem("sociomee_user_id") || "";
@@ -1589,6 +1701,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
   const [channelMenuOpen,setChannelMenuOpen] = useState(false);
   const [analytics,      setAnalytics     ] = useState(null);
   const [deepAnalytics, setDeepAnalytics] = useState(null);
+  const [deepLoading, setDeepLoading] = useState(true);
   const [videos,         setVideos        ] = useState([]);
   const [prediction,     setPrediction    ] = useState(null);
   const [loading,        setLoading       ] = useState(true);
@@ -1617,7 +1730,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
       const [analyticsData, videosData] = await Promise.all([analyticsRes.json(), videosRes.json()]);
       setAnalytics(analyticsData);
       setVideos(videosData.videos || []);
-      fetch(`${BASE}/youtube/deep-analytics/${userId}?days=${days}`).then(r=>r.ok?r.json():null).then(d=>{if(d)setDeepAnalytics(d);}).catch(()=>{});
+      fetch(`${BASE}/youtube/deep-analytics/${userId}?days=${days}`).then(r=>r.ok?r.json():null).then(d=>{if(d)setDeepAnalytics(d);setDeepLoading(false);}).catch(()=>{setDeepLoading(false);});
       if (topic) {
         const predRes = await fetch(`${BASE}/youtube/predict/${userId}?topic=${encodeURIComponent(topic)}`);
         setPrediction(await predRes.json());
@@ -1824,87 +1937,86 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
             );
           })()}
 
-          {/* Deep Analytics Section */}
-          {deepAnalytics && (
+          {/* Deep Analytics Section - Always visible with skeleton */}
+          {(()=>{
+            const pulse = {animation:"pulse 1.5s ease-in-out infinite",background:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)",backgroundSize:"200% 100%"};
+            if(deepLoading) return (
+              <div style={{marginBottom:"20px"}}>
+                <div style={{height:"16px",width:"140px",borderRadius:"8px",marginBottom:"16px",...pulse}}/>
+                <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"16px",padding:"20px",marginBottom:"12px",display:"flex",gap:"24px",alignItems:"center"}}>
+                  <div style={{width:"200px",height:"200px",borderRadius:"50%",...pulse,flexShrink:0}}/>
+                  <div style={{flex:1,display:"flex",flexDirection:"column",gap:"10px"}}>
+                    {[1,2,3,4,5].map(i=><div key={i} style={{height:"14px",borderRadius:"99px",...pulse,width:(90-i*10)+"%"}}/>)}
+                    <div style={{height:"60px",borderRadius:"10px",marginTop:"8px",...pulse}}/>
+                  </div>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"12px"}}>
+                  <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px",height:"180px",...pulse}}/>
+                  <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px",height:"180px",...pulse}}/>
+                </div>
+              </div>
+            );
+            if(!deepAnalytics) return null;
+            return (
             <div style={{marginBottom:"20px"}}>
               <div style={{fontSize:"13px",fontWeight:"800",color:"#fff",marginBottom:"12px",display:"flex",alignItems:"center",gap:"8px"}}>
                 📡 Deep Analytics
                 {deepAnalytics.is_mock && <span style={{fontSize:"9px",color:"rgba(255,255,255,0.3)",background:"rgba(255,255,255,0.05)",padding:"2px 8px",borderRadius:"99px"}}>Sample Data</span>}
               </div>
 
-              {/* Traffic Sources */}
-              {deepAnalytics.traffic_sources?.length>0 && (
-                <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px",marginBottom:"12px"}}>
-                  <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>🔀 Traffic Sources</div>
-                  {deepAnalytics.traffic_sources.map((t,i)=>{
-                    const total = deepAnalytics.traffic_sources.reduce((a,x)=>a+x.views,0);
-                    const pct = Math.round(t.views/total*100);
-                    const labels = {YT_SEARCH:"YouTube Search",SUGGESTED_VIDEOS:"Suggested Videos",BROWSE_FEATURES:"Browse & Home",EXTERNAL:"External",NOTIFICATION:"Notifications",NO_LINK_EMBEDDED:"Embedded",PLAYLIST:"Playlist"};
-                    return (
-                      <div key={i} style={{marginBottom:"10px"}}>
-                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
-                          <span style={{fontSize:"12px",color:"rgba(255,255,255,0.7)",fontWeight:"600"}}>{labels[t.source]||t.source}</span>
-                          <span style={{fontSize:"12px",color:"#a78bfa",fontWeight:"700"}}>{pct}% · {t.views} views</span>
-                        </div>
-                        <div style={{height:"6px",borderRadius:"99px",background:"rgba(255,255,255,0.06)"}}>
-                          <div style={{height:"100%",width:pct+"%",borderRadius:"99px",background:"linear-gradient(90deg,#7c3aed,#a78bfa)",boxShadow:"0 0 8px rgba(124,58,237,0.5)"}}/>
-                        </div>
+              {/* Traffic Sources Donut Chart */}
+              {deepAnalytics.traffic_sources?.length>0 && (()=>{
+                const labels = {YT_SEARCH:"YouTube Search",SUGGESTED_VIDEOS:"Suggested Videos",BROWSE_FEATURES:"Browse & Home",EXTERNAL:"External Links",NOTIFICATION:"Notifications",NO_LINK_EMBEDDED:"Embedded",PLAYLIST:"Playlist",YT_CHANNEL:"Channel Page",NO_LINK_OTHER:"Direct/Other",RELATED_VIDEO:"Related Videos",EXT_URL:"External URL",YT_OTHER_PAGE:"Other YouTube",SHORTS:"YouTube Shorts",SOUND_PAGE:"Sound Page",END_SCREEN:"End Screen",HASHTAGS:"Hashtags"};
+                const COLORS = ["#7c3aed","#9333ea","#a78bfa","#c4b5fd","#6d28d9","#8b5cf6","#ddd6fe","#4c1d95","#ede9fe"];
+                const total = deepAnalytics.traffic_sources.reduce((a,x)=>a+x.views,0);
+                const top = deepAnalytics.traffic_sources.reduce((a,b)=>a.views>b.views?a:b);
+                const topPct = Math.round(top.views/total*100);
+                const topLabel = labels[top.source]||top.source;
+                const aiTip = topPct>50?"Your channel is SEO-powered. Keep optimizing titles & tags.":topPct>30?"Good search presence. Also grow suggested video traffic.":"Diversify your traffic sources for stable growth.";
+                const pieData = deepAnalytics.traffic_sources.map(t=>({name:labels[t.source]||t.source,value:t.views,pct:Math.round(t.views/total*100)}));
+                return (
+                  <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"16px",padding:"20px",marginBottom:"12px"}}>
+                    <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"16px"}}>🔀 Traffic Sources</div>
+                    <div style={{display:"flex",alignItems:"center",gap:"24px",flexWrap:"wrap"}}>
+                      {/* Donut Chart */}
+                      <div style={{position:"relative",flexShrink:0}}>
+                        {(()=>{
+                          const innerData = [
+                            {name:"SEO Power",value:pieData.find(p=>p.name==="YouTube Search")?.value||0,pred:"Strong SEO. Titles & tags working well.",color:"#4c1d95"},
+                            {name:"Discovery",value:(pieData.find(p=>p.name==="Suggested Videos")?.value||0)+(pieData.find(p=>p.name==="Browse & Home")?.value||0),pred:"Low discovery. Use trending thumbnails.",color:"#6d28d9"},
+                            {name:"External",value:(pieData.find(p=>p.name==="External Links")?.value||0)+(pieData.find(p=>p.name==="External URL")?.value||0),pred:"Share videos on WhatsApp & Instagram.",color:"#7c3aed"},
+                            {name:"Other",value:(pieData.find(p=>p.name==="YouTube Shorts")?.value||0)+(pieData.find(p=>p.name==="Channel Page")?.value||0),pred:"Post more Shorts for channel page traffic.",color:"#9333ea"},
+                          ].filter(d=>d.value>0);
+                          return <TrafficDonut pieData={pieData} COLORS={COLORS} topPct={topPct} topLabel={topLabel} aiTip={aiTip} innerData={innerData}/>;
+                        })()}
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Countries + Devices */}
+                    </div>
+                  </div>
+                );
+              })()}
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"12px"}}>
                 {deepAnalytics.countries?.length>0 && (
-                  <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px"}}>
-                    <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>🌍 Top Countries</div>
-                    {deepAnalytics.countries.slice(0,5).map((ct,i)=>{
-                      const total = deepAnalytics.countries.reduce((a,x)=>a+x.views,0);
-                      const pct = Math.round(ct.views/total*100);
-                      const flags = {IN:"🇮🇳",US:"🇺🇸",GB:"🇬🇧",CA:"🇨🇦",AU:"🇦🇺",PK:"🇵🇰",BD:"🇧🇩",NP:"🇳🇵",SG:"🇸🇬",AE:"🇦🇪"};
-                      return (
-                        <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"8px"}}>
-                          <span style={{fontSize:"16px"}}>{flags[ct.country]||"🌐"}</span>
-                          <div style={{flex:1}}>
-                            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"2px"}}>
-                              <span style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",fontWeight:"600"}}>{ct.country}</span>
-                              <span style={{fontSize:"11px",color:"#a78bfa",fontWeight:"700"}}>{pct}%</span>
-                            </div>
-                            <div style={{height:"4px",borderRadius:"99px",background:"rgba(255,255,255,0.06)"}}>
-                              <div style={{height:"100%",width:pct+"%",borderRadius:"99px",background:"#7c3aed"}}/>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <SimpleDonut
+                    title="🌍 Top Countries"
+                    centerLabel="Countries"
+                    colors={["#7c3aed","#9333ea","#a78bfa","#6d28d9","#c4b5fd"]}
+                    data={deepAnalytics.countries.slice(0,5).map(ct=>({
+                      name:({"IN":"🇮🇳 India","US":"🇺🇸 USA","GB":"🇬🇧 UK","CA":"🇨🇦 Canada","AU":"🇦🇺 Australia","PK":"🇵🇰 Pakistan","BD":"🇧🇩 Bangladesh","NP":"🇳🇵 Nepal","SG":"🇸🇬 Singapore","AE":"🇦🇪 UAE"})[ct.country]||("🌐 "+ct.country),
+                      value:ct.views
+                    }))}
+                  />
                 )}
 
                 {deepAnalytics.devices?.length>0 && (
-                  <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px"}}>
-                    <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>📱 Devices</div>
-                    {deepAnalytics.devices.map((d,i)=>{
-                      const total = deepAnalytics.devices.reduce((a,x)=>a+x.views,0);
-                      const pct = Math.round(d.views/total*100);
-                      const icons = {MOBILE:"📱",COMPUTER:"💻",TABLET:"📟",TV:"📺",GAME_CONSOLE:"🎮"};
-                      return (
-                        <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"8px"}}>
-                          <span style={{fontSize:"16px"}}>{icons[d.device]||"📱"}</span>
-                          <div style={{flex:1}}>
-                            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"2px"}}>
-                              <span style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",fontWeight:"600"}}>{d.device}</span>
-                              <span style={{fontSize:"11px",color:"#34d399",fontWeight:"700"}}>{pct}%</span>
-                            </div>
-                            <div style={{height:"4px",borderRadius:"99px",background:"rgba(255,255,255,0.06)"}}>
-                              <div style={{height:"100%",width:pct+"%",borderRadius:"99px",background:"#34d399"}}/>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <SimpleDonut
+                    title="📱 Devices"
+                    centerLabel="Devices"
+                    colors={["#7c3aed","#9333ea","#a78bfa","#6d28d9","#c4b5fd"]}
+                    data={deepAnalytics.devices.map(d=>({
+                      name:({"MOBILE":"📱 Mobile","COMPUTER":"💻 Desktop","DESKTOP":"💻 Desktop","TABLET":"📟 Tablet","TV":"📺 Smart TV","GAME_CONSOLE":"🎮 Console"})[d.device]||d.device,
+                      value:d.views
+                    }))}
+                  />
                 )}
               </div>
 
@@ -1938,7 +2050,8 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
                 </div>
               )}
             </div>
-          )}
+          );
+          })()}
 
           <TopVideos videos={videos} />
         </>
