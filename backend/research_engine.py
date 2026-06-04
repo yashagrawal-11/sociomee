@@ -49,6 +49,26 @@ DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 
 NVIDIA_BASE_URL  = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
 NVIDIA_MODEL     = os.getenv("NVIDIA_MODEL", "meta/llama3-70b-instruct")
+
+import requests as _req_gemini
+_GEMINI_KEY = os.getenv("GOOGLE_API_KEY", os.getenv("GOOGLE_AI_API_KEY",""))
+
+def _call_gemini(messages, max_tokens=2000):
+    prompt = "\n".join(m.get("content","") for m in messages)
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={_GEMINI_KEY}"
+    resp = _req_gemini.post(url,
+        headers={"Content-Type":"application/json"},
+        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.8}},
+        timeout=60
+    )
+    data = resp.json()
+    if "error" in data:
+        raise RuntimeError(f"Gemini: {data['error']['message']}")
+    return data["candidates"][0]["content"]["parts"][0]["text"]
+
+def _call_deepseek(messages, max_tokens=2000):
+    return _call_gemini(messages, max_tokens)
+
 DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
 DEEPSEEK_MODEL    = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
 

@@ -45,68 +45,28 @@ DEEPSEEK_API_KEY: str = os.getenv("DEEPSEEK_API_KEY", "")
 GOOGLE_API_KEY:   str = os.getenv("GOOGLE_API_KEY",   "")
 SCORE_THRESHOLD:  int = 75
 
+GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY", os.getenv("GOOGLE_AI_API_KEY", ""))
+GEMINI_MODEL = "gemini-2.5-flash"
 
-# ══════════════════════════════════════════════════════════════════════
-# SAFE ENGINE IMPORTS
-# ══════════════════════════════════════════════════════════════════════
+def _gemini_generate(prompt: str, max_tokens: int = 8000) -> str:
+    """Generate content using Gemini 2.5 Flash - FREE."""
+    if not GEMINI_API_KEY:
+        raise RuntimeError("GOOGLE_API_KEY missing")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+    resp = requests.post(url,
+        headers={"Content-Type":"application/json"},
+        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.85}},
+        timeout=120
+    )
+    data = resp.json()
+    if "error" in data:
+        raise RuntimeError(f"Gemini error: {data['error']['message']}")
+    return data["candidates"][0]["content"]["parts"][0]["text"]
 
-try:
-    from research_engine import get_research_data as _get_research_data
-    _HAS_RESEARCH = True
-except Exception:
-    _HAS_RESEARCH = False
-    def _get_research_data(*a, **kw) -> dict:  # type: ignore[misc]
-        return {"timeline": [], "key_events": [], "insights": [], "facts": [],
-                "controversies": [], "quotes": [], "numbers": [],
-                "evidence_pack": "", "raw_count": 0, "topic": ""}
+def _deepseek_generate(prompt: str, max_tokens: int = 8000, **kwargs) -> str:
+    """Use Gemini 2.5 Flash (DeepSeek credits exhausted)."""
+    return _gemini_generate(prompt, max_tokens)
 
-try:
-    from youtube_engine import get_youtube_data as _get_youtube_data
-    _HAS_YOUTUBE = True
-except Exception:
-    _HAS_YOUTUBE = False
-    def _get_youtube_data(*a, **kw) -> dict:  # type: ignore[misc]
-        return {"titles": [], "keywords": []}
-
-try:
-    from structure_engine import generate_structure as _generate_structure
-    _HAS_STRUCTURE = True
-except Exception:
-    _HAS_STRUCTURE = False
-    def _generate_structure(*a, **kw) -> dict:  # type: ignore[misc]
-        return {"hook": "", "background": "", "timeline": [],
-                "conflict": "", "key_points": [], "conclusion": ""}
-
-try:
-    from persona_profiles import get_persona as _get_persona
-    _HAS_PERSONA = True
-except Exception:
-    _HAS_PERSONA = False
-    def _get_persona(name: str = "default") -> dict:  # type: ignore[misc]
-        return {"name": "default", "tone": "clear", "language": "hinglish",
-                "style_rules": [], "voice": "default", "energy": "medium", "pacing": "medium"}
-
-try:
-    from ai_scriptwriter import generate_script as _generate_script
-    _HAS_SCRIPT = True
-except Exception:
-    _HAS_SCRIPT = False
-    def _generate_script(*a, **kw) -> str:  # type: ignore[misc]
-        return ""
-
-try:
-    from seo_engine import generate_seo as _generate_seo
-    _HAS_SEO = True
-except Exception:
-    _HAS_SEO = False
-    def _generate_seo(*a, **kw) -> dict:  # type: ignore[misc]
-        return {"titles": [], "scores": [], "best_title": "", "best_score": 0,
-                "keyword": "", "yt_keywords": []}
-
-
-# ══════════════════════════════════════════════════════════════════════
-# GOOGLE GEMMA CLIENT
-# ══════════════════════════════════════════════════════════════════════
 
 def _gemma_generate(prompt: str, temperature: float = 0.8, max_tokens: int = 8192,
                     top_p: float = 0.95) -> str:
@@ -117,7 +77,7 @@ def _gemma_generate(prompt: str, temperature: float = 0.8, max_tokens: int = 819
     except ImportError as exc:
         raise RuntimeError("Run: pip install google-generativeai") from exc
 
-    genai.configure(api_key=GOOGLE_API_KEY)
+    pass  # Using Gemini REST API instead
     model = genai.GenerativeModel(
         model_name="gemma-3-27b-it",
         generation_config=genai.GenerationConfig(
@@ -131,34 +91,19 @@ def _gemma_generate(prompt: str, temperature: float = 0.8, max_tokens: int = 819
 # DEEPSEEK CLIENT
 # ══════════════════════════════════════════════════════════════════════
 
-def _deepseek_generate(
-    system_prompt: str, user_prompt: str,
-    temperature: float = 0.7, max_tokens: int = 2048,
-) -> str:
-    if not DEEPSEEK_API_KEY:
-        raise RuntimeError("DEEPSEEK_API_KEY missing. Get at https://platform.deepseek.com")
-    headers = {"Authorization": f"Bearer {DEEPSEEK_API_KEY}", "Content-Type": "application/json"}
-    payload = {
-        "model": "deepseek-chat",
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user",   "content": user_prompt},
-        ],
-        "temperature": temperature, "max_tokens": max_tokens,
-    }
-    resp = requests.post("https://api.deepseek.com/v1/chat/completions",
-                         headers=headers, json=payload, timeout=60)
-    if resp.status_code != 200:
-        raise Exception(f"DeepSeek API error {resp.status_code}: {resp.text[:300]}")
-    try:
-        return resp.json()["choices"][0]["message"]["content"]
-    except (KeyError, IndexError, TypeError) as exc:
-        raise Exception(f"DeepSeek bad response: {exc}") from exc
-
-
-# ══════════════════════════════════════════════════════════════════════
-# MAIN PIPELINE  v2
-# ══════════════════════════════════════════════════════════════════════
+def _gemini_generate(system_prompt: str, user_prompt: str, temperature: float=0.7, max_tokens: int=2048) -> str:
+    """Gemini 2.5 Flash - replaces DeepSeek."""
+    prompt = system_prompt + "\n\n" + user_prompt
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+    resp = requests.post(url,
+        headers={"Content-Type":"application/json"},
+        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":temperature}},
+        timeout=120
+    )
+    data = resp.json()
+    if "error" in data:
+        raise RuntimeError(f"Gemini: {data['error']['message']}")
+    return data["candidates"][0]["content"]["parts"][0]["text"]
 
 def generate_full_content(
     topic:    str,
@@ -433,11 +378,11 @@ def _score_script(script: str) -> int:
 
 def _generate_via_deepseek(data: dict) -> dict:
     system = "You are a viral content expert who writes evidence-first, platform-native scripts."
-    output = _deepseek_generate(
+    output = _gemini_generate(
         system_prompt=system, user_prompt=_build_prompt(data),
         temperature=0.9, max_tokens=900,
     )
-    return {"output": output, "model_used": "deepseek"}
+    return {"output": output, "model_used": "gemini"}
 
 
 def _generate_via_gemma(data: dict) -> dict:
@@ -446,7 +391,7 @@ def _generate_via_gemma(data: dict) -> dict:
         + _build_prompt(data)
     )
     output = _gemma_generate(full_prompt, temperature=0.8, max_tokens=900, top_p=0.95)
-    return {"output": output, "model_used": "gemma"}
+    return {"output": output, "model_used": "gemini"}
 
 
 def generate_content(data: dict) -> dict:

@@ -189,6 +189,13 @@ try:
 except Exception as e:
     print("fingerprint_routes failed:", e); _HAS_FP = False; fp_router = None
 
+
+BLOCKED_TOPICS = ["bomb","suicide","kill yourself","terrorism","terrorist","jihad","massacre","genocide","rape","child porn","cocaine","heroin","meth","assassination","how to make","explosive","drug deal","illegal weapon"]
+
+def is_blocked_topic(topic: str) -> bool:
+    t = topic.lower()
+    return any(w in t for w in BLOCKED_TOPICS)
+
 app = FastAPI(title="SocioMee API", version="3.0.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -504,6 +511,26 @@ def use_credit_route(user: dict = Depends(get_current_user)):
         status = get_credit_status(user.get("user_id",""))
         raise HTTPException(status_code=402, detail={"error": "No credits remaining", "credit_status": status})
     return get_credit_status(user.get("user_id",""))
+
+@app.post("/api/ai/generate")
+async def ai_generate_proxy(request: Request):
+    import httpx
+    body = await request.json()
+    api_key = os.environ.get("GOOGLE_API_KEY","")
+    model = "gemini-2.5-flash"
+    # Convert Anthropic format to Gemini format
+    messages = body.get("messages",[])
+    prompt = messages[0]["content"] if messages else ""
+    async with httpx.AsyncClient(timeout=60) as client:
+        r = await client.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}",
+            headers={"Content-Type":"application/json"},
+            json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":2000}}
+        )
+        data = r.json()
+        text = data.get("candidates",[{}])[0].get("content",{}).get("parts",[{}])[0].get("text","")
+        # Return in Anthropic-compatible format
+        return {"content":[{"type":"text","text":text}]}
 
 @app.post("/generate-full-content")
 @limiter.limit("10/minute")

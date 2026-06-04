@@ -39,6 +39,25 @@ except ImportError:
 
 
 DEEPSEEK_API_KEY  = os.getenv("DEEPSEEK_API_KEY")
+
+import requests as _requests
+
+GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY", os.getenv("GOOGLE_AI_API_KEY", ""))
+
+def _gemini_chat(messages, max_tokens=1200):
+    """Use Gemini 2.5 Flash instead of DeepSeek."""
+    prompt = "\n".join(m.get("content","") for m in messages)
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+    resp = _requests.post(url,
+        headers={"Content-Type":"application/json"},
+        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.8}},
+        timeout=60
+    )
+    data = resp.json()
+    if "error" in data:
+        raise RuntimeError(f"Gemini: {data['error']['message']}")
+    return data["candidates"][0]["content"]["parts"][0]["text"]
+
 DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
 DEEPSEEK_MODEL    = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
 
@@ -47,18 +66,18 @@ DEEPSEEK_MODEL    = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
 # DEEPSEEK CLIENT
 # ══════════════════════════════════════════════════════════════════════
 
-def _deepseek_chat(messages: List[Dict[str, Any]], max_tokens: int = 1200) -> str:
-    if not DEEPSEEK_API_KEY:
-        raise RuntimeError("Missing DEEPSEEK_API_KEY")
-    if _requests is None:
-        raise RuntimeError("requests not installed")
-    url = f"{DEEPSEEK_BASE_URL.rstrip('/')}/chat/completions"
-    headers = {"Authorization": f"Bearer {DEEPSEEK_API_KEY}", "Content-Type": "application/json"}
-    payload = {"model": DEEPSEEK_MODEL, "messages": messages, "max_tokens": max_tokens, "temperature": 0.3}
-    resp = _requests.post(url, headers=headers, json=payload, timeout=60)
-    if resp.status_code != 200:
-        raise RuntimeError(f"DeepSeek {resp.status_code}: {resp.text[:300]}")
-    return resp.json()["choices"][0]["message"]["content"]
+def _gemini_chat(messages: List[Dict[str, Any]], max_tokens: int = 1200) -> str:
+    prompt = "\n".join(m.get("content","") for m in messages)
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+    resp = _requests.post(url,
+        headers={"Content-Type":"application/json"},
+        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.8}},
+        timeout=60
+    )
+    data = resp.json()
+    if "error" in data:
+        raise RuntimeError(f"Gemini: {data['error']['message']}")
+    return data["candidates"][0]["content"]["parts"][0]["text"]
 
 
 def _extract_json(text: str) -> Dict[str, Any]:
@@ -301,7 +320,7 @@ Return ONLY this JSON schema (no markdown):
 }}"""
 
     try:
-        raw    = _deepseek_chat([{"role":"system","content":system_prompt},{"role":"user","content":user_prompt}], max_tokens=1200)
+        raw    = _gemini_chat([{"role":"system","content":system_prompt},{"role":"user","content":user_prompt}], max_tokens=1200)
         result = _extract_json(raw)
     except Exception:
         return _smart_local_structure(topic, research_data, youtube_data)
