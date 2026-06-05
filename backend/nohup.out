@@ -75,3 +75,13 @@ INFO:     127.0.0.1:43232 - "GET /auth/me HTTP/1.0" 200 OK
 INFO:     127.0.0.1:43236 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
 INFO:     127.0.0.1:49458 - "GET /api/history/112040558777568963446 HTTP/1.0" 404 Not Found
 INFO:     127.0.0.1:51638 - "GET /history/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36146 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36158 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36172 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36188 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:36204 - "GET /history/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:47090 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:47102 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:47108 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:47122 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     127.0.0.1:50032 - "GET /api/ai/generate HTTP/1.0" 405 Method Not Allowed
