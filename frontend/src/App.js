@@ -2029,7 +2029,7 @@ export default function App() {
           {activeTab==="biowriter"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><BioWriter user={user}/></div>}
           {activeTab==="thumbnail"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px",textAlign:"center",padding:"40px"}}><div style={{fontSize:"32px",marginBottom:"12px"}}>🖼️</div><h2 style={{color:"#fff",fontFamily:"'Orbitron',sans-serif",fontSize:"18px",marginBottom:"8px"}}>Thumbnail Studio</h2><p style={{color:"rgba(255,255,255,0.4)",fontSize:"14px"}}>Open YouTube Dashboard and go to the Optimize tab to analyze thumbnails.</p></div>}
 
-          <p style={{ textAlign:"center", color:"rgba(255,255,255,0.2)", fontSize:"11.5px", marginTop:"32px" }}>SocioMee · AI Content Studio · Built with 💜</p>
+          <p style={{ textAlign:"center", color:"rgba(255,255,255,0.2)", fontSize:"11.5px", marginTop:"32px" }}>SocioMee · One Topic. Infinite Content · Built with 💜</p>
         </div>
       </div>
 
