@@ -90,3 +90,8 @@ INFO:     127.0.0.1:45554 - "GET /auth/me HTTP/1.0" 200 OK
 INFO:     127.0.0.1:45560 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
 INFO:     127.0.0.1:45568 - "POST /push/subscribe HTTP/1.0" 200 OK
 INFO:     127.0.0.1:48866 - "POST /api/ai/generate HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45068 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45084 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45098 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:45100 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     127.0.0.1:37630 - "POST /api/ai/generate HTTP/1.0" 200 OK
