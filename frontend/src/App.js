@@ -16,6 +16,8 @@ import TextToAudio from "./TextToAudio";
 import HookGenerator from "./HookGenerator";
 import BioWriter from "./BioWriter";
 import LinkedInDashboard from "./LinkedInDashboard";
+import { LinkedInPost, LinkedInHeadline, LinkedInAbout, LinkedInCarousel, LinkedInHashtags, LinkedInBestTime } from "./LinkedInTools";
+import { FacebookPost, FacebookGroupPost, FacebookAdCopy, FacebookBestTime } from "./FacebookTools";
 import { initPush } from "./PushNotifications";
 import { TelegramHookGenerator, TelegramPollGenerator, TelegramBestTime } from "./TelegramTools";
 import { PinterestPinDesc, PinterestBoardNames, PinterestHashtags, PinterestBestTime } from "./PinterestTools";
@@ -1231,7 +1233,7 @@ export default function App() {
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [showUsagePopup, setShowUsagePopup] = useState(false);
   const [showPlansPopup, setShowPlansPopup] = useState(false);
-  const [openGroups, setOpenGroups] = useState({youtube:true, instagram:false, telegram:false, pinterest:false, threads:false, reddit:false, analytics:false});
+  const [openGroups, setOpenGroups] = useState({youtube:true, instagram:false, telegram:false, pinterest:false, threads:false, reddit:false, linkedin:false, facebook:false, analytics:false});
   const toggleGroup = (g) => setOpenGroups(prev=>({...prev,[g]:!prev[g]}));
   const [youtubeInitialTab, setYoutubeInitialTab] = useState("analytics");
   const resultRef = useRef(null);
@@ -1570,6 +1572,58 @@ export default function App() {
             </div>
           )}
 
+          
+          {/* LinkedIn Tools */}
+          <button onClick={()=>toggleGroup("linkedin")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.linkedin?"rgba(0,119,181,0.06)":"transparent",color:openGroups.linkedin?"#60a5fa":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/linkedin.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>LinkedIn Tools</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.linkedin?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.linkedin && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(0,119,181,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"li-post",label:"Post Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
+                {tab:"li-headline",label:"Headline Writer",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
+                {tab:"li-about",label:"About Section",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>},
+                {tab:"li-carousel",label:"Carousel Ideas",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M17 7V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2"/></svg>},
+                {tab:"li-hashtag",label:"Hashtag Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg>},
+                {tab:"li-besttime",label:"Best Time to Post",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
+                {tab:"translator",label:"Translator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+                {tab:"texttaudio",label:"Text to Audio",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>},
+              ].map(item=>(
+                <button key={item.tab+"-li"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #0077b5":"2px solid transparent",background:activeTab===item.tab?"rgba(0,119,181,0.1)":"transparent",color:activeTab===item.tab?"#60a5fa":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#60a5fa":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(0,119,181,0.1)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Facebook Tools */}
+          <button onClick={()=>toggleGroup("facebook")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.facebook?"rgba(24,119,242,0.06)":"transparent",color:openGroups.facebook?"#93c5fd":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/facebook.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>Facebook Tools</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.facebook?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.facebook && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(24,119,242,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"fb-post",label:"Post Caption",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
+                {tab:"fb-group",label:"Group Post",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>},
+                {tab:"fb-ad",label:"Ad Copy",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>},
+                {tab:"fb-besttime",label:"Best Time to Post",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
+                {tab:"translator",label:"Translator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+                {tab:"texttaudio",label:"Text to Audio",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>},
+              ].map(item=>(
+                <button key={item.tab+"-fb"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #1877f2":"2px solid transparent",background:activeTab===item.tab?"rgba(24,119,242,0.1)":"transparent",color:activeTab===item.tab?"#93c5fd":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#93c5fd":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(24,119,242,0.1)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
           {/* Analytics & Tools */}
           <button onClick={()=>toggleGroup("analytics")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.analytics?"rgba(124,58,237,0.06)":"transparent",color:openGroups.analytics?"#a78bfa":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
             <span style={{display:"flex",alignItems:"center",gap:"8px"}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Analytics & Tools</span>
@@ -1873,6 +1927,16 @@ export default function App() {
       {activeTab==="rd-title"     && isLoggedIn && <RedditTitle/>}
       {activeTab==="rd-subreddit" && isLoggedIn && <RedditSubfinder/>}
       {activeTab==="rd-besttime"  && isLoggedIn && <RedditBestTime/>}
+      {activeTab==="li-post"      && isLoggedIn && <LinkedInPost/>}
+      {activeTab==="li-headline"  && isLoggedIn && <LinkedInHeadline/>}
+      {activeTab==="li-about"     && isLoggedIn && <LinkedInAbout/>}
+      {activeTab==="li-carousel"  && isLoggedIn && <LinkedInCarousel/>}
+      {activeTab==="li-hashtag"   && isLoggedIn && <LinkedInHashtags/>}
+      {activeTab==="li-besttime"  && isLoggedIn && <LinkedInBestTime/>}
+      {activeTab==="fb-post"      && isLoggedIn && <FacebookPost/>}
+      {activeTab==="fb-group"     && isLoggedIn && <FacebookGroupPost/>}
+      {activeTab==="fb-ad"        && isLoggedIn && <FacebookAdCopy/>}
+      {activeTab==="fb-besttime"  && isLoggedIn && <FacebookBestTime/>}
       {activeTab==="hashtags"   && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HashtagGenerator user={user}/></div>}
           {activeTab==="texttaudio" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TextToAudio user={user}/></div>}
           {activeTab==="hookgenerator"&&isLoggedIn&& <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HookGenerator user={user}/></div>}
