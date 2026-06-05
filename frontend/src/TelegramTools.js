@@ -7,7 +7,7 @@ const C = {
 };
 
 
-const BAD_WORDS = ['fuck','shit','bitch','bastard','asshole','dick','pussy','cunt','whore','slut','nigger','faggot','chutiya','madarchod','bhenchod','saala','randi','harami','gaand','lund','gandu','mc','bc','mf','bomb','bombing','suicide','kill yourself','terrorist','terrorism','jihad','massacre','genocide','rape','child porn','cp','nude','nudes','drug deal','buy drugs','cocaine','heroin','meth','illegal weapon','gun deal','assassination','how to make bomb','explosive'];
+const BAD_WORDS = ['fuck','shit','bitch','bastard','asshole','nigger','faggot','chutiya','madarchod','bhenchod','randi','harami','gandu','motherfucker','child porn','cocaine','heroin','meth','jihad','massacre','genocide','bomb','suicide','how to kill','terrorist','explosive','drug deal','buy guns','illegal weapons','human trafficking','rape','molest','hack into','ransomware','darkweb','money laundering','assassination'];
 
 function filterText(text) {
   let t = text;

@@ -18,6 +18,9 @@ import BioWriter from "./BioWriter";
 import LinkedInDashboard from "./LinkedInDashboard";
 import { LinkedInPost, LinkedInHeadline, LinkedInAbout, LinkedInCarousel, LinkedInHashtags, LinkedInBestTime } from "./LinkedInTools";
 import { FacebookPost, FacebookGroupPost, FacebookAdCopy, FacebookBestTime } from "./FacebookTools";
+import { TikTokHook, TikTokCaption, TikTokVideoIdeas, TikTokHashtags, TikTokBestTime } from "./TikTokTools";
+import { WhatsAppBroadcast, WhatsAppReplyTemplates, WhatsAppChannelPost } from "./WhatsAppTools";
+import { XTweetGenerator, XThreadGenerator, XHookGenerator, XBestTime } from "./XTools";
 import { initPush } from "./PushNotifications";
 import { TelegramHookGenerator, TelegramPollGenerator, TelegramBestTime } from "./TelegramTools";
 import { PinterestPinDesc, PinterestBoardNames, PinterestHashtags, PinterestBestTime } from "./PinterestTools";
@@ -1233,7 +1236,7 @@ export default function App() {
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [showUsagePopup, setShowUsagePopup] = useState(false);
   const [showPlansPopup, setShowPlansPopup] = useState(false);
-  const [openGroups, setOpenGroups] = useState({youtube:true, instagram:false, telegram:false, pinterest:false, threads:false, reddit:false, linkedin:false, facebook:false, analytics:false});
+  const [openGroups, setOpenGroups] = useState({youtube:true, instagram:false, telegram:false, pinterest:false, threads:false, reddit:false, linkedin:false, facebook:false, tiktok:false, whatsapp:false, xtools:false, analytics:false});
   const toggleGroup = (g) => setOpenGroups(prev=>({...prev,[g]:!prev[g]}));
   const [youtubeInitialTab, setYoutubeInitialTab] = useState("analytics");
   const resultRef = useRef(null);
@@ -1624,6 +1627,77 @@ export default function App() {
               ))}
             </div>
           )}
+          
+          {/* TikTok Tools */}
+          <button onClick={()=>toggleGroup("tiktok")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.tiktok?"rgba(255,0,80,0.06)":"transparent",color:openGroups.tiktok?"#ff6b8a":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/tiktok.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>TikTok Tools</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.tiktok?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.tiktok && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(255,0,80,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"tt-hook",label:"Hook Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
+                {tab:"tt-caption",label:"Caption Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
+                {tab:"tt-ideas",label:"Video Idea Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>},
+                {tab:"tt-hashtag",label:"Hashtag Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg>},
+                {tab:"tt-besttime",label:"Best Time to Post",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
+              ].map(item=>(
+                <button key={item.tab+"-tt"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #ff0050":"2px solid transparent",background:activeTab===item.tab?"rgba(255,0,80,0.1)":"transparent",color:activeTab===item.tab?"#ff6b8a":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#ff6b8a":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(255,0,80,0.1)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* WhatsApp Tools */}
+          <button onClick={()=>toggleGroup("whatsapp")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.whatsapp?"rgba(37,211,102,0.06)":"transparent",color:openGroups.whatsapp?"#4ade80":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/whatsapp.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>WhatsApp Tools</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.whatsapp?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.whatsapp && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(37,211,102,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"wa-broadcast",label:"Broadcast Messages",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.93 3.25 2 2 0 0 1 3.89 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>},
+                {tab:"wa-reply",label:"Reply Templates",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>},
+                {tab:"wa-channel",label:"Channel Post",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>},
+                {tab:"translator",label:"Translator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+              ].map(item=>(
+                <button key={item.tab+"-wa"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #25d366":"2px solid transparent",background:activeTab===item.tab?"rgba(37,211,102,0.1)":"transparent",color:activeTab===item.tab?"#4ade80":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#4ade80":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(37,211,102,0.1)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* X Tools */}
+          <button onClick={()=>toggleGroup("xtools")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.xtools?"rgba(255,255,255,0.06)":"transparent",color:openGroups.xtools?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/x.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>X Tools</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.xtools?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.xtools && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(255,255,255,0.12)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"x-post",label:"Post Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
+                {tab:"x-thread",label:"Thread Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>},
+                {tab:"x-hook",label:"Hook Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
+                {tab:"x-besttime",label:"Best Time to Post",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
+                {tab:"translator",label:"Translator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+              ].map(item=>(
+                <button key={item.tab+"-x"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #ffffff":"2px solid transparent",background:activeTab===item.tab?"rgba(255,255,255,0.08)":"transparent",color:activeTab===item.tab?"#ffffff":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#ffffff":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(255,255,255,0.08)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
           {/* Analytics & Tools */}
           <button onClick={()=>toggleGroup("analytics")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.analytics?"rgba(124,58,237,0.06)":"transparent",color:openGroups.analytics?"#a78bfa":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
             <span style={{display:"flex",alignItems:"center",gap:"8px"}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Analytics & Tools</span>
@@ -1937,6 +2011,18 @@ export default function App() {
       {activeTab==="fb-group"     && isLoggedIn && <FacebookGroupPost/>}
       {activeTab==="fb-ad"        && isLoggedIn && <FacebookAdCopy/>}
       {activeTab==="fb-besttime"  && isLoggedIn && <FacebookBestTime/>}
+      {activeTab==="tt-hook"      && isLoggedIn && <TikTokHook/>}
+      {activeTab==="tt-caption"   && isLoggedIn && <TikTokCaption/>}
+      {activeTab==="tt-ideas"     && isLoggedIn && <TikTokVideoIdeas/>}
+      {activeTab==="tt-hashtag"   && isLoggedIn && <TikTokHashtags/>}
+      {activeTab==="tt-besttime"  && isLoggedIn && <TikTokBestTime/>}
+      {activeTab==="wa-broadcast" && isLoggedIn && <WhatsAppBroadcast/>}
+      {activeTab==="wa-reply"     && isLoggedIn && <WhatsAppReplyTemplates/>}
+      {activeTab==="wa-channel"   && isLoggedIn && <WhatsAppChannelPost/>}
+      {activeTab==="x-post"       && isLoggedIn && <XTweetGenerator/>}
+      {activeTab==="x-thread"     && isLoggedIn && <XThreadGenerator/>}
+      {activeTab==="x-hook"       && isLoggedIn && <XHookGenerator/>}
+      {activeTab==="x-besttime"   && isLoggedIn && <XBestTime/>}
       {activeTab==="hashtags"   && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HashtagGenerator user={user}/></div>}
           {activeTab==="texttaudio" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TextToAudio user={user}/></div>}
           {activeTab==="hookgenerator"&&isLoggedIn&& <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HookGenerator user={user}/></div>}

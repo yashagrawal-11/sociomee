@@ -41,3 +41,37 @@ Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read time
 Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
 Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
 Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:45142 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45156 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45164 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:45166 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     127.0.0.1:58380 - "POST /api/ai/generate HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38008 - "POST /api/ai/generate HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60430 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60440 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60452 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:60462 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46030 - "POST /api/ai/generate HTTP/1.0" 200 OK
+INFO:     127.0.0.1:59248 - "POST /api/ai/generate HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41772 - "POST /api/ai/generate HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43740 - "GET /api/history/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:34286 - "GET /auth/google/login HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41450 - "GET /auth/google/callback?iss=https%3A%2F%2Faccounts.google.com&code=4%2F0AdkVLPzctdkrTDO4oTTydpPD-_UQvRqXe7YtUjZG5pptmrwokjyH5QTd6-135jhBCk-8gg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+openid&authuser=6&prompt=none HTTP/1.0" 302 Found
+INFO:     127.0.0.1:41458 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41462 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41474 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41478 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:34632 - "GET /auth/github/callback HTTP/1.0" 422 Unprocessable Entity
+INFO:     127.0.0.1:34640 - "GET /api/tiktok/callback HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:34646 - "GET /api/tiktok/callback HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:34658 - "GET /api/tiktok/callback HTTP/1.0" 404 Not Found
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:39850 - "GET /api/history/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:39866 - "GET /history/112040558777568963466 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39874 - "GET /api/history/112040558777568963466 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43216 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43232 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43236 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:49458 - "GET /api/history/112040558777568963446 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:51638 - "GET /history/112040558777568963466 HTTP/1.0" 200 OK

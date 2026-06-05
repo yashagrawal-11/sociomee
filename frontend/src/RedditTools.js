@@ -7,7 +7,7 @@ const C = {
 };
 const AI = "https://sociomee.in/api/ai/generate";
 let lastCall = 0;
-const BAD_WORDS = ['fuck','shit','bitch','bastard','asshole','dick','pussy','cunt','whore','slut','nigger','faggot','chutiya','madarchod','bhenchod','saala','randi','harami','gaand','lund','gandu','mc','bc','mf','bomb','suicide','kill yourself','terrorist','terrorism','jihad','massacre','genocide','rape','child porn','cocaine','heroin','meth','porn','sex','naked','nude'];
+const BAD_WORDS = ['fuck','shit','bitch','bastard','asshole','nigger','faggot','chutiya','madarchod','bhenchod','randi','harami','gandu','motherfucker','child porn','cocaine','heroin','meth','jihad','massacre','genocide','bomb','suicide','how to kill','terrorist','explosive','drug deal','buy guns','illegal weapons','human trafficking','rape','molest','hack into','ransomware','darkweb','money laundering','assassination'];
 function filterBad(text) { let t=text; BAD_WORDS.forEach(w=>{const re=new RegExp('\b'+w+'\b','gi');t=t.replace(re,'*'.repeat(w.length));}); return t; }
 
 const TITLE_FALLBACKS = {
