@@ -1,26 +1,29 @@
 nohup: ignoring input
-INFO:     Started server process [204414]
+INFO:     Started server process [204669]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 CLIENT ID: 517099702570-e90p257ovct0pt3in89hogtr1nn6edmm.apps.googleusercontent.com
 JWT: 263d7fc55125bcbce12a398faef1c944d69ab07ec3a8c45004df50e6caa7bbcc
-INFO:     127.0.0.1:50036 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50052 - "POST /youtube-tools/trending HTTP/1.1" 200 OK
-INFO:     127.0.0.1:33180 - "POST /auth/refresh-token HTTP/1.0" 200 OK
-INFO:     127.0.0.1:33190 - "GET /auth/me HTTP/1.0" 200 OK
-INFO:     127.0.0.1:33196 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:33212 - "POST /push/subscribe HTTP/1.0" 200 OK
-INFO:     127.0.0.1:33220 - "GET /api/youtube/status/112040558777568963466 HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:33234 - "GET /api/youtube/auth-url?redirect_uri=https%3A%2F%2Fsociomee.in%2Fyoutube%2Fcallback HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:53086 - "GET /api/youtube/auth-url?redirect_uri=https%3A%2F%2Fsociomee.in%2Fyoutube%2Fcallback HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:39482 - "POST /auth/refresh-token HTTP/1.0" 200 OK
-INFO:     127.0.0.1:39492 - "GET /auth/me HTTP/1.0" 200 OK
-INFO:     127.0.0.1:39502 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:39518 - "POST /push/subscribe HTTP/1.0" 200 OK
-INFO:     127.0.0.1:39528 - "GET /api/youtube/status/112040558777568963466 HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:39540 - "GET /api/youtube/auth-url?redirect_uri=https%3A%2F%2Fsociomee.in%2Fyoutube%2Fcallback HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:58326 - "POST /api/youtube-tools/keyword-research HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:57154 - "POST /api/youtube-tools/trending HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:38100 - "POST /youtube-tools/trending HTTP/1.1" 200 OK
-INFO:     127.0.0.1:44384 - "POST /youtube-tools/trending HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42366 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38482 - "GET /youtube/auth-url?redirect_uri=test HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38486 - "GET /api/youtube/auth-url?redirect_uri=test HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:36910 - "GET /youtube/auth-url?redirect_uri=https://sociomee.in/youtube/callback HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36918 - "POST /youtube-tools/trending HTTP/1.0" 200 OK
+INFO:     127.0.0.1:51016 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:51018 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:51030 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:51032 - "POST /push/subscribe HTTP/1.0" 200 OK
+/var/www/sociomee/backend/venv/lib/python3.10/site-packages/google/api_core/_python_version_support.py:273: FutureWarning: You are using a Python version (3.10.12) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2026-10-04). Please upgrade to the latest Python version, or at least Python 3.11, to continue receiving updates for google.api_core past that date.
+  warnings.warn(message, FutureWarning)
+Not all requested scopes were granted by the authorization server, missing scopes profile, email.
+INFO:     127.0.0.1:39874 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:39880 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes profile, email.
+Not all requested scopes were granted by the authorization server, missing scopes profile, email.
+INFO:     127.0.0.1:39888 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:39900 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes profile, email.
+Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-09&endDate=2026-06-08&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     127.0.0.1:39912 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53212 - "POST /youtube-tools/trending HTTP/1.0" 200 OK

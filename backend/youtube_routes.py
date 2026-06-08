@@ -9,8 +9,8 @@ Add to app.py:
     app.include_router(yt_router)
 
 Required .env vars (separate from login):
-    YOUTUBE_CLIENT_ID     = <youtube oauth client id>
-    YOUTUBE_CLIENT_SECRET = <youtube oauth client secret>
+    YOUTUBE_CLIENT_ID     = 
+    YOUTUBE_CLIENT_SECRET = 
     YOUTUBE_REDIRECT_URI  = http://localhost:3000/youtube/callback
 """
 

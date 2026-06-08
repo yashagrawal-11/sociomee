@@ -8,8 +8,8 @@ The main Google login flow (auth_routes.py) continues to use
 GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET — completely separate.
 
 Required .env additions (do NOT reuse GOOGLE_ vars):
-    YOUTUBE_CLIENT_ID     = <your youtube oauth client id>
-    YOUTUBE_CLIENT_SECRET = <your youtube oauth client secret>
+    YOUTUBE_CLIENT_ID     = 
+    YOUTUBE_CLIENT_SECRET = 
     YOUTUBE_REDIRECT_URI  = http://localhost:3000/youtube/callback
 """
 
