@@ -27,8 +27,12 @@ export default function ThumbnailStudio(){
     if(!imgA||!imgB)return;
     setLoading(true);setResult(null);
     const fd=new FormData();fd.append("file_a",imgA);fd.append("file_b",imgB);fd.append("niche",niche);
-    try{const r=await fetch(`${BASE}/thumbnail/ab-test`,{method:"POST",body:fd});const d=await r.json();setResult(d);}
-    catch(e){console.error(e);}
+    try{
+      const r=await fetch(`${BASE}/thumbnail/ab-test`,{method:"POST",body:fd});
+      if(!r.ok){setResult({error:"server",message:`Server error: ${r.status}`});setLoading(false);return;}
+      const d=await r.json();
+      setResult(d);
+    }catch(e){console.error(e);setResult({error:"server",message:"Request failed. Please try again."});}
     setLoading(false);
   };
 
@@ -75,6 +79,11 @@ export default function ThumbnailStudio(){
         </button>
       </GC>
 
+      {!loading&&result?.error==="server"&&<div style={{background:"rgba(248,113,113,0.08)",border:"1px solid rgba(248,113,113,0.3)",borderRadius:"16px",padding:"24px",textAlign:"center"}}>
+        <div style={{fontSize:"32px",marginBottom:"8px"}}>⚠️</div>
+        <div style={{fontSize:"15px",fontWeight:"700",color:"#f87171",marginBottom:"6px"}}>Something went wrong</div>
+        <div style={{fontSize:"13px",color:"rgba(255,255,255,0.5)"}}>{result.message}</div>
+      </div>}
       {!loading&&result?.error==="inappropriate"&&<div style={{background:"rgba(248,113,113,0.08)",border:"1px solid rgba(248,113,113,0.3)",borderRadius:"16px",padding:"24px",textAlign:"center"}}>
         <div style={{fontSize:"32px",marginBottom:"8px"}}>🚫</div>
         <div style={{fontSize:"15px",fontWeight:"700",color:"#f87171",marginBottom:"6px"}}>Inappropriate Content Detected</div>
@@ -90,7 +99,7 @@ export default function ThumbnailStudio(){
 
         {/* Side by side scores */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
-          {["a","b"].map(k=>{const d=result[k];const isWinner=result.winner===k.toUpperCase();return(<GC key={k} style={{borderLeft:`3px solid ${isWinner?"#34d399":"rgba(255,255,255,0.1)"}`}}>
+          {["a","b"].map(k=>{const d=result[k]||{};const isWinner=result.winner===k.toUpperCase();return(<GC key={k} style={{borderLeft:`3px solid ${isWinner?"#34d399":"rgba(255,255,255,0.1)"}`}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"14px"}}>
               <div style={{fontSize:"16px",fontWeight:"900",color:"#fff"}}>Thumbnail {k.toUpperCase()}</div>
               <div style={{fontSize:"24px",fontWeight:"900",color:scoreColor(d.overall)}}>{d.overall}</div>
