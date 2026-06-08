@@ -1450,11 +1450,9 @@ function OptimizeTab({ userId, channel, C }) {
   const sorted = [...videos]
     .filter(v => v.title.toLowerCase().includes(search.toLowerCase()))
     .filter(v => {
+      if(vfilter==="all") return true;
       const vt = v.video_type || "video";
-      if(vfilter==="shorts") return vt==="short" || v.title?.toLowerCase().includes("#short");
-      if(vfilter==="videos") return vt==="video";
-      if(vfilter==="live") return vt==="live" || v.title?.toLowerCase().includes("live");
-      return true;
+      return vt===vfilter;
     })
     .sort((a,b) => {
       if (sort === "score") return getScore(b) - getScore(a);
@@ -1497,6 +1495,17 @@ function OptimizeTab({ userId, channel, C }) {
         ))}
       </div>
 
+      {/* Type filter pills */}
+      <div style={{display:"flex",gap:"6px",marginBottom:"12px",flexWrap:"wrap"}}>
+        {[
+          {id:"all",label:`All (${videos.length})`},
+          {id:"short",label:`Shorts (${videos.filter(v=>v.video_type==="short").length})`},
+          {id:"video",label:`Videos (${videos.filter(v=>v.video_type==="video").length})`},
+          {id:"live",label:`Live (${videos.filter(v=>v.video_type==="live").length})`}
+        ].map(f=>(
+          <button key={f.id} onClick={()=>setVfilter(f.id)} style={{padding:"5px 14px",borderRadius:"99px",border:`1.5px solid ${vfilter===f.id?C.purple:C.hairline}`,background:vfilter===f.id?`${C.purple}22`:"transparent",color:vfilter===f.id?C.purple:C.muted,fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>{f.label}</button>
+        ))}
+      </div>
       {/* Video list */}
       <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
         {sorted.map((v,i) => <OptimizeVideoRow key={v.video_id} v={v} getScore={getScore} getTips={getTips} scoreColor={scoreColor} C={C} />)}
