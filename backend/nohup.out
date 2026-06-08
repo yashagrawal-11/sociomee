@@ -6,3 +6,11 @@ INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 CLIENT ID: 517099702570-e90p257ovct0pt3in89hogtr1nn6edmm.apps.googleusercontent.com
 JWT: 263d7fc55125bcbce12a398faef1c944d69ab07ec3a8c45004df50e6caa7bbcc
 INFO:     127.0.0.1:38168 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41972 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41984 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41998 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:42010 - "POST /push/subscribe HTTP/1.0" 200 OK
+gemini error: 'candidates'
+INFO:     127.0.0.1:42600 - "POST /youtube-tools/keyword-research HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38818 - "POST /youtube-tools/trending HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43352 - "POST /youtube-tools/trending HTTP/1.0" 200 OK
