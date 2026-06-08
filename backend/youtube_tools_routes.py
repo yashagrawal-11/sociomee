@@ -147,13 +147,21 @@ async def trending_videos(req: TrendingReq, request: Request = None):
             # For shorts, use search API with videoDuration=short
             if req.video_type == "shorts":
                 search_q = req.niche if req.niche != "general" else "trending"
+                # Build region-aware query
+                region_terms = {
+                    "IN": "india hindi", "US": "usa america", "GB": "uk british",
+                    "JP": "japan japanese", "BR": "brazil portuguese"
+                }
+                region_hint = region_terms.get(req.country, "")
+                q = f"{search_q} {region_hint} shorts".strip()
                 sr = await client.get(f"{YT_BASE}/search", params={
                     "part": "snippet",
-                    "q": f"{search_q} shorts",
+                    "q": q,
                     "type": "video",
                     "videoDuration": "short",
                     "order": "viewCount",
                     "regionCode": req.country,
+                    "relevanceLanguage": "hi" if req.country == "IN" else "en",
                     "maxResults": 20,
                     "key": YT_API_KEY
                 })
