@@ -914,7 +914,7 @@ async def video_performance(user_id: str):
                 "part": "snippet",
                 "channelId": channel_id,
                 "type": "video",
-                "maxResults": 10,
+                "maxResults": 50,
                 "order": "date",
                 "key": yt_key
             })

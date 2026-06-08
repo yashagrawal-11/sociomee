@@ -48,7 +48,7 @@ export default function VideoPerformance({userId, user}){
     const token = localStorage.getItem("sociomee_token")||"";
     fetch(`${BASE}/youtube/video-performance/${uid}`,{headers:{"Authorization":`Bearer ${token}`,"x-user-id":uid}})
       .then(r=>r.json()).then(d=>{
-        if(d.error){setError(d);} else {setData(d);if(d.videos?.length)setSelected(d.videos[0]);}
+        if(d.error){setError(d);} else {setData(d);setSelected(null);}
         setLoading(false);
       }).catch(()=>{setError({error:"not_connected",message:"Failed to load data. Please try reconnecting your channel."});setLoading(false);});
   },[uid]);
@@ -96,7 +96,7 @@ export default function VideoPerformance({userId, user}){
 
     {/* Video List */}
     <GC style={{marginBottom:"16px"}}>
-      <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>YOUR VIDEOS</div>
+      <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>YOUR VIDEOS <span style={{fontSize:"10px",color:"rgba(255,255,255,0.25)",fontWeight:"400",textTransform:"none"}}>— click any video to see analytics</span></div>
       <div style={{display:"flex",flexDirection:"column",gap:"6px"}}>
         {data.videos.map((vid,i)=>{
           const isSel=selected?.id===vid.id;
