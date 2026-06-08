@@ -1346,7 +1346,19 @@ function CompetitorTab({ userId, C }) {
 
 function OptimizeVideoRow({ v, getScore, getTips, scoreColor, C }) {
   const [open, setOpen] = useState(false);
+  const [ctr, setCtr] = useState(null);
+  const [watchTime, setWatchTime] = useState(null);
   const sc = getScore(v); const tips = getTips(v); const scCol = scoreColor(sc);
+  
+  const fetchCTR = async () => {
+    if(ctr !== null) return; // already fetched
+    try {
+      const r = await fetch(`${BASE}/youtube/video-ctr/${v.video_id}?user_id=${v.user_id||""}`);
+      const d = await r.json();
+      if(d.ctr) setCtr(d.ctr);
+      if(d.watch_time) setWatchTime(d.watch_time);
+    } catch(e) {}
+  };
   return (
     <div style={{ background:C.glass, border:`1px solid ${open?C.purple+"44":C.hairline}`, borderRadius:"12px", overflow:"hidden" }}>
       <div onClick={()=>setOpen(!open)} style={{ display:"flex", gap:"10px", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
@@ -1376,10 +1388,10 @@ function OptimizeVideoRow({ v, getScore, getTips, scoreColor, C }) {
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"12px"}}>
             <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
               data={[{name:"This video",value:v.views||1,color:"#7c3aed"},{name:"Others",value:Math.max(1,v.views*10),color:"rgba(124,58,237,0.12)"}]}/>
-            <VideoDonut label="LIKES" center={fmt(v.likes||0)} sub="total likes"
-              data={[{name:"Likes",value:Math.max(v.likes||0,1),color:"#7c3aed"},{name:"Views",value:Math.max(v.views-(v.likes||0),1),color:"rgba(124,58,237,0.12)"}]}/>
-            <VideoDonut label="ENGAGEMENT" center={(((v.likes+v.comments)/Math.max(v.views,1))*100).toFixed(1)+"%"} sub="eng. rate"
-              data={[{name:"Likes",value:Math.max(v.likes||0,1),color:"#7c3aed"},{name:"Comments",value:Math.max(v.comments||0,1),color:"#a78bfa"},{name:"Rest",value:Math.max(v.views-(v.likes||0)-(v.comments||0),1),color:"rgba(124,58,237,0.08)"}]}/>
+            <VideoDonut label={watchTime?"WATCH TIME":"LIKES"} center={watchTime?watchTime+"m":fmt(v.likes||0)} sub={watchTime?"avg mins":"total likes"}
+              data={watchTime?[{name:"Watch",value:Math.max(parseInt(watchTime)||1,1),color:"#7c3aed"},{name:"Rest",value:Math.max(60-parseInt(watchTime)||1,1),color:"rgba(124,58,237,0.12)"}]:[{name:"Likes",value:Math.max(v.likes||0,1),color:"#7c3aed"},{name:"Views",value:Math.max(v.views-(v.likes||0),1),color:"rgba(124,58,237,0.12)"}]}/>
+            <VideoDonut label={ctr?"CTR":"ENGAGEMENT"} center={ctr?ctr+"%":(((v.likes+v.comments)/Math.max(v.views,1))*100).toFixed(1)+"%"} sub={ctr?"click rate":"eng. rate"}
+              data={ctr?[{name:"Clicks",value:Math.max(parseFloat(ctr)||1,1),color:"#7c3aed"},{name:"Rest",value:Math.max(100-parseFloat(ctr)||1,1),color:"rgba(124,58,237,0.08)"}]:[{name:"Likes",value:Math.max(v.likes||0,1),color:"#7c3aed"},{name:"Comments",value:Math.max(v.comments||0,1),color:"#a78bfa"},{name:"Rest",value:Math.max(v.views-(v.likes||0)-(v.comments||0),1),color:"rgba(124,58,237,0.08)"}]}/>
             <VideoDonut label="SCORE" center={getScore(v)} sub="/100"
               data={[{name:"Score",value:Math.max(getScore(v),1),color:"#7c3aed"},{name:"Gap",value:Math.max(100-getScore(v),1),color:"rgba(124,58,237,0.1)"}]}/>
           </div>
@@ -1438,9 +1450,10 @@ function OptimizeTab({ userId, channel, C }) {
   const sorted = [...videos]
     .filter(v => v.title.toLowerCase().includes(search.toLowerCase()))
     .filter(v => {
-      if(vfilter==="shorts") return v.video_type==="short";
-      if(vfilter==="videos") return v.video_type==="video";
-      if(vfilter==="live") return v.video_type==="live";
+      const vt = v.video_type || "video";
+      if(vfilter==="shorts") return vt==="short" || v.title?.toLowerCase().includes("#short");
+      if(vfilter==="videos") return vt==="video";
+      if(vfilter==="live") return vt==="live" || v.title?.toLowerCase().includes("live");
       return true;
     })
     .sort((a,b) => {
