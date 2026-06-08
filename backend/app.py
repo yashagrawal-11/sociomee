@@ -677,6 +677,24 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
     except Exception as e: raise HTTPException(500, str(e))
     return _attach_credits(result, user["user_id"])
 
+@app.post("/thumbnail/ab-test")
+async def thumb_ab_test(
+    file_a: UploadFile = File(...),
+    file_b: UploadFile = File(...),
+    niche: str = Form("general")
+):
+    try:
+        if _HAS_THUMB:
+            from thumbnail_ai import ab_test_thumbnails
+            bytes_a = await file_a.read()
+            bytes_b = await file_b.read()
+            result = ab_test_thumbnails(bytes_a, bytes_b, file_a.content_type or "image/jpeg", file_b.content_type or "image/jpeg", niche)
+            return result
+        return {"error": "Thumbnail AI not available"}
+    except Exception as e:
+        log.error("ab_test error: %s", e)
+        return {"error": str(e)}
+
 @app.post("/thumbnail/analyze")
 async def thumb_analyze(file: UploadFile = File(...), keyword: str = Form(""), niche: str = Form(""), plan: str = Form("free")):
     try:
