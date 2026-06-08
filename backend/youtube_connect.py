@@ -714,7 +714,19 @@ def get_all_videos(user_id: str, max_results: int = 50) -> List[Dict]:
         videos.sort(key=lambda x: x["views"], reverse=True)
         return videos
     except Exception as e:
-        log.warning("get_all_videos error: %s", e)
+        log.warning("get_all_videos error for %s: %s", user_id, e)
+        # Try finding a fresher token for same channel
+        try:
+            all_data = _load()
+            for uid, info in all_data.items():
+                if uid == user_id: continue
+                channels = info.get("channels", [])
+                for ch in channels:
+                    if ch.get("channel_id") == all_data.get(user_id,{}).get("active_channel_id",""):
+                        log.info("Retrying with fresher token uid=%s", uid)
+                        return get_all_videos(uid, max_results)
+        except Exception as e2:
+            log.warning("fallback also failed: %s", e2)
         return []
 
 def get_growth_prediction(
