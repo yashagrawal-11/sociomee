@@ -1344,20 +1344,20 @@ function CompetitorTab({ userId, C }) {
   );
 }
 
-function OptimizeVideoRow({ v, getScore, getTips, scoreColor, C }) {
+function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
   const [open, setOpen] = useState(false);
   const [ctr, setCtr] = useState(null);
   const [watchTime, setWatchTime] = useState(null);
   const sc = getScore(v); const tips = getTips(v); const scCol = scoreColor(sc);
   
   const fetchCTR = async () => {
-    if(ctr !== null) return; // already fetched
+    if(ctr !== null) return;
     try {
-      const r = await fetch(`${BASE}/youtube/video-ctr/${v.video_id}?user_id=${v.user_id||""}`);
+      const r = await fetch(`${BASE}/youtube/video-ctr/${v.video_id}?user_id=${v.user_id||userId||""}`);
       const d = await r.json();
-      if(d.ctr) setCtr(d.ctr);
-      if(d.watch_time) setWatchTime(d.watch_time);
-    } catch(e) {}
+      if(d.ctr != null) setCtr(d.ctr);
+      if(d.watch_time != null) setWatchTime(d.watch_time);
+    } catch(e) { console.error("CTR fetch failed:", e); }
   };
   return (
     <div style={{ background:C.glass, border:`1px solid ${open?C.purple+"44":C.hairline}`, borderRadius:"12px", overflow:"hidden" }}>
@@ -1508,7 +1508,7 @@ function OptimizeTab({ userId, channel, C }) {
       </div>
       {/* Video list */}
       <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
-        {sorted.map((v,i) => <OptimizeVideoRow key={v.video_id} v={v} getScore={getScore} getTips={getTips} scoreColor={scoreColor} C={C} />)}
+        {sorted.map((v,i) => <OptimizeVideoRow key={v.video_id} v={v} userId={userId} getScore={getScore} getTips={getTips} scoreColor={scoreColor} C={C} />)}
       </div>
     </div>
   );
