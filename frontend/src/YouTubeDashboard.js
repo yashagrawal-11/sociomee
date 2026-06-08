@@ -1372,6 +1372,15 @@ function OptimizeVideoRow({ v, getScore, getTips, scoreColor, C }) {
               </div>
             ))}
           </div>
+          {/* Donut Charts */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"10px",marginBottom:"12px"}}>
+            <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total"
+              data={[{name:"This video",value:v.views,color:"#7c3aed"},{name:"Others",value:Math.max(0,v.views*10),color:"rgba(124,58,237,0.15)"}]}/>
+            <VideoDonut label="ENGAGEMENT" center={(((v.likes+v.comments)/Math.max(v.views,1))*100).toFixed(1)+"%"} sub="rate"
+              data={[{name:"Likes",value:v.likes||0,color:"#7c3aed"},{name:"Comments",value:v.comments||0,color:"#a78bfa"},{name:"Rest",value:Math.max(0,v.views-(v.likes||0)-(v.comments||0)),color:"rgba(124,58,237,0.1)"}]}/>
+            <VideoDonut label="SCORE" center={getScore(v)} sub="/100"
+              data={[{name:"Score",value:getScore(v),color:"#7c3aed"},{name:"Gap",value:100-getScore(v),color:"rgba(124,58,237,0.1)"}]}/>
+          </div>
           <div style={{ display:"flex", gap:"6px" }}>
             <a href={v.url} target="_blank" rel="noreferrer" style={{ padding:"5px 12px", borderRadius:"7px", background:C.purple, color:"#fff", fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>▶ Watch</a>
             <a href={`https://studio.youtube.com/video/${v.video_id}/edit`} target="_blank" rel="noreferrer" style={{ padding:"5px 12px", borderRadius:"7px", background:"transparent", border:`1px solid ${C.hairline}`, color:C.muted, fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>✏️ Edit in Studio</a>
@@ -1388,9 +1397,10 @@ function OptimizeTab({ userId, channel, C }) {
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("recent");
   const [search, setSearch] = useState("");
+  const [vfilter, setVfilter] = useState("all");
 
   useEffect(() => {
-    fetch(`${BASE}/youtube/all-videos/${userId}?max_results=50`)
+    fetch(`${BASE}/youtube/all-videos/${userId}?max_results=100`)
       .then(r => r.json())
       .then(d => { setVideos(d.videos || []); setLoading(false); })
       .catch(() => setLoading(false));
@@ -1425,6 +1435,12 @@ function OptimizeTab({ userId, channel, C }) {
 
   const sorted = [...videos]
     .filter(v => v.title.toLowerCase().includes(search.toLowerCase()))
+    .filter(v => {
+      if(vfilter==="shorts") return v.duration && (parseInt(v.duration.match(/PT(\d+)S/)?.[1]||999)<=60 || v.title.toLowerCase().includes("#short"));
+      if(vfilter==="videos") return !v.duration || parseInt(v.duration.match(/PT(\d+)S/)?.[1]||999)>60;
+      if(vfilter==="live") return v.liveBroadcastContent==="completed" || v.title.toLowerCase().includes("live");
+      return true;
+    })
     .sort((a,b) => {
       if (sort === "score") return getScore(b) - getScore(a);
       if (sort === "views") return b.views - a.views;
@@ -1950,7 +1966,6 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
           ["competitors",yt("प्रतिद्वंद्वी","स्पर्धक","Competitors")],
           ["festival",yt("त्योहार कैलेंडर","सण कॅलेंडर","Festival Calendar")],
           ["milestones",yt("विकास माइलस्टोन","वाढ माइलस्टोन","Growth Milestones")],
-          ["performance","Video Performance"],
           ["upload",yt("ऑटो-अपलोड","ऑटो-अपलोड","Auto-Upload")],
 
           ["sentiment",yt("कमेंट्स","टिप्पण्या","Comments")],
