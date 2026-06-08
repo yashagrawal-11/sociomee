@@ -1350,18 +1350,23 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
   const [avgDuration, setAvgDuration] = useState(null);
   const sc = getScore(v); const tips = getTips(v); const scCol = scoreColor(sc);
   
-  const fetchCTR = async () => {
+  const fetchCTR = async (uid) => {
     if(watchTime !== null) return;
+    const resolvedUid = uid || userId || "";
+    if(!resolvedUid) { console.warn("fetchCTR: no userId"); return; }
     try {
-      const r = await fetch(`${BASE}/youtube/video-ctr/${v.video_id}?user_id=${v.user_id||userId||""}`);
+      const url = `${BASE}/youtube/video-ctr/${v.video_id}?user_id=${resolvedUid}`;
+      console.log("fetchCTR:", url);
+      const r = await fetch(url);
       const d = await r.json();
+      console.log("fetchCTR result:", d);
       if(d.watch_time != null) setWatchTime(d.watch_time);
       if(d.avg_duration != null) setAvgDuration(d.avg_duration);
     } catch(e) { console.error("CTR fetch failed:", e); }
   };
   return (
     <div style={{ background:C.glass, border:`1px solid ${open?C.purple+"44":C.hairline}`, borderRadius:"12px", overflow:"hidden" }}>
-      <div onClick={()=>{setOpen(!open);if(!open)fetchCTR();}} style={{ display:"flex", gap:"10px", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
+      <div onClick={()=>{setOpen(!open);if(!open)fetchCTR(userId);}} style={{ display:"flex", gap:"10px", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
         {v.thumbnail && <img src={v.thumbnail} alt="" style={{ width:"64px", height:"36px", borderRadius:"6px", objectFit:"cover", flexShrink:0 }}/>}
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ fontSize:"12px", fontWeight:"700", color:C.ink, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{v.title}</div>
@@ -1385,9 +1390,6 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
             ))}
           </div>
           {/* Donut Charts */}
-          {watchTime===null ? (
-            <div style={{textAlign:"center",padding:"16px",color:"rgba(255,255,255,0.3)",fontSize:"12px"}}>⏳ Loading analytics...</div>
-          ) : (
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"12px"}}>
             <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
               data={[{name:"This video",value:v.views||1,color:"#7c3aed"},{name:"Others",value:Math.max(1,v.views*10),color:"rgba(124,58,237,0.12)"}]}/>
@@ -1398,7 +1400,6 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
             <VideoDonut label="SCORE" center={getScore(v)} sub="/100"
               data={[{name:"Score",value:Math.max(getScore(v),1),color:"#7c3aed"},{name:"Gap",value:Math.max(100-getScore(v),1),color:"rgba(124,58,237,0.1)"}]}/>
           </div>
-          )}
           <div style={{ display:"flex", gap:"6px" }}>
             <a href={v.url} target="_blank" rel="noreferrer" style={{ padding:"5px 12px", borderRadius:"7px", background:C.purple, color:"#fff", fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>▶ Watch</a>
             <a href={`https://studio.youtube.com/video/${v.video_id}/edit`} target="_blank" rel="noreferrer" style={{ padding:"5px 12px", borderRadius:"7px", background:"transparent", border:`1px solid ${C.hairline}`, color:C.muted, fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>✏️ Edit in Studio</a>
