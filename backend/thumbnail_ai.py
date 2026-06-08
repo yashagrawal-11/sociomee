@@ -32,7 +32,16 @@ Return ONLY valid JSON:
         }
         import httpx as _httpx
         r = _httpx.post(GEMINI_URL, json=payload, timeout=30)
-        text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
+        rj = r.json()
+        # Check for safety block
+        candidates = rj.get("candidates", [])
+        if not candidates:
+            reason = rj.get("promptFeedback", {}).get("blockReason", "SAFETY")
+            return {"error": "inappropriate", "message": "This image was flagged as inappropriate and cannot be analyzed. Please upload a YouTube-safe thumbnail."}
+        finish = candidates[0].get("finishReason", "")
+        if finish == "SAFETY":
+            return {"error": "inappropriate", "message": "This image was flagged as inappropriate and cannot be analyzed. Please upload a YouTube-safe thumbnail."}
+        text = candidates[0]["content"]["parts"][0]["text"]
         clean = text.replace("```json","").replace("```","").strip()
         return json.loads(clean)
     except Exception as e:
@@ -73,7 +82,11 @@ Return ONLY valid JSON:
         }
         import httpx as _httpx
         r = _httpx.post(GEMINI_URL, json=payload, timeout=30)
-        text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
+        rj = r.json()
+        candidates = rj.get("candidates", [])
+        if not candidates or candidates[0].get("finishReason") == "SAFETY":
+            return {"error": "inappropriate", "message": "One or both images were flagged as inappropriate. Please upload YouTube-safe thumbnails."}
+        text = candidates[0]["content"]["parts"][0]["text"]
         clean = text.replace("```json","").replace("```","").strip()
         return json.loads(clean)
     except Exception as e:

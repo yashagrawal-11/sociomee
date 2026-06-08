@@ -75,6 +75,11 @@ export default function ThumbnailStudio(){
         </button>
       </GC>
 
+      {!loading&&result?.error==="inappropriate"&&<div style={{background:"rgba(248,113,113,0.08)",border:"1px solid rgba(248,113,113,0.3)",borderRadius:"16px",padding:"24px",textAlign:"center"}}>
+        <div style={{fontSize:"32px",marginBottom:"8px"}}>🚫</div>
+        <div style={{fontSize:"15px",fontWeight:"700",color:"#f87171",marginBottom:"6px"}}>Inappropriate Content Detected</div>
+        <div style={{fontSize:"13px",color:"rgba(255,255,255,0.5)"}}>{result.message}</div>
+      </div>}
       {!loading&&result&&!result.error&&<div style={{display:"flex",flexDirection:"column",gap:"14px"}}>
         {/* Winner Banner */}
         <GC style={{textAlign:"center",borderLeft:`4px solid ${result.winner==="A"?"#34d399":"#a78bfa"}`,background:"rgba(52,211,153,0.05)"}}>
@@ -121,6 +126,11 @@ export default function ThumbnailStudio(){
           {loading?"Analyzing...":"✦ Analyze Thumbnail"}
         </button>
       </GC>
+      {!loading&&singleResult?.error==="inappropriate"&&<div style={{background:"rgba(248,113,113,0.08)",border:"1px solid rgba(248,113,113,0.3)",borderRadius:"16px",padding:"24px",textAlign:"center"}}>
+        <div style={{fontSize:"32px",marginBottom:"8px"}}>🚫</div>
+        <div style={{fontSize:"15px",fontWeight:"700",color:"#f87171",marginBottom:"6px"}}>Inappropriate Content Detected</div>
+        <div style={{fontSize:"13px",color:"rgba(255,255,255,0.5)"}}>{singleResult.message}</div>
+      </div>}
       {!loading&&singleResult&&!singleResult.error&&<div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
         <GC style={{textAlign:"center"}}>
           <div style={{fontSize:"48px",fontWeight:"900",color:scoreColor(singleResult.fit_score)}}>{singleResult.fit_score}</div>
