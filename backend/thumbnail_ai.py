@@ -7,6 +7,22 @@ GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.
 def _b64(image_bytes: bytes) -> str:
     return base64.b64encode(image_bytes).decode()
 
+def _resize(image_bytes: bytes, max_size: int = 800) -> bytes:
+    """Resize image to max dimension for faster Gemini processing"""
+    try:
+        from PIL import Image
+        import io
+        img = Image.open(io.BytesIO(image_bytes))
+        w, h = img.size
+        if max(w, h) > max_size:
+            ratio = max_size / max(w, h)
+            img = img.resize((int(w*ratio), int(h*ratio)), Image.LANCZOS)
+        out = io.BytesIO()
+        img.save(out, format="JPEG", quality=85)
+        return out.getvalue()
+    except:
+        return image_bytes
+
 def analyze_thumbnail_real(image_bytes: bytes, mime_type: str = "image/jpeg", keyword: str = "general", niche: str = "general", plan: str = "free") -> dict:
     try:
         prompt = f"""Analyze this YouTube thumbnail for the niche: "{niche}" / keyword: "{keyword}".
@@ -25,7 +41,7 @@ Return ONLY valid JSON:
         payload = {
             "contents": [{
                 "parts": [
-                    {"inline_data": {"mime_type": mime_type, "data": _b64(image_bytes)}},
+                    {"inline_data": {"mime_type": "image/jpeg", "data": _b64(_resize(image_bytes))}},
                     {"text": prompt}
                 ]
             }]
@@ -74,8 +90,8 @@ Return ONLY valid JSON:
         payload = {
             "contents": [{
                 "parts": [
-                    {"inline_data": {"mime_type": mime_a, "data": _b64(img_a)}},
-                    {"inline_data": {"mime_type": mime_b, "data": _b64(img_b)}},
+                    {"inline_data": {"mime_type": "image/jpeg", "data": _b64(_resize(img_a))}},
+                    {"inline_data": {"mime_type": "image/jpeg", "data": _b64(_resize(img_b))}},
                     {"text": prompt}
                 ]
             }]
