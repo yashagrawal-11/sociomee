@@ -59,6 +59,14 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
   const s = document.createElement("style");
   s.id = "yt-mobile-styles";
   s.textContent = `
+    /* Video donuts mobile scroll */
+    @media (max-width: 600px) {
+      .yt-video-donuts { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none !important; -ms-overflow-style: none !important; gap: 8px !important; padding-bottom: 4px; }
+      .yt-video-donuts::-webkit-scrollbar { display: none; }
+      .yt-video-donuts > * { flex-shrink: 0 !important; width: 140px !important; scroll-snap-align: start; }
+      /* Smaller channel analytics donuts on mobile */
+      .yt-analytics-donuts svg { width: 120px !important; height: 120px !important; }
+    }
     @media (max-width: 600px) {
       /* Channel header */
       .yt-channel-header { padding: 10px 12px !important; gap: 10px !important; }
@@ -441,7 +449,7 @@ function TopVideos({ videos }) {
                       <div style={{marginBottom:"16px",padding:"16px",background:"rgba(124,58,237,0.04)",borderRadius:"14px",border:"1px solid rgba(124,58,237,0.12)"}}>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"16px",width:"100%"}}>
                           {donuts.map((d,di)=>(
-                            <VideoDonut key={di} label={d.label} center={d.center} sub={d.sub} data={d.data} color={d.data[0]?.color||"#7c3aed"}/>
+                            <div key={di} className="yt-analytics-donuts"><VideoDonut label={d.label} center={d.center} sub={d.sub} data={d.data} color={d.data[0]?.color||"#7c3aed"}/></div>
                           ))}
                         </div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"8px",marginBottom:"10px",width:"100%"}}>
@@ -791,6 +799,14 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
   const s = document.createElement("style");
   s.id = "yt-mobile-styles";
   s.textContent = `
+    /* Video donuts mobile scroll */
+    @media (max-width: 600px) {
+      .yt-video-donuts { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none !important; -ms-overflow-style: none !important; gap: 8px !important; padding-bottom: 4px; }
+      .yt-video-donuts::-webkit-scrollbar { display: none; }
+      .yt-video-donuts > * { flex-shrink: 0 !important; width: 140px !important; scroll-snap-align: start; }
+      /* Smaller channel analytics donuts on mobile */
+      .yt-analytics-donuts svg { width: 120px !important; height: 120px !important; }
+    }
     @media (max-width: 600px) {
       /* Channel header */
       .yt-channel-header { padding: 10px 12px !important; gap: 10px !important; }
@@ -1390,7 +1406,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
             ))}
           </div>
           {/* Donut Charts */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"12px"}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"12px"}} className="yt-video-donuts">
             <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
               data={[{name:"This video",value:v.views||1,color:"#7c3aed"},{name:"Others",value:Math.max(1,v.views*10),color:"rgba(124,58,237,0.12)"}]}/>
             <VideoDonut label={watchTime?"WATCH TIME":"LIKES"} center={watchTime?watchTime+"m":fmt(v.likes||0)} sub={watchTime?"total mins":"total likes"}
