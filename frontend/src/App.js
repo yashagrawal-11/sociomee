@@ -19,6 +19,7 @@ import LinkedInDashboard from "./LinkedInDashboard";
 import { LinkedInPost, LinkedInHeadline, LinkedInAbout, LinkedInCarousel, LinkedInHashtags, LinkedInBestTime } from "./LinkedInTools";
 import { FacebookPost, FacebookGroupPost, FacebookAdCopy, FacebookBestTime } from "./FacebookTools";
 import ThumbnailStudio from "./ThumbnailStudio";
+import VideoPerformance from "./VideoPerformance";
 import { KeywordResearch, TrendingVideos, EvergreenScore, DailyVideoIdeas } from "./YouTubeTools";
 import { TikTokHook, TikTokCaption, TikTokVideoIdeas, TikTokHashtags, TikTokBestTime } from "./TikTokTools";
 import { WhatsAppBroadcast, WhatsAppReplyTemplates, WhatsAppChannelPost } from "./WhatsAppTools";
@@ -1447,6 +1448,7 @@ export default function App() {
                 {tab:"yt-trending",label:"Trending Videos",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>},
                 {tab:"yt-evergreen",label:"Evergreen Score",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22V12M12 12C12 8 8 6 6 6c1 3 3 5 6 6zM12 12C12 8 16 6 18 6c-1 3-3 5-6 6z"/></svg>},
                 {tab:"yt-ideas",label:"Daily Video Ideas",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>},
+                {tab:"yt-performance",label:"Video Performance",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>},
               ].map(item=>(
                 <button key={item.tab} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
                   style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #7c3aed":"2px solid transparent",background:activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent",color:activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
@@ -2033,6 +2035,7 @@ export default function App() {
       {activeTab==="yt-trending"  && isLoggedIn && <TrendingVideos/>}
       {activeTab==="yt-evergreen" && isLoggedIn && <EvergreenScore/>}
       {activeTab==="yt-ideas"     && isLoggedIn && <DailyVideoIdeas/>}
+      {activeTab==="yt-performance" && isLoggedIn && <VideoPerformance user={user}/>}
       {activeTab==="hashtags"   && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HashtagGenerator user={user}/></div>}
           {activeTab==="texttaudio" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TextToAudio user={user}/></div>}
           {activeTab==="hookgenerator"&&isLoggedIn&& <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HookGenerator user={user}/></div>}

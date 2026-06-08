@@ -874,3 +874,90 @@ def deep_analytics(user_id: str, days: int = Query(default=28, ge=7, le=90)):
             "period_days": days,
             "is_mock": True,
         }
+
+# ── Video Performance Analytics ───────────────────────────────────────
+@router.get("/video-performance/{user_id}")
+async def video_performance(user_id: str):
+    try:
+        import json as _json
+        # Load user's YouTube token
+        token_file = f"yt_tokens/{user_id}.json"
+        if not os.path.exists(token_file):
+            return {"error": "not_connected", "message": "Connect your YouTube channel first"}
+        
+        with open(token_file) as f:
+            token_data = _json.load(f)
+        access_token = token_data.get("access_token", "")
+        
+        async with httpx.AsyncClient(timeout=20) as c:
+            headers = {"Authorization": f"Bearer {access_token}"}
+            
+            # Get channel videos
+            vr = await c.get("https://www.googleapis.com/youtube/v3/search", params={
+                "part": "snippet",
+                "forMine": "true",
+                "type": "video",
+                "maxResults": 10,
+                "order": "date",
+                "key": YOUTUBE_PUBLIC_API_KEY
+            }, headers=headers)
+            
+            vids = vr.json().get("items", [])
+            if not vids:
+                return {"error": "no_videos", "message": "No videos found on your channel"}
+            
+            video_ids = [v["id"]["videoId"] for v in vids if v.get("id",{}).get("videoId")]
+            
+            # Get video statistics
+            sr = await c.get("https://www.googleapis.com/youtube/v3/videos", params={
+                "part": "statistics,snippet,contentDetails",
+                "id": ",".join(video_ids),
+                "key": YOUTUBE_PUBLIC_API_KEY
+            }, headers=headers)
+            
+            stats = sr.json().get("items", [])
+            
+            videos = []
+            total_views = total_likes = total_comments = 0
+            
+            for item in stats:
+                s = item.get("statistics", {})
+                views = int(s.get("viewCount", 0))
+                likes = int(s.get("likeCount", 0))
+                comments = int(s.get("commentCount", 0))
+                total_views += views
+                total_likes += likes
+                total_comments += comments
+                
+                # Estimate CTR (YouTube doesn't expose via Data API, only Analytics API)
+                # Use like/view ratio as engagement proxy
+                engagement = round((likes / views * 100), 2) if views > 0 else 0
+                
+                videos.append({
+                    "id": item["id"],
+                    "title": item["snippet"]["title"],
+                    "thumbnail": item["snippet"]["thumbnails"].get("medium", {}).get("url", ""),
+                    "published": item["snippet"]["publishedAt"][:10],
+                    "views": views,
+                    "likes": likes,
+                    "comments": comments,
+                    "engagement_rate": engagement,
+                    "duration": item.get("contentDetails", {}).get("duration", "")
+                })
+            
+            # Sort by views
+            videos.sort(key=lambda x: x["views"], reverse=True)
+            
+            return {
+                "videos": videos,
+                "summary": {
+                    "total_views": total_views,
+                    "total_likes": total_likes,
+                    "total_comments": total_comments,
+                    "avg_engagement": round(total_likes / total_views * 100, 2) if total_views > 0 else 0,
+                    "total_videos": len(videos)
+                }
+            }
+    except Exception as e:
+        log.error("video_performance error: %s", e)
+        return {"error": str(e)}
