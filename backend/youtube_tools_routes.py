@@ -102,17 +102,43 @@ CATEGORY_MAP = {
 async def trending_videos(req: TrendingReq):
     try:
         cat_id = CATEGORY_MAP.get(req.niche.lower(), "0")
-        async with httpx.AsyncClient(timeout=15) as c:
-            params = {
-                "part": "snippet,statistics,contentDetails",
-                "chart": "mostPopular",
-                "regionCode": req.country,
-                "videoCategoryId": cat_id,
-                "maxResults": 20,
-                "key": YT_API_KEY
-            }
-            r = await c.get(f"{YT_BASE}/videos", params=params)
-            data = r.json()
+        async with httpx.AsyncClient(timeout=15) as client:
+            # For shorts, use search API with videoDuration=short
+            if req.video_type == "shorts":
+                search_q = req.niche if req.niche != "general" else "trending"
+                sr = await client.get(f"{YT_BASE}/search", params={
+                    "part": "snippet",
+                    "q": f"{search_q} shorts",
+                    "type": "video",
+                    "videoDuration": "short",
+                    "order": "viewCount",
+                    "regionCode": req.country,
+                    "maxResults": 20,
+                    "key": YT_API_KEY
+                })
+                search_data = sr.json()
+                video_ids = [item["id"]["videoId"] for item in search_data.get("items", []) if isinstance(item.get("id"), dict) and item["id"].get("videoId")]
+                if not video_ids:
+                    return {"niche": req.niche, "country": req.country, "videos": []}
+                vr = await client.get(f"{YT_BASE}/videos", params={
+                    "part": "snippet,statistics,contentDetails",
+                    "id": ",".join(video_ids),
+                    "key": YT_API_KEY
+                })
+                data = vr.json()
+            else:
+                params = {
+                    "part": "snippet,statistics,contentDetails",
+                    "chart": "mostPopular",
+                    "regionCode": req.country,
+                    "videoCategoryId": cat_id if cat_id != "0" else "",
+                    "maxResults": 20,
+                    "key": YT_API_KEY
+                }
+                if not params["videoCategoryId"]:
+                    del params["videoCategoryId"]
+                resp = await client.get(f"{YT_BASE}/videos", params=params)
+                data = resp.json()
             
             videos = []
             for item in data.get("items", []):
@@ -123,7 +149,7 @@ async def trending_videos(req: TrendingReq):
                 mins = int((_re.search(r"(\d+)M", duration) or type("", (), {"group": lambda s, x: "0"})()).group(1) or 0)
                 secs = int((_re.search(r"(\d+)S", duration) or type("", (), {"group": lambda s, x: "0"})()).group(1) or 0)
                 total_secs = mins * 60 + secs
-                is_short = total_secs <= 60 and total_secs > 0
+                is_short = (req.video_type == "shorts") or (total_secs <= 60 and total_secs > 0)
                 
                 video = {
                     "title": item["snippet"]["title"],
