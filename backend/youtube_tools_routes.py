@@ -37,14 +37,14 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/youtube-tools", tags=["youtube-tools"])
 
 YT_API_KEY = os.getenv("YOUTUBE_PUBLIC_API_KEY", "")
-GEMINI_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_KEY = os.getenv("GOOGLE_API_KEY","")
 YT_BASE = "https://www.googleapis.com/youtube/v3"
 
 async def gemini(prompt: str) -> str:
     try:
         async with httpx.AsyncClient(timeout=30) as c:
             r = await c.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}",
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_KEY}",
                 json={"contents":[{"parts":[{"text":prompt}]}]}
             )
             return r.json()["candidates"][0]["content"]["parts"][0]["text"]
