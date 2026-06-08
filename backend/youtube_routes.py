@@ -984,21 +984,36 @@ async def video_performance(user_id: str):
 async def video_ctr(video_id: str, user_id: str = Query(...)):
     try:
         from youtube_connect import _get_credentials
-        # Try fresh token first
-        creds = _get_credentials(user_id)
-        if not creds or not creds.valid:
-            # Try alternate uid
-            import json as _json
-            from pathlib import Path
-            accounts = _json.loads((Path(__file__).parent/"youtube_accounts.json").read_text())
-            for uid, info in accounts.items():
-                if uid == user_id: continue
-                creds2 = _get_credentials(uid)
-                if creds2 and creds2.valid:
-                    creds = creds2
+        import json as _json
+        from pathlib import Path
+        from datetime import date as _date, timedelta as _td
+        
+        # Try all stored credentials until one works
+        accounts = _json.loads((Path(__file__).parent/"youtube_accounts.json").read_text())
+        all_uids = [user_id] + [u for u in accounts.keys() if u != user_id]
+        
+        working_creds = None
+        for uid in all_uids:
+            try:
+                creds = _get_credentials(uid)
+                if not creds: continue
+                # Force refresh token
+                try:
+                    from google.auth.transport.requests import Request as _GReq
+                    creds.refresh(_GReq())
+                except Exception as _re:
+                    err_str = str(_re)
+                    if "invalid_grant" in err_str:
+                        continue  # skip this uid, try next
+                    log.warning("token refresh warning: %s", _re)
+                if creds and creds.token:
+                    working_creds = creds
                     break
-        if not creds:
+            except: continue
+        
+        if not working_creds:
             return {"watch_time": None, "avg_duration": None}
+        creds = working_creds
 
         from datetime import date, timedelta
         end_date = date.today().isoformat()

@@ -1351,7 +1351,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
   const sc = getScore(v); const tips = getTips(v); const scCol = scoreColor(sc);
   
   const fetchCTR = async () => {
-    if(ctr !== null) return;
+    if(watchTime !== null) return;
     try {
       const r = await fetch(`${BASE}/youtube/video-ctr/${v.video_id}?user_id=${v.user_id||userId||""}`);
       const d = await r.json();
