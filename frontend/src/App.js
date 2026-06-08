@@ -18,7 +18,7 @@ import BioWriter from "./BioWriter";
 import LinkedInDashboard from "./LinkedInDashboard";
 import { LinkedInPost, LinkedInHeadline, LinkedInAbout, LinkedInCarousel, LinkedInHashtags, LinkedInBestTime } from "./LinkedInTools";
 import { FacebookPost, FacebookGroupPost, FacebookAdCopy, FacebookBestTime } from "./FacebookTools";
-import ThumbnailStudio from "./ThumbnailStudio";
+import ThumbnailStudioNew from "./ThumbnailStudio";
 import VideoPerformance from "./VideoPerformance";
 import { KeywordResearch, TrendingVideos, EvergreenScore, DailyVideoIdeas } from "./YouTubeTools";
 import { TikTokHook, TikTokCaption, TikTokVideoIdeas, TikTokHashtags, TikTokBestTime } from "./TikTokTools";
@@ -2040,7 +2040,7 @@ export default function App() {
           {activeTab==="texttaudio" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TextToAudio user={user}/></div>}
           {activeTab==="hookgenerator"&&isLoggedIn&& <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HookGenerator user={user}/></div>}
           {activeTab==="biowriter"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><BioWriter user={user}/></div>}
-          {activeTab==="thumbnail"  && isLoggedIn && <ThumbnailStudio/>}
+          {activeTab==="thumbnail"  && isLoggedIn && <ThumbnailStudioNew/>}
 
           <p style={{ textAlign:"center", color:"rgba(255,255,255,0.2)", fontSize:"11.5px", marginTop:"32px" }}>SocioMee · One Topic. Infinite Content · Built with 💜</p>
         </div>
