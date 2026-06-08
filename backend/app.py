@@ -23,6 +23,12 @@ except Exception as e:
     log.warning("auth_routes failed: %s", e); _HAS_AUTH = False; auth_router = None
 
 try:
+    from youtube_tools_routes import router as yt_tools_router
+    _HAS_YT_TOOLS=True
+except Exception as e:
+    log.warning('yt_tools_routes failed: %s',e); _HAS_YT_TOOLS=False; yt_tools_router=None
+
+try:
     from push_routes import router as push_router
     _HAS_PUSH = True
 except Exception as _pe:
@@ -209,6 +215,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Google login router
 if _HAS_AUTH and auth_router is not None:
     app.include_router(auth_router)
+if _HAS_YT_TOOLS and yt_tools_router:
+    app.include_router(yt_tools_router)
 if _HAS_PUSH and push_router:
     app.include_router(push_router)
 

@@ -18,6 +18,7 @@ import BioWriter from "./BioWriter";
 import LinkedInDashboard from "./LinkedInDashboard";
 import { LinkedInPost, LinkedInHeadline, LinkedInAbout, LinkedInCarousel, LinkedInHashtags, LinkedInBestTime } from "./LinkedInTools";
 import { FacebookPost, FacebookGroupPost, FacebookAdCopy, FacebookBestTime } from "./FacebookTools";
+import { KeywordResearch, TrendingVideos, EvergreenScore, DailyVideoIdeas } from "./YouTubeTools";
 import { TikTokHook, TikTokCaption, TikTokVideoIdeas, TikTokHashtags, TikTokBestTime } from "./TikTokTools";
 import { WhatsAppBroadcast, WhatsAppReplyTemplates, WhatsAppChannelPost } from "./WhatsAppTools";
 import { XTweetGenerator, XThreadGenerator, XHookGenerator, XBestTime } from "./XTools";
@@ -2023,6 +2024,10 @@ export default function App() {
       {activeTab==="x-thread"     && isLoggedIn && <XThreadGenerator/>}
       {activeTab==="x-hook"       && isLoggedIn && <XHookGenerator/>}
       {activeTab==="x-besttime"   && isLoggedIn && <XBestTime/>}
+      {activeTab==="yt-keyword"   && isLoggedIn && <KeywordResearch/>}
+      {activeTab==="yt-trending"  && isLoggedIn && <TrendingVideos/>}
+      {activeTab==="yt-evergreen" && isLoggedIn && <EvergreenScore/>}
+      {activeTab==="yt-ideas"     && isLoggedIn && <DailyVideoIdeas/>}
       {activeTab==="hashtags"   && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HashtagGenerator user={user}/></div>}
           {activeTab==="texttaudio" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TextToAudio user={user}/></div>}
           {activeTab==="hookgenerator"&&isLoggedIn&& <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HookGenerator user={user}/></div>}
