@@ -39,12 +39,13 @@ function VideoDonut({label,center,sub,data}){
 
 function SK(){return <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>{[1,2,3].map(i=><GC key={i}><div style={{height:"60px",borderRadius:"8px",background:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)",backgroundSize:"200% 100%",animation:"shimmer 1.5s infinite"}}/></GC>)}<style>{`@keyframes shimmer{to{background-position:-200% 0}}`}</style></div>;}
 
-export default function VideoPerformance({user}){
+export default function VideoPerformance({userId, user}){
+  const uid = userId || user?.id;
   const [data,setData]=useState(null);const [loading,setLoading]=useState(true);const [selected,setSelected]=useState(null);const [error,setError]=useState(null);
 
   useEffect(()=>{
-    if(!user?.id)return;
-    fetch(`${BASE}/youtube/video-performance/${user.id}`,{headers:{"Authorization":`Bearer ${localStorage.getItem("sociomee_token")||""}`}})
+    if(!uid)return;
+    fetch(`${BASE}/youtube/video-performance/${uid}`,{headers:{"Authorization":`Bearer ${localStorage.getItem("sociomee_token")||""}`}})
       .then(r=>r.json()).then(d=>{
         if(d.error){setError(d);} else {setData(d);if(d.videos?.length)setSelected(d.videos[0]);}
         setLoading(false);

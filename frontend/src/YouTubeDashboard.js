@@ -2177,7 +2177,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
       {activeTab === "festival"   && <FestivalCalendar />}
       {activeTab === "milestones" && <GrowthMilestones channel={channel} analytics={analytics} />}
       {activeTab === "upload"     && <YouTubeUpload  user={user} />}
-      {activeTab === "performance" && <VideoPerformance user={user}/>}
+      {activeTab === "performance" && <VideoPerformance userId={userId}/>}
         {activeTab === "sentiment"  && <SentimentTab   userId={userId} channel={channel} C={C} />}
     </div>
   );
