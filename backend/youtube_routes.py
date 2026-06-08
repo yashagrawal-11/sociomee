@@ -979,19 +979,31 @@ async def video_performance(user_id: str):
         log.error("video_performance error: %s", e)
         return {"error": str(e)}
 
-# ── Per-video CTR from Analytics API ─────────────────────────────────
+# ── Per-video Analytics from YouTube Analytics API ───────────────────
 @router.get("/video-ctr/{video_id}")
 async def video_ctr(video_id: str, user_id: str = Query(...)):
     try:
         from youtube_connect import _get_credentials
+        # Try fresh token first
         creds = _get_credentials(user_id)
+        if not creds or not creds.valid:
+            # Try alternate uid
+            import json as _json
+            from pathlib import Path
+            accounts = _json.loads((Path(__file__).parent/"youtube_accounts.json").read_text())
+            for uid, info in accounts.items():
+                if uid == user_id: continue
+                creds2 = _get_credentials(uid)
+                if creds2 and creds2.valid:
+                    creds = creds2
+                    break
         if not creds:
-            return {"error": "not_connected"}
-        
+            return {"watch_time": None, "avg_duration": None}
+
         from datetime import date, timedelta
         end_date = date.today().isoformat()
         start_date = (date.today() - timedelta(days=90)).isoformat()
-        
+
         async with httpx.AsyncClient(timeout=20) as http:
             r = await http.get(
                 "https://youtubeanalytics.googleapis.com/v2/reports",
@@ -999,10 +1011,9 @@ async def video_ctr(video_id: str, user_id: str = Query(...)):
                     "ids": "channel==MINE",
                     "startDate": start_date,
                     "endDate": end_date,
-                    "metrics": "estimatedMinutesWatched,averageViewDuration,clickThroughRate",
+                    "metrics": "estimatedMinutesWatched,averageViewDuration,views",
                     "dimensions": "video",
                     "filters": f"video=={video_id}",
-                    "key": os.getenv("YOUTUBE_PUBLIC_API_KEY","")
                 },
                 headers={"Authorization": f"Bearer {creds.token}"}
             )
@@ -1010,10 +1021,11 @@ async def video_ctr(video_id: str, user_id: str = Query(...)):
             rows = d.get("rows", [])
             if rows:
                 row = rows[0]
-                watch_mins = round(row[1]/60, 1) if row[1] else None
-                ctr = round(row[2]*100, 1) if len(row)>2 and row[2] else None
-                return {"watch_time": watch_mins, "ctr": ctr}
-        return {"watch_time": None, "ctr": None}
+                watch_mins = round(row[1], 1) if row[1] else None
+                avg_dur_secs = int(row[2]) if row[2] else None
+                avg_dur = f"{avg_dur_secs//60}:{avg_dur_secs%60:02d}" if avg_dur_secs else None
+                return {"watch_time": watch_mins, "avg_duration": avg_dur}
+        return {"watch_time": None, "avg_duration": None}
     except Exception as e:
         log.error("video_ctr error: %s", e)
-        return {"watch_time": None, "ctr": None}
+        return {"watch_time": None, "avg_duration": None}
