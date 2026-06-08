@@ -9,6 +9,7 @@ import {
   Tooltip, ResponsiveContainer,
 } from "recharts";
 import YouTubeUpload from "./YouTubeUpload";
+import VideoPerformance from "./VideoPerformance";
 
 const BASE = "https://sociomee.in/api";
 const YT_LANG = () => localStorage.getItem("sociomee_lang") || "en";
@@ -2175,6 +2176,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
       {activeTab === "festival"   && <FestivalCalendar />}
       {activeTab === "milestones" && <GrowthMilestones channel={channel} analytics={analytics} />}
       {activeTab === "upload"     && <YouTubeUpload  user={user} />}
+      {activeTab === "performance" && <VideoPerformance user={user}/>}
         {activeTab === "sentiment"  && <SentimentTab   userId={userId} channel={channel} C={C} />}
     </div>
   );
