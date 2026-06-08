@@ -306,13 +306,13 @@ function VideoDonut({ label, center, sub, data }) {
     <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"14px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center"}}>
       <div style={{fontSize:"9px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>{label}</div>
       <div style={{position:"relative"}}>
-        <RechartsPie width={170} height={170}>
-          <Pie data={coloredData} cx={85} cy={85} innerRadius={54} outerRadius={76} paddingAngle={3} dataKey="value" strokeWidth={0}
+        <RechartsPie width={130} height={130}>
+          <Pie data={coloredData} cx={65} cy={65} innerRadius={40} outerRadius={58} paddingAngle={3} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setActive(i)} onMouseLeave={()=>setActive(null)} style={{cursor:"pointer"}}>
             {coloredData.map((x,xi)=><Cell key={xi} fill={x.color} opacity={active===null||active===xi?1:0.15}/>)}
           </Pie>
         </RechartsPie>
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"72px"}}>
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"56px"}}>
           {highlighted ? (
             <div style={{fontSize:"11px",fontWeight:"800",color:"#fff",lineHeight:1.3}}>{highlighted.name}</div>
           ) : (<>
@@ -1801,7 +1801,7 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
   return (
     <div style={{display:"flex",gap:"16px",alignItems:"flex-start",flexWrap:"wrap"}}>
       <div style={{position:"relative"}}>
-        <RechartsPie width={240} height={240}>
+        <RechartsPie width={120} height={120}>
           <Pie data={pieData} cx={120} cy={120} innerRadius={80} outerRadius={110} paddingAngle={2} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setActiveOuter(i)} onMouseLeave={()=>setActiveOuter(null)}>
             {pieData.map((_,i)=><Cell key={"o"+i} fill={COLORS[i%COLORS.length]} opacity={activeOuter===null||activeOuter===i?1:0.3}/>)}
