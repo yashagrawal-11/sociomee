@@ -1373,13 +1373,15 @@ function OptimizeVideoRow({ v, getScore, getTips, scoreColor, C }) {
             ))}
           </div>
           {/* Donut Charts */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"10px",marginBottom:"12px"}}>
-            <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total"
-              data={[{name:"This video",value:v.views,color:"#7c3aed"},{name:"Others",value:Math.max(0,v.views*10),color:"rgba(124,58,237,0.15)"}]}/>
-            <VideoDonut label="ENGAGEMENT" center={(((v.likes+v.comments)/Math.max(v.views,1))*100).toFixed(1)+"%"} sub="rate"
-              data={[{name:"Likes",value:v.likes||0,color:"#7c3aed"},{name:"Comments",value:v.comments||0,color:"#a78bfa"},{name:"Rest",value:Math.max(0,v.views-(v.likes||0)-(v.comments||0)),color:"rgba(124,58,237,0.1)"}]}/>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"12px"}}>
+            <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
+              data={[{name:"This video",value:v.views||1,color:"#7c3aed"},{name:"Others",value:Math.max(1,v.views*10),color:"rgba(124,58,237,0.12)"}]}/>
+            <VideoDonut label="LIKES" center={fmt(v.likes||0)} sub="total likes"
+              data={[{name:"Likes",value:Math.max(v.likes||0,1),color:"#7c3aed"},{name:"Views",value:Math.max(v.views-(v.likes||0),1),color:"rgba(124,58,237,0.12)"}]}/>
+            <VideoDonut label="ENGAGEMENT" center={(((v.likes+v.comments)/Math.max(v.views,1))*100).toFixed(1)+"%"} sub="eng. rate"
+              data={[{name:"Likes",value:Math.max(v.likes||0,1),color:"#7c3aed"},{name:"Comments",value:Math.max(v.comments||0,1),color:"#a78bfa"},{name:"Rest",value:Math.max(v.views-(v.likes||0)-(v.comments||0),1),color:"rgba(124,58,237,0.08)"}]}/>
             <VideoDonut label="SCORE" center={getScore(v)} sub="/100"
-              data={[{name:"Score",value:getScore(v),color:"#7c3aed"},{name:"Gap",value:100-getScore(v),color:"rgba(124,58,237,0.1)"}]}/>
+              data={[{name:"Score",value:Math.max(getScore(v),1),color:"#7c3aed"},{name:"Gap",value:Math.max(100-getScore(v),1),color:"rgba(124,58,237,0.1)"}]}/>
           </div>
           <div style={{ display:"flex", gap:"6px" }}>
             <a href={v.url} target="_blank" rel="noreferrer" style={{ padding:"5px 12px", borderRadius:"7px", background:C.purple, color:"#fff", fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>▶ Watch</a>
@@ -1436,9 +1438,9 @@ function OptimizeTab({ userId, channel, C }) {
   const sorted = [...videos]
     .filter(v => v.title.toLowerCase().includes(search.toLowerCase()))
     .filter(v => {
-      if(vfilter==="shorts") return v.duration && (parseInt(v.duration.match(/PT(\d+)S/)?.[1]||999)<=60 || v.title.toLowerCase().includes("#short"));
-      if(vfilter==="videos") return !v.duration || parseInt(v.duration.match(/PT(\d+)S/)?.[1]||999)>60;
-      if(vfilter==="live") return v.liveBroadcastContent==="completed" || v.title.toLowerCase().includes("live");
+      if(vfilter==="shorts") return v.video_type==="short";
+      if(vfilter==="videos") return v.video_type==="video";
+      if(vfilter==="live") return v.video_type==="live";
       return true;
     })
     .sort((a,b) => {
