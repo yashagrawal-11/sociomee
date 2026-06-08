@@ -1,99 +1,21 @@
 nohup: ignoring input
-INFO:     Started server process [205499]
+INFO:     Started server process [205816]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 CLIENT ID: 517099702570-e90p257ovct0pt3in89hogtr1nn6edmm.apps.googleusercontent.com
 JWT: 263d7fc55125bcbce12a398faef1c944d69ab07ec3a8c45004df50e6caa7bbcc
-INFO:     127.0.0.1:44478 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50198 - "POST /auth/refresh-token HTTP/1.0" 200 OK
-INFO:     127.0.0.1:50214 - "GET /auth/me HTTP/1.0" 200 OK
-INFO:     127.0.0.1:50220 - "POST /push/subscribe HTTP/1.0" 200 OK
-INFO:     127.0.0.1:50234 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:48374 - "POST /api/thumbnail/ab-test HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:48416 - "POST /auth/refresh-token HTTP/1.0" 200 OK
-INFO:     127.0.0.1:48432 - "GET /auth/me HTTP/1.0" 200 OK
-INFO:     127.0.0.1:48434 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:48448 - "POST /push/subscribe HTTP/1.0" 200 OK
-INFO:     127.0.0.1:59364 - "POST /api/thumbnail/ab-test HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:45328 - "POST /api/thumbnail/ab-test HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:55938 - "POST /api/thumbnail/ab-test HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:55558 - "POST /api/thumbnail/ab-test HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:55574 - "POST /thumbnail/ab-test HTTP/1.1" 422 Unprocessable Entity
-INFO:     127.0.0.1:37108 - "POST /api/thumbnail/ab-test HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:36344 - "POST /thumbnail/ab-test HTTP/1.0" 422 Unprocessable Entity
-ab_test error: No candidates: This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
-INFO:     127.0.0.1:52462 - "POST /thumbnail/ab-test HTTP/1.0" 200 OK
-INFO:     127.0.0.1:33480 - "POST /auth/refresh-token HTTP/1.0" 200 OK
-INFO:     127.0.0.1:33484 - "GET /auth/me HTTP/1.0" 200 OK
-INFO:     127.0.0.1:46468 - "POST /push/subscribe HTTP/1.0" 200 OK
-INFO:     127.0.0.1:46472 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
-ab_test error: No candidates: This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
-INFO:     127.0.0.1:55946 - "POST /thumbnail/ab-test HTTP/1.0" 200 OK
-/var/www/sociomee/backend/venv/lib/python3.10/site-packages/google/api_core/_python_version_support.py:273: FutureWarning: You are using a Python version (3.10.12) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2026-10-04). Please upgrade to the latest Python version, or at least Python 3.11, to continue receiving updates for google.api_core past that date.
-  warnings.warn(message, FutureWarning)
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:49914 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:49930 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:49946 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:49954 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-09&endDate=2026-06-08&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
-INFO:     127.0.0.1:49966 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:60858 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:60864 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:60868 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:60884 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-09&endDate=2026-06-08&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
-INFO:     127.0.0.1:58736 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:49278 - "POST /auth/refresh-token HTTP/1.0" 200 OK
-INFO:     127.0.0.1:49280 - "GET /auth/me HTTP/1.0" 200 OK
-INFO:     127.0.0.1:40100 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40106 - "POST /push/subscribe HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:40112 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:40122 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:40138 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:40136 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-09&endDate=2026-06-08&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
-INFO:     127.0.0.1:40146 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:37618 - "GET /youtube/all-videos/112040558777568963466?max_results=50 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:44752 - "POST /auth/refresh-token HTTP/1.0" 200 OK
-INFO:     127.0.0.1:44766 - "GET /auth/me HTTP/1.0" 200 OK
-INFO:     127.0.0.1:44778 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:44784 - "POST /push/subscribe HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:42388 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:42396 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:42416 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:42412 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-09&endDate=2026-06-08&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
-INFO:     127.0.0.1:44536 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:39796 - "GET /api/festivals/upcoming HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:47386 - "POST /auth/refresh-token HTTP/1.0" 200 OK
-INFO:     127.0.0.1:47402 - "GET /auth/me HTTP/1.0" 200 OK
-INFO:     127.0.0.1:47408 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:47416 - "POST /push/subscribe HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:47426 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:47430 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-INFO:     127.0.0.1:47452 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
-INFO:     127.0.0.1:47436 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
-Not all requested scopes were granted by the authorization server, missing scopes email, profile.
-Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-09&endDate=2026-06-08&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
-INFO:     127.0.0.1:47466 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49278 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40372 - "GET /api/v2/.env HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40380 - "GET /api/.env.dev HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40388 - "GET /api/v3/.env HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40396 - "GET /api/.env.bak HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40406 - "GET /api/v1/.env HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40422 - "GET /api/.env.staging HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40436 - "GET /api/.env.old HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40448 - "GET /api/.env.local HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40452 - "GET /api/.env.production HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40466 - "GET /api/.env.prod HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40470 - "GET /api/.env.backup HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40484 - "GET /api/backend/.env HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40500 - "GET /api/.env HTTP/1.0" 404 Not Found

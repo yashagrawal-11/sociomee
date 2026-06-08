@@ -1941,7 +1941,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
       </div>
 
       {/* Tabs */}
-      <div className="yt-tabs" style={{ display:"flex", gap:"6px", marginBottom:"20px", overflowX:"auto", flexWrap:"nowrap", paddingBottom:"4px", scrollbarWidth:"none", msOverflowStyle:"none" }} onWheel={(e)=>{ if(Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY * 0.8; }}>
+      <div className="yt-tabs" style={{ display:"flex", gap:"6px", marginBottom:"20px", overflowX:"auto", flexWrap:"nowrap", paddingBottom:"6px", scrollbarWidth:"thin", scrollbarColor:"rgba(255,255,255,0.15) transparent" }}>
         {[
           ["analytics",yt("विश्लेषण","विश्लेषण","Analytics")],
           ["optimize",yt("ऑप्टिमाइज़","ऑप्टिमाइझ","Optimize")],

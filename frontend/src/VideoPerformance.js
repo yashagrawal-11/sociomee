@@ -44,13 +44,14 @@ export default function VideoPerformance({userId, user}){
   const [data,setData]=useState(null);const [loading,setLoading]=useState(true);const [selected,setSelected]=useState(null);const [error,setError]=useState(null);
 
   useEffect(()=>{
-    if(!uid)return;
-    fetch(`${BASE}/youtube/video-performance/${uid}`,{headers:{"Authorization":`Bearer ${localStorage.getItem("sociomee_token")||""}`}})
+    if(!uid){setLoading(false);setError({error:"not_connected",message:"Connect your YouTube channel first"});return;}
+    const token = localStorage.getItem("sociomee_token")||"";
+    fetch(`${BASE}/youtube/video-performance/${uid}`,{headers:{"Authorization":`Bearer ${token}`,"x-user-id":uid}})
       .then(r=>r.json()).then(d=>{
         if(d.error){setError(d);} else {setData(d);if(d.videos?.length)setSelected(d.videos[0]);}
         setLoading(false);
-      }).catch(()=>{setError({message:"Failed to load data"});setLoading(false);});
-  },[user]);
+      }).catch(()=>{setError({error:"not_connected",message:"Failed to load data. Please try reconnecting your channel."});setLoading(false);});
+  },[uid]);
 
   if(loading)return <div style={{maxWidth:"800px",margin:"0 auto",padding:"20px 16px"}}><SK/></div>;
 

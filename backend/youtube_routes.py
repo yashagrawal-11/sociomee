@@ -879,15 +879,11 @@ def deep_analytics(user_id: str, days: int = Query(default=28, ge=7, le=90)):
 @router.get("/video-performance/{user_id}")
 async def video_performance(user_id: str):
     try:
-        import json as _json
-        # Load user's YouTube token
-        token_file = f"yt_tokens/{user_id}.json"
-        if not os.path.exists(token_file):
+        from youtube_connect import load_credentials
+        creds = load_credentials(user_id)
+        if not creds:
             return {"error": "not_connected", "message": "Connect your YouTube channel first"}
-        
-        with open(token_file) as f:
-            token_data = _json.load(f)
-        access_token = token_data.get("access_token", "")
+        access_token = creds.token
         
         async with httpx.AsyncClient(timeout=20) as c:
             headers = {"Authorization": f"Bearer {access_token}"}
