@@ -1950,6 +1950,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
           ["competitors",yt("प्रतिद्वंद्वी","स्पर्धक","Competitors")],
           ["festival",yt("त्योहार कैलेंडर","सण कॅलेंडर","Festival Calendar")],
           ["milestones",yt("विकास माइलस्टोन","वाढ माइलस्टोन","Growth Milestones")],
+          ["performance","Video Performance"],
           ["upload",yt("ऑटो-अपलोड","ऑटो-अपलोड","Auto-Upload")],
 
           ["sentiment",yt("कमेंट्स","टिप्पण्या","Comments")],
