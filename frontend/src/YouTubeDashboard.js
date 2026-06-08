@@ -1361,7 +1361,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
   };
   return (
     <div style={{ background:C.glass, border:`1px solid ${open?C.purple+"44":C.hairline}`, borderRadius:"12px", overflow:"hidden" }}>
-      <div onClick={()=>setOpen(!open)} style={{ display:"flex", gap:"10px", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
+      <div onClick={()=>{setOpen(!open);if(!open)fetchCTR();}} style={{ display:"flex", gap:"10px", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
         {v.thumbnail && <img src={v.thumbnail} alt="" style={{ width:"64px", height:"36px", borderRadius:"6px", objectFit:"cover", flexShrink:0 }}/>}
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ fontSize:"12px", fontWeight:"700", color:C.ink, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{v.title}</div>
