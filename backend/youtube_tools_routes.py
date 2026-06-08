@@ -86,12 +86,16 @@ class TrendingReq(BaseModel):
     niche: str = "general"
     country: str = "IN"
     category_id: str = "0"
+    video_type: str = "all"
 
 CATEGORY_MAP = {
     "general": "0", "gaming": "20", "music": "10", "tech": "28",
     "education": "27", "entertainment": "24", "news": "25",
     "sports": "17", "comedy": "23", "film": "1", "food": "26",
-    "fitness": "17", "travel": "19", "fashion": "26", "finance": "25"
+    "fitness": "17", "travel": "19", "fashion": "26", "finance": "25",
+    "bollywood": "24", "cricket": "17", "diy": "26", "beauty": "26",
+    "science": "28", "motivation": "27", "kids": "20", "cooking": "26",
+    "vlog": "22", "animals": "15", "cars": "2"
 }
 
 @router.post("/trending")
@@ -99,20 +103,29 @@ async def trending_videos(req: TrendingReq):
     try:
         cat_id = CATEGORY_MAP.get(req.niche.lower(), "0")
         async with httpx.AsyncClient(timeout=15) as c:
-            r = await c.get(f"{YT_BASE}/videos", params={
-                "part": "snippet,statistics",
+            params = {
+                "part": "snippet,statistics,contentDetails",
                 "chart": "mostPopular",
                 "regionCode": req.country,
                 "videoCategoryId": cat_id,
-                "maxResults": 12,
+                "maxResults": 20,
                 "key": YT_API_KEY
-            })
+            }
+            r = await c.get(f"{YT_BASE}/videos", params=params)
             data = r.json()
             
             videos = []
             for item in data.get("items", []):
                 stats = item.get("statistics", {})
-                videos.append({
+                duration = item.get("contentDetails", {}).get("duration", "PT0S")
+                # Parse duration to detect shorts (< 60 seconds)
+                import re as _re
+                mins = int((_re.search(r"(\d+)M", duration) or type("", (), {"group": lambda s, x: "0"})()).group(1) or 0)
+                secs = int((_re.search(r"(\d+)S", duration) or type("", (), {"group": lambda s, x: "0"})()).group(1) or 0)
+                total_secs = mins * 60 + secs
+                is_short = total_secs <= 60 and total_secs > 0
+                
+                video = {
                     "title": item["snippet"]["title"],
                     "channel": item["snippet"]["channelTitle"],
                     "views": int(stats.get("viewCount", 0)),
@@ -121,12 +134,19 @@ async def trending_videos(req: TrendingReq):
                     "published": item["snippet"]["publishedAt"][:10],
                     "video_id": item["id"],
                     "thumbnail": item["snippet"]["thumbnails"]["medium"]["url"],
-                    "tags": item["snippet"].get("tags", [])[:5]
-                })
+                    "tags": item["snippet"].get("tags", [])[:5],
+                    "is_short": is_short,
+                    "duration": duration
+                }
+                
+                if req.video_type == "shorts" and not is_short:
+                    continue
+                if req.video_type == "videos" and is_short:
+                    continue
+                videos.append(video)
             
-            # Sort by views
             videos.sort(key=lambda x: x["views"], reverse=True)
-            return {"niche": req.niche, "country": req.country, "videos": videos}
+            return {"niche": req.niche, "country": req.country, "videos": videos[:12]}
     except Exception as e:
         log.error("trending error: %s", e)
         return {"error": str(e), "videos": []}
