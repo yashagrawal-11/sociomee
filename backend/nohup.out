@@ -1,21 +1,8 @@
 nohup: ignoring input
-INFO:     Started server process [205816]
+INFO:     Started server process [206025]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 CLIENT ID: 517099702570-e90p257ovct0pt3in89hogtr1nn6edmm.apps.googleusercontent.com
 JWT: 263d7fc55125bcbce12a398faef1c944d69ab07ec3a8c45004df50e6caa7bbcc
-INFO:     127.0.0.1:49278 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:40372 - "GET /api/v2/.env HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40380 - "GET /api/.env.dev HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40388 - "GET /api/v3/.env HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40396 - "GET /api/.env.bak HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40406 - "GET /api/v1/.env HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40422 - "GET /api/.env.staging HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40436 - "GET /api/.env.old HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40448 - "GET /api/.env.local HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40452 - "GET /api/.env.production HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40466 - "GET /api/.env.prod HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40470 - "GET /api/.env.backup HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40484 - "GET /api/backend/.env HTTP/1.0" 404 Not Found
-INFO:     127.0.0.1:40500 - "GET /api/.env HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:53396 - "GET /youtube/video-performance/110526241789090363358 HTTP/1.1" 200 OK

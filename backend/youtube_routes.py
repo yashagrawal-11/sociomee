@@ -19,6 +19,7 @@ from youtube_upload import router as upload_router
 
 import logging
 import os
+import httpx
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
@@ -879,37 +880,57 @@ def deep_analytics(user_id: str, days: int = Query(default=28, ge=7, le=90)):
 @router.get("/video-performance/{user_id}")
 async def video_performance(user_id: str):
     try:
-        from youtube_connect import load_credentials
-        creds = load_credentials(user_id)
-        if not creds:
+        import json as _json
+        from pathlib import Path
+        accounts_file = Path(__file__).parent / "youtube_accounts.json"
+        if not accounts_file.exists():
             return {"error": "not_connected", "message": "Connect your YouTube channel first"}
-        access_token = creds.token
+        accounts = _json.loads(accounts_file.read_text())
+        user_data = accounts.get(user_id)
+        if not user_data:
+            return {"error": "not_connected", "message": "Connect your YouTube channel first"}
+        channels = user_data.get("channels", [])
+        if not channels:
+            return {"error": "not_connected", "message": "No YouTube channel connected"}
+        active_id = user_data.get("active_channel_id")
+        channel = next((ch for ch in channels if ch.get("channel_id")==active_id), channels[0])
+        access_token = channel.get("access_token","")
         
-        async with httpx.AsyncClient(timeout=20) as c:
-            headers = {"Authorization": f"Bearer {access_token}"}
-            
-            # Get channel videos
-            vr = await c.get("https://www.googleapis.com/youtube/v3/search", params={
+        yt_key = os.getenv("YOUTUBE_PUBLIC_API_KEY", "")
+        channel_id = channel.get("channel_id", "")
+        
+        # Refresh token if needed
+        try:
+            from youtube_connect import _get_credentials
+            creds = _get_credentials(user_id)
+            if creds and creds.token:
+                access_token = creds.token
+        except Exception as _e:
+            log.warning("token refresh failed: %s", _e)
+        
+        async with httpx.AsyncClient(timeout=20) as http:
+            # Use API key only (no auth header - avoids 401 conflict)
+            vr = await http.get("https://www.googleapis.com/youtube/v3/search", params={
                 "part": "snippet",
-                "forMine": "true",
+                "channelId": channel_id,
                 "type": "video",
                 "maxResults": 10,
                 "order": "date",
-                "key": YOUTUBE_PUBLIC_API_KEY
-            }, headers=headers)
+                "key": yt_key
+            })
             
             vids = vr.json().get("items", [])
             if not vids:
                 return {"error": "no_videos", "message": "No videos found on your channel"}
             
-            video_ids = [v["id"]["videoId"] for v in vids if v.get("id",{}).get("videoId")]
+            video_ids = [v["id"]["videoId"] for v in vids if isinstance(v.get("id"),dict) and v["id"].get("videoId")]
             
             # Get video statistics
-            sr = await c.get("https://www.googleapis.com/youtube/v3/videos", params={
+            sr = await http.get("https://www.googleapis.com/youtube/v3/videos", params={
                 "part": "statistics,snippet,contentDetails",
                 "id": ",".join(video_ids),
-                "key": YOUTUBE_PUBLIC_API_KEY
-            }, headers=headers)
+                "key": os.getenv("YOUTUBE_PUBLIC_API_KEY","")
+            })
             
             stats = sr.json().get("items", [])
             
