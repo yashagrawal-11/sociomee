@@ -1,7 +1,37 @@
-import os, httpx, json, logging
-from fastapi import APIRouter, Depends
+import os, httpx, json, logging, re, time
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional
+from collections import defaultdict
+
+# ── Rate Limiter ──────────────────────────────────────────────────────
+_rate_store = defaultdict(list)
+def rate_limit(ip: str, max_calls: int = 10, window: int = 60) -> bool:
+    now = time.time()
+    calls = [t for t in _rate_store[ip] if now - t < window]
+    if len(calls) >= max_calls:
+        return False
+    calls.append(now)
+    _rate_store[ip] = calls
+    return True
+
+# ── Word Filter ───────────────────────────────────────────────────────
+BAD_WORDS = [
+    "bomb","suicide","terrorist","terrorism","explosive","massacre","genocide",
+    "rape","child porn","cp","loli","pedophile","naked child","underage",
+    "drug deal","cocaine","heroin","meth","buy drugs","sell drugs",
+    "kill yourself","kys","how to kill","murder tutorial","bomb making",
+    "illegal weapons","gun shop","hire hitman","darkweb","dark web market",
+    "hack bank","credit card dump","phishing kit","ddos attack",
+    "nazi","isis","al qaeda","jihad attack","school shooting",
+    "sex tape","porn","xxx","onlyfans hack","nude leak"
+]
+def has_bad_words(text: str) -> bool:
+    t = text.lower()
+    for w in BAD_WORDS:
+        if re.search(r'\b' + re.escape(w) + r'\b', t):
+            return True
+    return False
 
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/youtube-tools", tags=["youtube-tools"])
@@ -28,7 +58,12 @@ class KeywordReq(BaseModel):
     country: str = "IN"
 
 @router.post("/keyword-research")
-async def keyword_research(req: KeywordReq):
+async def keyword_research(req: KeywordReq, request: Request):
+    ip = request.client.host
+    if not rate_limit(ip, max_calls=15, window=60):
+        raise HTTPException(status_code=429, detail="Too many requests. Please wait a moment.")
+    if has_bad_words(req.keyword):
+        raise HTTPException(status_code=400, detail="Invalid search term.")
     try:
         async with httpx.AsyncClient(timeout=15) as c:
             # Get search suggestions via YouTube search
@@ -99,7 +134,13 @@ CATEGORY_MAP = {
 }
 
 @router.post("/trending")
-async def trending_videos(req: TrendingReq):
+async def trending_videos(req: TrendingReq, request: Request = None):
+    if request:
+        ip = request.client.host
+        if not rate_limit(ip, max_calls=15, window=60):
+            raise HTTPException(status_code=429, detail="Too many requests. Please wait a moment.")
+        if has_bad_words(req.niche):
+            raise HTTPException(status_code=400, detail="Invalid search term.")
     try:
         cat_id = CATEGORY_MAP.get(req.niche.lower(), "0")
         async with httpx.AsyncClient(timeout=15) as client:
@@ -184,7 +225,12 @@ class EvergreenReq(BaseModel):
     niche: str = "general"
 
 @router.post("/evergreen-score")
-async def evergreen_score(req: EvergreenReq):
+async def evergreen_score(req: EvergreenReq, request: Request):
+    ip = request.client.host
+    if not rate_limit(ip, max_calls=15, window=60):
+        raise HTTPException(status_code=429, detail="Too many requests. Please wait a moment.")
+    if has_bad_words(req.title) or has_bad_words(req.description or ""):
+        raise HTTPException(status_code=400, detail="Invalid content.")
     prompt = f"""Analyze this YouTube video for evergreen potential:
 Title: "{req.title}"
 Description: "{req.description[:300] if req.description else 'not provided'}"
@@ -219,7 +265,12 @@ class VideoIdeasReq(BaseModel):
     language: str = "English"
 
 @router.post("/daily-ideas")
-async def daily_video_ideas(req: VideoIdeasReq):
+async def daily_video_ideas(req: VideoIdeasReq, request: Request):
+    ip = request.client.host
+    if not rate_limit(ip, max_calls=10, window=60):
+        raise HTTPException(status_code=429, detail="Too many requests. Please wait a moment.")
+    if has_bad_words(req.niche):
+        raise HTTPException(status_code=400, detail="Invalid search term.")
     prompt = f"""Generate 7 daily YouTube video ideas for:
 Niche: {req.niche}
 Channel style: {req.channel_style}
