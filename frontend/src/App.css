@@ -36,3 +36,30 @@
     transform: rotate(360deg);
   }
 }
+
+/* ── MOBILE DONUT FIXES (max-width 767px only) ── */
+@media (max-width: 767px) {
+  /* Traffic Sources donut — shrink from 160 to 120 */
+  .yt-traffic-wrap > div:first-child > svg {
+    width: 120px !important;
+    height: 120px !important;
+  }
+  /* Traffic legend text — wrap instead of clip */
+  .yt-traffic-wrap span {
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+  /* SimpleDonut legend text — wrap */
+  .yt-simple-donut span {
+    white-space: normal !important;
+  }
+  /* Countries + Devices side-by-side cards — stack vertically */
+  .yt-geo-row {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  /* Per-video donut charts row — already scrolls, just ensure no height blowout */
+  .yt-video-donuts-scroll {
+    padding-bottom: 6px !important;
+  }
+}

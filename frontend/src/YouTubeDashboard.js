@@ -61,7 +61,7 @@ if (typeof document !== "undefined") { document.getElementById("yt-mobile-styles
   s.textContent = `
     /* Traffic donut mobile */
     @media (max-width: 600px) {
-      .yt-traffic-wrap { flex-direction: column !important; align-items: center !important; }
+      .yt-traffic-wrap { flex-direction: column !important; align-items: center !important; } .yt-traffic-wrap svg { width: 130px !important; height: 130px !important; } @media (max-width: 600px) { .yt-geo-row { grid-template-columns: 1fr !important; } }
       .yt-traffic-text { min-width: unset !important; width: 100% !important; max-width: 100% !important; }
       .yt-traffic-text span { font-size: 9px !important; }
     }
@@ -103,7 +103,7 @@ if (typeof document !== "undefined") { document.getElementById("yt-mobile-styles
 
       /* Tabs - compact scrollable */
       .yt-tabs { gap: 4px !important; padding-bottom: 2px !important; overflow-x: auto !important; scrollbar-width: none !important; -ms-overflow-style: none !important; }
-      .yt-tabs button { padding: 6px 10px !important; font-size: 10px !important; border-radius: 99px !important; } .yt-video-tabs button { padding: 4px 8px !important; font-size: 9px !important; } .yt-score-label { display:none !important; } .yt-date { font-size:9px !important; }
+      .yt-tabs button { padding: 6px 10px !important; font-size: 10px !important; border-radius: 99px !important; } .yt-video-tabs button { padding: 3px 6px !important; font-size: 8px !important; } .yt-score-label { display:none !important; } .yt-date { font-size:9px !important; }
 
       /* Stat cards - 2x2 grid */
       .yt-stat-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
@@ -331,7 +331,7 @@ function VideoDonut({ label, center, sub, data }) {
   const FADED = "rgba(124,58,237,0.18)";
   const coloredData = filtered.map((x,i)=>({...x}));
   return (
-    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"10px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",minWidth:"115px",maxWidth:"115px",flex:"0 0 115px"}}>
+    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"10px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",minWidth:"140px",maxWidth:"140px",flex:"0 0 140px"}}>
       <div style={{fontSize:"9px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>{label}</div>
       <div style={{position:"relative"}}>
         <RechartsPie width={130} height={130}>
@@ -475,9 +475,9 @@ function TopVideos({ videos }) {
 
                     return (
                       <div style={{marginBottom:"16px",padding:"16px",background:"rgba(124,58,237,0.04)",borderRadius:"14px",border:"1px solid rgba(124,58,237,0.12)"}}>
-                        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"16px",width:"100%"}}>
+                        <div style={{display:"flex",flexDirection:"row",gap:"8px",overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"thin",scrollbarColor:"rgba(124,58,237,0.4) transparent",paddingBottom:"8px",marginBottom:"16px"}}>
                           {donuts.map((d,di)=>(
-                            <div key={di} className="yt-analytics-donuts"><VideoDonut label={d.label} center={d.center} sub={d.sub} data={d.data} color={d.data[0]?.color||"#7c3aed"}/></div>
+                            <div key={di} className="yt-analytics-donuts" style={{flex:"0 0 140px",minWidth:"140px"}}><VideoDonut label={d.label} center={d.center} sub={d.sub} data={d.data} color={d.data[0]?.color||"#7c3aed"}/></div>
                           ))}
                         </div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"8px",marginBottom:"10px",width:"100%"}}>
@@ -1377,13 +1377,13 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
           <div style={{ display:"flex", flexDirection:"column", gap:"6px", marginBottom:"12px" }}>
             {tips.map((t,ti) => (
               <div key={ti} style={{ display:"flex", gap:"8px", alignItems:"flex-start", background:`${t.color}08`, border:`1px solid ${t.color}20`, borderRadius:"8px", padding:"8px 10px" }}>
-                <span style={{ fontSize:"14px", flexShrink:0 }}>{t.icon}</span>
-                <span style={{ fontSize:"11.5px", color:C.ink, lineHeight:1.5 }}>{t.text}</span>
+                
+                <span style={{ fontSize:"11.5px", color:C.ink, lineHeight:1.5, fontFamily:"Poppins,sans-serif", hyphens:"none", wordBreak:"break-word" }}>{t.text.split('—').join(' ').split('–').join(' ')}</span>
               </div>
             ))}
           </div>
           {/* Donut Charts */}
-          <div style={{display:"flex",flexDirection:"row",gap:"8px",overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"thin",scrollbarColor:"rgba(124,58,237,0.4) transparent",paddingBottom:"8px",marginBottom:"10px",width:"100%"}}>
+          <div className="yt-video-donuts" style={{display:"flex",flexDirection:"row",gap:"8px",overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"thin",scrollbarColor:"rgba(124,58,237,0.4) transparent",paddingBottom:"8px",marginBottom:"10px",width:"100%"}}>
             <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
               data={[{name:"This video",value:v.views||1,color:"#7c3aed"},{name:"Others",value:Math.max(1,v.views*10),color:"rgba(124,58,237,0.12)"}]}/>
             <VideoDonut label={watchTime?"WATCH TIME":"LIKES"} center={watchTime?watchTime+"m":fmt(v.likes||0)} sub={watchTime?"total mins":"total likes"}
@@ -1397,7 +1397,6 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
             <a href={v.url} target="_blank" rel="noreferrer" style={{ padding:"6px 16px", borderRadius:"99px", background:C.purple, color:"#fff", fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>▶ Watch</a>
             <button onClick={()=>navigator.clipboard.writeText(v.url)} style={{ padding:"6px 16px", borderRadius:"99px", background:"transparent", border:`1px solid ${C.hairline}`, color:C.muted, fontSize:"10px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit" }}>🔗 Copy</button>
             <button onClick={()=>navigator.share?navigator.share({title:v.title,url:v.url}):navigator.clipboard.writeText(v.url)} style={{ padding:"6px 16px", borderRadius:"99px", background:"transparent", border:`1px solid ${C.hairline}`, color:C.muted, fontSize:"10px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit" }}>↗ Share</button>
-            <a href={`https://studio.youtube.com/video/${v.video_id}/edit`} target="_blank" rel="noreferrer" style={{ padding:"6px 16px", borderRadius:"99px", background:"transparent", border:`1px solid ${C.hairline}`, color:C.muted, fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>✏️ Studio</a>
           </div>
         </div>
       )}
@@ -1762,7 +1761,7 @@ function SimpleDonut({ data, title, centerLabel, colors }) {
             <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",padding:"3px 6px",borderRadius:"6px",background:active===i?"rgba(255,255,255,0.05)":"transparent",cursor:"pointer",transition:"all 0.15s"}}
               onMouseEnter={()=>setActive(i)} onMouseLeave={()=>setActive(null)}>
               <div style={{width:"8px",height:"8px",borderRadius:"50%",background:colors[i%colors.length],flexShrink:0,boxShadow:active===i?`0 0 6px ${colors[i%colors.length]}`:"none"}}/>
-              <span style={{fontSize:"9px",color:active===i?"#fff":"rgba(255,255,255,0.6)",flex:1,fontWeight:active===i?"700":"500",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.name}</span>
+              <span style={{fontSize:"9px",color:active===i?"#fff":"rgba(255,255,255,0.6)",flex:1,fontWeight:active===i?"700":"500",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"normal"}}>{d.name}</span>
               <span style={{fontSize:"9px",fontWeight:"700",color:colors[i%colors.length],flexShrink:0}}>{d.pct}%</span>
             </div>
           ))}
@@ -1790,7 +1789,7 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
             {innerData.map((d,i)=><Cell key={"i"+i} fill={d.color} opacity={activeInner===null||activeInner===i?1:0.3}/>)}
           </Pie>
         </RechartsPie>
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"50px"}}>
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"60px"}}>
           {highlighted ? (<>
             <div style={{fontSize:"13px",fontWeight:"900",color:COLORS[activeOuter%COLORS.length],lineHeight:1}}>{highlighted.pct}%</div>
             <div style={{fontSize:"9px",color:"rgba(255,255,255,0.6)",marginTop:"2px",lineHeight:1.3}}>{highlighted.name}</div>
@@ -1798,9 +1797,9 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
             <div style={{fontSize:"11px",fontWeight:"900",color:highlightedInner.color,lineHeight:1}}>AI</div>
             <div style={{fontSize:"8px",color:"rgba(255,255,255,0.5)",marginTop:"2px",lineHeight:1.3}}>{highlightedInner.name}</div>
           </>) : (<>
-            <div style={{fontSize:"15px",fontWeight:"900",color:"#fff",lineHeight:1}}>{topPct}%</div>
-            <div style={{fontSize:"9px",color:"#a78bfa",fontWeight:"700",marginTop:"2px"}}>TOP SOURCE</div>
-            <div style={{fontSize:"8px",color:"rgba(255,255,255,0.4)",marginTop:"1px"}}>{topLabel}</div>
+            <div style={{fontSize:"11px",fontWeight:"900",color:"#fff",lineHeight:1}}>{topPct}%</div>
+            <div style={{fontSize:"7px",color:"#a78bfa",fontWeight:"700",marginTop:"1px"}}>TOP SOURCE</div>
+            <div style={{fontSize:"6px",color:"rgba(255,255,255,0.4)",marginTop:"1px"}}>{topLabel}</div>
           </>)}
         </div>
       </div>
@@ -1811,7 +1810,7 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
             <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",padding:"4px 8px",borderRadius:"8px",background:activeOuter===i?"rgba(255,255,255,0.06)":"transparent",cursor:"pointer"}}
               onMouseEnter={()=>setActiveOuter(i)} onMouseLeave={()=>setActiveOuter(null)}>
               <div style={{width:"7px",height:"7px",borderRadius:"50%",background:COLORS[i%COLORS.length],flexShrink:0}}/>
-              <span style={{fontSize:"9px",color:activeOuter===i?"#fff":"rgba(255,255,255,0.5)",flex:1,fontWeight:activeOuter===i?"700":"500",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.name}</span>
+              <span style={{fontSize:"9px",color:activeOuter===i?"#fff":"rgba(255,255,255,0.5)",flex:1,fontWeight:activeOuter===i?"700":"500",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"normal"}}>{d.name}</span>
               <span style={{fontSize:"9px",fontWeight:"700",color:COLORS[i%COLORS.length],flexShrink:0}}>{d.pct}%</span>
             </div>
           ))}
@@ -2146,7 +2145,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
                   </div>
                 );
               })()}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"12px"}}>
+              <div className="yt-geo-row" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"12px"}}>
                 {deepAnalytics.countries?.length>0 && (
                   <SimpleDonut
                     title="🌍 Top Countries"
