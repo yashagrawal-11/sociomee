@@ -307,25 +307,28 @@ function VideoDonut({ label, center, sub, data }) {
   const [active, setActive] = useState(null);
   const filtered = data.filter(x=>x.value>0);
   const highlighted = active !== null ? filtered[active] : null;
-  const PURPLE = ["#7c3aed","#9333ea","#a78bfa","#6d28d9","#c4b5fd"];
-  const FADED = "rgba(124,58,237,0.18)";
   const coloredData = filtered.map((x,i)=>({...x}));
+  const isMob = typeof window!=="undefined" && window.innerWidth<=767;
+  const sz = isMob ? 110 : 160;
+  const ir = isMob ? 32 : 50;
+  const or = isMob ? 46 : 70;
+  const cx = sz/2;
   return (
-    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"12px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",minWidth:"140px",width:"100%",boxSizing:"border-box"}}>
-      <div style={{fontSize:"9px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>{label}</div>
-      <div style={{position:"relative"}}>
-        <RechartsPie width={160} height={160}>
-          <Pie data={coloredData} cx={80} cy={80} innerRadius={50} outerRadius={70} paddingAngle={3} dataKey="value" strokeWidth={0}
+    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:isMob?"8px 4px":"12px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",minWidth:isMob?"110px":"160px",width:"100%",boxSizing:"border-box"}}>
+      <div style={{fontSize:isMob?"7px":"9px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:isMob?"6px":"10px",lineHeight:1.2,textOverflow:"ellipsis",overflow:"hidden",whiteSpace:"nowrap",maxWidth:"100%"}}>{label}</div>
+      <div style={{position:"relative",width:sz+"px",height:sz+"px",flexShrink:0}}>
+        <RechartsPie width={sz} height={sz}>
+          <Pie data={coloredData} cx={cx} cy={cx} innerRadius={ir} outerRadius={or} paddingAngle={3} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setActive(i)} onMouseLeave={()=>setActive(null)} style={{cursor:"pointer"}}>
             {coloredData.map((x,xi)=><Cell key={xi} fill={x.color} opacity={active===null||active===xi?1:0.15}/>)}
           </Pie>
         </RechartsPie>
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"80px"}}>
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:isMob?"60px":"80px"}}>
           {highlighted ? (
-            <div style={{fontSize:"11px",fontWeight:"800",color:"#fff",lineHeight:1.3}}>{highlighted.name}</div>
+            <div style={{fontSize:isMob?"9px":"11px",fontWeight:"800",color:"#fff",lineHeight:1.3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{highlighted.name}</div>
           ) : (<>
-            <div style={{fontSize:"15px",fontWeight:"900",color:"#fff",lineHeight:1}}>{center}</div>
-            <div style={{fontSize:"8px",color:"rgba(255,255,255,0.4)",marginTop:"2px"}}>{sub}</div>
+            <div style={{fontSize:isMob?"12px":"15px",fontWeight:"900",color:"#fff",lineHeight:1}}>{center}</div>
+            <div style={{fontSize:isMob?"7px":"8px",color:"rgba(255,255,255,0.4)",marginTop:"2px"}}>{sub}</div>
           </>)}
         </div>
       </div>
@@ -1773,17 +1776,17 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
   return (
     <div className="yt-traffic-wrap" style={{display:"flex",gap:"32px",alignItems:"center",flexWrap:"nowrap",justifyContent:"flex-start"}}>
       <div style={{position:"relative"}}>
-        <RechartsPie width={220} height={220}>
-          <Pie data={pieData} cx={110} cy={110} innerRadius={72} outerRadius={96} paddingAngle={2} dataKey="value" strokeWidth={0}
+        <RechartsPie width={typeof window!=="undefined"&&window.innerWidth<=767?180:220} height={typeof window!=="undefined"&&window.innerWidth<=767?180:220}>
+          <Pie data={pieData} cx={typeof window!=="undefined"&&window.innerWidth<=767?90:110} cy={typeof window!=="undefined"&&window.innerWidth<=767?90:110} innerRadius={typeof window!=="undefined"&&window.innerWidth<=767?58:72} outerRadius={typeof window!=="undefined"&&window.innerWidth<=767?78:96} paddingAngle={2} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setOuterDelayed(i)} onMouseLeave={()=>setOuterDelayed(null)}>
             {pieData.map((_,i)=><Cell key={"o"+i} fill={COLORS[i%COLORS.length]} opacity={activeOuter===null||activeOuter===i?1:0.3}/>)}
           </Pie>
-          <Pie data={innerData} cx={110} cy={110} innerRadius={38} outerRadius={62} paddingAngle={3} dataKey="value" strokeWidth={0}
+          <Pie data={innerData} cx={typeof window!=="undefined"&&window.innerWidth<=767?90:110} cy={typeof window!=="undefined"&&window.innerWidth<=767?90:110} innerRadius={typeof window!=="undefined"&&window.innerWidth<=767?30:38} outerRadius={typeof window!=="undefined"&&window.innerWidth<=767?50:62} paddingAngle={3} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setInnerDelayed(i)} onMouseLeave={()=>setInnerDelayed(null)}>
             {innerData.map((d,i)=><Cell key={"i"+i} fill={d.color} opacity={activeInner===null||activeInner===i?1:0.3}/>)}
           </Pie>
         </RechartsPie>
-        <div style={{position:"absolute",top:0,left:0,width:"220px",height:"220px",display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}><div style={{textAlign:"center",width:"80px",lineHeight:1.2}}>
+        <div style={{position:"absolute",top:0,left:0,width:typeof window!=="undefined"&&window.innerWidth<=767?"180px":"220px",height:typeof window!=="undefined"&&window.innerWidth<=767?"180px":"220px",display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}><div style={{textAlign:"center",width:"80px",lineHeight:1.2}}>
           {highlighted ? (<>
             <div style={{fontSize:"13px",fontWeight:"900",color:COLORS[activeOuter%COLORS.length],lineHeight:1}}>{highlighted.pct}%</div>
             <div style={{fontSize:"9px",color:"rgba(255,255,255,0.6)",marginTop:"2px",lineHeight:1.3}}>{highlighted.name}</div>
