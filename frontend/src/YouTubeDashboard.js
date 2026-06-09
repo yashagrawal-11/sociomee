@@ -97,6 +97,9 @@ if (typeof document !== "undefined") { document.getElementById("yt-mobile-styles
       .yt-traffic-wrap { flex-direction: column !important; align-items: center !important; }
       .yt-traffic-wrap > div:first-child svg { width: 160px !important; height: 160px !important; }
       .yt-traffic-wrap > div:first-child > div { width: 160px !important; height: 160px !important; }
+      .yt-video-donuts > * { width: 140px !important; min-width: 140px !important; max-width: 140px !important; flex: 0 0 140px !important; }
+      .yt-analytics-grid { display: flex !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
+      .yt-analytics-grid > * { flex: 0 0 140px !important; min-width: 140px !important; max-width: 140px !important; }
     }
       /* Smaller channel analytics donuts on mobile */
       .yt-analytics-donuts svg { width: 120px !important; height: 120px !important; }
