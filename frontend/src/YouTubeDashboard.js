@@ -92,6 +92,7 @@ if (typeof document !== "undefined") { document.getElementById("yt-mobile-styles
       .yt-video-donuts::-webkit-scrollbar { display: none; }
       .yt-video-donuts > * { flex-shrink: 0 !important; width: 130px !important; scroll-snap-align: start; }
     @media (max-width: 767px) { .yt-video-donuts > * { width: 140px !important; max-width: 140px !important; } }
+    @media (max-width: 767px) { .yt-analytics-grid { display: flex !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: thin !important; } .yt-analytics-grid > * { flex: 0 0 140px !important; min-width: 140px !important; } }
       /* Smaller channel analytics donuts on mobile */
       .yt-analytics-donuts svg { width: 120px !important; height: 120px !important; }
     }
@@ -332,7 +333,7 @@ function VideoDonut({ label, center, sub, data }) {
   const FADED = "rgba(124,58,237,0.18)";
   const coloredData = filtered.map((x,i)=>({...x}));
   return (
-    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"10px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",minWidth:"170px",maxWidth:"170px",flex:"0 0 170px"}}>
+    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"12px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",width:"100%",boxSizing:"border-box"}}>
       <div style={{fontSize:"9px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>{label}</div>
       <div style={{position:"relative"}}>
         <RechartsPie width={160} height={160}>
@@ -476,9 +477,9 @@ function TopVideos({ videos }) {
 
                     return (
                       <div style={{marginBottom:"16px",padding:"16px",background:"rgba(124,58,237,0.04)",borderRadius:"14px",border:"1px solid rgba(124,58,237,0.12)",overflow:"visible"}}>
-                        <div className="yt-video-donuts" style={{display:"flex",flexDirection:"row",gap:"8px",overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"thin",scrollbarColor:"rgba(124,58,237,0.4) transparent",paddingBottom:"8px",marginBottom:"16px"}}>
+                        <div className="yt-analytics-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"8px",marginBottom:"16px"}}>
                           {donuts.map((d,di)=>(
-                            <div key={di} className="yt-analytics-donuts" style={{flex:"0 0 140px",minWidth:"140px"}}><VideoDonut label={d.label} center={d.center} sub={d.sub} data={d.data} color={d.data[0]?.color||"#7c3aed"}/></div>
+                            <div key={di} className="yt-analytics-donuts" style={{width:"100%"}}><VideoDonut label={d.label} center={d.center} sub={d.sub} data={d.data} color={d.data[0]?.color||"#7c3aed"}/></div>
                           ))}
                         </div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"8px",marginBottom:"10px",width:"100%"}}>
@@ -1781,7 +1782,7 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
   const highlighted = activeOuter!==null ? pieData[activeOuter] : null;
   const highlightedInner = activeInner!==null ? innerData[activeInner] : null;
   return (
-    <div className="yt-traffic-wrap" style={{display:"flex",gap:"16px",alignItems:"flex-start",flexWrap:"wrap",justifyContent:"center"}}>
+    <div className="yt-traffic-wrap" style={{display:"flex",gap:"24px",alignItems:"center",flexWrap:"wrap",justifyContent:"flex-start"}}>
       <div style={{position:"relative"}}>
         <RechartsPie width={180} height={180}>
           <Pie data={pieData} cx={90} cy={90} innerRadius={58} outerRadius={78} paddingAngle={2} dataKey="value" strokeWidth={0}

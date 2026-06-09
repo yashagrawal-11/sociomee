@@ -614,3 +614,17 @@ Not all requested scopes were granted by the authorization server, missing scope
 INFO:     127.0.0.1:32860 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
 Not all requested scopes were granted by the authorization server, missing scopes email, profile.
 INFO:     127.0.0.1:53400 - "GET /youtube/video-ctr/LgilSD2d4Ps?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40822 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40834 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40836 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:40850 - "POST /push/subscribe HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:32794 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:32806 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:32816 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:32822 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-10&endDate=2026-06-09&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     127.0.0.1:32836 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
