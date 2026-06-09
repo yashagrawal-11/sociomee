@@ -349,11 +349,11 @@ function VideoDonut({ label, center, sub, data }) {
           </>)}
         </div>
       </div>
-      <div style={{display:"flex",justifyContent:"center",gap:"4px",marginTop:"6px",flexWrap:"wrap"}}>
+      <div style={{display:"flex",justifyContent:"center",gap:"3px",marginTop:"4px",flexWrap:"wrap",maxWidth:"110px"}}>
         {coloredData.map((x,xi)=>(
           <div key={xi} style={{display:"flex",alignItems:"center",gap:"2px",opacity:active===null||active===xi?1:0.4}}>
-            <div style={{width:"5px",height:"5px",borderRadius:"50%",background:x.color,flexShrink:0}}/>
-            <span style={{fontSize:"7px",color:"rgba(255,255,255,0.6)",fontWeight:"600"}}>{x.name}</span>
+            <div style={{width:"4px",height:"4px",borderRadius:"50%",background:x.color,flexShrink:0}}/>
+            <span style={{fontSize:"6px",color:"rgba(255,255,255,0.5)",fontWeight:"600",whiteSpace:"nowrap"}}>{x.name}</span>
           </div>
         ))}
       </div>
@@ -1372,7 +1372,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" style={{ flexShrink:0, transform:open?"rotate(180deg)":"rotate(0deg)", transition:"transform 0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       {open && (
-        <div style={{ borderTop:`1px solid ${C.hairline}`, padding:"10px 8px", overflow:"visible", position:"relative" }}>
+        <div style={{ borderTop:`1px solid ${C.hairline}`, padding:"10px 8px" }}>
           <div style={{ fontSize:"10px", fontWeight:"800", color:C.purple, letterSpacing:"0.8px", textTransform:"uppercase", marginBottom:"8px" }}>⚡ SocioMee AI Optimization Tips</div>
           <div style={{ display:"flex", flexDirection:"column", gap:"6px", marginBottom:"12px" }}>
             {tips.map((t,ti) => (
@@ -1383,7 +1383,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
             ))}
           </div>
           {/* Donut Charts */}
-          <div style={{display:"flex",flexDirection:"row",gap:"8px",overflowX:"auto",overflowY:"visible",WebkitOverflowScrolling:"touch",scrollbarWidth:"thin",scrollbarColor:"rgba(124,58,237,0.4) transparent",paddingBottom:"8px",marginBottom:"10px"}}>
+          <div style={{display:"flex",flexDirection:"row",gap:"8px",overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"thin",scrollbarColor:"rgba(124,58,237,0.4) transparent",paddingBottom:"8px",marginBottom:"10px",width:"100%"}}>
             <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
               data={[{name:"This video",value:v.views||1,color:"#7c3aed"},{name:"Others",value:Math.max(1,v.views*10),color:"rgba(124,58,237,0.12)"}]}/>
             <VideoDonut label={watchTime?"WATCH TIME":"LIKES"} center={watchTime?watchTime+"m":fmt(v.likes||0)} sub={watchTime?"total mins":"total likes"}
@@ -1393,9 +1393,11 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
             <VideoDonut label="SCORE" center={getScore(v)} sub="/100"
               data={[{name:"Score",value:Math.max(getScore(v),1),color:"#7c3aed"},{name:"Gap",value:Math.max(100-getScore(v),1),color:"rgba(124,58,237,0.1)"}]}/>
           </div>
-          <div style={{ display:"flex", gap:"6px" }}>
+          <div style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>
             <a href={v.url} target="_blank" rel="noreferrer" style={{ padding:"6px 16px", borderRadius:"99px", background:C.purple, color:"#fff", fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>▶ Watch</a>
-            <a href={`https://studio.youtube.com/video/${v.video_id}/edit`} target="_blank" rel="noreferrer" style={{ padding:"6px 16px", borderRadius:"99px", background:"transparent", border:`1px solid ${C.hairline}`, color:C.muted, fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>✏️ Edit in Studio</a>
+            <button onClick={()=>navigator.clipboard.writeText(v.url)} style={{ padding:"6px 16px", borderRadius:"99px", background:"transparent", border:`1px solid ${C.hairline}`, color:C.muted, fontSize:"10px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit" }}>🔗 Copy</button>
+            <button onClick={()=>navigator.share?navigator.share({title:v.title,url:v.url}):navigator.clipboard.writeText(v.url)} style={{ padding:"6px 16px", borderRadius:"99px", background:"transparent", border:`1px solid ${C.hairline}`, color:C.muted, fontSize:"10px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit" }}>↗ Share</button>
+            <a href={`https://studio.youtube.com/video/${v.video_id}/edit`} target="_blank" rel="noreferrer" style={{ padding:"6px 16px", borderRadius:"99px", background:"transparent", border:`1px solid ${C.hairline}`, color:C.muted, fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>✏️ Studio</a>
           </div>
         </div>
       )}
