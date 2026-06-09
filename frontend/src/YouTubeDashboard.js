@@ -3,7 +3,7 @@
  * Tabs: Analytics | Auto-Upload | Festival Calendar | Growth Milestones
  */
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Pie, Cell, PieChart as RechartsPie,
   Tooltip, ResponsiveContainer,
@@ -1784,7 +1784,7 @@ function SimpleDonut({ data, title, centerLabel, colors }) {
 function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
   const [activeOuter, setActiveOuter] = useState(null);
   const [activeInner, setActiveInner] = useState(null);
-  const hoverTimer = React.useRef(null);
+  const hoverTimer = useRef(null);
   const setOuterDelayed = (val) => {
     clearTimeout(hoverTimer.current);
     if (val === null) { hoverTimer.current = setTimeout(() => setActiveOuter(null), 120); }
