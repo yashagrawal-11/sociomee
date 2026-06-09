@@ -87,9 +87,9 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
       /* Stat cards - 2x2 grid */
       .yt-stat-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
       .yt-stat-card { padding: 8px 8px !important; border-radius: 10px !important; }
-      .yt-stat-value { font-size: 16px !important; }
-      .yt-stat-label { font-size: 8px !important; }
-      .yt-stat-icon { font-size: 14px !important; }
+      .yt-stat-value { font-size: 14px !important; }
+      .yt-stat-label { font-size: 7px !important; }
+      .yt-stat-icon { font-size: 12px !important; }
 
       /* Video cards */
       .yt-video-row { padding: 8px 10px !important; gap: 8px !important; }
@@ -379,7 +379,7 @@ function TopVideos({ videos }) {
       {filtered.map((v, i) => {
         const eng = getEng(v); const sc = getScore(v); const scCol = scoreColor(sc); const isOpen = expanded===i;
         return (
-          <div key={i} style={{ background:C.glass, border:`1px solid ${isOpen?C.purple+"55":C.hairline}`, borderRadius:"14px", overflow:"hidden", transition:"border-color 0.2s" }}>
+          <div key={i} style={{ background:C.glass, border:`1px solid ${isOpen?C.purple+"55":C.hairline}`, borderRadius:"14px", transition:"border-color 0.2s" }}>
             <div onClick={()=>setExpanded(isOpen?null:i)} style={{ padding:"10px 12px", cursor:"pointer" }}>
               <div style={{ display:"flex", gap:"8px", alignItems:"center", marginBottom:"7px" }}>
                 <div style={{ width:"18px", height:"18px", borderRadius:"4px", background:`${C.purple}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"8px", fontWeight:"900", color:C.purple, flexShrink:0 }}>#{i+1}</div>
@@ -802,59 +802,7 @@ const fName = (name) => {
 };
 
 // Inject mobile styles
-if (typeof document !== "undefined" && !document.getElementById("yt-mobile-styles")) {
-  const s = document.createElement("style");
-  s.id = "yt-mobile-styles";
-  s.textContent = `
-    /* Video donuts mobile scroll */
-    @media (max-width: 600px) {
-      .yt-video-donuts { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none !important; -ms-overflow-style: none !important; gap: 8px !important; padding-bottom: 4px; }
-      .yt-video-donuts::-webkit-scrollbar { display: none; }
-      .yt-video-donuts > * { flex-shrink: 0 !important; width: 130px !important; scroll-snap-align: start; }
-      /* Smaller channel analytics donuts on mobile */
-      .yt-analytics-donuts svg { width: 120px !important; height: 120px !important; }
-    }
-    @media (max-width: 600px) {
-      /* Channel header */
-      .yt-channel-header { padding: 10px 12px !important; gap: 10px !important; }
-      .yt-channel-header img { width: 38px !important; height: 38px !important; }
-      .yt-channel-title { font-size: 13px !important; }
-      .yt-channel-sub { font-size: 10px !important; }
 
-      /* Tabs - compact scrollable */
-      .yt-tabs { gap: 4px !important; padding-bottom: 2px !important; overflow-x: auto !important; scrollbar-width: none !important; -ms-overflow-style: none !important; }
-      .yt-tabs button { padding: 6px 10px !important; font-size: 10px !important; border-radius: 99px !important; } .yt-video-tabs button { padding: 4px 8px !important; font-size: 9px !important; } .yt-score-label { display:none !important; } .yt-date { font-size:9px !important; }
-
-      /* Stat cards - 2x2 grid */
-      .yt-stat-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
-      .yt-stat-card { padding: 8px 8px !important; border-radius: 10px !important; }
-      .yt-stat-value { font-size: 16px !important; }
-      .yt-stat-label { font-size: 8px !important; }
-      .yt-stat-icon { font-size: 14px !important; }
-
-      /* Video cards */
-      .yt-video-row { padding: 8px 10px !important; gap: 8px !important; }
-      .yt-video-thumb { width: 56px !important; height: 32px !important; }
-      .yt-video-title { font-size: 11px !important; }
-      .yt-video-meta { font-size: 9px !important; }
-      .yt-score-badge { width: 30px !important; height: 30px !important; font-size: 10px !important; }
-
-      /* Optimize summary */
-      .yt-opt-summary { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
-      .yt-opt-card { padding: 8px 6px !important; border-radius: 10px !important; }
-
-      /* Section headers */
-      .yt-section-title { font-size: 10px !important; }
-
-      /* Chart container */
-      .yt-chart-wrap { padding: 12px !important; }
-
-      /* Disconnect button */
-      .yt-disconnect-btn { font-size: 10px !important; padding: 4px 10px !important; }
-    }
-  `;
-  document.head.appendChild(s);
-}
 
 
   const analyzeKeyword = async () => {
