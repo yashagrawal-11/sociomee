@@ -571,7 +571,6 @@ function FestivalCalendar() {
     <div>
       {/* Header */}
       <div style={{ background:`linear-gradient(135deg,${C.purple}22,${C.rose}18)`, border:`1.5px solid ${C.purple}33`, borderRadius:"16px", padding:"16px 18px", marginBottom:"16px" }}>
-        <div style={{ fontSize:"15px", fontWeight:"800", color:"#fff", letterSpacing:"0.5px", textShadow:"0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(124,58,237,0.4)" }}>{yt("✦ SocioMee त्योहार इंटेलिजेंस","✦ SocioMee सण इंटेलिजेंस","✦ SocioMee Festival Intelligence")}</div>
       </div>
 
       {/* Festival cards */}
