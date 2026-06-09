@@ -475,7 +475,7 @@ function TopVideos({ videos }) {
 
                     return (
                       <div style={{marginBottom:"16px",padding:"16px",background:"rgba(124,58,237,0.04)",borderRadius:"14px",border:"1px solid rgba(124,58,237,0.12)"}}>
-                        <div style={{display:"flex",flexDirection:"row",gap:"8px",overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"thin",scrollbarColor:"rgba(124,58,237,0.4) transparent",paddingBottom:"8px",marginBottom:"16px"}}>
+                        <div className="yt-video-donuts" style={{display:"flex",flexDirection:"row",gap:"8px",overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"thin",scrollbarColor:"rgba(124,58,237,0.4) transparent",paddingBottom:"8px",marginBottom:"16px"}}>
                           {donuts.map((d,di)=>(
                             <div key={di} className="yt-analytics-donuts" style={{flex:"0 0 140px",minWidth:"140px"}}><VideoDonut label={d.label} center={d.center} sub={d.sub} data={d.data} color={d.data[0]?.color||"#7c3aed"}/></div>
                           ))}
@@ -1462,7 +1462,20 @@ function OptimizeTab({ userId, channel, C }) {
 
   const scoreColor = s => s>=75?"#22c55e":s>=50?"#f59e0b":"#ef4444";
 
-  if (loading) return <div style={{ textAlign:"center", color:C.muted, padding:"40px", fontSize:"13px" }}>Loading all videos...</div>;
+  if (loading) return (
+    <div style={{display:"flex",flexDirection:"column",gap:"8px",padding:"8px 0"}}>
+      {[...Array(5)].map((_,i)=>(
+        <div key={i} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"12px",padding:"10px 12px",display:"flex",gap:"10px",alignItems:"center"}}>
+          <div style={{width:"64px",height:"36px",borderRadius:"6px",background:"rgba(255,255,255,0.06)",flexShrink:0,animation:"pulse 1.5s ease-in-out infinite"}}/>
+          <div style={{flex:1,display:"flex",flexDirection:"column",gap:"6px"}}>
+            <div style={{height:"10px",borderRadius:"99px",background:"rgba(255,255,255,0.06)",width:"70%",animation:"pulse 1.5s ease-in-out infinite"}}/>
+            <div style={{height:"8px",borderRadius:"99px",background:"rgba(255,255,255,0.04)",width:"40%",animation:"pulse 1.5s ease-in-out infinite"}}/>
+          </div>
+          <div style={{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(255,255,255,0.06)",flexShrink:0,animation:"pulse 1.5s ease-in-out infinite"}}/>
+        </div>
+      ))}
+    </div>
+  );
   if (!videos.length) return <div style={{ textAlign:"center", color:C.muted, padding:"40px", fontSize:"13px" }}>No videos found. Connect your YouTube channel first.</div>;
 
   const avgScore = Math.round(videos.reduce((s,v) => s+getScore(v), 0) / videos.length);
@@ -1487,11 +1500,13 @@ function OptimizeTab({ userId, channel, C }) {
       </div>
 
       {/* Controls */}
-      <div style={{ display:"flex", gap:"8px", marginBottom:"14px", flexWrap:"wrap" }}>
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={yt("वीडियो खोजें...","व्हिडिओ शोधा...","Search videos...")} style={{ flex:1, minWidth:"150px", padding:"7px 12px", borderRadius:"8px", background:C.glass, border:`1px solid ${C.hairline}`, color:C.ink, fontSize:"12px", fontFamily:"inherit", outline:"none" }}/>
-        {[["recent",yt("हाल का","अलीकडील","Recent")],["score",yt("स्कोर","स्कोर","Score")],["views",yt("व्यूज़","व्ह्यूज","Views")],["engagement",yt("एंगेजमेंट","एंगेजमेंट","Engagement")]].map(([k,l]) => (
-          <button key={k} onClick={()=>setSort(k)} style={{ padding:"7px 12px", borderRadius:"8px", border:`1px solid ${sort===k?C.purple:C.hairline}`, background:sort===k?`${C.purple}22`:"transparent", color:sort===k?C.purple:C.muted, fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
-        ))}
+      <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"14px" }}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={yt("वीडियो खोजें...","व्हिडिओ शोधा...","Search videos...")} style={{ width:"100%", boxSizing:"border-box", padding:"8px 14px", borderRadius:"99px", background:C.glass, border:`1px solid ${C.hairline}`, color:C.ink, fontSize:"12px", fontFamily:"inherit", outline:"none" }}/>
+        <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
+          {[["recent",yt("हाल का","अलीकडील","Recent")],["score",yt("स्कोर","स्कोर","Score")],["views",yt("व्यूज़","व्ह्यूज","Views")],["engagement",yt("एंगेजमेंट","एंगेजमेंट","Engagement")]].map(([k,l]) => (
+            <button key={k} onClick={()=>setSort(k)} style={{ padding:"5px 14px", borderRadius:"99px", border:`1px solid ${sort===k?C.purple:C.hairline}`, background:sort===k?`${C.purple}22`:"transparent", color:sort===k?C.purple:C.muted, fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit", flexShrink:0 }}>{l}</button>
+          ))}
+        </div>
       </div>
 
       {/* Type filter pills */}
@@ -1789,7 +1804,7 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
             {innerData.map((d,i)=><Cell key={"i"+i} fill={d.color} opacity={activeInner===null||activeInner===i?1:0.3}/>)}
           </Pie>
         </RechartsPie>
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"60px"}}>
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"56px",lineHeight:1.1}}>
           {highlighted ? (<>
             <div style={{fontSize:"13px",fontWeight:"900",color:COLORS[activeOuter%COLORS.length],lineHeight:1}}>{highlighted.pct}%</div>
             <div style={{fontSize:"9px",color:"rgba(255,255,255,0.6)",marginTop:"2px",lineHeight:1.3}}>{highlighted.name}</div>
