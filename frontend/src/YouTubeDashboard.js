@@ -1524,7 +1524,7 @@ function OptimizeTab({ userId, channel, C }) {
           {id:"video",label:`Videos (${videos.filter(v=>v.video_type==="video").length})`},
           {id:"live",label:`Live (${videos.filter(v=>v.video_type==="live").length})`}
         ].map(f=>(
-          <button key={f.id} onClick={()=>setVfilter(f.id)} style={{padding:"5px 14px",borderRadius:"99px",border:`1.5px solid ${vfilter===f.id?C.purple:C.hairline}`,background:vfilter===f.id?`${C.purple}22`:"transparent",color:vfilter===f.id?C.purple:C.muted,fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>{f.label}</button>
+          <button key={f.id} onClick={()=>setVfilter(f.id)} style={{padding:"3px 10px",borderRadius:"99px",border:`1px solid ${vfilter===f.id?C.purple:C.hairline}`,background:vfilter===f.id?`${C.purple}22`:"transparent",color:vfilter===f.id?C.purple:C.muted,fontSize:"10px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>{f.label}</button>
         ))}
       </div>
       {/* Video list */}
@@ -1763,13 +1763,13 @@ function SimpleDonut({ data, title, centerLabel, colors }) {
       <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>{title}</div>
       <div style={{display:"flex",alignItems:"center",gap:"16px",flexWrap:"wrap"}}>
         <div style={{position:"relative",flexShrink:0}}>
-          <RechartsPie width={160} height={160}>
-            <Pie data={pieData} cx={80} cy={80} innerRadius={48} outerRadius={72} paddingAngle={2} dataKey="value" strokeWidth={0}
+          <RechartsPie width={100} height={100}>
+            <Pie data={pieData} cx={50} cy={50} innerRadius={30} outerRadius={44} paddingAngle={2} dataKey="value" strokeWidth={0}
               onMouseEnter={(_,i)=>setActive(i)} onMouseLeave={()=>setActive(null)}>
               {pieData.map((_,i)=><Cell key={i} fill={colors[i%colors.length]} opacity={active===null||active===i?1:0.3}/>)}
             </Pie>
           </RechartsPie>
-          <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"60px"}}>
+          <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"40px"}}>
             {highlighted ? (<>
               <div style={{fontSize:"16px",fontWeight:"900",color:colors[active%colors.length],lineHeight:1}}>{highlighted.pct}%</div>
               <div style={{fontSize:"8px",color:"rgba(255,255,255,0.5)",marginTop:"2px",lineHeight:1.2}}>{highlighted.name}</div>
@@ -1801,17 +1801,17 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
   return (
     <div style={{display:"flex",gap:"16px",alignItems:"flex-start",flexWrap:"wrap"}}>
       <div style={{position:"relative"}}>
-        <RechartsPie width={120} height={120}>
-          <Pie data={pieData} cx={120} cy={120} innerRadius={80} outerRadius={110} paddingAngle={2} dataKey="value" strokeWidth={0}
+        <RechartsPie width={160} height={160}>
+          <Pie data={pieData} cx={80} cy={80} innerRadius={52} outerRadius={72} paddingAngle={2} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setActiveOuter(i)} onMouseLeave={()=>setActiveOuter(null)}>
             {pieData.map((_,i)=><Cell key={"o"+i} fill={COLORS[i%COLORS.length]} opacity={activeOuter===null||activeOuter===i?1:0.3}/>)}
           </Pie>
-          <Pie data={innerData} cx={120} cy={120} innerRadius={45} outerRadius={72} paddingAngle={3} dataKey="value" strokeWidth={0}
+          <Pie data={innerData} cx={80} cy={80} innerRadius={28} outerRadius={46} paddingAngle={3} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setActiveInner(i)} onMouseLeave={()=>setActiveInner(null)}>
             {innerData.map((d,i)=><Cell key={"i"+i} fill={d.color} opacity={activeInner===null||activeInner===i?1:0.3}/>)}
           </Pie>
         </RechartsPie>
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"80px"}}>
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"50px"}}>
           {highlighted ? (<>
             <div style={{fontSize:"18px",fontWeight:"900",color:COLORS[activeOuter%COLORS.length],lineHeight:1}}>{highlighted.pct}%</div>
             <div style={{fontSize:"9px",color:"rgba(255,255,255,0.6)",marginTop:"2px",lineHeight:1.3}}>{highlighted.name}</div>

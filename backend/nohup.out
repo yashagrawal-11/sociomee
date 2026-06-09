@@ -191,3 +191,26 @@ Not all requested scopes were granted by the authorization server, missing scope
 INFO:     127.0.0.1:39164 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
 Not all requested scopes were granted by the authorization server, missing scopes email, profile.
 INFO:     127.0.0.1:44844 - "GET /youtube/video-ctr/UWPverG9mU4?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45006 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45022 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45032 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:42488 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42494 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:42506 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42508 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-09&endDate=2026-06-08&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     127.0.0.1:42516 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44628 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44636 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44642 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:33936 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33944 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33958 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:33966 - "POST /push/subscribe HTTP/1.0" 200 OK
