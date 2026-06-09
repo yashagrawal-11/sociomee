@@ -59,89 +59,59 @@ if (typeof document !== "undefined") { document.getElementById("yt-mobile-styles
   const s = document.createElement("style");
   s.id = "yt-mobile-styles";
   s.textContent = `
-    /* Traffic donut mobile */
-    @media (max-width: 600px) {
-      .yt-traffic-wrap { flex-direction: column !important; align-items: center !important; } @media (max-width: 600px) { .yt-geo-row { grid-template-columns: 1fr !important; } }
+    /* ── MOBILE ONLY (max-width: 767px) ── */
+    @media (max-width: 767px) {
+      /* Traffic donut */
+      .yt-traffic-wrap { flex-direction: column !important; align-items: center !important; flex-wrap: wrap !important; }
+      .yt-traffic-wrap > div:first-child svg { width: 160px !important; height: 160px !important; }
       .yt-traffic-text { min-width: unset !important; width: 100% !important; max-width: 100% !important; }
       .yt-traffic-text span { font-size: 9px !important; }
-    }
-    /* Video donut horizontal scroll */
-    .video-donut-scroll {
-      display: flex !important;
-      gap: 8px !important;
-      overflow-x: auto !important;
-      overflow-y: visible !important;
-      -webkit-overflow-scrolling: touch !important;
-      scroll-snap-type: x mandatory !important;
-      padding-bottom: 6px !important;
-      margin-bottom: 10px !important;
-      scrollbar-width: thin !important;
-      scrollbar-color: rgba(124,58,237,0.3) transparent !important;
-    }
-    .video-donut-scroll::-webkit-scrollbar { height: 3px !important; }
-    .video-donut-scroll::-webkit-scrollbar-track { background: transparent !important; }
-    .video-donut-scroll::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3) !important; border-radius: 99px !important; }
-    .video-donut-scroll > * { flex-shrink: 0 !important; scroll-snap-align: start !important; }
-    /* Mini stat cards */
-    @media (max-width: 600px) {
+      /* Geo row */
+      .yt-geo-row { grid-template-columns: 1fr !important; }
+      /* Mini stat grid */
       .yt-mini-stat-grid { grid-template-columns: repeat(2,1fr) !important; gap:6px !important; }
-    }
-    /* Video donuts mobile scroll */
-    @media (max-width: 600px) {
-      .yt-video-donuts { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none !important; -ms-overflow-style: none !important; gap: 8px !important; padding-bottom: 4px; }
-      .yt-video-donuts::-webkit-scrollbar { display: none; }
-      .yt-video-donuts > * { flex-shrink: 0 !important; scroll-snap-align: start; }
-    @media (max-width: 767px) { .yt-video-donuts > * { width: 140px !important; max-width: 140px !important; } }
-    @media (max-width: 767px) { .yt-analytics-grid { display: flex !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: thin !important; } .yt-analytics-grid > * { flex: 0 0 140px !important; min-width: 140px !important; } }
-    @media (max-width: 767px) {
-      .yt-traffic-wrap { flex-direction: column !important; align-items: center !important; }
-      .yt-traffic-wrap > div:first-child svg { width: 160px !important; height: 160px !important; }
-      .yt-traffic-wrap > div:first-child > div { width: 160px !important; height: 160px !important; }
-      .yt-video-donuts > * { width: 140px !important; min-width: 140px !important; max-width: 140px !important; flex: 0 0 140px !important; }
-      .yt-analytics-grid { display: flex !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
-      .yt-analytics-grid > * { flex: 0 0 140px !important; min-width: 140px !important; max-width: 140px !important; }
-    }
-      /* Smaller channel analytics donuts on mobile */
-      .yt-analytics-donuts svg { width: 120px !important; height: 120px !important; }
-    }
-    @media (max-width: 600px) {
+      /* Video donut scroll — optimize tab */
+      .yt-video-donuts { display: flex !important; flex-direction: row !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scroll-snap-type: x mandatory !important; scrollbar-width: none !important; gap: 8px !important; padding-bottom: 6px !important; }
+      .yt-video-donuts::-webkit-scrollbar { display: none !important; }
+      .yt-video-donuts > * { flex: 0 0 140px !important; min-width: 140px !important; max-width: 140px !important; flex-shrink: 0 !important; scroll-snap-align: start !important; }
+      /* Analytics donut grid — switch to scroll on mobile */
+      .yt-analytics-grid { display: flex !important; flex-direction: row !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: none !important; gap: 8px !important; padding-bottom: 6px !important; }
+      .yt-analytics-grid::-webkit-scrollbar { display: none !important; }
+      .yt-analytics-grid > * { flex: 0 0 140px !important; min-width: 140px !important; max-width: 140px !important; flex-shrink: 0 !important; }
       /* Channel header */
       .yt-channel-header { padding: 10px 12px !important; gap: 10px !important; }
       .yt-channel-header img { width: 38px !important; height: 38px !important; }
       .yt-channel-title { font-size: 13px !important; }
       .yt-channel-sub { font-size: 10px !important; }
-
-      /* Tabs - compact scrollable */
-      .yt-tabs { gap: 4px !important; padding-bottom: 2px !important; overflow-x: auto !important; scrollbar-width: none !important; -ms-overflow-style: none !important; }
-      .yt-tabs button { padding: 6px 10px !important; font-size: 10px !important; border-radius: 99px !important; } .yt-video-tabs button { padding: 3px 6px !important; font-size: 8px !important; } .yt-score-label { display:none !important; } .yt-date { font-size:9px !important; }
-
-      /* Stat cards - 2x2 grid */
+      /* Tabs */
+      .yt-tabs { gap: 4px !important; padding-bottom: 2px !important; overflow-x: auto !important; scrollbar-width: none !important; }
+      .yt-tabs button { padding: 6px 10px !important; font-size: 10px !important; border-radius: 99px !important; }
+      .yt-video-tabs button { padding: 3px 6px !important; font-size: 8px !important; }
+      .yt-score-label { display: none !important; }
+      .yt-date { font-size: 9px !important; }
+      /* Stat cards */
       .yt-stat-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
       .yt-stat-card { padding: 8px 8px !important; border-radius: 10px !important; }
       .yt-stat-value { font-size: 14px !important; }
       .yt-stat-label { font-size: 7px !important; }
       .yt-stat-icon { font-size: 12px !important; }
-
       /* Video cards */
       .yt-video-row { padding: 8px 10px !important; gap: 8px !important; }
       .yt-video-thumb { width: 56px !important; height: 32px !important; }
       .yt-video-title { font-size: 11px !important; }
       .yt-video-meta { font-size: 9px !important; }
       .yt-score-badge { width: 30px !important; height: 30px !important; font-size: 10px !important; }
-
-      /* Optimize summary */
+      /* Optimize */
       .yt-opt-summary { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
       .yt-opt-card { padding: 8px 6px !important; border-radius: 10px !important; }
-
-      /* Section headers */
       .yt-section-title { font-size: 10px !important; }
-
-      /* Chart container */
       .yt-chart-wrap { padding: 12px !important; }
-
-      /* Disconnect button */
       .yt-disconnect-btn { font-size: 10px !important; padding: 4px 10px !important; }
     }
+    /* ── SCROLLBAR STYLING (all screens) ── */
+    .video-donut-scroll { display: flex !important; gap: 8px !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: thin !important; scrollbar-color: rgba(124,58,237,0.3) transparent !important; }
+    .video-donut-scroll::-webkit-scrollbar { height: 3px !important; }
+    .video-donut-scroll::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3) !important; border-radius: 99px !important; }
   `;
   document.head.appendChild(s);
 }

@@ -698,3 +698,20 @@ Not all requested scopes were granted by the authorization server, missing scope
 INFO:     127.0.0.1:47418 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
 Not all requested scopes were granted by the authorization server, missing scopes email, profile.
 INFO:     127.0.0.1:57624 - "GET /youtube/video-ctr/ytDRE_Ikh9c?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49140 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49146 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49150 - "GET /api/credits/112040558777568963466 HTTP/1.0" 404 Not Found
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:49164 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49166 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:49170 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49176 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-10&endDate=2026-06-09&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     127.0.0.1:49182 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:36336 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:36342 - "GET /youtube/video-ctr/ytDRE_Ikh9c?user_id=112040558777568963466 HTTP/1.0" 200 OK
