@@ -85,10 +85,11 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
       .yt-tabs button { padding: 6px 10px !important; font-size: 10px !important; border-radius: 99px !important; } .yt-video-tabs button { padding: 4px 8px !important; font-size: 9px !important; } .yt-score-label { display:none !important; } .yt-date { font-size:9px !important; }
 
       /* Stat cards - 2x2 grid */
-      .yt-stat-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
-      .yt-stat-card { padding: 12px 10px !important; border-radius: 12px !important; }
-      .yt-stat-value { font-size: 20px !important; }
-      .yt-stat-label { font-size: 9px !important; }
+      .yt-stat-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+      .yt-stat-card { padding: 8px 8px !important; border-radius: 10px !important; }
+      .yt-stat-value { font-size: 16px !important; }
+      .yt-stat-label { font-size: 8px !important; }
+      .yt-stat-icon { font-size: 14px !important; }
 
       /* Video cards */
       .yt-video-row { padding: 8px 10px !important; gap: 8px !important; }
@@ -825,10 +826,11 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
       .yt-tabs button { padding: 6px 10px !important; font-size: 10px !important; border-radius: 99px !important; } .yt-video-tabs button { padding: 4px 8px !important; font-size: 9px !important; } .yt-score-label { display:none !important; } .yt-date { font-size:9px !important; }
 
       /* Stat cards - 2x2 grid */
-      .yt-stat-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
-      .yt-stat-card { padding: 12px 10px !important; border-radius: 12px !important; }
-      .yt-stat-value { font-size: 20px !important; }
-      .yt-stat-label { font-size: 9px !important; }
+      .yt-stat-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+      .yt-stat-card { padding: 8px 8px !important; border-radius: 10px !important; }
+      .yt-stat-value { font-size: 16px !important; }
+      .yt-stat-label { font-size: 8px !important; }
+      .yt-stat-icon { font-size: 14px !important; }
 
       /* Video cards */
       .yt-video-row { padding: 8px 10px !important; gap: 8px !important; }
@@ -1387,7 +1389,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
     } catch(e) { console.error("CTR fetch failed:", e); }
   };
   return (
-    <div style={{ background:C.glass, border:`1px solid ${open?C.purple+"44":C.hairline}`, borderRadius:"12px", overflow:"hidden" }}>
+    <div style={{ background:C.glass, border:`1px solid ${open?C.purple+"44":C.hairline}`, borderRadius:"12px" }}>
       <div onClick={()=>{setOpen(!open);if(!open)fetchCTR(userId);}} style={{ display:"flex", gap:"10px", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
         {v.thumbnail && <img src={v.thumbnail} alt="" style={{ width:"64px", height:"36px", borderRadius:"6px", objectFit:"cover", flexShrink:0 }}/>}
         <div style={{ flex:1, minWidth:0 }}>
@@ -1401,7 +1403,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" style={{ flexShrink:0, transform:open?"rotate(180deg)":"rotate(0deg)", transition:"transform 0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       {open && (
-        <div style={{ borderTop:`1px solid ${C.hairline}`, padding:"12px" }}>
+        <div style={{ borderTop:`1px solid ${C.hairline}`, padding:"12px", overflow:"visible" }}>
           <div style={{ fontSize:"10px", fontWeight:"800", color:C.purple, letterSpacing:"0.8px", textTransform:"uppercase", marginBottom:"8px" }}>⚡ SocioMee AI Optimization Tips</div>
           <div style={{ display:"flex", flexDirection:"column", gap:"6px", marginBottom:"12px" }}>
             {tips.map((t,ti) => (
@@ -1412,7 +1414,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
             ))}
           </div>
           {/* Donut Charts */}
-          <div style={{display:"flex",gap:"8px",marginBottom:"12px",overflowX:"auto",scrollbarWidth:"none",msOverflowStyle:"none",paddingBottom:"4px"}}>
+          <div style={{display:"flex",gap:"8px",marginBottom:"12px",overflowX:"auto",overflowY:"visible",scrollbarWidth:"none",msOverflowStyle:"none",paddingBottom:"4px",WebkitOverflowScrolling:"touch"}}>
             <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
               data={[{name:"This video",value:v.views||1,color:"#7c3aed"},{name:"Others",value:Math.max(1,v.views*10),color:"rgba(124,58,237,0.12)"}]}/>
             <VideoDonut label={watchTime?"WATCH TIME":"LIKES"} center={watchTime?watchTime+"m":fmt(v.likes||0)} sub={watchTime?"total mins":"total likes"}
