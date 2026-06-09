@@ -69,7 +69,7 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
     @media (max-width: 600px) {
       .yt-video-donuts { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none !important; -ms-overflow-style: none !important; gap: 8px !important; padding-bottom: 4px; }
       .yt-video-donuts::-webkit-scrollbar { display: none; }
-      .yt-video-donuts > * { flex-shrink: 0 !important; width: 140px !important; scroll-snap-align: start; }
+      .yt-video-donuts > * { flex-shrink: 0 !important; width: 130px !important; scroll-snap-align: start; }
       /* Smaller channel analytics donuts on mobile */
       .yt-analytics-donuts svg { width: 120px !important; height: 120px !important; }
     }
@@ -309,7 +309,7 @@ function VideoDonut({ label, center, sub, data }) {
   const FADED = "rgba(124,58,237,0.18)";
   const coloredData = filtered.map((x,i)=>({...x}));
   return (
-    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"14px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center"}}>
+    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"10px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",minWidth:"120px",flex:"0 0 120px"}}>
       <div style={{fontSize:"9px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>{label}</div>
       <div style={{position:"relative"}}>
         <RechartsPie width={130} height={130}>
@@ -327,11 +327,11 @@ function VideoDonut({ label, center, sub, data }) {
           </>)}
         </div>
       </div>
-      <div style={{display:"flex",justifyContent:"center",gap:"6px",marginTop:"10px",flexWrap:"wrap"}}>
+      <div style={{display:"flex",justifyContent:"center",gap:"4px",marginTop:"6px",flexWrap:"wrap"}}>
         {coloredData.map((x,xi)=>(
-          <div key={xi} style={{display:"flex",alignItems:"center",gap:"3px",opacity:active===null||active===xi?1:0.4}}>
-            <div style={{width:"7px",height:"7px",borderRadius:"50%",background:x.color,flexShrink:0}}/>
-            <span style={{fontSize:"9px",color:"rgba(255,255,255,0.7)",fontWeight:"600"}}>{x.name}</span>
+          <div key={xi} style={{display:"flex",alignItems:"center",gap:"2px",opacity:active===null||active===xi?1:0.4}}>
+            <div style={{width:"5px",height:"5px",borderRadius:"50%",background:x.color,flexShrink:0}}/>
+            <span style={{fontSize:"7px",color:"rgba(255,255,255,0.6)",fontWeight:"600"}}>{x.name}</span>
           </div>
         ))}
       </div>
@@ -809,7 +809,7 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
     @media (max-width: 600px) {
       .yt-video-donuts { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none !important; -ms-overflow-style: none !important; gap: 8px !important; padding-bottom: 4px; }
       .yt-video-donuts::-webkit-scrollbar { display: none; }
-      .yt-video-donuts > * { flex-shrink: 0 !important; width: 140px !important; scroll-snap-align: start; }
+      .yt-video-donuts > * { flex-shrink: 0 !important; width: 130px !important; scroll-snap-align: start; }
       /* Smaller channel analytics donuts on mobile */
       .yt-analytics-donuts svg { width: 120px !important; height: 120px !important; }
     }
@@ -1412,7 +1412,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
             ))}
           </div>
           {/* Donut Charts */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"12px"}} className="yt-video-donuts">
+          <div style={{display:"flex",gap:"8px",marginBottom:"12px",overflowX:"auto",scrollbarWidth:"none",msOverflowStyle:"none",paddingBottom:"4px"}}>
             <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
               data={[{name:"This video",value:v.views||1,color:"#7c3aed"},{name:"Others",value:Math.max(1,v.views*10),color:"rgba(124,58,237,0.12)"}]}/>
             <VideoDonut label={watchTime?"WATCH TIME":"LIKES"} center={watchTime?watchTime+"m":fmt(v.likes||0)} sub={watchTime?"total mins":"total likes"}
@@ -1523,14 +1523,14 @@ function OptimizeTab({ userId, channel, C }) {
       </div>
 
       {/* Type filter pills */}
-      <div style={{display:"flex",gap:"6px",marginBottom:"12px",flexWrap:"wrap"}}>
+      <div style={{display:"flex",gap:"4px",marginBottom:"10px",overflowX:"auto",scrollbarWidth:"none",msOverflowStyle:"none",paddingBottom:"2px"}}>
         {[
-          {id:"all",label:`All (${videos.length})`},
-          {id:"short",label:`Shorts (${videos.filter(v=>v.video_type==="short").length})`},
-          {id:"video",label:`Videos (${videos.filter(v=>v.video_type==="video").length})`},
-          {id:"live",label:`Live (${videos.filter(v=>v.video_type==="live").length})`}
+          {id:"all",label:"All",count:videos.length},
+          {id:"short",label:"Shorts",count:videos.filter(v=>v.video_type==="short").length},
+          {id:"video",label:"Videos",count:videos.filter(v=>v.video_type==="video").length},
+          {id:"live",label:"Live",count:videos.filter(v=>v.video_type==="live").length}
         ].map(f=>(
-          <button key={f.id} onClick={()=>setVfilter(f.id)} style={{padding:"3px 8px",borderRadius:"99px",border:`1px solid ${vfilter===f.id?C.purple:C.hairline}`,background:vfilter===f.id?`${C.purple}22`:"transparent",color:vfilter===f.id?C.purple:C.muted,fontSize:"9px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>{f.label}</button>
+          <button key={f.id} onClick={()=>setVfilter(f.id)} style={{padding:"3px 8px",borderRadius:"99px",border:`1px solid ${vfilter===f.id?C.purple:C.hairline}`,background:vfilter===f.id?`${C.purple}22`:"transparent",color:vfilter===f.id?C.purple:C.muted,fontSize:"9px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",flexShrink:0,whiteSpace:"nowrap"}}>{f.label} ({f.count})</button>
         ))}
       </div>
       {/* Video list */}
@@ -2156,7 +2156,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
                 return (
                   <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"16px",padding:"20px",marginBottom:"12px"}}>
                     <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"16px"}}>🔀 Traffic Sources</div>
-                    <div style={{display:"flex",alignItems:"center",gap:"24px",flexWrap:"wrap"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"16px",flexWrap:"wrap",justifyContent:"center"}}>
                       {/* Donut Chart */}
                       <div style={{position:"relative",flexShrink:0}}>
                         {(()=>{
