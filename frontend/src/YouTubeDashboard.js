@@ -566,6 +566,8 @@ function FestivalCalendar() {
     if (days <= 30) return `${days} ${yt("दिन बाकी","दिवस बाकी","days away")}`;
     return `${days} ${yt("दिन बाकी","दिवस बाकी","days away")}`;
   };
+  return (
+    <div>
 
       {/* Festival cards */}
       <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
