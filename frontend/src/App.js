@@ -1394,7 +1394,7 @@ export default function App() {
 
         {/* Profile */}
         {isLoggedIn && (
-          <button onClick={()=>{ if(isPro){ if(profilePanelOpen){ setProfilePanelOpen(false); setLangMenuOpen(false); } else setProfilePanelOpen(true); } else window.location.href="https://sociomee.in/pricing"; }} style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 16px",border:"none",background:profilePanelOpen?"rgba(124,58,237,0.1)":"transparent",cursor:"pointer",fontFamily:"inherit",width:"100%",textAlign:"left",flexShrink:0,transition:"all 0.15s",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+          <button onClick={()=>{ if(profilePanelOpen){ setProfilePanelOpen(false); setLangMenuOpen(false); } else setProfilePanelOpen(true); }} style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 16px",border:"none",background:profilePanelOpen?"rgba(124,58,237,0.1)":"transparent",cursor:"pointer",fontFamily:"inherit",width:"100%",textAlign:"left",flexShrink:0,transition:"all 0.15s",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
             {user?.picture
               ? <img src={user.picture} alt="" referrerPolicy="no-referrer" style={{width:"34px",height:"34px",borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
               : <div style={{width:"34px",height:"34px",borderRadius:"50%",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"13px",fontWeight:"800",color:"#fff",flexShrink:0}}>{(user?.email||"U")[0].toUpperCase()}</div>
