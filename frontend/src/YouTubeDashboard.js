@@ -90,9 +90,14 @@ if (typeof document !== "undefined") { document.getElementById("yt-mobile-styles
     @media (max-width: 600px) {
       .yt-video-donuts { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none !important; -ms-overflow-style: none !important; gap: 8px !important; padding-bottom: 4px; }
       .yt-video-donuts::-webkit-scrollbar { display: none; }
-      .yt-video-donuts > * { flex-shrink: 0 !important; width: 130px !important; scroll-snap-align: start; }
+      .yt-video-donuts > * { flex-shrink: 0 !important; scroll-snap-align: start; }
     @media (max-width: 767px) { .yt-video-donuts > * { width: 140px !important; max-width: 140px !important; } }
     @media (max-width: 767px) { .yt-analytics-grid { display: flex !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: thin !important; } .yt-analytics-grid > * { flex: 0 0 140px !important; min-width: 140px !important; } }
+    @media (max-width: 767px) {
+      .yt-traffic-wrap { flex-direction: column !important; align-items: center !important; }
+      .yt-traffic-wrap > div:first-child svg { width: 160px !important; height: 160px !important; }
+      .yt-traffic-wrap > div:first-child > div { width: 160px !important; height: 160px !important; }
+    }
       /* Smaller channel analytics donuts on mobile */
       .yt-analytics-donuts svg { width: 120px !important; height: 120px !important; }
     }
@@ -333,7 +338,7 @@ function VideoDonut({ label, center, sub, data }) {
   const FADED = "rgba(124,58,237,0.18)";
   const coloredData = filtered.map((x,i)=>({...x}));
   return (
-    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"12px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",width:"100%",boxSizing:"border-box"}}>
+    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"12px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",minWidth:"140px",width:"100%",boxSizing:"border-box"}}>
       <div style={{fontSize:"9px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>{label}</div>
       <div style={{position:"relative"}}>
         <RechartsPie width={160} height={160}>
@@ -1779,22 +1784,33 @@ function SimpleDonut({ data, title, centerLabel, colors }) {
 function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
   const [activeOuter, setActiveOuter] = useState(null);
   const [activeInner, setActiveInner] = useState(null);
+  const hoverTimer = React.useRef(null);
+  const setOuterDelayed = (val) => {
+    clearTimeout(hoverTimer.current);
+    if (val === null) { hoverTimer.current = setTimeout(() => setActiveOuter(null), 120); }
+    else { hoverTimer.current = setTimeout(() => setActiveOuter(val), 60); }
+  };
+  const setInnerDelayed = (val) => {
+    clearTimeout(hoverTimer.current);
+    if (val === null) { hoverTimer.current = setTimeout(() => setActiveInner(null), 120); }
+    else { hoverTimer.current = setTimeout(() => setActiveInner(val), 60); }
+  };
   const highlighted = activeOuter!==null ? pieData[activeOuter] : null;
   const highlightedInner = activeInner!==null ? innerData[activeInner] : null;
   return (
-    <div className="yt-traffic-wrap" style={{display:"flex",gap:"24px",alignItems:"center",flexWrap:"wrap",justifyContent:"flex-start"}}>
+    <div className="yt-traffic-wrap" style={{display:"flex",gap:"32px",alignItems:"center",flexWrap:"nowrap",justifyContent:"flex-start"}}>
       <div style={{position:"relative"}}>
-        <RechartsPie width={180} height={180}>
-          <Pie data={pieData} cx={90} cy={90} innerRadius={58} outerRadius={78} paddingAngle={2} dataKey="value" strokeWidth={0}
-            onMouseEnter={(_,i)=>setActiveOuter(i)} onMouseLeave={()=>setActiveOuter(null)}>
+        <RechartsPie width={220} height={220}>
+          <Pie data={pieData} cx={110} cy={110} innerRadius={72} outerRadius={96} paddingAngle={2} dataKey="value" strokeWidth={0}
+            onMouseEnter={(_,i)=>setOuterDelayed(i)} onMouseLeave={()=>setOuterDelayed(null)}>
             {pieData.map((_,i)=><Cell key={"o"+i} fill={COLORS[i%COLORS.length]} opacity={activeOuter===null||activeOuter===i?1:0.3}/>)}
           </Pie>
-          <Pie data={innerData} cx={90} cy={90} innerRadius={30} outerRadius={50} paddingAngle={3} dataKey="value" strokeWidth={0}
-            onMouseEnter={(_,i)=>setActiveInner(i)} onMouseLeave={()=>setActiveInner(null)}>
+          <Pie data={innerData} cx={110} cy={110} innerRadius={38} outerRadius={62} paddingAngle={3} dataKey="value" strokeWidth={0}
+            onMouseEnter={(_,i)=>setInnerDelayed(i)} onMouseLeave={()=>setInnerDelayed(null)}>
             {innerData.map((d,i)=><Cell key={"i"+i} fill={d.color} opacity={activeInner===null||activeInner===i?1:0.3}/>)}
           </Pie>
         </RechartsPie>
-        <div style={{position:"absolute",top:0,left:0,width:"180px",height:"180px",display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}><div style={{textAlign:"center",width:"80px",lineHeight:1.2}}>
+        <div style={{position:"absolute",top:0,left:0,width:"220px",height:"220px",display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}><div style={{textAlign:"center",width:"80px",lineHeight:1.2}}>
           {highlighted ? (<>
             <div style={{fontSize:"13px",fontWeight:"900",color:COLORS[activeOuter%COLORS.length],lineHeight:1}}>{highlighted.pct}%</div>
             <div style={{fontSize:"9px",color:"rgba(255,255,255,0.6)",marginTop:"2px",lineHeight:1.3}}>{highlighted.name}</div>
@@ -1813,7 +1829,7 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
         <div style={{display:"flex",flexDirection:"column",gap:"5px",marginBottom:"14px"}}>
           {pieData.map((d,i)=>(
             <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",padding:"4px 8px",borderRadius:"8px",background:activeOuter===i?"rgba(255,255,255,0.06)":"transparent",cursor:"pointer"}}
-              onMouseEnter={()=>setActiveOuter(i)} onMouseLeave={()=>setActiveOuter(null)}>
+              onMouseEnter={()=>setOuterDelayed(i)} onMouseLeave={()=>setOuterDelayed(null)}>
               <div style={{width:"7px",height:"7px",borderRadius:"50%",background:COLORS[i%COLORS.length],flexShrink:0}}/>
               <span style={{fontSize:"9px",color:activeOuter===i?"#fff":"rgba(255,255,255,0.5)",flex:1,fontWeight:activeOuter===i?"700":"500",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"normal"}}>{d.name}</span>
               <span style={{fontSize:"9px",fontWeight:"700",color:COLORS[i%COLORS.length],flexShrink:0}}>{d.pct}%</span>
@@ -1824,7 +1840,7 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
         <div style={{display:"flex",flexDirection:"column",gap:"5px",marginBottom:"10px"}}>
           {innerData.map((d,i)=>(
             <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",padding:"4px 8px",borderRadius:"8px",background:activeInner===i?"rgba(255,255,255,0.06)":"transparent",cursor:"pointer"}}
-              onMouseEnter={()=>setActiveInner(i)} onMouseLeave={()=>setActiveInner(null)}>
+              onMouseEnter={()=>setInnerDelayed(i)} onMouseLeave={()=>setInnerDelayed(null)}>
               <div style={{width:"10px",height:"10px",borderRadius:"50%",background:d.color,flexShrink:0,boxShadow:activeInner===i?`0 0 8px ${d.color}`:"none"}}/>
               <span style={{fontSize:"11px",color:activeInner===i?"#fff":"rgba(255,255,255,0.55)",flex:1,fontWeight:activeInner===i?"700":"500"}}>{d.name}</span>
             </div>
