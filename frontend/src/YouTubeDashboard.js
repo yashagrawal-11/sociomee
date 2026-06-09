@@ -331,7 +331,7 @@ function VideoDonut({ label, center, sub, data }) {
   const FADED = "rgba(124,58,237,0.18)";
   const coloredData = filtered.map((x,i)=>({...x}));
   return (
-    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"10px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",minWidth:"120px",flex:"0 0 120px"}}>
+    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"10px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",minWidth:"115px",maxWidth:"115px",flex:"0 0 115px"}}>
       <div style={{fontSize:"9px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>{label}</div>
       <div style={{position:"relative"}}>
         <RechartsPie width={130} height={130}>
@@ -1383,7 +1383,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
             ))}
           </div>
           {/* Donut Charts */}
-          <div className="video-donut-scroll">
+          <div style={{display:"flex",flexDirection:"row",gap:"8px",overflowX:"auto",overflowY:"visible",WebkitOverflowScrolling:"touch",scrollbarWidth:"thin",scrollbarColor:"rgba(124,58,237,0.4) transparent",paddingBottom:"8px",marginBottom:"10px"}}>
             <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
               data={[{name:"This video",value:v.views||1,color:"#7c3aed"},{name:"Others",value:Math.max(1,v.views*10),color:"rgba(124,58,237,0.12)"}]}/>
             <VideoDonut label={watchTime?"WATCH TIME":"LIKES"} center={watchTime?watchTime+"m":fmt(v.likes||0)} sub={watchTime?"total mins":"total likes"}
@@ -1915,7 +1915,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
     <div style={{ fontFamily:"'DM Sans',sans-serif" }}>
 
       {/* Channel header with multi-channel switcher */}
-      <div style={{ position:"relative", marginBottom:"14px", zIndex:100 }}>
+      <div style={{ position:"relative", marginBottom:"14px", zIndex:10 }}>
         <div className="yt-channel-header" style={{ display:"flex", alignItems:"center", gap:"10px", background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:"14px", padding:"10px 14px" }}>
           {channel?.thumbnail
             ? <img src={channel.thumbnail} alt="" crossOrigin="anonymous" referrerPolicy="no-referrer" style={{ width:"36px", height:"36px", borderRadius:"50%", border:"2px solid rgba(255,255,255,0.2)", objectFit:"cover", flexShrink:0 }} onError={e => { e.target.style.display="none"; }} />

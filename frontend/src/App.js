@@ -1384,7 +1384,7 @@ export default function App() {
       </button>
 
       {/* SIDEBAR */}
-      <div id="app-sidebar" className={sidebarOpen?"open":""} style={{ width:"220px",flexShrink:0,background:"rgba(8,8,8,0.98)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderRight:"1px solid rgba(255,255,255,0.06)",display:"flex",flexDirection:"column",position:"fixed",top:0,left:0,height:"100dvh",zIndex:99,overflowY:"auto",overflowX:"hidden",scrollbarWidth:"none",msOverflowStyle:"none",transition:"transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
+      <div id="app-sidebar" className={sidebarOpen?"open":""} style={{ width:"220px",flexShrink:0,background:"rgba(8,8,8,0.98)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderRight:"1px solid rgba(255,255,255,0.06)",display:"flex",flexDirection:"column",position:"fixed",top:0,left:0,height:"100dvh",zIndex:200,overflowY:"auto",overflowX:"hidden",scrollbarWidth:"none",msOverflowStyle:"none",transition:"transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
 
         {/* Logo */}
         <div style={{padding:"16px 16px 14px",borderBottom:"1px solid rgba(255,255,255,0.05)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
