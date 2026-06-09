@@ -91,6 +91,7 @@ if (typeof document !== "undefined") { document.getElementById("yt-mobile-styles
       .yt-video-donuts { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none !important; -ms-overflow-style: none !important; gap: 8px !important; padding-bottom: 4px; }
       .yt-video-donuts::-webkit-scrollbar { display: none; }
       .yt-video-donuts > * { flex-shrink: 0 !important; width: 130px !important; scroll-snap-align: start; }
+    @media (max-width: 767px) { .yt-video-donuts > * { width: 140px !important; max-width: 140px !important; } }
       /* Smaller channel analytics donuts on mobile */
       .yt-analytics-donuts svg { width: 120px !important; height: 120px !important; }
     }
@@ -331,16 +332,16 @@ function VideoDonut({ label, center, sub, data }) {
   const FADED = "rgba(124,58,237,0.18)";
   const coloredData = filtered.map((x,i)=>({...x}));
   return (
-    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"10px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",minWidth:"140px",maxWidth:"140px",flex:"0 0 140px"}}>
+    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"10px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center",minWidth:"170px",maxWidth:"170px",flex:"0 0 170px"}}>
       <div style={{fontSize:"9px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>{label}</div>
       <div style={{position:"relative"}}>
-        <RechartsPie width={130} height={130}>
-          <Pie data={coloredData} cx={65} cy={65} innerRadius={40} outerRadius={58} paddingAngle={3} dataKey="value" strokeWidth={0}
+        <RechartsPie width={160} height={160}>
+          <Pie data={coloredData} cx={80} cy={80} innerRadius={50} outerRadius={70} paddingAngle={3} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setActive(i)} onMouseLeave={()=>setActive(null)} style={{cursor:"pointer"}}>
             {coloredData.map((x,xi)=><Cell key={xi} fill={x.color} opacity={active===null||active===xi?1:0.15}/>)}
           </Pie>
         </RechartsPie>
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"56px"}}>
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"80px"}}>
           {highlighted ? (
             <div style={{fontSize:"11px",fontWeight:"800",color:"#fff",lineHeight:1.3}}>{highlighted.name}</div>
           ) : (<>
@@ -1744,8 +1745,8 @@ function SimpleDonut({ data, title, centerLabel, colors }) {
       <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>{title}</div>
       <div style={{display:"flex",alignItems:"center",gap:"16px",flexWrap:"wrap"}}>
         <div style={{position:"relative",flexShrink:0}}>
-          <RechartsPie width={100} height={100}>
-            <Pie data={pieData} cx={50} cy={50} innerRadius={30} outerRadius={44} paddingAngle={2} dataKey="value" strokeWidth={0}
+          <RechartsPie width={130} height={130}>
+            <Pie data={pieData} cx={65} cy={65} innerRadius={38} outerRadius={56} paddingAngle={2} dataKey="value" strokeWidth={0}
               onMouseEnter={(_,i)=>setActive(i)} onMouseLeave={()=>setActive(null)}>
               {pieData.map((_,i)=><Cell key={i} fill={colors[i%colors.length]} opacity={active===null||active===i?1:0.3}/>)}
             </Pie>
@@ -1782,17 +1783,17 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
   return (
     <div className="yt-traffic-wrap" style={{display:"flex",gap:"16px",alignItems:"flex-start",flexWrap:"wrap",justifyContent:"center"}}>
       <div style={{position:"relative"}}>
-        <RechartsPie width={140} height={140}>
-          <Pie data={pieData} cx={70} cy={70} innerRadius={46} outerRadius={63} paddingAngle={2} dataKey="value" strokeWidth={0}
+        <RechartsPie width={180} height={180}>
+          <Pie data={pieData} cx={90} cy={90} innerRadius={58} outerRadius={78} paddingAngle={2} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setActiveOuter(i)} onMouseLeave={()=>setActiveOuter(null)}>
             {pieData.map((_,i)=><Cell key={"o"+i} fill={COLORS[i%COLORS.length]} opacity={activeOuter===null||activeOuter===i?1:0.3}/>)}
           </Pie>
-          <Pie data={innerData} cx={70} cy={70} innerRadius={24} outerRadius={40} paddingAngle={3} dataKey="value" strokeWidth={0}
+          <Pie data={innerData} cx={90} cy={90} innerRadius={30} outerRadius={50} paddingAngle={3} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setActiveInner(i)} onMouseLeave={()=>setActiveInner(null)}>
             {innerData.map((d,i)=><Cell key={"i"+i} fill={d.color} opacity={activeInner===null||activeInner===i?1:0.3}/>)}
           </Pie>
         </RechartsPie>
-        <div style={{position:"absolute",top:0,left:0,width:"140px",height:"140px",display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}><div style={{textAlign:"center",width:"80px",lineHeight:1.2}}>
+        <div style={{position:"absolute",top:0,left:0,width:"180px",height:"180px",display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}><div style={{textAlign:"center",width:"80px",lineHeight:1.2}}>
           {highlighted ? (<>
             <div style={{fontSize:"13px",fontWeight:"900",color:COLORS[activeOuter%COLORS.length],lineHeight:1}}>{highlighted.pct}%</div>
             <div style={{fontSize:"9px",color:"rgba(255,255,255,0.6)",marginTop:"2px",lineHeight:1.3}}>{highlighted.name}</div>
