@@ -55,7 +55,7 @@ const fName = (name) => {
 };
 
 // Inject mobile styles
-if (typeof document !== "undefined" && !document.getElementById("yt-mobile-styles")) {
+if (typeof document !== "undefined") { document.getElementById("yt-mobile-styles")?.remove();
   const s = document.createElement("style");
   s.id = "yt-mobile-styles";
   s.textContent = `
