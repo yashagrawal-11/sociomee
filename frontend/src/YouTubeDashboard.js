@@ -61,7 +61,7 @@ if (typeof document !== "undefined") { document.getElementById("yt-mobile-styles
   s.textContent = `
     /* Traffic donut mobile */
     @media (max-width: 600px) {
-      .yt-traffic-wrap { flex-direction: column !important; align-items: center !important; } .yt-traffic-wrap svg { width: 130px !important; height: 130px !important; } @media (max-width: 600px) { .yt-geo-row { grid-template-columns: 1fr !important; } }
+      .yt-traffic-wrap { flex-direction: column !important; align-items: center !important; } @media (max-width: 600px) { .yt-geo-row { grid-template-columns: 1fr !important; } }
       .yt-traffic-text { min-width: unset !important; width: 100% !important; max-width: 100% !important; }
       .yt-traffic-text span { font-size: 9px !important; }
     }
@@ -400,7 +400,7 @@ function TopVideos({ videos }) {
       {filtered.map((v, i) => {
         const eng = getEng(v); const sc = getScore(v); const scCol = scoreColor(sc); const isOpen = expanded===i;
         return (
-          <div key={i} style={{ background:C.glass, border:`1px solid ${isOpen?C.purple+"55":C.hairline}`, borderRadius:"14px", transition:"border-color 0.2s" }}>
+          <div key={i} style={{ background:C.glass, border:`1px solid ${isOpen?C.purple+"55":C.hairline}`, borderRadius:"14px", transition:"border-color 0.2s", overflow:"visible" }}>
             <div onClick={()=>setExpanded(isOpen?null:i)} style={{ padding:"10px 12px", cursor:"pointer" }}>
               <div style={{ display:"flex", gap:"8px", alignItems:"center", marginBottom:"7px" }}>
                 <div style={{ width:"18px", height:"18px", borderRadius:"4px", background:`${C.purple}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"8px", fontWeight:"900", color:C.purple, flexShrink:0 }}>#{i+1}</div>
@@ -423,8 +423,8 @@ function TopVideos({ videos }) {
               </div>
             </div>
             {isOpen && (
-              <div style={{ borderTop:`1px solid ${C.hairline}`, padding:"14px" }}>
-                <div style={{ display:"flex", gap:"8px", flexWrap:"wrap", marginBottom:"12px" }}>
+              <div style={{ borderTop:`1px solid ${C.hairline}`, padding:"14px", overflow:"visible" }}>
+                <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"12px" }}>
                   {/* Video Analytics Donuts */}
                   {(()=>{
                     const likeRate = v.views>0?+(v.likes/v.views*100).toFixed(2):0;
@@ -474,7 +474,7 @@ function TopVideos({ videos }) {
                     ];
 
                     return (
-                      <div style={{marginBottom:"16px",padding:"16px",background:"rgba(124,58,237,0.04)",borderRadius:"14px",border:"1px solid rgba(124,58,237,0.12)"}}>
+                      <div style={{marginBottom:"16px",padding:"16px",background:"rgba(124,58,237,0.04)",borderRadius:"14px",border:"1px solid rgba(124,58,237,0.12)",overflow:"visible"}}>
                         <div className="yt-video-donuts" style={{display:"flex",flexDirection:"row",gap:"8px",overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"thin",scrollbarColor:"rgba(124,58,237,0.4) transparent",paddingBottom:"8px",marginBottom:"16px"}}>
                           {donuts.map((d,di)=>(
                             <div key={di} className="yt-analytics-donuts" style={{flex:"0 0 140px",minWidth:"140px"}}><VideoDonut label={d.label} center={d.center} sub={d.sub} data={d.data} color={d.data[0]?.color||"#7c3aed"}/></div>
@@ -813,13 +813,6 @@ const FESTIVAL_NAMES = {
   "Onam":{"hi":"ओणम","mr":"ओणम"},
   "Mahatma Gandhi Jayanti":{"hi":"महात्मा गांधी जयंती","mr":"महात्मा गांधी जयंती"},
   "Janmashtami (Smarta)":{"hi":"जन्माष्टमी (स्मार्त)","mr":"जन्माष्टमी (स्मार्त)"},
-};
-const fName = (name) => {
-  if (FESTIVAL_NAMES[name]?.[YT_LANG()]) return FESTIVAL_NAMES[name][YT_LANG()];
-  // Try matching base name without suffix like "(tentative)" or "(Smarta)"
-  const base = name.replace(/\s*\(.*?\)\s*/g, "").trim();
-  if (FESTIVAL_NAMES[base]?.[YT_LANG()]) return FESTIVAL_NAMES[base][YT_LANG()] + " " + (name.match(/\(.*?\)/)?.[0]||"");
-  return name;
 };
 
 // Inject mobile styles
@@ -1794,17 +1787,17 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
   return (
     <div className="yt-traffic-wrap" style={{display:"flex",gap:"16px",alignItems:"flex-start",flexWrap:"wrap",justifyContent:"center"}}>
       <div style={{position:"relative"}}>
-        <RechartsPie width={160} height={160}>
-          <Pie data={pieData} cx={80} cy={80} innerRadius={52} outerRadius={72} paddingAngle={2} dataKey="value" strokeWidth={0}
+        <RechartsPie width={140} height={140}>
+          <Pie data={pieData} cx={70} cy={70} innerRadius={46} outerRadius={63} paddingAngle={2} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setActiveOuter(i)} onMouseLeave={()=>setActiveOuter(null)}>
             {pieData.map((_,i)=><Cell key={"o"+i} fill={COLORS[i%COLORS.length]} opacity={activeOuter===null||activeOuter===i?1:0.3}/>)}
           </Pie>
-          <Pie data={innerData} cx={80} cy={80} innerRadius={28} outerRadius={46} paddingAngle={3} dataKey="value" strokeWidth={0}
+          <Pie data={innerData} cx={70} cy={70} innerRadius={24} outerRadius={40} paddingAngle={3} dataKey="value" strokeWidth={0}
             onMouseEnter={(_,i)=>setActiveInner(i)} onMouseLeave={()=>setActiveInner(null)}>
             {innerData.map((d,i)=><Cell key={"i"+i} fill={d.color} opacity={activeInner===null||activeInner===i?1:0.3}/>)}
           </Pie>
         </RechartsPie>
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"56px",lineHeight:1.1}}>
+        <div style={{position:"absolute",top:0,left:0,width:"140px",height:"140px",display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}><div style={{textAlign:"center",width:"80px",lineHeight:1.2}}>
           {highlighted ? (<>
             <div style={{fontSize:"13px",fontWeight:"900",color:COLORS[activeOuter%COLORS.length],lineHeight:1}}>{highlighted.pct}%</div>
             <div style={{fontSize:"9px",color:"rgba(255,255,255,0.6)",marginTop:"2px",lineHeight:1.3}}>{highlighted.name}</div>
@@ -1816,7 +1809,7 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
             <div style={{fontSize:"7px",color:"#a78bfa",fontWeight:"700",marginTop:"1px"}}>TOP SOURCE</div>
             <div style={{fontSize:"6px",color:"rgba(255,255,255,0.4)",marginTop:"1px"}}>{topLabel}</div>
           </>)}
-        </div>
+        </div></div>
       </div>
       <div className="yt-traffic-text" style={{flex:1,minWidth:"120px",maxWidth:"100%"}}>
         <div style={{fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>Traffic Sources</div>
