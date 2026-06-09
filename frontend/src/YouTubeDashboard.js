@@ -545,8 +545,8 @@ function FestivalCalendar() {
   useEffect(() => {
     fetch(`${BASE}/festivals/upcoming`)
       .then(r => r.json())
-      .then(d => { setFestivals(d); setFestLoading(false); })
-      .catch(() => setFestLoading(false));
+      .then(d => { setFestivals(Array.isArray(d)?d:[]); setFestLoading(false); })
+      .catch(() => { setFestivals([]); setFestLoading(false); });
   }, []);
 
   if (festLoading) return <div style={{ textAlign:"center", padding:"40px", color:C.muted }}>Loading festivals…</div>;
@@ -576,7 +576,7 @@ function FestivalCalendar() {
 
       {/* Festival cards */}
       <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-        {festivals.map((f, i) => {
+        {(Array.isArray(festivals)?festivals:[]).map((f, i) => {
           const isSelected = selected === i;
           const col = urgencyColor(f.daysUntil);
           return (
