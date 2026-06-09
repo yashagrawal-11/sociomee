@@ -65,6 +65,23 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
       .yt-traffic-text { min-width: unset !important; width: 100% !important; max-width: 100% !important; }
       .yt-traffic-text span { font-size: 9px !important; }
     }
+    /* Video donut horizontal scroll */
+    .video-donut-scroll {
+      display: flex !important;
+      gap: 8px !important;
+      overflow-x: auto !important;
+      overflow-y: visible !important;
+      -webkit-overflow-scrolling: touch !important;
+      scroll-snap-type: x mandatory !important;
+      padding-bottom: 6px !important;
+      margin-bottom: 10px !important;
+      scrollbar-width: thin !important;
+      scrollbar-color: rgba(124,58,237,0.3) transparent !important;
+    }
+    .video-donut-scroll::-webkit-scrollbar { height: 3px !important; }
+    .video-donut-scroll::-webkit-scrollbar-track { background: transparent !important; }
+    .video-donut-scroll::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3) !important; border-radius: 99px !important; }
+    .video-donut-scroll > * { flex-shrink: 0 !important; scroll-snap-align: start !important; }
     /* Mini stat cards */
     @media (max-width: 600px) {
       .yt-mini-stat-grid { grid-template-columns: repeat(2,1fr) !important; gap:6px !important; }
@@ -1366,7 +1383,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
             ))}
           </div>
           {/* Donut Charts */}
-          <div style={{display:"flex",gap:"8px",marginBottom:"10px",overflowX:"scroll",overflowY:"visible",scrollbarWidth:"none",msOverflowStyle:"none",paddingBottom:"4px",WebkitOverflowScrolling:"touch",position:"relative"}}>
+          <div className="video-donut-scroll">
             <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
               data={[{name:"This video",value:v.views||1,color:"#7c3aed"},{name:"Others",value:Math.max(1,v.views*10),color:"rgba(124,58,237,0.12)"}]}/>
             <VideoDonut label={watchTime?"WATCH TIME":"LIKES"} center={watchTime?watchTime+"m":fmt(v.likes||0)} sub={watchTime?"total mins":"total likes"}
@@ -1377,8 +1394,8 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
               data={[{name:"Score",value:Math.max(getScore(v),1),color:"#7c3aed"},{name:"Gap",value:Math.max(100-getScore(v),1),color:"rgba(124,58,237,0.1)"}]}/>
           </div>
           <div style={{ display:"flex", gap:"6px" }}>
-            <a href={v.url} target="_blank" rel="noreferrer" style={{ padding:"5px 12px", borderRadius:"7px", background:C.purple, color:"#fff", fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>▶ Watch</a>
-            <a href={`https://studio.youtube.com/video/${v.video_id}/edit`} target="_blank" rel="noreferrer" style={{ padding:"5px 12px", borderRadius:"7px", background:"transparent", border:`1px solid ${C.hairline}`, color:C.muted, fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>✏️ Edit in Studio</a>
+            <a href={v.url} target="_blank" rel="noreferrer" style={{ padding:"6px 16px", borderRadius:"99px", background:C.purple, color:"#fff", fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>▶ Watch</a>
+            <a href={`https://studio.youtube.com/video/${v.video_id}/edit`} target="_blank" rel="noreferrer" style={{ padding:"6px 16px", borderRadius:"99px", background:"transparent", border:`1px solid ${C.hairline}`, color:C.muted, fontSize:"10px", fontWeight:"700", textDecoration:"none" }}>✏️ Edit in Studio</a>
           </div>
         </div>
       )}
