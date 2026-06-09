@@ -567,12 +567,6 @@ function FestivalCalendar() {
     return `${days} ${yt("दिन बाकी","दिवस बाकी","days away")}`;
   };
 
-  return (
-    <div>
-      {/* Header */}
-      <div style={{ background:`linear-gradient(135deg,${C.purple}22,${C.rose}18)`, border:`1.5px solid ${C.purple}33`, borderRadius:"16px", padding:"16px 18px", marginBottom:"16px" }}>
-      </div>
-
       {/* Festival cards */}
       <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
         {(Array.isArray(festivals)?festivals:[]).map((f, i) => {
