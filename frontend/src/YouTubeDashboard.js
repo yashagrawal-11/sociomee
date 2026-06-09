@@ -65,6 +65,10 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
       .yt-traffic-text { min-width: unset !important; width: 100% !important; max-width: 100% !important; }
       .yt-traffic-text span { font-size: 9px !important; }
     }
+    /* Mini stat cards */
+    @media (max-width: 600px) {
+      .yt-mini-stat-grid { grid-template-columns: repeat(2,1fr) !important; gap:6px !important; }
+    }
     /* Video donuts mobile scroll */
     @media (max-width: 600px) {
       .yt-video-donuts { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none !important; -ms-overflow-style: none !important; gap: 8px !important; padding-bottom: 4px; }
@@ -1351,7 +1355,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" style={{ flexShrink:0, transform:open?"rotate(180deg)":"rotate(0deg)", transition:"transform 0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       {open && (
-        <div style={{ borderTop:`1px solid ${C.hairline}`, padding:"12px", overflow:"visible" }}>
+        <div style={{ borderTop:`1px solid ${C.hairline}`, padding:"10px 8px", overflow:"visible", position:"relative" }}>
           <div style={{ fontSize:"10px", fontWeight:"800", color:C.purple, letterSpacing:"0.8px", textTransform:"uppercase", marginBottom:"8px" }}>⚡ SocioMee AI Optimization Tips</div>
           <div style={{ display:"flex", flexDirection:"column", gap:"6px", marginBottom:"12px" }}>
             {tips.map((t,ti) => (
@@ -1362,7 +1366,7 @@ function OptimizeVideoRow({ v, userId, getScore, getTips, scoreColor, C }) {
             ))}
           </div>
           {/* Donut Charts */}
-          <div style={{display:"flex",gap:"8px",marginBottom:"12px",overflowX:"auto",overflowY:"visible",scrollbarWidth:"none",msOverflowStyle:"none",paddingBottom:"4px",WebkitOverflowScrolling:"touch"}}>
+          <div style={{display:"flex",gap:"8px",marginBottom:"10px",overflowX:"scroll",overflowY:"visible",scrollbarWidth:"none",msOverflowStyle:"none",paddingBottom:"4px",WebkitOverflowScrolling:"touch",position:"relative"}}>
             <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
               data={[{name:"This video",value:v.views||1,color:"#7c3aed"},{name:"Others",value:Math.max(1,v.views*10),color:"rgba(124,58,237,0.12)"}]}/>
             <VideoDonut label={watchTime?"WATCH TIME":"LIKES"} center={watchTime?watchTime+"m":fmt(v.likes||0)} sub={watchTime?"total mins":"total likes"}
@@ -2016,17 +2020,17 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
             
           </div>
 
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"16px"}}>
+          <div className="yt-mini-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"8px",marginBottom:"16px"}}>
             {[
               {label:"Watch Time",value:(analytics?.chart_data?Math.round(analytics.chart_data.reduce((a,r)=>a+(r.minutes||0),0)/60):0)+"h",sub:"Total minutes",color:"#f59e0b",icon:"⏱"},
               {label:"Avg Daily",value:analytics?.chart_data?Math.round(analytics.chart_data.reduce((a,r)=>a+(r.views||0),0)/(analytics.chart_data.length||1)):0,sub:"Views per day",color:"#7c3aed",icon:"📊"},
               {label:"Best Day",value:analytics?.chart_data?.length?analytics.chart_data.reduce((a,b)=>a.views>b.views?a:b).date?.slice(5):"—",sub:"Highest views",color:"#34d399",icon:"🚀"},
               {label:"New Subs",value:"+"+(analytics?.total_subs||0),sub:"This period",color:"#ff6eb5",icon:"📈"},
             ].map((s,i)=>(
-              <div key={i} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"14px"}}>
-                <div style={{fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"6px"}}>{s.icon} {s.label}</div>
-                <div style={{fontSize:"20px",fontWeight:"900",color:s.color}}>{s.value}</div>
-                <div style={{fontSize:"10px",color:"rgba(255,255,255,0.25)",marginTop:"2px"}}>{s.sub}</div>
+              <div key={i} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"12px",padding:"10px 8px"}}>
+                <div style={{fontSize:"8px",fontWeight:"700",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:"4px"}}>{s.label}</div>
+                <div style={{fontSize:"16px",fontWeight:"900",color:s.color,lineHeight:1}}>{s.value}</div>
+                <div style={{fontSize:"8px",color:"rgba(255,255,255,0.25)",marginTop:"3px"}}>{s.sub}</div>
               </div>
             ))}
           </div>
