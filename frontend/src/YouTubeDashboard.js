@@ -59,6 +59,11 @@ if (typeof document !== "undefined" && !document.getElementById("yt-mobile-style
   const s = document.createElement("style");
   s.id = "yt-mobile-styles";
   s.textContent = `
+    /* Traffic donut mobile */
+    @media (max-width: 600px) {
+      .yt-traffic-wrap { flex-direction: column !important; align-items: center !important; }
+      .yt-traffic-text { min-width: unset !important; width: 100% !important; }
+    }
     /* Video donuts mobile scroll */
     @media (max-width: 600px) {
       .yt-video-donuts { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none !important; -ms-overflow-style: none !important; gap: 8px !important; padding-bottom: 4px; }
@@ -1524,7 +1529,7 @@ function OptimizeTab({ userId, channel, C }) {
           {id:"video",label:`Videos (${videos.filter(v=>v.video_type==="video").length})`},
           {id:"live",label:`Live (${videos.filter(v=>v.video_type==="live").length})`}
         ].map(f=>(
-          <button key={f.id} onClick={()=>setVfilter(f.id)} style={{padding:"3px 10px",borderRadius:"99px",border:`1px solid ${vfilter===f.id?C.purple:C.hairline}`,background:vfilter===f.id?`${C.purple}22`:"transparent",color:vfilter===f.id?C.purple:C.muted,fontSize:"10px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>{f.label}</button>
+          <button key={f.id} onClick={()=>setVfilter(f.id)} style={{padding:"3px 8px",borderRadius:"99px",border:`1px solid ${vfilter===f.id?C.purple:C.hairline}`,background:vfilter===f.id?`${C.purple}22`:"transparent",color:vfilter===f.id?C.purple:C.muted,fontSize:"9px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>{f.label}</button>
         ))}
       </div>
       {/* Video list */}
@@ -1799,7 +1804,7 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
   const highlighted = activeOuter!==null ? pieData[activeOuter] : null;
   const highlightedInner = activeInner!==null ? innerData[activeInner] : null;
   return (
-    <div style={{display:"flex",gap:"16px",alignItems:"flex-start",flexWrap:"wrap"}}>
+    <div className="yt-traffic-wrap" style={{display:"flex",gap:"16px",alignItems:"flex-start",flexWrap:"wrap",justifyContent:"center"}}>
       <div style={{position:"relative"}}>
         <RechartsPie width={160} height={160}>
           <Pie data={pieData} cx={80} cy={80} innerRadius={52} outerRadius={72} paddingAngle={2} dataKey="value" strokeWidth={0}
@@ -1813,19 +1818,19 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
         </RechartsPie>
         <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none",width:"50px"}}>
           {highlighted ? (<>
-            <div style={{fontSize:"18px",fontWeight:"900",color:COLORS[activeOuter%COLORS.length],lineHeight:1}}>{highlighted.pct}%</div>
+            <div style={{fontSize:"13px",fontWeight:"900",color:COLORS[activeOuter%COLORS.length],lineHeight:1}}>{highlighted.pct}%</div>
             <div style={{fontSize:"9px",color:"rgba(255,255,255,0.6)",marginTop:"2px",lineHeight:1.3}}>{highlighted.name}</div>
           </>) : highlightedInner ? (<>
-            <div style={{fontSize:"14px",fontWeight:"900",color:highlightedInner.color,lineHeight:1}}>AI</div>
+            <div style={{fontSize:"11px",fontWeight:"900",color:highlightedInner.color,lineHeight:1}}>AI</div>
             <div style={{fontSize:"8px",color:"rgba(255,255,255,0.5)",marginTop:"2px",lineHeight:1.3}}>{highlightedInner.name}</div>
           </>) : (<>
-            <div style={{fontSize:"20px",fontWeight:"900",color:"#fff",lineHeight:1}}>{topPct}%</div>
+            <div style={{fontSize:"15px",fontWeight:"900",color:"#fff",lineHeight:1}}>{topPct}%</div>
             <div style={{fontSize:"9px",color:"#a78bfa",fontWeight:"700",marginTop:"2px"}}>TOP SOURCE</div>
             <div style={{fontSize:"8px",color:"rgba(255,255,255,0.4)",marginTop:"1px"}}>{topLabel}</div>
           </>)}
         </div>
       </div>
-      <div style={{flex:1,minWidth:"200px"}}>
+      <div className="yt-traffic-text" style={{flex:1,minWidth:"120px",maxWidth:"100%"}}>
         <div style={{fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>Traffic Sources</div>
         <div style={{display:"flex",flexDirection:"column",gap:"5px",marginBottom:"14px"}}>
           {pieData.map((d,i)=>(
@@ -1855,7 +1860,7 @@ function TrafficDonut({ pieData, COLORS, topPct, topLabel, aiTip, innerData }) {
         ) : (
           <div style={{background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"10px",padding:"10px 12px"}}>
             <div style={{fontSize:"10px",fontWeight:"700",color:"#a78bfa",marginBottom:"4px"}}>✦ AI Insight</div>
-            <div style={{fontSize:"11px",color:"rgba(255,255,255,0.6)",lineHeight:1.5}}>{aiTip}</div>
+            <div style={{fontSize:"11px",color:"rgba(255,255,255,0.6)",lineHeight:1.5,textAlign:"center"}}>{aiTip}</div>
           </div>
         )}
       </div>

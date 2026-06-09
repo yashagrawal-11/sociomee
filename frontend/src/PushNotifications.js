@@ -54,6 +54,6 @@ export async function initPush(userId){
     if(localStorage.getItem("sm_push_dismissed"))return;
     if(Notification.permission==="granted"){await doSubscribe(userId,reg);return;}
     if(Notification.permission==="denied")return;
-    setTimeout(()=>showPrompt(userId,reg),30000);
+    // Push prompt removed — subscriptions managed on landing page only
   }catch(e){console.warn("initPush:",e);}
 }
