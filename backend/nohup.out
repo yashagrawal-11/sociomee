@@ -799,3 +799,93 @@ INFO:     127.0.0.1:49190 - "POST /auth/refresh-token HTTP/1.0" 200 OK
 INFO:     127.0.0.1:49204 - "GET /auth/me HTTP/1.0" 200 OK
 INFO:     127.0.0.1:49214 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
 INFO:     127.0.0.1:49228 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56710 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56674 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56676 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56680 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40968 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40980 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40986 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41002 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57744 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57750 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57758 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57760 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40418 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40422 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40424 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40426 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     127.0.0.1:58570 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:58584 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:58590 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:58596 - "POST /push/subscribe HTTP/1.0" 200 OK
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:60124 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:60134 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:36420 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:51788 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:51802 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:51806 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:53450 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:43070 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:59660 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53234 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53240 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53244 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49878 - "POST /api/generate-platform-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:49880 - "POST /api/generate-platform-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:49894 - "POST /api/generate-platform-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:45158 - "POST /api/generate-platform-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:45172 - "POST /api/generate-platform-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:45188 - "POST /api/generate-platform-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:45194 - "POST /api/generate-platform-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:45200 - "POST /api/generate-platform-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:45212 - "POST /api/generate-platform-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:45216 - "POST /api/generate-full-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:45220 - "POST /api/generate-platform-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:44414 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44426 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44440 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:38842 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38858 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38862 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:35270 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:41974 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41990 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:42002 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:54924 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:54934 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:54948 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:54966 - "GET /api/telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:54980 - "GET /api/discord/status?user_id=112040558777568963466 HTTP/1.0" 404 Not Found
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     127.0.0.1:54952 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:60526 - "GET /api/actuator/heapdump HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:60530 - "GET /api/actuator/env HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:60542 - "GET /api/actuator/logfile HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:60548 - "GET /api/heapdump HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:60560 - "GET /api/actuator/configprops HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:60572 - "GET /api/env HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:60576 - "GET /api/configprops HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:48718 - "GET /api/v1/config.json HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:48722 - "GET /api/secrets.json HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:48730 - "GET /api/aws.json HTTP/1.0" 404 Not Found
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     127.0.0.1:40768 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40776 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40784 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:40794 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     127.0.0.1:48174 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:48186 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:48188 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:48190 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:48196 - "OPTIONS /api/ai/generate HTTP/1.0" 400 Bad Request
+INFO:     127.0.0.1:43316 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43332 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43346 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:43360 - "POST /push/subscribe HTTP/1.0" 200 OK

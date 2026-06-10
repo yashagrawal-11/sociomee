@@ -3,29 +3,101 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.png" />
+    
+    <!-- Viewport — fixed (removed user-scalable=no) -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+    <meta name="theme-color" content="#7c3aed" />
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>SocioMee</title>
-      <!-- Google Analytics -->
+    <!-- Primary Meta -->
+    <title>SocioMee — AI Content Studio for Indian Creators | YouTube, Instagram, LinkedIn</title>
+    <meta name="description" content="SocioMee is India's first AI content studio. Generate YouTube scripts, Instagram captions, LinkedIn posts, hooks & more in Hindi, Hinglish & English. 32+ AI tools. Free to start." />
+    <meta name="keywords" content="AI content creator India, YouTube script generator, Instagram caption AI, Hindi content creator tool, social media AI tool India, SocioMee" />
+    <meta name="author" content="SocioMee — Mee Group" />
+    <link rel="canonical" href="https://sociomee.in/app/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://sociomee.in/app/" />
+    <meta property="og:site_name" content="SocioMee" />
+    <meta property="og:title" content="SocioMee — AI Content Studio for Indian Creators" />
+    <meta property="og:description" content="India's first AI content studio. Generate YouTube scripts, Instagram captions, LinkedIn posts & more in Hindi, Hinglish & English. 32+ AI tools. Free to start." />
+    <meta property="og:image" content="https://sociomee.in/logo192.png" />
+    <meta property="og:image:width" content="192" />
+    <meta property="og:image:height" content="192" />
+    <meta property="og:locale" content="en_IN" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@SocioMeeAI" />
+    <meta name="twitter:creator" content="@SocioMeeAI" />
+    <meta name="twitter:title" content="SocioMee — AI Content Studio for Indian Creators" />
+    <meta name="twitter:description" content="India's first AI content studio. 32+ tools for YouTube, Instagram, LinkedIn & more. Hindi, Hinglish & English. Free to start." />
+    <meta name="twitter:image" content="https://sociomee.in/logo192.png" />
+
+    <!-- JSON-LD Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "SocioMee",
+          "url": "https://sociomee.in",
+          "logo": "https://sociomee.in/logo192.png",
+          "description": "India's first AI content studio for creators",
+          "foundingDate": "2026",
+          "foundingLocation": "Mumbai, India",
+          "sameAs": [
+            "https://x.com/SocioMeeAI",
+            "https://www.instagram.com/sociomee.offical",
+            "https://github.com/yashagrawal-11/sociomee",
+            "https://wellfound.com/company/sociomee-2",
+            "https://wikidata.org/wiki/Q140122503"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "url": "https://sociomee.in",
+          "name": "SocioMee",
+          "description": "AI Content Studio for Indian Creators",
+          "inLanguage": ["en-IN", "hi", "mr"],
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://sociomee.in/app?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "SocioMee",
+          "applicationCategory": "ContentCreationApplication",
+          "operatingSystem": "Web, Android, iOS",
+          "url": "https://sociomee.in/app",
+          "description": "AI-powered content creation studio for Indian creators. Generate YouTube scripts, Instagram captions, LinkedIn posts and more in Hindi, Hinglish and English.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR",
+            "description": "Free plan with 50 credits/day"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "127"
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- GSC Verification -->
+    <meta name="google-site-verification" content="DZfPoPMhokALR-MpW50-YGCx9EhXXIr-vgbzZUWXGDc" />
+
+    <!-- PWA -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QT59QVWE9R"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -33,19 +105,19 @@
       gtag('js', new Date());
       gtag('config', 'G-QT59QVWE9R');
     </script>
-  <meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><style>body{background-color:#000000!important;}@media(max-width:768px){:root{color-scheme:dark;}}</style><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/></head>
+
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+    <style>body{background-color:#0a0a0a!important;}@media(max-width:768px){:root{color-scheme:dark;}}</style>
+  </head>
   <body style="overflow-x:hidden;max-width:100vw;">
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>
+      <div style="font-family:sans-serif;padding:40px;text-align:center;background:#0a0a0a;color:#fff">
+        <h1>SocioMee — AI Content Studio for Indian Creators</h1>
+        <p>India's first AI content studio. Generate YouTube scripts, Instagram captions, LinkedIn posts and more in Hindi, Hinglish & English.</p>
+        <p>Please enable JavaScript to use SocioMee, or <a href="https://sociomee.in" style="color:#7c3aed">visit our homepage</a>.</p>
+      </div>
+    </noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body style="overflow-x:hidden;max-width:100vw;"> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
   </body>
 </html>
