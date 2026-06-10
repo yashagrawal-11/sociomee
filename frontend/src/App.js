@@ -1238,6 +1238,10 @@ export default function App() {
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [showUsagePopup, setShowUsagePopup] = useState(false);
   const [showPlansPopup, setShowPlansPopup] = useState(false);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [notifSettings, setNotifSettings] = useState({newFeatures:true,weeklyTips:true,usageAlerts:true,proOffers:false});
+  const [deleteConfirm, setDeleteConfirm] = useState('');
   const [openGroups, setOpenGroups] = useState({youtube:true, instagram:false, telegram:false, pinterest:false, threads:false, reddit:false, linkedin:false, facebook:false, tiktok:false, whatsapp:false, xtools:false, analytics:false});
   const toggleGroup = (g) => setOpenGroups(prev=>({...prev,[g]:!prev[g]}));
   const [youtubeInitialTab, setYoutubeInitialTab] = useState("analytics");
@@ -1756,6 +1760,16 @@ export default function App() {
           <span style={{flex:1}}>Channel Settings</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
+        <button onClick={()=>{setShowNotificationsModal(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span style={{flex:1}}>Notifications</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button onClick={()=>{setShowDeleteModal(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(239,68,68,0.8)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(239,68,68,0.08)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          <span style={{flex:1}}>Delete Account</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.4)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
         <div style={{position:"relative"}}><button onClick={()=>setLangMenuOpen(l=>!l)} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:langMenuOpen?"0 0 10px 10px":"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <span style={{flex:1}}>Language</span>
@@ -1775,6 +1789,41 @@ export default function App() {
         </div>
       </div>
 
+      {showNotificationsModal && (
+        <div onClick={()=>setShowNotificationsModal(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"rgba(13,13,20,0.98)",border:"1px solid rgba(124,58,237,0.25)",borderRadius:"16px",padding:"24px",width:"100%",maxWidth:"360px"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"20px"}}>
+              <div style={{fontSize:"16px",fontWeight:"800",color:"#fff",fontFamily:"Poppins,sans-serif"}}>🔔 Notifications</div>
+              <button onClick={()=>setShowNotificationsModal(false)} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+            </div>
+            {[{key:"newFeatures",label:"New Features",desc:"Get notified when we launch new tools"},{key:"weeklyTips",label:"Weekly Tips",desc:"Creator tips every week"},{key:"usageAlerts",label:"Usage Alerts",desc:"Alert when credits are running low"},{key:"proOffers",label:"Pro Offers",desc:"Exclusive deals and discounts"}].map(({key,label,desc})=>(
+              <div key={key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px",borderRadius:"10px",background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",marginBottom:"8px"}}>
+                <div><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",fontFamily:"Poppins,sans-serif"}}>{label}</div><div style={{fontSize:"11px",color:"rgba(255,255,255,0.4)",fontFamily:"Poppins,sans-serif",marginTop:"2px"}}>{desc}</div></div>
+                <button onClick={()=>setNotifSettings(p=>({...p,[key]:!p[key]}))} style={{width:"44px",height:"24px",borderRadius:"99px",border:"none",background:notifSettings[key]?"#7c3aed":"rgba(255,255,255,0.1)",cursor:"pointer",position:"relative",transition:"all 0.2s",flexShrink:0}}>
+                  <div style={{width:"18px",height:"18px",borderRadius:"50%",background:"#fff",position:"absolute",top:"3px",transition:"all 0.2s",left:notifSettings[key]?"23px":"3px"}}/>
+                </button>
+              </div>
+            ))}
+            <button onClick={()=>setShowNotificationsModal(false)} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"none",background:"linear-gradient(135deg,#7c3aed,#9333ea)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif",marginTop:"8px"}}>Save Preferences</button>
+          </div>
+        </div>
+      )}
+      {showDeleteModal && (
+        <div onClick={()=>{setShowDeleteModal(false);setDeleteConfirm('');}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"rgba(13,13,20,0.98)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:"16px",padding:"24px",width:"100%",maxWidth:"360px"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"16px"}}>
+              <div style={{fontSize:"16px",fontWeight:"800",color:"#ef4444",fontFamily:"Poppins,sans-serif"}}>🗑️ Delete Account</div>
+              <button onClick={()=>{setShowDeleteModal(false);setDeleteConfirm('');}} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+            </div>
+            <div style={{background:"rgba(239,68,68,0.06)",border:"1px solid rgba(239,68,68,0.15)",borderRadius:"10px",padding:"12px",marginBottom:"16px"}}>
+              <div style={{fontSize:"12px",color:"rgba(239,68,68,0.9)",fontFamily:"Poppins,sans-serif",lineHeight:"1.6"}}>⚠️ This will permanently delete your account, all your generated content, saved history, and credits. This action cannot be undone.</div>
+            </div>
+            <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)",fontFamily:"Poppins,sans-serif",marginBottom:"8px"}}>Type <span style={{color:"#ef4444",fontWeight:"700"}}>DELETE</span> to confirm</div>
+            <input value={deleteConfirm} onChange={e=>setDeleteConfirm(e.target.value)} placeholder="Type DELETE here" style={{width:"100%",padding:"10px 12px",borderRadius:"8px",border:"1px solid rgba(239,68,68,0.2)",background:"rgba(255,255,255,0.03)",color:"#fff",fontSize:"13px",fontFamily:"Poppins,sans-serif",outline:"none",boxSizing:"border-box",marginBottom:"12px"}}/>
+            <button disabled={deleteConfirm!=="DELETE"} onClick={()=>{if(deleteConfirm==="DELETE"){fetch("/api/auth/delete-account",{method:"DELETE",headers:{"Authorization":"Bearer "+localStorage.getItem("token")}}).then(()=>{localStorage.clear();window.location.href="/";});}}} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"none",background:deleteConfirm==="DELETE"?"#ef4444":"rgba(239,68,68,0.2)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:deleteConfirm==="DELETE"?"pointer":"not-allowed",fontFamily:"Poppins,sans-serif",opacity:deleteConfirm==="DELETE"?1:0.5,transition:"all 0.2s"}}>Delete My Account Permanently</button>
+          </div>
+        </div>
+      )}
       {/* USAGE POPUP */}
       {showPlansPopup && (
         <div onClick={()=>setShowPlansPopup(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
