@@ -970,3 +970,315 @@ INFO:     127.0.0.1:45100 - "POST /auth/refresh-token HTTP/1.0" 200 OK
 INFO:     127.0.0.1:45110 - "GET /auth/me HTTP/1.0" 200 OK
 INFO:     127.0.0.1:45122 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
 INFO:     127.0.0.1:45132 - "POST /push/subscribe HTTP/1.0" 200 OK
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     91.92.241.197:0 - "GET /api/user/ HTTP/1.0" 404 Not Found
+INFO:     103.49.243.18:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot8682046160:AAF67-6o8HadhvX3P8M2bOGt1GPBkoRifhA/getUpdates?offset=1&timeout=10&limit=10 (Caused by ConnectTimeoutError(<HTTPSConnection(host='api.telegram.org', port=443) at 0x7f3485bf6b60>, 'Connection to api.telegram.org timed out. (connect timeout=20)'))
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot8682046160:AAF67-6o8HadhvX3P8M2bOGt1GPBkoRifhA/getUpdates?offset=1&timeout=10&limit=10 (Caused by ConnectTimeoutError(<HTTPSConnection(host='api.telegram.org', port=443) at 0x7f3477fef5e0>, 'Connection to api.telegram.org timed out. (connect timeout=20)'))
+INFO:     103.49.243.18:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     103.49.243.18:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "POST /api/generate-full-content HTTP/1.0" 404 Not Found
+INFO:     103.49.243.18:0 - "POST /api/generate-platform-content HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:36146 - "GET /api/generate-full-content HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:36158 - "GET /generate-full-content HTTP/1.1" 405 Method Not Allowed
+INFO:     2a02:4780:12:b9cc::1:0 - "POST /generate-full-content HTTP/1.0" 401 Unauthorized
+INFO:     103.49.243.18:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "POST /generate-full-content HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /credits/112040558777568963466 HTTP/1.0" 401 Unauthorized
+INFO:     103.49.243.18:0 - "GET /telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     103.49.243.18:0 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     103.49.243.18:0 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-12&endDate=2026-06-11&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     103.49.243.18:0 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     103.49.243.18:0 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     103.49.243.18:0 - "GET /youtube/suggested-competitors?user_id=112040558777568963466 HTTP/1.0" 200 OK
+[festivals] Fetched 55 festivals from Google Calendar
+INFO:     103.49.243.18:0 - "GET /festivals/upcoming HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /youtube/upload/quota?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /youtube/upload/best-time HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /youtube/upload/quota?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /youtube/upload/best-time HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /youtube/upload/quota?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /youtube/upload/best-time HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /youtube/upload/history?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /youtube/channel-videos/112040558777568963466?max_results=20 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /youtube/comments/112040558777568963466?video_id=ieadCKqyWrg&order=time&max_results=50 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "GET /telegram/connect-status?user_id=112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.18:0 - "POST /thumbnail/analyze HTTP/1.0" 200 OK
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     34.74.88.198:0 - "GET /actuator/heapdump HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /configprops HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /env HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /heapdump HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /actuator/logfile HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /docker-compose.yml HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /actuator/configprops HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /actuator/env HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /docker-compose.prod.yml HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /aws.json HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /credentials.json HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /phpinfo.php HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /config.json HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /config.yml HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /config.php HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /settings.json HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /settings.yml HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /database.yml HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /database.php HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /application.properties HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /application.yml HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /credentials.json HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /appsettings.json HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /secrets.json HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /v1/config.json HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /v1/application.yml HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /parameters.yml HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /keys.json HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /v2/application.yml HTTP/1.0" 404 Not Found
+INFO:     34.74.88.198:0 - "GET /v2/config.json HTTP/1.0" 404 Not Found
+INFO:     195.178.110.31:0 - "GET /.env HTTP/1.0" 404 Not Found
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=20)
+INFO:     103.49.243.15:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.15:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.15:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.15:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /auth/google/login HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /auth/google/callback?iss=https%3A%2F%2Faccounts.google.com&code=4%2F0AdkVLPw0nZZzyJNu1PWCaufMvPoHCnYPfeO9Jt5etxvmdIRkY4_39nhXkhwmWeroT0VBvg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+openid&authuser=7&prompt=none HTTP/1.0" 302 Found
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-13&endDate=2026-06-12&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:c43a:f0ff:feec:61d3:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     91.92.241.197:0 - "GET /user/ HTTP/1.0" 404 Not Found
+INFO:     91.92.241.197:0 - "GET /user/ HTTP/1.0" 404 Not Found
+INFO:     159.223.132.86:0 - "POST /graphql HTTP/1.0" 404 Not Found
+INFO:     159.223.132.86:0 - "POST /gql HTTP/1.0" 404 Not Found
+INFO:     139.59.136.184:0 - "POST /graphql HTTP/1.0" 404 Not Found
+INFO:     139.59.136.184:0 - "POST /gql HTTP/1.0" 404 Not Found
+INFO:     91.92.241.197:0 - "GET /user/ HTTP/1.0" 404 Not Found
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:63:598b:471:65e:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:63:598b:471:65e:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:63:598b:471:65e:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:63:598b:471:65e:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     2401:4900:7dd7:a35:98cd:62ff:fec6:a1bb:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     91.92.241.197:0 - "GET /user/ HTTP/1.0" 404 Not Found
+INFO:     91.92.241.197:0 - "GET /user/ HTTP/1.0" 404 Not Found
+INFO:     2a0b:8bc0:2:3bb6::1:0 - "GET /.env HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     195.178.110.31:0 - "GET /.env HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+Polling error: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot8682046160:AAF67-6o8HadhvX3P8M2bOGt1GPBkoRifhA/getUpdates?offset=1&timeout=10&limit=10 (Caused by ConnectTimeoutError(<HTTPSConnection(host='api.telegram.org', port=443) at 0x7f3485bd3e20>, 'Connection to api.telegram.org timed out. (connect timeout=20)'))
+INFO:     103.49.243.14:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     103.49.243.12:0 - "GET /youtube/status/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "GET /youtube/channels/112040558777568963466 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+INFO:     103.49.243.12:0 - "GET /youtube/analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "GET /youtube/all-videos/112040558777568963466?max_results=100 HTTP/1.0" 200 OK
+Not all requested scopes were granted by the authorization server, missing scopes email, profile.
+Analytics query failed: <HttpError 400 when requesting https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DUC1wmEu0r1Q4ZriRAURayFsA&startDate=2026-05-14&endDate=2026-06-13&metrics=views&dimensions=insightTrafficSourceDetail&filters=insightTrafficSourceType%3D%3DYT_SEARCH&sort=-views&alt=json returned "The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.". Details: "[{'message': 'The query is not supported. Check the documentation at https://developers.google.com/youtube/analytics/v2/available_reports for a list of supported queries.', 'domain': 'global', 'reason': 'badRequest'}]">
+INFO:     103.49.243.12:0 - "GET /youtube/deep-analytics/112040558777568963466?days=30 HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.12:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /auth/refresh-token HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /auth/me HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /credits/112040558777568963466 HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "POST /push/subscribe HTTP/1.0" 200 OK
+INFO:     103.49.243.14:0 - "GET /news/feed?category=all&limit=20 HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "GET /news/status HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "GET /news/feed?category=milestone&limit=20 HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "GET /news/feed?category=drama&limit=20 HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "GET /news/feed?category=trend&limit=20 HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "GET /news/feed?category=all&limit=20 HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "POST /news/trigger HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "GET /news/status HTTP/1.0" 404 Not Found
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [206941]
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started parent process [251223]
+INFO:     Started server process [251226]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [251225]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+CLIENT ID: 517099702570-e90p257ovct0pt3in89hogtr1nn6edmm.apps.googleusercontent.com
+JWT: 263d7fc55125bcbce12a398faef1c944d69ab07ec3a8c45004df50e6caa7bbcc
+Discord router skip: No module named 'redis'
+INFO:     103.49.243.14:0 - "GET /news/status HTTP/1.0" 404 Not Found
+INFO:     2a02:4780:12:b9cc::1:0 - "GET /news/status HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "GET /news/status HTTP/1.0" 404 Not Found
+INFO:     Received SIGTERM, exiting.
+INFO:     Terminated child process [251225]
+INFO:     Terminated child process [251226]
+INFO:     Waiting for child process [251225]
+INFO:     Shutting down
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [251225]
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [251226]
+INFO:     Waiting for child process [251226]
+INFO:     Stopping parent process [251223]
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started parent process [251251]
+INFO:     Started server process [251254]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [251253]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+CLIENT ID: 517099702570-e90p257ovct0pt3in89hogtr1nn6edmm.apps.googleusercontent.com
+JWT: 263d7fc55125bcbce12a398faef1c944d69ab07ec3a8c45004df50e6caa7bbcc
+News router skip: No module named 'redis'
+INFO:     2a02:4780:12:b9cc::1:0 - "GET /news/status HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "GET /news/status HTTP/1.0" 404 Not Found
+INFO:     Received SIGTERM, exiting.
+INFO:     Terminated child process [251253]
+INFO:     Terminated child process [251254]
+INFO:     Waiting for child process [251253]
+INFO:     Shutting down
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [251254]
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [251253]
+INFO:     Waiting for child process [251254]
+INFO:     Stopping parent process [251251]
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started parent process [251275]
+INFO:     Started server process [251277]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [251278]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+CLIENT ID: 517099702570-e90p257ovct0pt3in89hogtr1nn6edmm.apps.googleusercontent.com
+JWT: 263d7fc55125bcbce12a398faef1c944d69ab07ec3a8c45004df50e6caa7bbcc
+INFO:     2a02:4780:12:b9cc::1:0 - "GET /news/status HTTP/1.0" 404 Not Found
+INFO:     103.49.243.14:0 - "GET /news/status HTTP/1.0" 404 Not Found
+INFO:     Received SIGTERM, exiting.
+INFO:     Terminated child process [251277]
+INFO:     Terminated child process [251278]
+INFO:     Waiting for child process [251277]
+INFO:     Shutting down
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [251277]
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [251278]
+INFO:     Waiting for child process [251278]
+INFO:     Stopping parent process [251275]

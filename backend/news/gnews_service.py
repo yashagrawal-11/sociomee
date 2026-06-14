@@ -2,8 +2,9 @@ import httpx
 import os
 from typing import List, Dict
 import asyncio
+from news.cache_service import increment_gnews_calls, is_gnews_quota_exceeded
 
-GNEWS_KEY = os.getenv("GNEWS_API_KEY", "065f9aee9e5a5d23c89bda53a3d867f3")
+GNEWS_KEY = os.getenv("GNEWS_API_KEY", "")
 GNEWS_URL = "https://gnews.io/api/v4/search"
 
 KEYWORDS = [
@@ -34,7 +35,7 @@ CREATOR_NAMES = [
 
 def detect_category(title: str, desc: str) -> str:
     text = f"{title} {desc}".lower()
-    if any(w in text for w in ["million subscribers", "milestone", "record", "100m", "200m", "300m", "400m", "500m", "crore views", "billion views", "fastest", "most subscribed"]):
+    if any(w in text for w in ["million subscribers", "milestone", "record", "100m", "200m", "crore views", "billion views", "fastest", "most subscribed"]):
         return "milestone"
     if any(w in text for w in ["drama", "controversy", "exposed", "cancelled", "beef", "feud", "lawsuit", "banned"]):
         return "drama"
@@ -57,6 +58,11 @@ def extract_creators(title: str, desc: str) -> List[str]:
     return [n for n in CREATOR_NAMES if n.lower() in text.lower()][:3]
 
 async def fetch_keyword(keyword: str) -> List[Dict]:
+    # Hard stop if quota exceeded
+    if is_gnews_quota_exceeded():
+        print(f"[GNews] Quota exceeded, skipping fetch for '{keyword}'")
+        return []
+
     params = {
         "q": keyword,
         "token": GNEWS_KEY,
@@ -68,13 +74,20 @@ async def fetch_keyword(keyword: str) -> List[Dict]:
         async with httpx.AsyncClient(timeout=10.0) as client:
             r = await client.get(GNEWS_URL, params=params)
             if r.status_code == 200:
+                # Track this API call
+                total = increment_gnews_calls(1)
+                print(f"[GNews] API call made. Total today: {total}/90")
                 return r.json().get("articles", [])
+            elif r.status_code == 429:
+                print(f"[GNews] Rate limited by GNews API!")
+                return []
     except Exception as e:
-        print(f"GNews error for '{keyword}': {e}")
+        print(f"[GNews] Error for '{keyword}': {e}")
     return []
 
 async def fetch_all() -> List[Dict]:
-    tasks = [fetch_keyword(kw) for kw in KEYWORDS[:6]]
+    # Only fetch 4 keywords max per run to conserve quota (4 calls per 2hr = 48/day max)
+    tasks = [fetch_keyword(kw) for kw in KEYWORDS[:4]]
     results = await asyncio.gather(*tasks, return_exceptions=True)
     seen = set()
     articles = []

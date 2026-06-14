@@ -19,6 +19,7 @@ import LinkedInDashboard from "./LinkedInDashboard";
 import { LinkedInPost, LinkedInHeadline, LinkedInAbout, LinkedInCarousel, LinkedInHashtags, LinkedInBestTime } from "./LinkedInTools";
 import { FacebookPost, FacebookGroupPost, FacebookAdCopy, FacebookBestTime } from "./FacebookTools";
 import ThumbnailStudioNew from "./ThumbnailStudio";
+import ScreenRecorder from './components/ScreenRecorder';
 import { KeywordResearch, TrendingVideos, EvergreenScore, DailyVideoIdeas } from "./YouTubeTools";
 import SocioMeeNews from "./SocioMeeNews";
 import { TikTokHook, TikTokCaption, TikTokVideoIdeas, TikTokHashtags, TikTokBestTime } from "./TikTokTools";
@@ -1261,6 +1262,13 @@ export default function App() {
     { code:"bn", label:"বাংলা" },
   ];
 
+  // Listen for screen recorder navigation events
+  useEffect(() => {
+    const handler = (e) => setActiveTab(e.detail);
+    window.addEventListener("sociomee_navigate", handler);
+    return () => window.removeEventListener("sociomee_navigate", handler);
+  }, []);
+
   useEffect(() => {
     let startX = 0; let startY = 0;
     const ts = (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; };
@@ -1422,7 +1430,7 @@ export default function App() {
           </button>
 
           {/* Channels label */}
-          <div style={{fontSize:"9px",fontWeight:"700",color:"rgba(255,255,255,0.18)",letterSpacing:"1.5px",padding:"12px 12px 4px",textTransform:"uppercase"}}>Channels</div>
+          <div style={{fontSize:"9px",fontWeight:"700",color:"rgba(255,255,255,0.18)",letterSpacing:"1.5px",padding:"12px 12px 4px",textTransform:"uppercase"}}>Connect</div>
 
           {CHANNELS.map(ch=>(
             <button key={ch.id} onClick={()=>{toggleTab(ch.id);setSidebarOpen(false);}}
@@ -1453,6 +1461,7 @@ export default function App() {
                 {tab:"seo",label:"SEO Analyzer",fn:()=>{setYoutubeInitialTab("seo");setActiveTab("youtube");setSidebarOpen(false);},icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>},
                 {tab:"yt-evergreen",label:"Evergreen Score",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22V12M12 12C12 8 8 6 6 6c1 3 3 5 6 6zM12 12C12 8 16 6 18 6c-1 3-3 5-6 6z"/></svg>},
                 {tab:"yt-ideas",label:"Daily Video Ideas",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>},
+                {tab:"screenrecorder",label:"Screen Recorder",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>},
               ].map(item=>(
                 <button key={item.tab} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
                   style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #7c3aed":"2px solid transparent",background:activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent",color:activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
@@ -2085,6 +2094,7 @@ export default function App() {
       {activeTab==="yt-trending"  && isLoggedIn && <TrendingVideos/>}
       {activeTab==="yt-evergreen" && isLoggedIn && <EvergreenScore/>}
       {activeTab==="yt-ideas"     && isLoggedIn && <DailyVideoIdeas/>}
+      {activeTab==="screenrecorder" && isLoggedIn && <ScreenRecorder/>}
       {activeTab==="hashtags"   && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HashtagGenerator user={user}/></div>}
           {activeTab==="texttaudio" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TextToAudio user={user}/></div>}
           {activeTab==="hookgenerator"&&isLoggedIn&& <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HookGenerator user={user}/></div>}

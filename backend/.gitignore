@@ -1,0 +1,13 @@
+.env
+.env.local
+.env.production
+__pycache__/
+*.pyc
+*.pyo
+venv/
+*.json.bak
+*.cache.json
+celerybeat-schedule
+celerybeat-schedule.db
+celerybeat.pid
+*.log

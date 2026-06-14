@@ -21,7 +21,8 @@ import logging
 import os
 import httpx
 
-from fastapi import APIRouter, HTTPException, Query
+from middleware import get_current_user
+from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel
 
 log = logging.getLogger("youtube_routes")
@@ -82,7 +83,7 @@ def get_youtube_auth_url(redirect_uri: str = Query(default="")):
     except RuntimeError as e:
         raise HTTPException(503, str(e))
     except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 
 @router.post("/connect")
@@ -155,12 +156,19 @@ async def youtube_connect_route(payload: YouTubeConnectPayload):
     }
 
 
+
+def _verify_ownership(token_user_id: str, requested_user_id: str):
+    """Raise 403 if token user doesn't match requested user_id."""
+    if token_user_id != requested_user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
 @router.get("/status/{user_id}")
-def youtube_status(user_id: str):
+def youtube_status(user_id: str, user: dict = Depends(get_current_user)):
     """
     Check whether a user has connected their YouTube channel.
     Returns basic channel info if connected.
     """
+    _verify_ownership(user.get("user_id",""), user_id)
     ytc = _ytc()
     if not ytc.is_connected(user_id):
         return {"connected": False}
@@ -172,20 +180,21 @@ def youtube_status(user_id: str):
 
 
 @router.get("/channel/{user_id}")
-def youtube_channel(user_id: str):
+def youtube_channel(user_id: str, user: dict = Depends(get_current_user)):
     """Live channel statistics: subscribers, views, video count."""
+    _verify_ownership(user.get("user_id",""), user_id)
     ytc = _ytc()
     try:
         return ytc.get_channel_info(user_id)
     except ValueError as e:
         raise HTTPException(404, str(e))
     except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 
 @router.get("/analytics/{user_id}")
 def youtube_analytics(
-    user_id: str,
+    user_id: str, user: dict = Depends(get_current_user),
     days:    int = Query(default=30, ge=7, le=90),
 ):
     """
@@ -199,12 +208,12 @@ def youtube_analytics(
     except ValueError as e:
         raise HTTPException(404, str(e))
     except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 
 @router.get("/videos/{user_id}")
 def youtube_videos(
-    user_id:     str,
+    user_id:     str, user: dict = Depends(get_current_user),
     max_results: int = Query(default=10, ge=1, le=25),
 ):
     """Top videos by view count with title, thumbnail, likes, and comments."""
@@ -215,12 +224,12 @@ def youtube_videos(
     except ValueError as e:
         raise HTTPException(404, str(e))
     except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 
 @router.get("/all-videos/{user_id}")
 def youtube_all_videos(
-    user_id:     str,
+    user_id:     str, user: dict = Depends(get_current_user),
     max_results: int = Query(default=50, ge=1, le=100),
 ):
     """All uploaded videos with stats for Optimize tab."""
@@ -231,11 +240,11 @@ def youtube_all_videos(
     except ValueError as e:
         raise HTTPException(404, str(e))
     except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 @router.get("/predict/{user_id}")
 def youtube_predict(
-    user_id: str,
+    user_id: str, user: dict = Depends(get_current_user),
     topic:   str = Query(..., min_length=1),
 ):
     """
@@ -249,12 +258,13 @@ def youtube_predict(
     except ValueError as e:
         raise HTTPException(404, str(e))
     except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 
 @router.post("/disconnect/{user_id}")
-def youtube_disconnect(user_id: str):
+def youtube_disconnect(user_id: str, user: dict = Depends(get_current_user)):
     """Remove stored YouTube tokens for a user."""
+    _verify_ownership(user.get("user_id",""), user_id)
     ytc = _ytc()
     ytc.disconnect(user_id)
     return {"success": True, "message": "YouTube account disconnected."}
@@ -326,7 +336,7 @@ def youtube_competitor(user_id: str = Query(...), channel_url: str = Query(...))
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 @router.get("/suggested-competitors")
 def suggested_competitors(user_id: str = Query(...)):
@@ -431,7 +441,7 @@ def suggested_competitors(user_id: str = Query(...)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 
 

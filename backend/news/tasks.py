@@ -18,9 +18,9 @@ celery_app.conf.update(
     timezone="Asia/Kolkata",
     enable_utc=True,
     beat_schedule={
-        "fetch-news-every-15-min": {
+        "fetch-news-every-2-hours": {
             "task": "news.tasks.fetch_and_store_news",
-            "schedule": crontab(minute="*/15"),
+            "schedule": crontab(minute="0", hour="*/2"),
         }
     }
 )
@@ -76,8 +76,9 @@ async def _run():
             if ideas:
                 save_ideas(nid, ideas)
 
-    for cat in ["all","milestone","drama","platform","india","global","trend"]:
-        set_news_cache(cat, [])
+    # Invalidate stale cache so next request fetches fresh from DB
+    from news.cache_service import invalidate_news_cache
+    invalidate_news_cache()
 
     set_last_fetch(datetime.utcnow().isoformat())
     print("Done.")

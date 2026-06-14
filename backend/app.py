@@ -188,7 +188,7 @@ RZP_SECRET  = os.getenv("RAZORPAY_KEY_SECRET",  "")
 
 # ══════════════════════════════════════════════════════════════════════
 # ── Rate limiter ──────────────────────────────────────────────────────
-limiter = Limiter(key_func=get_remote_address, default_limits=["200/hour"])
+limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
 try:
     from referral_routes import router as referral_router
     _HAS_REFERRAL = True
@@ -289,20 +289,61 @@ app.add_middleware(
     allow_origins     = ALLOWED_ORIGINS,
     allow_credentials = True,
     allow_methods     = ["GET","POST","PUT","DELETE","OPTIONS"],
-    allow_headers     = ["*"],
+    allow_headers     = ["Authorization", "Content-Type", "Accept", "X-Requested-With"],
 )
+
+# ── Security Headers Middleware ──────────────────────────────────────
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as StarletteRequest
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: StarletteRequest, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data: https:; "
+            "connect-src 'self' https://api.razorpay.com https://sociomee.in; "
+            "frame-src https://api.razorpay.com https://checkout.razorpay.com;"
+        )
+        # Remove server info header
+        try:
+            del response.headers["server"]
+        except: pass
+        try:
+            del response.headers["x-powered-by"]
+        except: pass
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 # ── Models ────────────────────────────────────────────────────────────
 class FullContentRequest(BaseModel):
-    topic: str = Field(..., min_length=1); persona: str = "dhruvrathee"
-    language: str = "hinglish"; country: str = "in"; platform: str = "youtube"
+    topic: str = Field(..., min_length=1, max_length=300); persona: str = "dhruvrathee"
+    language: str = Field(default="hinglish", max_length=20)
+    country: str = Field(default="in", max_length=10)
+    platform: str = Field(default="youtube", max_length=30)
 
 class PlatformContentRequest(BaseModel):
-    topic: str = Field(..., min_length=1); platform: str; niche: str = "general"
-    tone: str = "default"; objective: str = "engagement"; personality: str = "default"
-    format_type: str = "long"; duration_seconds: int = Field(default=180, ge=1)
+    topic: str = Field(..., min_length=1, max_length=300)
+    platform: str = Field(..., max_length=30)
+    niche: str = Field(default="general", max_length=50)
+    tone: str = Field(default="default", max_length=30)
+    objective: str = Field(default="engagement", max_length=50)
+    personality: str = Field(default="default", max_length=50)
+    format_type: str = Field(default="long", max_length=20)
+    duration_seconds: int = Field(default=180, ge=1, le=3600)
     segment_count: int = Field(default=5, ge=2, le=7)
-    destination_type: str = "channel"; language: str = "hinglish"
+    destination_type: str = Field(default="channel", max_length=20)
+    language: str = Field(default="hinglish", max_length=20)
 
 class CreateOrderRequest(BaseModel):
     user_id: str = Field(..., min_length=1)
@@ -590,12 +631,16 @@ def home(): return {"message": "SocioMee API v3 🚀", "status": "ok"}
 def health(): return {"status": "ok"}
 
 @app.get("/credits/{user_id}")
-def get_credits(user_id: str, request: Request):
-    auth = request.headers.get("Authorization","")
-    if not auth.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Unauthorized")
+def get_credits(user_id: str, request: Request, user: dict = Depends(get_current_user)):
+    # Ownership check — user can only access their own credits
+    token_user_id = user.get("user_id", "")
+    if token_user_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
     try: return get_credit_status(user_id)
-    except Exception as e: raise HTTPException(500, str(e))
+    except Exception as e:
+        import logging
+        logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 @app.post("/use-credit")
 def use_credit_route(user: dict = Depends(get_current_user)):
@@ -606,20 +651,46 @@ def use_credit_route(user: dict = Depends(get_current_user)):
     return get_credit_status(user.get("user_id",""))
 
 @app.post("/api/ai/generate")
-async def ai_generate_proxy(request: Request):
-    import httpx
+@limiter.limit("10/minute")
+async def ai_generate_proxy(request: Request, user: dict = Depends(get_current_user)):
+    import httpx, re
     body = await request.json()
     api_key = os.environ.get("GOOGLE_API_KEY","")
+    if not api_key:
+        raise HTTPException(503, "AI service unavailable.")
     model = "gemini-2.5-flash"
-    # Convert Anthropic format to Gemini format
     messages = body.get("messages",[])
-    prompt = messages[0]["content"] if messages else ""
+    if not messages:
+        raise HTTPException(400, "No messages provided.")
+    # Sanitize prompt — strip injection attempts
+    raw_prompt = messages[0].get("content","") if isinstance(messages[0], dict) else str(messages[0])
+    # Truncate to 4000 chars max
+    prompt = raw_prompt[:4000].strip()
+    if not prompt:
+        raise HTTPException(400, "Empty prompt.")
+    # Remove common prompt injection patterns
+    injection_patterns = [
+        r"ignore (all |previous |prior )?instructions",
+        r"disregard (all |previous |prior )?instructions",
+        r"system prompt",
+        r"you are now",
+        r"act as (a |an )?(?!creator|youtuber|writer)",
+    ]
+    for pattern in injection_patterns:
+        if re.search(pattern, prompt, re.IGNORECASE):
+            raise HTTPException(400, "Invalid prompt content.")
+    # Check credits
+    err = _check_credits(user.get("user_id",""))
+    if err:
+        return err
     async with httpx.AsyncClient(timeout=60) as client:
         r = await client.post(
             f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}",
             headers={"Content-Type":"application/json"},
-            json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":2000}}
+            json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":1000}}
         )
+        if r.status_code != 200:
+            raise HTTPException(502, "AI service error. Please try again.")
         data = r.json()
         text = data.get("candidates",[{}])[0].get("content",{}).get("parts",[{}])[0].get("text","")
         # Return in Anthropic-compatible format
@@ -634,7 +705,10 @@ def gen_full(request: Request, payload: FullContentRequest, user: dict = Depends
     try:
         raw = _generate_full_content(topic=payload.topic.strip(), persona=payload.persona.strip().lower(),
                                      language=payload.language.strip().lower(), country=payload.country.strip().lower())
-    except Exception as e: raise HTTPException(500, str(e))
+    except Exception as e:
+        import logging
+        logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)
+        raise HTTPException(500, "Something went wrong. Please try again.")
     normalized = _normalize(raw, payload, payload.platform.strip().lower())
     try:
         from history_routes import save_generation
@@ -681,7 +755,10 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
             result = ThreadsEngine().generate(topic=topic, niche=payload.niche, tone=payload.tone, objective=payload.objective, segment_count=payload.segment_count).to_dict()
         else: raise HTTPException(400, f"Unknown platform: {p}")
     except HTTPException: raise
-    except Exception as e: raise HTTPException(500, str(e))
+    except Exception as e:
+        import logging
+        logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)
+        raise HTTPException(500, "Something went wrong. Please try again.")
     return _attach_credits(result, user["user_id"])
 
 @app.post("/thumbnail/ab-test")
@@ -717,7 +794,10 @@ async def thumb_analyze(file: UploadFile = File(...), keyword: str = Form(""), n
                 if w >= 1280: score += 8
             except Exception: pass
         return {"fit_score": min(score,100), "ctr_potential": min(score-10,100), "verdict": "Good thumbnail." if score>=70 else "Needs improvement.", "suggestions": ["Bigger text","Add a face","Brighter colors","Use 16:9 ratio"]}
-    except Exception as e: raise HTTPException(500, str(e))
+    except Exception as e:
+        import logging
+        logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 # ── Payment ───────────────────────────────────────────────────────────
 @app.get("/payment/plans")
@@ -797,27 +877,39 @@ def admin_set_plan(p: SetPlanRequest, _=Depends(_require_admin)):
 @app.post("/admin/reset-credits")
 def admin_reset(user_id: str = Query(...), _=Depends(_require_admin)):
     try: _reset_credits(user_id); return {"success": True, "status": get_credit_status(user_id)}
-    except Exception as e: raise HTTPException(500, str(e))
+    except Exception as e:
+        import logging
+        logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 @app.post("/admin/add-bonus")
 def admin_bonus(p: BonusRequest, _=Depends(_require_admin)):
     try: total = add_credits(p.user_id, p.amount); return {"success": True, "credits": total}
-    except Exception as e: raise HTTPException(500, str(e))
+    except Exception as e:
+        import logging
+        logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 @app.get("/admin/all-usage")
 def admin_usage(_=Depends(_require_admin)):
     try: return get_all_usage()
-    except Exception as e: raise HTTPException(500, str(e))
+    except Exception as e:
+        import logging
+        logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)
+        raise HTTPException(500, "Something went wrong. Please try again.")
 
 # ── Google Translate Proxy (no API key needed) ─────────────────────
 @app.post("/translate")
+@limiter.limit("20/minute")
 async def translate_text(request: Request):
     import httpx, urllib.parse
     body = await request.json()
-    text = body.get("text", "").strip()
+    text = body.get("text", "").strip()[:5000]  # max 5000 chars
     target_lang = body.get("target_lang", "hi")
     if not text:
         raise HTTPException(status_code=400, detail="No text provided")
+    if len(text) > 5000:
+        raise HTTPException(status_code=400, detail="Text too long. Max 5000 characters.")
     
     lang_map = {"hi":"hi","mr":"mr","ta":"ta","bn":"bn","gu":"gu","te":"te"}
     tl = lang_map.get(target_lang, "hi")
@@ -839,12 +931,19 @@ async def translate_text(request: Request):
 
 # ── Subtitle Generator (AssemblyAI) ───────────────────────────────────
 @app.post("/subtitles/upload")
+@limiter.limit("3/hour")
 async def upload_for_subtitles(request: Request, file: UploadFile = File(...), lang: str = Form("auto")):
     import httpx, os
-    api_key = os.environ.get("ASSEMBLYAI_API_KEY", "dfb838cf9697411685a0e9a0923008e1")
+    api_key = os.environ.get("ASSEMBLYAI_API_KEY", "")
 
     contents = await file.read()
-    print(f"[SUBTITLE] File: {file.filename}, Size: {len(contents)} bytes, Content-Type: {file.content_type}")
+    # Validate file size (max 25MB)
+    if len(contents) > 25 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large. Maximum size is 25MB.")
+    # Validate MIME type
+    allowed_types = ["audio/mpeg","audio/mp4","audio/wav","audio/ogg","audio/webm","video/mp4","video/webm","video/quicktime","application/octet-stream"]
+    if file.content_type and file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}. Allowed: audio/video files only.")
     if not contents or len(contents) < 1000:
         raise HTTPException(status_code=400, detail=f"File is empty or too small ({len(contents)} bytes). Please try again.")
 
@@ -885,9 +984,10 @@ async def upload_for_subtitles(request: Request, file: UploadFile = File(...), l
         return {"transcript_id": transcript_id}
 
 @app.get("/subtitles/status/{transcript_id}")
-async def subtitle_status(transcript_id: str):
+@limiter.limit("30/minute")
+async def subtitle_status(transcript_id: str, request: Request):
     import httpx, os
-    api_key = os.environ.get("ASSEMBLYAI_API_KEY", "dfb838cf9697411685a0e9a0923008e1")
+    api_key = os.environ.get("ASSEMBLYAI_API_KEY", "")
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.get(
             f"https://api.assemblyai.com/v2/transcript/{transcript_id}",
@@ -944,14 +1044,17 @@ async def subtitle_status(transcript_id: str):
 
 # ── Hashtag Generator (Real trending from best-hashtags.com) ─────────
 @app.post("/hashtags/generate")
+@limiter.limit("10/minute")
 async def generate_hashtags(request: Request):
     import httpx, re
     from bs4 import BeautifulSoup
     body = await request.json()
-    keyword = body.get("keyword", "").strip()
+    keyword = body.get("keyword", "").strip()[:100]  # max 100 chars
     platform = body.get("platform", "instagram")
     if not keyword:
         raise HTTPException(status_code=400, detail="Keyword required")
+    if len(keyword) > 100:
+        raise HTTPException(status_code=400, detail="Keyword too long. Max 100 characters.")
 
     kw_slug = keyword.lower().replace(" ", "")
     hashtags = []
@@ -1018,16 +1121,19 @@ async def generate_hashtags(request: Request):
 
 # ── Hook Generator (Free - template based) ────────────────────────────
 @app.post("/hooks/generate")
+@limiter.limit("10/minute")
 async def generate_hooks(request: Request):
     import random
     body = await request.json()
-    topic = body.get("topic", "").strip()
+    topic = body.get("topic", "").strip()[:200]  # max 200 chars
     platform = body.get("platform", "youtube")
     tone = body.get("tone", "curiosity")
     language = body.get("language", "hinglish")
 
     if not topic:
         raise HTTPException(status_code=400, detail="Topic required")
+    if len(topic) > 200:
+        raise HTTPException(status_code=400, detail="Topic too long. Max 200 characters.")
 
     t = topic.lower()
     T = topic.title()

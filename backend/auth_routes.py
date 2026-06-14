@@ -15,8 +15,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ENV_PATH = os.path.join(BASE_DIR, ".env")
 load_dotenv(ENV_PATH, override=True)  # override=True forces it to overwrite any existing env vars
 
-print("CLIENT ID:", os.getenv("GOOGLE_CLIENT_ID"))
-print("JWT:", os.getenv("JWT_SECRET"))
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -34,7 +32,7 @@ FRONTEND_CALLBACK_URL = os.getenv(
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-JWT_EXPIRE_DAYS = int(os.getenv("JWT_EXPIRE_DAYS", "7"))
+JWT_EXPIRE_DAYS = int(os.getenv("JWT_EXPIRE_DAYS", "1"))
 
 # SAFE WARNINGS (NO CRASH)
 if not GOOGLE_CLIENT_ID:
@@ -64,7 +62,7 @@ def decode_jwt_token(token: str) -> dict:
 
 # GOOGLE LOGIN
 @router.get("/google/login")
-@limiter.limit("10/minute")
+@limiter.limit("5/minute")
 def google_login(request: Request):
     if not GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=500, detail="Google Client ID not configured")
@@ -84,7 +82,8 @@ def google_login(request: Request):
 
 # CALLBACK
 @router.get("/google/callback")
-async def google_callback(code: str):
+@limiter.limit("10/minute")
+async def google_callback(request: Request, code: str):
     if not code:
         raise HTTPException(status_code=400, detail="Missing authorization code")
 
@@ -171,6 +170,7 @@ def get_me(request: Request):
         raise HTTPException(status_code=401, detail="Invalid token")
 # REFRESH
 @router.post("/refresh-token")
+@limiter.limit("10/minute")
 def refresh_token(request: Request):
     auth_header = request.headers.get("Authorization", "")
 
@@ -199,7 +199,7 @@ GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 GITHUB_REDIRECT_URI = os.getenv("GITHUB_REDIRECT_URI", "https://sociomee.in/api/auth/github/callback")
 
 @router.get("/github/login")
-@limiter.limit("10/minute")
+@limiter.limit("5/minute")
 def github_login(request: Request):
     if not GITHUB_CLIENT_ID:
         raise HTTPException(status_code=500, detail="GitHub Client ID not configured")
@@ -212,7 +212,8 @@ def github_login(request: Request):
     return {"url": url}
 
 @router.get("/github/callback")
-async def github_callback(code: str):
+@limiter.limit("10/minute")
+async def github_callback(request: Request, code: str):
     if not code:
         raise HTTPException(status_code=400, detail="Missing authorization code")
     try:
@@ -272,7 +273,8 @@ async def github_callback(code: str):
 # ══════════════════════════════════════════════════════════════════════
 # EMAIL / PASSWORD AUTH
 # ══════════════════════════════════════════════════════════════════════
-import hashlib, secrets, json
+import hashlib
+import bcrypt, secrets, json
 from pathlib import Path
 from pydantic import BaseModel
 
@@ -286,16 +288,27 @@ def _save_users(d):
     USERS_FILE.parent.mkdir(exist_ok=True)
     USERS_FILE.write_text(json.dumps(d, indent=2))
 
-def _hash_pw(pw): return hashlib.sha256(pw.encode()).hexdigest()
+def _hash_pw(pw: str) -> str:
+    return bcrypt.hashpw(pw.encode(), bcrypt.gensalt(rounds=12)).decode()
+
+def _verify_pw(pw: str, hashed: str) -> bool:
+    try:
+        # Support legacy SHA-256 hashes during transition
+        if not hashed.startswith("$2b$") and not hashed.startswith("$2a$"):
+            import hashlib
+            return hashlib.sha256(pw.encode()).hexdigest() == hashed
+        return bcrypt.checkpw(pw.encode(), hashed.encode())
+    except Exception:
+        return False
 
 class RegisterBody(BaseModel):
-    name: str
-    email: str
-    password: str
+    name: str = Field(..., min_length=1, max_length=100)
+    email: str = Field(..., min_length=5, max_length=200)
+    password: str = Field(..., min_length=8, max_length=128)
 
 class LoginBody(BaseModel):
-    email: str
-    password: str
+    email: str = Field(..., min_length=5, max_length=200)
+    password: str = Field(..., min_length=1, max_length=128)
 
 class ForgotBody(BaseModel):
     email: str
@@ -308,8 +321,8 @@ class ResetBody(BaseModel):
 @router.post("/register")
 @limiter.limit("3/minute")
 def register(body: RegisterBody, request: Request):
-    if len(body.password) < 6:
-        raise HTTPException(400, "Password must be at least 6 characters")
+    if len(body.password) < 8:
+        raise HTTPException(400, "Password must be at least 8 characters")
     users = _load_users()
     email = body.email.lower().strip()
     if email in users:
@@ -342,7 +355,7 @@ def login_email(body: LoginBody, request: Request):
     users = _load_users()
     email = body.email.lower().strip()
     user = users.get(email)
-    if not user or user.get("password") != _hash_pw(body.password):
+    if not user or not _verify_pw(body.password, user.get("password","")):
         raise HTTPException(401, "Invalid email or password")
     payload = {k: v for k, v in user.items() if k != "password"}
     token = create_jwt_token(payload)
