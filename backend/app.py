@@ -270,6 +270,13 @@ if _HAS_TG_SCHED and tg_sched_router is not None:
     except Exception as e:
         print(f"Discord router skip: {e}")
 
+# ── News router ──────────────────────────────────────────────────────
+try:
+    from news.routes import router as news_router
+    app.include_router(news_router)
+except Exception as e:
+    print(f'News router skip: {e}')
+
 # ── CORS ─────────────────────────────────────────────────────────────
 ALLOWED_ORIGINS = [
     "https://sociomee.in",
