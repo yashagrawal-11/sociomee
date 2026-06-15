@@ -1264,3 +1264,32 @@ async def validate_promo(request: Request):
     if code in PROMO_CODES:
         return {"valid": True, "promo": PROMO_CODES[code], "code": code}
     raise HTTPException(status_code=404, detail="Invalid promo code")
+
+@app.post("/api/removebg")
+@limiter.limit("5/hour")
+async def remove_bg(request: Request, user: dict = Depends(get_current_user)):
+    import httpx, base64
+    body = await request.json()
+    img_data = body.get("image","")
+    api_key = os.environ.get("REMOVE_BG_API_KEY","")
+    if not api_key:
+        raise HTTPException(503, "Remove BG not configured.")
+    # Decode base64 image
+    if "," in img_data:
+        img_data = img_data.split(",")[1]
+    img_bytes = base64.b64decode(img_data)
+    # Check credits before calling paid API
+    err = _check_credits(user.get("user_id",""))
+    if err: return err
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.post(
+            "https://api.remove.bg/v1.0/removebg",
+            headers={"X-Api-Key": api_key},
+            files={"image_file": ("image.png", img_bytes, "image/png")},
+            data={"size": "auto"}
+        )
+        if r.status_code != 200:
+            raise HTTPException(502, "BG removal failed.")
+        result_b64 = base64.b64encode(r.content).decode()
+        return {"image": f"data:image/png;base64,{result_b64}"}
