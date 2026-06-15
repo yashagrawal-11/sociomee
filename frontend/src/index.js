@@ -47,7 +47,7 @@ function Router() {
   if (path === "/youtube/callback") return <YouTubeCallback />;
 
   // Google login callback
-  if (path === "/auth/callback") return <AuthCallback />;
+  if (path.includes("/auth/callback")) return <AuthCallback />;
 
   if (!isLoggedIn) return <LoginPage />;
   return <App />;

@@ -82,7 +82,7 @@ def google_login(request: Request):
 
 # CALLBACK
 @router.get("/google/callback")
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 async def google_callback(request: Request, code: str):
     if not code:
         raise HTTPException(status_code=400, detail="Missing authorization code")
@@ -276,7 +276,7 @@ async def github_callback(request: Request, code: str):
 import hashlib
 import bcrypt, secrets, json
 from pathlib import Path
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 USERS_FILE = Path(__file__).parent / "data" / "users.json"
 

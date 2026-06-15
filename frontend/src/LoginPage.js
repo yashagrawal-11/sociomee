@@ -15,7 +15,7 @@ export function AuthCallback() {
     const error  = params.get("error");
     if (token) {
       handleCallback(token)
-        .then(() => { setStatus("success"); setTimeout(() => { window.location.href = "/"; }, 1000); })
+        .then(() => { setStatus("success"); setTimeout(() => { window.location.href = "/app"; }, 1000); })
         .catch(() => { setMsg("Callback failed."); setStatus("error"); });
     } else { setMsg(error || "No token received."); setStatus("error"); }
   }, [handleCallback]);
@@ -24,13 +24,17 @@ export function AuthCallback() {
     <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"16px", background:"#0a0a0a", fontFamily:"'Poppins',sans-serif" }}>
       {status === "loading" && <><div style={{ width:"44px",height:"44px",borderRadius:"50%",border:"3px solid rgba(124,58,237,0.2)",borderTopColor:"#7c3aed",animation:"spin 0.7s linear infinite" }}/><p style={{ color:"rgba(255,255,255,0.5)",fontSize:"14px",fontWeight:"500",margin:0 }}>Signing you in…</p></>}
       {status === "success" && <><div style={{ fontSize:"48px" }}>✅</div><p style={{ color:"#10b981",fontSize:"16px",fontWeight:"600",margin:0 }}>Logged in! Redirecting…</p></>}
-      {status === "error"   && <><div style={{ fontSize:"48px" }}>❌</div><p style={{ color:"#ef4444",fontSize:"14px",fontWeight:"500",margin:0,maxWidth:"300px",textAlign:"center" }}>{msg}</p><button onClick={() => window.location.href="/"} style={{ padding:"10px 24px",borderRadius:"99px",border:"none",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"600",cursor:"pointer" }}>Go back</button></>}
+      {status === "error"   && <><div style={{ fontSize:"48px" }}>❌</div><p style={{ color:"#ef4444",fontSize:"14px",fontWeight:"500",margin:0,maxWidth:"300px",textAlign:"center" }}>{msg}</p><button onClick={() => window.location.href="/app"} style={{ padding:"10px 24px",borderRadius:"99px",border:"none",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"600",cursor:"pointer" }}>Go back</button></>}
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}*{box-sizing:border-box;margin:0;padding:0}`}</style>
     </div>
   );
 }
 
 export default function LoginPage() {
+  useEffect(() => {
+    document.title = "Login | SocioMee";
+    return () => { document.title = "SocioMee"; };
+  }, []);
   const { loginWithGoogle, loginWithGithub, handleCallback, loading } = useAuth();
   const [mode, setMode] = useState("signin");
   const [name, setName] = useState("");
@@ -76,7 +80,7 @@ export default function LoginPage() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.detail || "Registration failed");
       await handleCallback(d.token);
-      window.location.href = "/";
+      window.location.href = "/app";
     } catch(e) { setErr(e.message); }
     finally { setBusy(false); }
   };
@@ -89,7 +93,7 @@ export default function LoginPage() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.detail || "Login failed");
       await handleCallback(d.token);
-      window.location.href = "/";
+      window.location.href = "/app";
     } catch(e) { setErr(e.message); }
     finally { setBusy(false); }
   };

@@ -4,16 +4,16 @@ from typing import List, Dict
 import asyncio
 from news.cache_service import increment_gnews_calls, is_gnews_quota_exceeded
 
-GNEWS_KEY = os.getenv("GNEWS_API_KEY", "")
+GNEWS_KEY = os.getenv("GNEWS_API_KEY", "") or __import__("dotenv").dotenv_values("/var/www/sociomee/backend/.env").get("GNEWS_API_KEY", "")
 GNEWS_URL = "https://gnews.io/api/v4/search"
 
 KEYWORDS = [
-    "Indian YouTuber million subscribers",
-    "content creator India viral",
-    "CarryMinati",
+    "Indian creator",
+    "YouTube India",
+    "Instagram India creator",
+    "social media India",
     "Bhuvan Bam",
-    "Techno Gamerz",
-    "Technical Guruji",
+    "CarryMinati",
     "Triggered Insaan",
     "Amit Bhadana",
     "MrBeast subscribers milestone",
@@ -71,7 +71,7 @@ async def fetch_keyword(keyword: str) -> List[Dict]:
         "sortby": "publishedAt",
     }
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=25.0) as client:
             r = await client.get(GNEWS_URL, params=params)
             if r.status_code == 200:
                 # Track this API call
