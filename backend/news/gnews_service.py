@@ -8,13 +8,13 @@ GNEWS_KEY = os.getenv("GNEWS_API_KEY", "") or __import__("dotenv").dotenv_values
 GNEWS_URL = "https://gnews.io/api/v4/search"
 
 KEYWORDS = [
-    "Indian creator",
-    "YouTube India",
-    "Instagram India creator",
-    "social media India",
+    "MrBeast YouTube",
+    "Indian YouTuber",
+    "content creator viral",
+    "YouTube milestone subscribers",
+    "Instagram creator India",
+    "CarryMinati YouTube",
     "Bhuvan Bam",
-    "CarryMinati",
-    "Triggered Insaan",
     "Amit Bhadana",
     "MrBeast subscribers milestone",
     "YouTube creator milestone India",
