@@ -13,6 +13,10 @@ import VideoPerformance from "./VideoPerformance";
 
 const BASE = "https://sociomee.in/api";
 const YT_LANG = () => localStorage.getItem("sociomee_lang") || "en";
+
+const getToken = () => localStorage.getItem("sociomee_token") || "";
+const authHeaders = () => ({ "Authorization": "Bearer " + getToken(), "Content-Type": "application/json" });
+
 const yt = (hi, mr, en, ta, bn) => YT_LANG()==="hi"?hi:YT_LANG()==="mr"?mr:YT_LANG()==="ta"?(ta||en):YT_LANG()==="bn"?(bn||en):en;
 const FESTIVAL_NAMES = {
   "Eid ul-Fitr":{"hi":"ईद उल-फितर","mr":"ईद उल-फितर"},
@@ -760,6 +764,10 @@ function SEOTab({ userId, channel, C }) {
   const [scoreLoad,  setScoreLoad ] = useState(false);
   const BASE = "https://sociomee.in/api";
 const YT_LANG = () => localStorage.getItem("sociomee_lang") || "en";
+
+const getToken = () => localStorage.getItem("sociomee_token") || "";
+const authHeaders = () => ({ "Authorization": "Bearer " + getToken(), "Content-Type": "application/json" });
+
 const yt = (hi, mr, en, ta, bn) => YT_LANG()==="hi"?hi:YT_LANG()==="mr"?mr:YT_LANG()==="ta"?(ta||en):YT_LANG()==="bn"?(bn||en):en;
 const FESTIVAL_NAMES = {
   "Eid ul-Fitr":{"hi":"ईद उल-फितर","mr":"ईद उल-फितर"},
@@ -1385,7 +1393,7 @@ function OptimizeTab({ userId, channel, C }) {
   const [vfilter, setVfilter] = useState("all");
 
   useEffect(() => {
-    fetch(`${BASE}/youtube/all-videos/${userId}?max_results=100`)
+    fetch(`${BASE}/youtube/all-videos/${userId}?max_results=100`, { headers: authHeaders() })
       .then(r => r.json())
       .then(d => { setVideos(d.videos || []); setLoading(false); })
       .catch(() => setLoading(false));
@@ -1697,7 +1705,7 @@ function SentimentTab({ userId, channel, C }) {
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
-    fetch(`${BASE}/youtube/channel-videos/${userId}?max_results=20`)
+    fetch(`${BASE}/youtube/channel-videos/${userId}?max_results=20`, { headers: authHeaders() })
       .then(r=>r.json())
       .then(d=>{ console.log("channel-videos:", d); setVideos(d.videos||[]); setLoading(false); })
       .catch(e=>{ console.error("channel-videos error:", e); setLoading(false); });
@@ -1862,26 +1870,26 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
     if (!userId) { setLoading(false); return; }
     setLoading(true);
     try {
-      const statusRes = await fetch(`${BASE}/youtube/status/${userId}`);
+      const statusRes = await fetch(`${BASE}/youtube/status/${userId}`, { headers: authHeaders() });
       const status    = await statusRes.json();
       if (!status.connected) { setConnected(false); setLoading(false); return; }
       setConnected(true); setChannel(status);
       try {
-        const chRes = await fetch(`${BASE}/youtube/channels/${userId}`);
+        const chRes = await fetch(`${BASE}/youtube/channels/${userId}`, { headers: authHeaders() });
         const chData = await chRes.json();
         setAllChannels(chData.channels || []);
         setActiveChannelId(chData.active_channel_id || "");
       } catch(e) {}
       const [analyticsRes, videosRes] = await Promise.all([
-        fetch(`${BASE}/youtube/analytics/${userId}?days=${days}`),
-        fetch(`${BASE}/youtube/all-videos/${userId}?max_results=100`),
+        fetch(`${BASE}/youtube/analytics/${userId}?days=${days}`, { headers: authHeaders() }),
+        fetch(`${BASE}/youtube/all-videos/${userId}?max_results=100`, { headers: authHeaders() }),
       ]);
       const [analyticsData, videosData] = await Promise.all([analyticsRes.json(), videosRes.json()]);
       setAnalytics(analyticsData);
       setVideos(videosData.videos || []);
-      fetch(`${BASE}/youtube/deep-analytics/${userId}?days=${days}`).then(r=>r.ok?r.json():null).then(d=>{if(d)setDeepAnalytics(d);setDeepLoading(false);}).catch(()=>{setDeepLoading(false);});
+      fetch(`${BASE}/youtube/deep-analytics/${userId}?days=${days}`, { headers: authHeaders() }).then(r=>r.ok?r.json():null).then(d=>{if(d)setDeepAnalytics(d);setDeepLoading(false);}).catch(()=>{setDeepLoading(false);});
       if (topic) {
-        const predRes = await fetch(`${BASE}/youtube/predict/${userId}?topic=${encodeURIComponent(topic)}`);
+        const predRes = await fetch(`${BASE}/youtube/predict/${userId}?topic=${encodeURIComponent(topic)}`, { headers: authHeaders() });
         setPrediction(await predRes.json());
       }
     } catch (e) { console.error("Dashboard load error:", e); }
