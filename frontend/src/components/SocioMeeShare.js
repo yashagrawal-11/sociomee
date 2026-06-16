@@ -105,7 +105,7 @@ export default function SocioMeeShare() {
       setShareUrl(url);
 
       // Generate QR
-      const qr = await QRCode.toDataURL(url, { width: 200, margin: 1, color: { dark: "#a78bfa", light: "#0a0a0a" } });
+      const qr = await QRCode.toDataURL(url, { width: 200, margin: 2, color: { dark: "#000000", light: "#ffffff" } });
       setQrUrl(qr);
       startCountdown(expires);
       setMode("sent");
@@ -175,7 +175,7 @@ export default function SocioMeeShare() {
       {/* Header */}
       <div style={{ padding:"10px 20px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-          <div style={{ width:"30px", height:"30px", borderRadius:"9px", background:"rgba(124,58,237,0.15)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div style={{ width:"30px", height:"30px", borderRadius:"9px", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           </div>
           <div>
@@ -318,7 +318,7 @@ export default function SocioMeeShare() {
               <p style={{ fontSize:"11px", fontWeight:"700", color:C.muted, letterSpacing:"2px", textTransform:"uppercase", fontFamily:C.font, marginBottom:"12px" }}>Share Code</p>
               <div style={{ display:"flex", gap:"8px", justifyContent:"center", marginBottom:"16px" }}>
                 {code.split("").map((d, i) => (
-                  <div key={i} style={{ width:"44px", height:"56px", borderRadius:"10px", background:"rgba(124,58,237,0.15)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"24px", fontWeight:"800", color:"#a78bfa", fontFamily:"Orbitron, monospace" }}>
+                  <div key={i} style={{ width:"44px", height:"56px", borderRadius:"10px", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"24px", fontWeight:"800", color:"#ffffff", fontFamily:"Orbitron, monospace" }}>
                     {d}
                   </div>
                 ))}
