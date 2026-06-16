@@ -19,7 +19,7 @@ router = APIRouter(prefix="/pinterest", tags=["pinterest"])
 PINTEREST_APP_ID       = os.getenv("PINTEREST_APP_ID", "")
 PINTEREST_APP_SECRET   = os.getenv("PINTEREST_APP_SECRET", "")
 PINTEREST_REDIRECT_URI = os.getenv("PINTEREST_REDIRECT_URI", "https://sociomee.in/pinterest/callback")
-PINTEREST_SCOPE        = "boards:read,pins:read,user_accounts:read,pins:write"
+PINTEREST_SCOPE        = "boards:read,boards:write,pins:read,pins:write,user_accounts:read"
 
 # ── Storage helpers ────────────────────────────────────────────────
 DATA_DIR       = Path(__file__).parent / "data"

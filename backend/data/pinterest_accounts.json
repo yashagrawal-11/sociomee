@@ -1,1 +1,16 @@
-{}
+{
+  "112040558777568963466": {
+    "access_token": "pina_AEAUBYQXAAMQQBYAGDAFID2CD6S5BHQBACGSPR3I4F7WWCGKY7LGQG66S4KLV5KGNBCTLTSYPOUJKP3K6RJXPNT45H353ZAA",
+    "refresh_token": "pinr.eyJhbGciOiJSUzI1NiIsInNpZyI6MSwidHlwZSI6IkpXVCIsInZlciI6MX0=.eyJjbGllbnRfaWQiOjE1NjUyNDgsImV4cCI6NTE4NDAwMCwiaWF0IjoxNzgxNjE2OTQyLCJuYmYiOjE3ODE2MTY5NDIsInN1YiI6MTEwNDcxOTEyMTAwNDAzODE2OX0=.OHhwCt-tWKUWXFvme4MDgHkeD1oVER9Bw5XU0P9ucMBLSnzCX3dGbRy8j962WEP6falgIF09t4nwzvol7-1nErKoKQGcwUvb37F-ec5fACbgMJS13n42HIAXlYOLrwNx7on8RwW_1W9ZtTS4obRZgWEGWfTgyl3HWGTSAsrKjJ59lM3VdQcGpKypUGCnVirWTXUCAVrgEzUhZ5LpCy2y27J-hSaE--A1jV-tOcKSSBw66PptAWiJfwbiDL2zgmp60cRgPRAtuZHwLSBF-BK88LHc6apJcYf29jBYESZUHc2DwG1w25gMAVzZ85ggEjDbqbCyFc9OQJ24vmX_wcyDSA==",
+    "connected_at": "2026-06-16T13:35:43.566885",
+    "username": "sociomeeoffical",
+    "display_name": "sociomee",
+    "profile_pic": "https://i.pinimg.com/600x600_R/4f/72/e2/4f72e2df66a8b1040aae435f190eb7d3.jpg",
+    "followers": 0,
+    "following": 1,
+    "pin_count": 1,
+    "board_count": 1,
+    "profile_url": "https://www.pinterest.com/sociomeeoffical",
+    "account_type": "BUSINESS"
+  }
+}
