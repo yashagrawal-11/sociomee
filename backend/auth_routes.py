@@ -82,6 +82,7 @@ def google_login(request: Request):
 
 # CALLBACK
 @router.get("/google/callback")
+@limiter.exempt
 @limiter.limit("30/minute")
 async def google_callback(request: Request, code: str):
     if not code:
@@ -140,7 +141,6 @@ async def google_callback(request: Request, code: str):
 
 # GET USER
 @router.get("/me")
-@limiter.limit("120/minute")
 def get_me(request: Request):
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):

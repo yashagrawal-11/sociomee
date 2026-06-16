@@ -36,4 +36,6 @@ frontend/.env
 Thumbs.db
 
 # Logs
-*.log
+*.logbackend/data/
+backend/**/*.json
+*.tokens

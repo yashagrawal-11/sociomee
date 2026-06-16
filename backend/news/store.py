@@ -35,15 +35,8 @@ def save_news(articles: List[Dict]) -> int:
 
 def get_news(category: str = "all", limit: int = 20) -> List[Dict]:
     store = _read(NEWS_FILE)
-    cutoff = datetime.utcnow() - timedelta(hours=48)
     items = []
     for url, item in store.items():
-        try:
-            pub = datetime.fromisoformat(item.get("published_at", "").replace("Z",""))
-            if pub < cutoff:
-                continue
-        except:
-            pass
         if category == "all":
             items.append(item)
         elif category == "india" and item.get("region") == "india":
