@@ -89,9 +89,9 @@ function StorageMeter({ used, total }) {
   );
 }
 
-export default function SocioMeeVault() {
+export default function SocioMeeCloud() {
   const [files, setFiles]       = useState(() => {
-    try { return JSON.parse(localStorage.getItem("vault_files") || "[]"); } catch { return []; }
+    try { return JSON.parse(localStorage.getItem("cloud_files") || "[]"); } catch { return []; }
   });
   const [activeCat, setActiveCat] = useState("all");
   const [search, setSearch]     = useState("");
@@ -108,7 +108,7 @@ export default function SocioMeeVault() {
 
   const saveFiles = (f) => {
     setFiles(f);
-    try { localStorage.setItem("vault_files", JSON.stringify(f.map(x => ({...x, data: undefined})))); } catch {}
+    try { localStorage.setItem("cloud_files", JSON.stringify(f.map(x => ({...x, data: undefined})))); } catch {}
   };
 
   const addFiles = useCallback(async (fileList) => {
@@ -174,11 +174,11 @@ export default function SocioMeeVault() {
       <style>{`
         @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
         @keyframes spin{to{transform:rotate(360deg)}}
-        .vault-cat:hover{background:rgba(124,58,237,0.1)!important;border-color:rgba(124,58,237,0.3)!important;}
-        .vault-file:hover{border-color:rgba(124,58,237,0.25)!important;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
-        .vault-file-list:hover{background:rgba(124,58,237,0.05)!important;border-color:rgba(124,58,237,0.2)!important;}
-        .vault-icon-btn:hover{background:rgba(255,255,255,0.1)!important;}
-        .vault-upload-zone:hover{border-color:rgba(124,58,237,0.5)!important;background:rgba(124,58,237,0.06)!important;}
+        .cloud-cat:hover{background:rgba(124,58,237,0.1)!important;border-color:rgba(124,58,237,0.3)!important;}
+        .cloud-file:hover{border-color:rgba(124,58,237,0.25)!important;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+        .cloud-file-list:hover{background:rgba(124,58,237,0.05)!important;border-color:rgba(124,58,237,0.2)!important;}
+        .cloud-icon-btn:hover{background:rgba(255,255,255,0.1)!important;}
+        .cloud-upload-zone:hover{border-color:rgba(124,58,237,0.5)!important;background:rgba(124,58,237,0.06)!important;}
         ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.3);border-radius:99px}
       `}</style>
 
@@ -188,7 +188,7 @@ export default function SocioMeeVault() {
         <div style={{ padding:"16px 14px 12px", borderBottom:`1px solid ${C.border}` }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"12px" }}>
             <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(124,58,237,0.2)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px" }}>🔒</div>
-            <span style={{ fontSize:"13px", fontWeight:"800", color:C.white, fontFamily:C.font }}>SocioMee Vault</span>
+            <span style={{ fontSize:"13px", fontWeight:"800", color:C.white, fontFamily:C.font }}>SocioMee Cloud</span>
           </div>
 
           {/* Upload button */}
@@ -204,7 +204,7 @@ export default function SocioMeeVault() {
         <div style={{ flex:1, overflowY:"auto", padding:"10px 10px" }}>
           <p style={{ fontSize:"9px", fontWeight:"700", color:"rgba(255,255,255,0.25)", letterSpacing:"1.5px", textTransform:"uppercase", fontFamily:C.font, margin:"0 0 8px 4px" }}>Categories</p>
           {CATS.map(cat => (
-            <button key={cat.id} className="vault-cat" onClick={()=>setActiveCat(cat.id)}
+            <button key={cat.id} className="cloud-cat" onClick={()=>setActiveCat(cat.id)}
               style={{ width:"100%", display:"flex", alignItems:"center", gap:"8px", padding:"7px 10px", borderRadius:"8px", border:`1px solid ${activeCat===cat.id?"rgba(124,58,237,0.35)":"transparent"}`, background:activeCat===cat.id?"rgba(124,58,237,0.12)":"transparent", cursor:"pointer", transition:"all 0.15s", marginBottom:"2px" }}>
               <span style={{ fontSize:"14px" }}>{cat.icon}</span>
               <span style={{ fontSize:"12px", fontWeight:activeCat===cat.id?"700":"400", color:activeCat===cat.id?"#a78bfa":C.muted, fontFamily:C.font, flex:1, textAlign:"left" }}>{cat.label}</span>
@@ -247,11 +247,11 @@ export default function SocioMeeVault() {
           </div>
 
           <div style={{ display:"flex", gap:"4px", marginLeft:"auto" }}>
-            <button className="vault-icon-btn" onClick={()=>setViewMode("grid")}
+            <button className="cloud-icon-btn" onClick={()=>setViewMode("grid")}
               style={{ width:"32px", height:"32px", borderRadius:"8px", border:`1px solid ${viewMode==="grid"?"rgba(124,58,237,0.4)":C.border}`, background:viewMode==="grid"?"rgba(124,58,237,0.12)":"transparent", color:viewMode==="grid"?"#a78bfa":C.muted, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
             </button>
-            <button className="vault-icon-btn" onClick={()=>setViewMode("list")}
+            <button className="cloud-icon-btn" onClick={()=>setViewMode("list")}
               style={{ width:"32px", height:"32px", borderRadius:"8px", border:`1px solid ${viewMode==="list"?"rgba(124,58,237,0.4)":C.border}`, background:viewMode==="list"?"rgba(124,58,237,0.12)":"transparent", color:viewMode==="list"?"#a78bfa":C.muted, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
             </button>
@@ -316,14 +316,14 @@ export default function SocioMeeVault() {
 
             {files.length === 0 ? (
               /* Empty state */
-              <div className="vault-upload-zone"
+              <div className="cloud-upload-zone"
                 onDragOver={e=>{e.preventDefault();setDragOver(true)}}
                 onDragLeave={()=>setDragOver(false)}
                 onDrop={e=>{e.preventDefault();setDragOver(false);addFiles(e.dataTransfer.files)}}
                 onClick={()=>fileInputRef.current?.click()}
                 style={{ padding:"60px 24px", border:`2px dashed ${dragOver?"rgba(124,58,237,0.6)":"rgba(255,255,255,0.1)"}`, borderRadius:"20px", background:dragOver?"rgba(124,58,237,0.06)":"rgba(255,255,255,0.02)", cursor:"pointer", textAlign:"center", transition:"all 0.2s" }}>
                 <div style={{ fontSize:"48px", marginBottom:"16px" }}>🔒</div>
-                <h3 style={{ fontSize:"18px", fontWeight:"800", color:C.white, margin:"0 0 8px", fontFamily:C.font }}>Your Vault is empty</h3>
+                <h3 style={{ fontSize:"18px", fontWeight:"800", color:C.white, margin:"0 0 8px", fontFamily:C.font }}>Your Cloud is empty</h3>
                 <p style={{ fontSize:"13px", color:C.muted, margin:"0 0 20px", lineHeight:1.7, fontFamily:C.font }}>Upload scripts, images, videos, PDFs and any creator files. Everything in one secure place.</p>
                 <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", padding:"10px 22px", borderRadius:"99px", background:"rgba(124,58,237,0.15)", border:"1px solid rgba(124,58,237,0.3)", color:"#a78bfa", fontSize:"13px", fontWeight:"700", fontFamily:C.font }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -339,7 +339,7 @@ export default function SocioMeeVault() {
               /* Grid view */
               <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(160px, 1fr))", gap:"12px" }}>
                 {filtered.map(file => (
-                  <div key={file.id} className="vault-file"
+                  <div key={file.id} className="cloud-file"
                     style={{ borderRadius:"14px", border:`1px solid ${C.border}`, background:C.card, overflow:"hidden", cursor:"pointer", transition:"all 0.2s" }}>
                     <div onClick={()=>setPreview(file)}>
                       {file.type?.startsWith("image/") && file.data ? (
@@ -376,7 +376,7 @@ export default function SocioMeeVault() {
                   ))}
                 </div>
                 {filtered.map(file => (
-                  <div key={file.id} className="vault-file-list"
+                  <div key={file.id} className="cloud-file-list"
                     style={{ display:"grid", gridTemplateColumns:"1fr 100px 100px 80px", gap:"12px", padding:"10px 12px", borderRadius:"10px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.02)", alignItems:"center", cursor:"pointer", transition:"all 0.15s" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"10px" }} onClick={()=>setPreview(file)}>
                       <FileIcon cat={file.category} size={32}/>
