@@ -1293,3 +1293,62 @@ async def remove_bg(request: Request, user: dict = Depends(get_current_user)):
             raise HTTPException(502, "BG removal failed.")
         result_b64 = base64.b64encode(r.content).decode()
         return {"image": f"data:image/png;base64,{result_b64}"}
+
+# ── SocioMee Share ─────────────────────────────────────────────────────────
+import secrets, base64, time
+
+@app.post("/api/share/create")
+@limiter.limit("20/hour")
+async def share_create(request: Request, user: dict = Depends(get_current_user)):
+    body = await request.json()
+    file_data = body.get("file", "")      # base64
+    file_name = body.get("name", "file")
+    file_type = body.get("type", "application/octet-stream")
+    file_size = body.get("size", 0)
+    message   = body.get("message", "")
+    expires_in = int(body.get("expires", 1800))  # 30 min default
+
+    if file_size > 50 * 1024 * 1024:
+        raise HTTPException(400, "File too large. Max 50MB.")
+
+    code = str(secrets.randbelow(900000) + 100000)  # 6-digit code
+    key  = f"share:{code}"
+    payload = {
+        "code": code,
+        "name": file_name,
+        "type": file_type,
+        "size": file_size,
+        "file": file_data,
+        "message": message,
+        "sender": user.get("name", "Someone"),
+        "created": int(time.time()),
+        "expires": int(time.time()) + expires_in,
+    }
+    import json
+    r.setex(key, expires_in, json.dumps(payload))
+    return {"code": code, "expires_in": expires_in}
+
+@app.get("/api/share/{code}")
+async def share_get(code: str, request: Request):
+    import json
+    key = f"share:{code}"
+    raw = r.get(key)
+    if not raw:
+        raise HTTPException(404, "Share not found or expired.")
+    data = json.loads(raw)
+    # Return metadata only first
+    return {
+        "code": data["code"],
+        "name": data["name"],
+        "type": data["type"],
+        "size": data["size"],
+        "message": data["message"],
+        "sender": data["sender"],
+        "expires": data["expires"],
+        "file": data["file"],  # base64
+    }
+
+@app.delete("/api/share/{code}")
+async def share_delete(code: str, user: dict = Depends(get_current_user)):
+    r.delete(f"share:{code}")
+    return {"deleted": True}

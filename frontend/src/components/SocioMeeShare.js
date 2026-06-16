@@ -1,0 +1,439 @@
+import { useState, useRef, useCallback } from "react";
+import QRCode from "qrcode";
+
+const C = {
+  bg: "#0a0a0a",
+  panel: "rgba(6,4,15,0.97)",
+  border: "rgba(255,255,255,0.07)",
+  purple: "#7c3aed",
+  purpleLight: "#a78bfa",
+  muted: "rgba(255,255,255,0.35)",
+  white: "#fff",
+  font: "Poppins, sans-serif",
+};
+
+const API = "https://sociomee.in/api/share";
+
+function formatBytes(b) {
+  if (!b) return "0 B";
+  if (b < 1024) return `${b} B`;
+  if (b < 1024*1024) return `${(b/1024).toFixed(1)} KB`;
+  return `${(b/1024/1024).toFixed(1)} MB`;
+}
+
+function formatTime(secs) {
+  const m = Math.floor(secs/60), s = secs%60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function FileIcon({ type }) {
+  const isImg  = type?.startsWith("image/");
+  const isPDF  = type === "application/pdf";
+  const isVid  = type?.startsWith("video/");
+  const isAud  = type?.startsWith("audio/");
+  if (isImg)  return <span style={{fontSize:"28px"}}>🖼️</span>;
+  if (isPDF)  return <span style={{fontSize:"28px"}}>📄</span>;
+  if (isVid)  return <span style={{fontSize:"28px"}}>🎬</span>;
+  if (isAud)  return <span style={{fontSize:"28px"}}>🎵</span>;
+  return <span style={{fontSize:"28px"}}>📁</span>;
+}
+
+export default function SocioMeeShare() {
+  const [mode, setMode]       = useState("home");   // home | send | receive | sent | received
+  const [file, setFile]       = useState(null);
+  const [message, setMessage] = useState("");
+  const [expires, setExpires] = useState(1800);
+  const [loading, setLoading] = useState(false);
+  const [code, setCode]       = useState("");
+  const [inputCode, setInputCode] = useState("");
+  const [qrUrl, setQrUrl]     = useState("");
+  const [shareUrl, setShareUrl] = useState("");
+  const [received, setReceived] = useState(null);
+  const [copied, setCopied]   = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [countdown, setCountdown] = useState(null);
+  const fileInputRef = useRef(null);
+  const timerRef = useRef(null);
+
+  const token = () => localStorage.getItem("sociomee_token") || "";
+
+  const handleFile = (f) => {
+    if (!f) return;
+    if (f.size > 50*1024*1024) { alert("File too large. Max 50MB on free plan."); return; }
+    setFile(f);
+  };
+
+  const startCountdown = (secs) => {
+    setCountdown(secs);
+    timerRef.current = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) { clearInterval(timerRef.current); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const sendFile = async () => {
+    if (!file) return;
+    setLoading(true);
+    try {
+      // Convert file to base64
+      const base64 = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+
+      const resp = await fetch(`${API}/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token()}` },
+        body: JSON.stringify({
+          file: base64,
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          message,
+          expires,
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || "Failed");
+
+      const url = `https://sociomee.in/share/${data.code}`;
+      setCode(data.code);
+      setShareUrl(url);
+
+      // Generate QR
+      const qr = await QRCode.toDataURL(url, { width: 200, margin: 1, color: { dark: "#a78bfa", light: "#0a0a0a" } });
+      setQrUrl(qr);
+      startCountdown(expires);
+      setMode("sent");
+    } catch(e) {
+      alert("Could not create share. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const receiveFile = async () => {
+    const c = inputCode.replace(/\s/g, "");
+    if (c.length !== 6) { alert("Enter a 6-digit code."); return; }
+    setLoading(true);
+    try {
+      const resp = await fetch(`${API}/${c}`);
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || "Not found");
+      setReceived(data);
+      setMode("received");
+    } catch(e) {
+      alert("Share not found or expired. Check the code and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadFile = () => {
+    if (!received?.file) return;
+    const a = document.createElement("a");
+    a.href = received.file;
+    a.download = received.name;
+    a.click();
+  };
+
+  const copyCode = () => {
+    navigator.clipboard?.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyUrl = () => {
+    navigator.clipboard?.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const reset = () => {
+    clearInterval(timerRef.current);
+    setMode("home"); setFile(null); setMessage(""); setCode(""); setQrUrl("");
+    setShareUrl(""); setReceived(null); setInputCode(""); setCountdown(null);
+  };
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100vh", background:C.bg, fontFamily:C.font, overflow:"hidden" }}>
+      <style>{`
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+        @keyframes ping{0%{transform:scale(1);opacity:1}75%,100%{transform:scale(1.8);opacity:0}}
+        .share-btn:hover{background:rgba(124,58,237,0.2)!important;border-color:rgba(124,58,237,0.4)!important;color:#a78bfa!important;}
+        .share-upload:hover{border-color:rgba(124,58,237,0.5)!important;background:rgba(124,58,237,0.06)!important;}
+        .share-card{animation:fadeUp 0.3s ease-out;}
+        ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.3);border-radius:99px}
+      `}</style>
+
+      {/* Header */}
+      <div style={{ padding:"10px 20px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+          <div style={{ width:"30px", height:"30px", borderRadius:"9px", background:"rgba(124,58,237,0.15)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          </div>
+          <div>
+            <h2 style={{ fontSize:"13px", fontWeight:"800", color:C.white, margin:0, fontFamily:C.font }}>SocioMee Share</h2>
+            <p style={{ fontSize:"10px", color:C.muted, margin:0, fontFamily:C.font }}>Instant cross-device transfer</p>
+          </div>
+        </div>
+        {mode !== "home" && (
+          <button onClick={reset} style={{ padding:"6px 12px", borderRadius:"8px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"11px", cursor:"pointer", fontFamily:C.font }}>
+            New Share
+          </button>
+        )}
+      </div>
+
+      <div style={{ flex:1, overflowY:"auto", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}>
+
+        {/* HOME */}
+        {mode === "home" && (
+          <div className="share-card" style={{ width:"100%", maxWidth:"480px", textAlign:"center" }}>
+            <div style={{ width:"72px", height:"72px", borderRadius:"18px", background:"rgba(124,58,237,0.12)", border:"1px solid rgba(124,58,237,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px" }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </div>
+            <h3 style={{ fontSize:"24px", fontWeight:"800", color:C.white, margin:"0 0 8px", fontFamily:C.font }}>SocioMee Share</h3>
+            <p style={{ fontSize:"14px", color:C.muted, margin:"0 0 32px", lineHeight:1.7, fontFamily:C.font }}>Transfer files instantly between your phone and PC. No app, no Bluetooth, no compression. Just a 6-digit code.</p>
+
+            <div style={{ display:"flex", gap:"12px", justifyContent:"center" }}>
+              <button onClick={()=>setMode("send")}
+                style={{ flex:1, maxWidth:"180px", padding:"14px 20px", borderRadius:"14px", border:"1px solid rgba(124,58,237,0.4)", background:"rgba(124,58,237,0.12)", color:"#a78bfa", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+                <div style={{ fontSize:"24px", marginBottom:"8px" }}>📤</div>
+                Send a File
+                <div style={{ fontSize:"10px", fontWeight:"400", color:"rgba(255,255,255,0.3)", marginTop:"4px" }}>Upload from this device</div>
+              </button>
+              <button onClick={()=>setMode("receive")}
+                style={{ flex:1, maxWidth:"180px", padding:"14px 20px", borderRadius:"14px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.03)", color:C.white, fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+                <div style={{ fontSize:"24px", marginBottom:"8px" }}>📥</div>
+                Receive a File
+                <div style={{ fontSize:"10px", fontWeight:"400", color:"rgba(255,255,255,0.3)", marginTop:"4px" }}>Enter a 6-digit code</div>
+              </button>
+            </div>
+
+            {/* How it works */}
+            <div style={{ marginTop:"32px", padding:"20px", borderRadius:"16px", background:"rgba(255,255,255,0.02)", border:`1px solid ${C.border}` }}>
+              <p style={{ fontSize:"10px", fontWeight:"700", color:C.muted, letterSpacing:"1.5px", textTransform:"uppercase", fontFamily:C.font, marginBottom:"14px" }}>How it works</p>
+              <div style={{ display:"flex", flexDirection:"column", gap:"10px", textAlign:"left" }}>
+                {[
+                  ["1", "Upload a file on your phone"],
+                  ["2", "Get a 6-digit code or QR"],
+                  ["3", "Open SocioMee on your PC"],
+                  ["4", "Enter the code and download instantly"],
+                ].map(([n, t]) => (
+                  <div key={n} style={{ display:"flex", gap:"10px", alignItems:"center" }}>
+                    <span style={{ width:"22px", height:"22px", borderRadius:"50%", background:"rgba(124,58,237,0.2)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", fontWeight:"800", color:"#a78bfa", flexShrink:0, fontFamily:C.font }}>{n}</span>
+                    <span style={{ fontSize:"13px", color:"rgba(255,255,255,0.6)", fontFamily:C.font }}>{t}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop:"14px", padding:"10px", borderRadius:"8px", background:"rgba(124,58,237,0.06)", border:"1px solid rgba(124,58,237,0.15)" }}>
+                <p style={{ fontSize:"11px", color:"rgba(255,255,255,0.4)", margin:0, fontFamily:C.font }}>Files are stored temporarily for 30 minutes. Max 50MB. No compression. Original quality always.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SEND */}
+        {mode === "send" && (
+          <div className="share-card" style={{ width:"100%", maxWidth:"500px" }}>
+            <h3 style={{ fontSize:"18px", fontWeight:"800", color:C.white, margin:"0 0 20px", fontFamily:C.font }}>Send a File</h3>
+
+            {/* File upload */}
+            {!file ? (
+              <div className="share-upload"
+                onDragOver={e=>{e.preventDefault();setDragOver(true)}}
+                onDragLeave={()=>setDragOver(false)}
+                onDrop={e=>{e.preventDefault();setDragOver(false);handleFile(e.dataTransfer.files[0])}}
+                onClick={()=>fileInputRef.current?.click()}
+                style={{ padding:"40px 24px", border:`2px dashed ${dragOver?"rgba(124,58,237,0.6)":"rgba(255,255,255,0.1)"}`, borderRadius:"16px", background:dragOver?"rgba(124,58,237,0.06)":"rgba(255,255,255,0.02)", cursor:"pointer", textAlign:"center", transition:"all 0.2s", marginBottom:"16px" }}>
+                <div style={{ fontSize:"36px", marginBottom:"12px" }}>📎</div>
+                <p style={{ fontSize:"14px", fontWeight:"600", color:C.white, margin:"0 0 6px", fontFamily:C.font }}>Drop your file here</p>
+                <p style={{ fontSize:"12px", color:C.muted, margin:0, fontFamily:C.font }}>Any file type. Max 50MB. Images, videos, PDFs, scripts.</p>
+                <input ref={fileInputRef} type="file" style={{ display:"none" }} onChange={e=>{handleFile(e.target.files[0]);e.target.value="";}}/>
+              </div>
+            ) : (
+              <div style={{ padding:"16px", borderRadius:"12px", background:"rgba(124,58,237,0.08)", border:"1px solid rgba(124,58,237,0.2)", marginBottom:"16px", display:"flex", gap:"12px", alignItems:"center" }}>
+                <FileIcon type={file.type}/>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <p style={{ fontSize:"13px", fontWeight:"600", color:C.white, margin:"0 0 2px", fontFamily:C.font, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{file.name}</p>
+                  <p style={{ fontSize:"11px", color:C.muted, margin:0, fontFamily:C.font }}>{formatBytes(file.size)} · {file.type || "Unknown type"}</p>
+                </div>
+                <button onClick={()=>setFile(null)} style={{ background:"none", border:"none", color:"rgba(239,68,68,0.6)", cursor:"pointer", fontSize:"16px" }}>✕</button>
+              </div>
+            )}
+
+            {/* Message */}
+            <div style={{ marginBottom:"16px" }}>
+              <p style={{ fontSize:"11px", color:C.muted, margin:"0 0 6px", fontFamily:C.font }}>Message (optional)</p>
+              <input value={message} onChange={e=>setMessage(e.target.value)} placeholder="Add a note for the recipient..."
+                style={{ width:"100%", padding:"10px 14px", borderRadius:"10px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.04)", color:C.white, fontSize:"13px", fontFamily:C.font, outline:"none", boxSizing:"border-box" }}/>
+            </div>
+
+            {/* Expiry */}
+            <div style={{ marginBottom:"20px" }}>
+              <p style={{ fontSize:"11px", color:C.muted, margin:"0 0 6px", fontFamily:C.font }}>Link expires in</p>
+              <div style={{ display:"flex", gap:"6px" }}>
+                {[[900,"15 min"],[1800,"30 min"],[3600,"1 hour"],[86400,"24 hours"]].map(([v,l])=>(
+                  <button key={v} onClick={()=>setExpires(v)}
+                    style={{ flex:1, padding:"7px", borderRadius:"8px", border:`1px solid ${expires===v?"rgba(124,58,237,0.5)":C.border}`, background:expires===v?"rgba(124,58,237,0.12)":"rgba(255,255,255,0.03)", color:expires===v?"#a78bfa":C.muted, fontSize:"10px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button onClick={sendFile} disabled={!file || loading}
+              style={{ width:"100%", padding:"12px", borderRadius:"99px", border:"none", background:!file?"rgba(255,255,255,0.06)":"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:!file?"rgba(255,255,255,0.3)":"#fff", fontSize:"14px", fontWeight:"700", cursor:!file?"not-allowed":"pointer", fontFamily:C.font, display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
+              {loading ? <><div style={{ width:"14px", height:"14px", borderRadius:"50%", border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#fff", animation:"spin 0.8s linear infinite" }}/> Uploading...</> : "✦ Generate Share Code"}
+            </button>
+
+            <button onClick={()=>setMode("home")} style={{ width:"100%", marginTop:"8px", padding:"10px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"transparent", color:C.muted, fontSize:"13px", cursor:"pointer", fontFamily:C.font }}>
+              Back
+            </button>
+          </div>
+        )}
+
+        {/* SENT — show code + QR */}
+        {mode === "sent" && (
+          <div className="share-card" style={{ width:"100%", maxWidth:"460px", textAlign:"center" }}>
+            {/* Live indicator */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", marginBottom:"20px" }}>
+              <div style={{ position:"relative", width:"10px", height:"10px" }}>
+                <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"#10b981", animation:"ping 1.5s ease-out infinite" }}/>
+                <div style={{ position:"relative", width:"10px", height:"10px", borderRadius:"50%", background:"#10b981" }}/>
+              </div>
+              <span style={{ fontSize:"12px", color:"#10b981", fontWeight:"600", fontFamily:C.font }}>
+                Live · Expires in {countdown !== null ? formatTime(countdown) : "—"}
+              </span>
+            </div>
+
+            {/* 6-digit code */}
+            <div style={{ background:"rgba(124,58,237,0.08)", border:"1px solid rgba(124,58,237,0.25)", borderRadius:"20px", padding:"24px", marginBottom:"20px" }}>
+              <p style={{ fontSize:"11px", fontWeight:"700", color:C.muted, letterSpacing:"2px", textTransform:"uppercase", fontFamily:C.font, marginBottom:"12px" }}>Share Code</p>
+              <div style={{ display:"flex", gap:"8px", justifyContent:"center", marginBottom:"16px" }}>
+                {code.split("").map((d, i) => (
+                  <div key={i} style={{ width:"44px", height:"56px", borderRadius:"10px", background:"rgba(124,58,237,0.15)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"24px", fontWeight:"800", color:"#a78bfa", fontFamily:"Orbitron, monospace" }}>
+                    {d}
+                  </div>
+                ))}
+              </div>
+              <div style={{ display:"flex", gap:"8px", justifyContent:"center" }}>
+                <button onClick={copyCode}
+                  style={{ padding:"8px 20px", borderRadius:"99px", border:"1px solid rgba(124,58,237,0.3)", background:"rgba(124,58,237,0.1)", color:"#a78bfa", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>
+                  {copied ? "Copied!" : "Copy Code"}
+                </button>
+                <button onClick={copyUrl}
+                  style={{ padding:"8px 20px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>
+                  Copy Link
+                </button>
+              </div>
+            </div>
+
+            {/* QR Code */}
+            {qrUrl && (
+              <div style={{ marginBottom:"20px" }}>
+                <p style={{ fontSize:"11px", color:C.muted, fontFamily:C.font, marginBottom:"10px" }}>Or scan QR code on your other device</p>
+                <div style={{ display:"inline-block", padding:"12px", borderRadius:"14px", background:"#0a0a0a", border:"1px solid rgba(124,58,237,0.25)" }}>
+                  <img src={qrUrl} alt="QR Code" style={{ width:"160px", height:"160px", display:"block" }}/>
+                </div>
+              </div>
+            )}
+
+            {/* File info */}
+            {file && (
+              <div style={{ padding:"12px", borderRadius:"10px", background:"rgba(255,255,255,0.03)", border:`1px solid ${C.border}`, display:"flex", gap:"10px", alignItems:"center", textAlign:"left" }}>
+                <FileIcon type={file.type}/>
+                <div>
+                  <p style={{ fontSize:"12px", fontWeight:"600", color:C.white, margin:0, fontFamily:C.font }}>{file.name}</p>
+                  <p style={{ fontSize:"10px", color:C.muted, margin:0, fontFamily:C.font }}>{formatBytes(file.size)}</p>
+                </div>
+              </div>
+            )}
+
+            <p style={{ fontSize:"11px", color:"rgba(255,255,255,0.2)", marginTop:"16px", fontFamily:C.font }}>
+              Open SocioMee Share on any device and enter this code to download.
+            </p>
+          </div>
+        )}
+
+        {/* RECEIVE */}
+        {mode === "receive" && (
+          <div className="share-card" style={{ width:"100%", maxWidth:"400px", textAlign:"center" }}>
+            <div style={{ fontSize:"40px", marginBottom:"16px" }}>📥</div>
+            <h3 style={{ fontSize:"18px", fontWeight:"800", color:C.white, margin:"0 0 8px", fontFamily:C.font }}>Receive a File</h3>
+            <p style={{ fontSize:"13px", color:C.muted, margin:"0 0 28px", fontFamily:C.font }}>Enter the 6-digit code from the sender's device.</p>
+
+            {/* Code input */}
+            <div style={{ display:"flex", gap:"8px", justifyContent:"center", marginBottom:"20px" }}>
+              {[0,1,2,3,4,5].map(i => (
+                <input key={i} maxLength={1} value={inputCode[i]||""}
+                  onChange={e => {
+                    const v = e.target.value.replace(/\D/g,"");
+                    const arr = inputCode.split("");
+                    arr[i] = v;
+                    setInputCode(arr.join("").slice(0,6));
+                    if (v && i < 5) document.getElementById(`sc-${i+1}`)?.focus();
+                  }}
+                  onKeyDown={e => { if (e.key==="Backspace" && !inputCode[i] && i>0) document.getElementById(`sc-${i-1}`)?.focus(); }}
+                  id={`sc-${i}`}
+                  style={{ width:"44px", height:"56px", borderRadius:"10px", border:`1px solid ${inputCode[i]?"rgba(124,58,237,0.5)":C.border}`, background:inputCode[i]?"rgba(124,58,237,0.1)":"rgba(255,255,255,0.04)", color:"#a78bfa", fontSize:"24px", fontWeight:"800", textAlign:"center", outline:"none", fontFamily:"Orbitron, monospace" }}/>
+              ))}
+            </div>
+
+            <button onClick={receiveFile} disabled={inputCode.length<6||loading}
+              style={{ width:"100%", padding:"12px", borderRadius:"99px", border:"none", background:inputCode.length<6?"rgba(255,255,255,0.06)":"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:inputCode.length<6?"rgba(255,255,255,0.3)":"#fff", fontSize:"14px", fontWeight:"700", cursor:inputCode.length<6?"not-allowed":"pointer", fontFamily:C.font, display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
+              {loading ? <><div style={{ width:"14px", height:"14px", borderRadius:"50%", border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#fff", animation:"spin 0.8s linear infinite" }}/> Fetching...</> : "Get File"}
+            </button>
+
+            <button onClick={()=>setMode("home")} style={{ width:"100%", marginTop:"8px", padding:"10px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"transparent", color:C.muted, fontSize:"13px", cursor:"pointer", fontFamily:C.font }}>
+              Back
+            </button>
+          </div>
+        )}
+
+        {/* RECEIVED */}
+        {mode === "received" && received && (
+          <div className="share-card" style={{ width:"100%", maxWidth:"440px" }}>
+            <div style={{ textAlign:"center", marginBottom:"24px" }}>
+              <div style={{ fontSize:"48px", marginBottom:"12px" }}>
+                <FileIcon type={received.type}/>
+              </div>
+              <h3 style={{ fontSize:"18px", fontWeight:"800", color:C.white, margin:"0 0 4px", fontFamily:C.font }}>{received.name}</h3>
+              <p style={{ fontSize:"12px", color:C.muted, margin:0, fontFamily:C.font }}>{formatBytes(received.size)} · from {received.sender}</p>
+            </div>
+
+            {received.message && (
+              <div style={{ padding:"14px", borderRadius:"12px", background:"rgba(124,58,237,0.06)", border:"1px solid rgba(124,58,237,0.15)", marginBottom:"20px" }}>
+                <p style={{ fontSize:"11px", fontWeight:"700", color:"#a78bfa", margin:"0 0 6px", fontFamily:C.font, letterSpacing:"1px", textTransform:"uppercase" }}>Message</p>
+                <p style={{ fontSize:"13px", color:"rgba(255,255,255,0.7)", margin:0, fontFamily:C.font, lineHeight:1.6 }}>{received.message}</p>
+              </div>
+            )}
+
+            {/* Preview for images */}
+            {received.type?.startsWith("image/") && received.file && (
+              <div style={{ borderRadius:"12px", overflow:"hidden", marginBottom:"20px", background:"rgba(255,255,255,0.03)", border:`1px solid ${C.border}` }}>
+                <img src={received.file} alt={received.name} style={{ width:"100%", display:"block", maxHeight:"300px", objectFit:"contain" }}/>
+              </div>
+            )}
+
+            <button onClick={downloadFile}
+              style={{ width:"100%", padding:"13px", borderRadius:"99px", border:"none", background:"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:"#fff", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, marginBottom:"8px", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download File
+            </button>
+
+            <p style={{ fontSize:"11px", color:"rgba(255,255,255,0.2)", textAlign:"center", marginTop:"8px", fontFamily:C.font }}>
+              Once downloaded, file will be available in your device's Downloads folder.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
