@@ -44,7 +44,7 @@ export default function YouTubeCallback() {
           setStatus("success");
           setMsg(`Connected: ${data.channel_title} · ${data.subscribers?.toLocaleString()} subscribers`);
           sessionStorage.removeItem("yt_connect_user_id");
-          setTimeout(() => { window.location.href = "/"; }, 2000);
+          setTimeout(() => { window.location.href = "/app"; }, 2000);
         } else {
           setStatus("error");
           setMsg(data.detail || "Connection failed. Please try again.");
@@ -65,7 +65,7 @@ export default function YouTubeCallback() {
       <p style={{ fontSize:"16px", fontWeight:"700", color:cfg.color, margin:0 }}>{cfg.label}</p>
       {msg && <p style={{ fontSize:"13px", color:"#3b1f4e", maxWidth:"360px", textAlign:"center", margin:0 }}>{msg}</p>}
       {status === "error" && (
-        <button onClick={() => window.location.href = "/"} style={{ padding:"10px 28px", borderRadius:"99px", border:"none", background:"#7c3aed", color:"white", fontWeight:"700", fontSize:"14px", cursor:"pointer", fontFamily:"inherit" }}>
+        <button onClick={() => window.location.href = "/app"} style={{ padding:"10px 28px", borderRadius:"99px", border:"none", background:"#7c3aed", color:"white", fontWeight:"700", fontSize:"14px", cursor:"pointer", fontFamily:"inherit" }}>
           Go back
         </button>
       )}

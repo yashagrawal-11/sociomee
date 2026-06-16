@@ -1209,6 +1209,32 @@ function SkeletonScreen() {
   );
 }
 
+
+// Plan gate helper
+function isPro(plan) {
+  return plan === "pro_monthly" || plan === "pro_annual" || plan === "premium_monthly" || plan === "premium_annual";
+}
+function isPremium(plan) {
+  return plan === "premium_monthly" || plan === "premium_annual";
+}
+
+function PlanGate({ plan, required="pro", onUpgrade, children, toolName="" }) {
+  const allowed = required === "pro" ? isPro(plan) : isPremium(plan);
+  if (allowed) return children;
+  return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",minHeight:"60vh",fontFamily:"Poppins,sans-serif",padding:"40px 24px",textAlign:"center"}}>
+      <div style={{width:"64px",height:"64px",borderRadius:"16px",background:"rgba(124,58,237,0.12)",border:"1px solid rgba(124,58,237,0.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"28px",marginBottom:"20px"}}>🔒</div>
+      <h2 style={{fontSize:"20px",fontWeight:"800",color:"#fff",margin:"0 0 8px",fontFamily:"Poppins,sans-serif"}}>{toolName || "Pro Feature"}</h2>
+      <p style={{fontSize:"14px",color:"rgba(255,255,255,0.45)",margin:"0 0 24px",lineHeight:1.7,maxWidth:"360px"}}>This tool is available on the Pro plan and above. Upgrade to unlock all SocioMee Store tools, YouTube uploads and full AI features.</p>
+      <button onClick={onUpgrade}
+        style={{padding:"12px 28px",borderRadius:"99px",border:"none",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif"}}>
+        Upgrade to Pro — ₹499/month
+      </button>
+      <p style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",marginTop:"12px",fontFamily:"Poppins,sans-serif"}}>Cancel anytime. Instant access after payment.</p>
+    </div>
+  );
+}
+
 export default function App() {
   const { user, token, isLoggedIn, logout, refreshToken, loading: authLoading } = useAuth();
   const tokenRef = useRef(token);
@@ -1733,7 +1759,7 @@ export default function App() {
             <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(124,58,237,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
               {[
                 {tab:"history",label:"History",fn:()=>toggleTab("history"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
-                {tab:"calendar",label:"Content Calendar",fn:()=>{setYoutubeInitialTab("festival");setActiveTab("youtube");setSidebarOpen(false);},icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
+                {tab:"calendar",label:"SocioMee Calendar",fn:()=>{setYoutubeInitialTab("festival");setActiveTab("youtube");setSidebarOpen(false);},icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
                 {tab:"news",label:"SocioMee News",fn:()=>toggleTab("news"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>},
                 {tab:"notes",label:"SocioMee Notes",fn:()=>toggleTab("notes"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>},
                 {tab:"vault",label:"SocioMee Vault",fn:()=>toggleTab("vault"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>},
@@ -1915,27 +1941,37 @@ export default function App() {
       {/* MAIN CONTENT */}
       {activeTab==="notes" && isLoggedIn && (
         <div style={{ marginLeft:"220px", flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:100 }}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Notes" onUpgrade={()=>setShowPricing(true)}>
           <SocioMeeNotes onSendToGenerator={()=>setActiveTab("generate")}/>
+          </PlanGate>
         </div>
       )}
       {activeTab==="vault" && isLoggedIn && (
         <div style={{ marginLeft:"220px", flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:100 }}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Vault" onUpgrade={()=>setShowPricing(true)}>
           <SocioMeeVault/>
+          </PlanGate>
         </div>
       )}
       {activeTab==="share" && isLoggedIn && (
         <div style={{ marginLeft:"220px", flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:100 }}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Share" onUpgrade={()=>setShowPricing(true)}>
           <SocioMeeShare/>
+          </PlanGate>
         </div>
       )}
       {activeTab==="pixel" && isLoggedIn && (
         <div style={{ marginLeft:"220px", flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:100 }}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Pixel" onUpgrade={()=>setShowPricing(true)}>
           <SocioMeePixel/>
+          </PlanGate>
         </div>
       )}
       {activeTab==="pdf" && isLoggedIn && (
         <div style={{ marginLeft:"220px", flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:100 }}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee PDF" onUpgrade={()=>setShowPricing(true)}>
           <SocioMeePDF onSendToGenerator={(text)=>setActiveTab("generate")}/>
+          </PlanGate>
         </div>
       )}
       <div id="main-content" style={{ marginLeft:"220px", flex:1, padding:"48px 32px 80px", minHeight:"100vh", overflowX:"hidden", display:(activeTab==="notes"||activeTab==="pdf"||activeTab==="pixel"||activeTab==="share"||activeTab==="vault")?"none":"block" }}>

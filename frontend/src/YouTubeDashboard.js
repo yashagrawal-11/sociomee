@@ -220,6 +220,7 @@ function ConnectYouTube({ userId }) {
   const handleConnect = async () => {
     setLoading(true); setErr("");
     try {
+      sessionStorage.setItem("yt_connect_user_id", userId || "");
       const res  = await fetch(`${BASE}/youtube/auth-url?redirect_uri=${encodeURIComponent(window.location.origin + "/youtube/callback")}`);
       const data = await res.json();
       if (data?.url) { sessionStorage.setItem("yt_connect_user_id", userId); window.location.href = data.url; }
