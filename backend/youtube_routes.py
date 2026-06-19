@@ -113,18 +113,8 @@ async def youtube_connect_route(payload: YouTubeConnectPayload):
 
     # Persist tokens
     # Read user plan for channel limit enforcement
-    import json as _json
-    from pathlib import Path as _Path
-    _user_plan = "free"
-    try:
-        _quota_file = _Path("/var/www/sociomee/backend/data/upload_quota.json")
-        _quota = _json.loads(_quota_file.read_text()) if _quota_file.exists() else {}
-        _sp = _quota.get(payload.user_id, {}).get("plan", "free")
-        if _sp.startswith("premium"): _user_plan = "premium"
-        elif _sp.startswith("pro"): _user_plan = "pro"
-    except Exception:
-        _user_plan = "free"
-
+    from credits_manager import get_credit_status
+    _user_plan = get_credit_status(payload.user_id).get("plan", "free")
     _store_result = ytc.store_youtube_tokens(
         user_id       = payload.user_id,
         access_token  = result["access_token"],
