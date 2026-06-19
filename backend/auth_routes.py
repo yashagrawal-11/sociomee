@@ -83,7 +83,6 @@ def google_login(request: Request):
 # CALLBACK
 @router.get("/google/callback")
 @limiter.exempt
-@limiter.limit("30/minute")
 async def google_callback(request: Request, code: str):
     if not code:
         raise HTTPException(status_code=400, detail="Missing authorization code")

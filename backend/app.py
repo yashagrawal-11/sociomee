@@ -765,8 +765,11 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
 async def thumb_ab_test(
     file_a: UploadFile = File(...),
     file_b: UploadFile = File(...),
-    niche: str = Form("general")
+    niche: str = Form("general"),
+    user: dict = Depends(get_current_user)
 ):
+    err = _check_credits(user.get("user_id",""))
+    if err: return err
     try:
         if _HAS_THUMB:
             from thumbnail_ai import ab_test_thumbnails
@@ -780,11 +783,14 @@ async def thumb_ab_test(
         return {"error": str(e)}
 
 @app.post("/thumbnail/analyze")
-async def thumb_analyze(file: UploadFile = File(...), keyword: str = Form(""), niche: str = Form(""), plan: str = Form("free")):
+async def thumb_analyze(file: UploadFile = File(...), keyword: str = Form(""), niche: str = Form(""), user: dict = Depends(get_current_user)):
+    err = _check_credits(user.get("user_id",""))
+    if err: return err
+    real_plan = get_credit_status(user.get("user_id",""))["plan"]
     try:
         b = await file.read()
         if _HAS_THUMB:
-            r = analyze_thumbnail_real(image_bytes=b, mime_type=file.content_type or "image/jpeg", keyword=keyword or niche or "general", niche=niche or keyword or "general", plan=plan)
+            r = analyze_thumbnail_real(image_bytes=b, mime_type=file.content_type or "image/jpeg", keyword=keyword or niche or "general", niche=niche or keyword or "general", plan=real_plan)
             if r: return r
         score = 70
         if PILImage:
@@ -932,8 +938,10 @@ async def translate_text(request: Request):
 # ── Subtitle Generator (AssemblyAI) ───────────────────────────────────
 @app.post("/subtitles/upload")
 @limiter.limit("3/hour")
-async def upload_for_subtitles(request: Request, file: UploadFile = File(...), lang: str = Form("auto")):
+async def upload_for_subtitles(request: Request, file: UploadFile = File(...), lang: str = Form("auto"), user: dict = Depends(get_current_user)):
     import httpx, os
+    err = _check_credits(user.get("user_id",""))
+    if err: return err
     api_key = os.environ.get("ASSEMBLYAI_API_KEY", "")
 
     contents = await file.read()
@@ -985,7 +993,7 @@ async def upload_for_subtitles(request: Request, file: UploadFile = File(...), l
 
 @app.get("/subtitles/status/{transcript_id}")
 @limiter.limit("30/minute")
-async def subtitle_status(transcript_id: str, request: Request):
+async def subtitle_status(transcript_id: str, request: Request, user: dict = Depends(get_current_user)):
     import httpx, os
     api_key = os.environ.get("ASSEMBLYAI_API_KEY", "")
     async with httpx.AsyncClient(timeout=30) as client:
