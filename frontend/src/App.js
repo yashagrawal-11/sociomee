@@ -1221,7 +1221,7 @@ function isPremium(plan) {
 
 function PlanGate({ plan, required="pro", onUpgrade, children, toolName="" }) {
   const allowed = required === "pro" ? isPro(plan) : isPremium(plan);
-  if (allowed) return children;
+  if (allowed) return <div style={{width:"100%",height:"100%",display:"flex"}}>{children}</div>;
   return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",minHeight:"60vh",fontFamily:"Poppins,sans-serif",padding:"40px 24px",textAlign:"center"}}>
       <div style={{width:"64px",height:"64px",borderRadius:"16px",background:"rgba(124,58,237,0.12)",border:"1px solid rgba(124,58,237,0.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"28px",marginBottom:"20px"}}>🔒</div>
@@ -1396,8 +1396,23 @@ export default function App() {
     subtitles:"Subtitles | SocioMee", hashtags:"Hashtag Generator | SocioMee",
     texttaudio:"Text to Audio | SocioMee", hookgenerator:"Hook Generator | SocioMee",
     biowriter:"Bio Writer | SocioMee",
+    notes:"Notes | SocioMee", pixel:"Pixel | SocioMee", pdf:"PDF | SocioMee",
+    share:"Share | SocioMee", calendar:"Calendar | SocioMee", news:"News | SocioMee",
+    vault:"Cloud | SocioMee", screenrecorder:"Screen Recorder | SocioMee",
   };
   useEffect(() => { document.title = PAGE_TITLES[activeTab] || "SocioMee"; }, [activeTab]);
+  // Sync activeTab with URL: /app/notes, /app/pixel, etc.
+  useEffect(() => {
+    const path = window.location.pathname.replace(/^\/app\/?/, "");
+    if (path && PAGE_TITLES[path]) setActiveTab(path);
+  }, []);
+  useEffect(() => {
+    const slug = activeTab === "generate" ? "" : "/" + activeTab;
+    const newPath = "/app" + slug;
+    if (window.location.pathname !== newPath && PAGE_TITLES[activeTab]) {
+      window.history.pushState(null, "", newPath);
+    }
+  }, [activeTab]);
 
   const sbBtn = (tab, label, icon) => (
     <button key={tab} onClick={()=>toggleTab(tab)}
