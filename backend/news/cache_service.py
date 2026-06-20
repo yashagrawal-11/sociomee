@@ -9,6 +9,7 @@ r = redis.Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"), dec
 NEWS_TTL = 7200  # 2 hours
 IDEAS_TTL = 86400  # 24 hours
 GNEWS_DAILY_LIMIT = 90  # stop at 90, keep 10 as buffer
+NEWSDATA_DAILY_LIMIT = 450  # NewsData.io free tier is 500/day, keep 50 as buffer
 
 # ── Generic cache helpers ──────────────────────────────────────────────
 def cache_get(key: str) -> Optional[Any]:
@@ -67,6 +68,25 @@ def get_gnews_calls_today() -> int:
 def is_gnews_quota_exceeded() -> bool:
     return get_gnews_calls_today() >= GNEWS_DAILY_LIMIT
 
+# ── NewsData.io quota tracker (fallback API) ───────────────────────────
+def get_newsdata_quota_key() -> str:
+    return f"newsdata:calls:{date.today().isoformat()}"
+
+def increment_newsdata_calls(count: int = 1) -> int:
+    key = get_newsdata_quota_key()
+    pipe = r.pipeline()
+    pipe.incrby(key, count)
+    pipe.expire(key, 86400)  # resets daily
+    result = pipe.execute()
+    return result[0]
+
+def get_newsdata_calls_today() -> int:
+    val = r.get(get_newsdata_quota_key())
+    return int(val) if val else 0
+
+def is_newsdata_quota_exceeded() -> bool:
+    return get_newsdata_calls_today() >= NEWSDATA_DAILY_LIMIT
+
 # ── Per-user rate limiting (5 refreshes/hour) ─────────────────────────
 USER_REFRESH_LIMIT = 5
 USER_REFRESH_TTL = 3600  # 1 hour
@@ -106,6 +126,9 @@ def get_quota_stats() -> dict:
         "gnews_calls_today": get_gnews_calls_today(),
         "gnews_daily_limit": GNEWS_DAILY_LIMIT,
         "gnews_quota_exceeded": is_gnews_quota_exceeded(),
+        "newsdata_calls_today": get_newsdata_calls_today(),
+        "newsdata_daily_limit": NEWSDATA_DAILY_LIMIT,
+        "newsdata_quota_exceeded": is_newsdata_quota_exceeded(),
         "cache_ttl_seconds": NEWS_TTL,
         "last_fetch": get_last_fetch(),
     }

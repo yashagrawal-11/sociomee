@@ -16,13 +16,14 @@ const CATS = [
   {id:'business', label:'Business'},
   {id:'india',    label:'India'},
   {id:'global',   label:'World'},
+  {id:'kpop',     label:'K-pop'},
 ]
 
 const CAT_COLORS = {
   all:'#a78bfa', cricket:'#22c55e', bollywood:'#f472b6',
   sports:'#fb923c', tech:'#22d3ee', stocks:'#34d399',
   gaming:'#a78bfa', creator:'#fbbf24', milestone:'#facc15',
-  drama:'#f87171', business:'#94a3b8', india:'#f97316', global:'#818cf8'
+  drama:'#f87171', business:'#94a3b8', india:'#f97316', global:'#818cf8', kpop:'#f472b6'
 }
 
 function timeAgo(d) {
@@ -227,23 +228,31 @@ export default function SocioMeeNews({userId='anonymous'}) {
       <style>{`
         @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-        .news-pills::-webkit-scrollbar{display:none}
+        .news-pills::-webkit-scrollbar{height:5px}
+        .news-pills::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);border-radius:99px}
+        .news-pills::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.18);border-radius:99px}
+        .news-pills::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.28)}
+        .news-pills{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.18) rgba(255,255,255,0.04)}
+        @media (max-width:768px){
+          .news-pills::-webkit-scrollbar{display:none}
+          .news-pills{scrollbar-width:none}
+        }
+        @media (max-width:768px){
+          .news-grid-2{grid-template-columns:1fr 1fr!important;gap:10px!important}
+          .news-grid-3{grid-template-columns:1fr 1fr!important;gap:10px!important}
+        }
       `}</style>
 
       <div style={{fontFamily:'Poppins,sans-serif',color:'rgba(255,255,255,0.85)',maxWidth:'100%'}}>
 
         {/* Header */}
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'18px'}}>
-          <div>
-            <h2 style={{fontSize:'18px',fontWeight:800,color:'#fff',margin:'0 0 2px',fontFamily:'Poppins,sans-serif',letterSpacing:'-0.3px'}}>SocioMee News</h2>
-            <p style={{fontSize:'11px',color:'rgba(255,255,255,0.3)',margin:0,fontFamily:'Poppins,sans-serif'}}>Creator world, live</p>
-          </div>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'flex-end',marginBottom:'14px'}}>
           <LiveDot lastUpdated={lastUpdated}/>
         </div>
 
         {/* Category pills — horizontal scroll */}
         <div ref={pillsRef} className="news-pills"
-          style={{display:'flex',gap:'6px',marginBottom:'20px',overflowX:'auto',paddingBottom:'2px',scrollbarWidth:'none',msOverflowStyle:'none',WebkitOverflowScrolling:'touch'}}>
+          style={{display:'flex',gap:'6px',marginBottom:'20px',overflowX:'auto',paddingBottom:'8px',WebkitOverflowScrolling:'touch'}}>
           {CATS.map(c=>{
             const active = cat===c.id
             const col = CAT_COLORS[c.id]||'#a78bfa'
@@ -273,7 +282,7 @@ export default function SocioMeeNews({userId='anonymous'}) {
           <>
             {/* Featured — 2 col */}
             {featured.length > 0 && (
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px',marginBottom:'20px'}}>
+              <div className="news-grid-2" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px',marginBottom:'20px'}}>
                 {featured.map(item=><CardFeatured key={item.id} item={item} onGenerate={setModal}/>)}
               </div>
             )}
@@ -285,20 +294,22 @@ export default function SocioMeeNews({userId='anonymous'}) {
                   <span style={{fontSize:'11px',fontWeight:700,color:'rgba(255,255,255,0.3)',fontFamily:'Poppins,sans-serif',textTransform:'uppercase',letterSpacing:'1px'}}>More Stories</span>
                   <div style={{flex:1,height:'1px',background:'rgba(255,255,255,0.06)'}}/>
                 </div>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'12px',marginBottom:'20px'}}>
+                <div className="news-grid-3" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'12px',marginBottom:'20px'}}>
                   {grid.map(item=><CardGrid key={item.id} item={item} onGenerate={setModal}/>)}
                 </div>
               </>
             )}
 
-            {/* List — remaining */}
+            {/* List — remaining, shown as grid on mobile */}
             {list.length > 0 && (
               <>
                 <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'8px'}}>
                   <span style={{fontSize:'11px',fontWeight:700,color:'rgba(255,255,255,0.3)',fontFamily:'Poppins,sans-serif',textTransform:'uppercase',letterSpacing:'1px'}}>Latest</span>
                   <div style={{flex:1,height:'1px',background:'rgba(255,255,255,0.06)'}}/>
                 </div>
-                {list.map(item=><CardList key={item.id} item={item} onGenerate={setModal}/>)}
+                <div className="news-grid-3" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'12px'}}>
+                  {list.map(item=><CardGrid key={item.id} item={item} onGenerate={setModal}/>)}
+                </div>
               </>
             )}
 
