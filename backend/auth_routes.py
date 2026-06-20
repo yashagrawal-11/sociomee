@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status, Response
+import secrets
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 limiter = Limiter(key_func=get_remote_address)
@@ -63,7 +64,9 @@ def decode_jwt_token(token: str) -> dict:
 # GOOGLE LOGIN
 @router.get("/google/login")
 @limiter.limit("5/minute")
-def google_login(request: Request):
+def google_login(request: Request, response: Response):
+    state = secrets.token_urlsafe(32)
+    response.set_cookie(key="oauth_state", value=state, httponly=True, secure=True, samesite="lax", max_age=600)
     if not GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=500, detail="Google Client ID not configured")
 
@@ -74,6 +77,7 @@ def google_login(request: Request):
         "scope": "openid email profile",
         "access_type": "offline",
         "prompt": "select_account",
+        "state": state,
     }
 
     url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
@@ -83,9 +87,12 @@ def google_login(request: Request):
 # CALLBACK
 @router.get("/google/callback")
 @limiter.exempt
-async def google_callback(request: Request, code: str):
+async def google_callback(request: Request, code: str, state: str = None):
     if not code:
         raise HTTPException(status_code=400, detail="Missing authorization code")
+    cookie_state = request.cookies.get("oauth_state")
+    if not state or not cookie_state or state != cookie_state:
+        raise HTTPException(status_code=400, detail="Invalid or missing OAuth state. Please try logging in again.")
 
     try:
         async with httpx.AsyncClient(timeout=20.0) as client:
@@ -126,6 +133,26 @@ async def google_callback(request: Request, code: str):
             "provider": "google",
             "plan": "free",
         }
+
+        try:
+            import redis as _redis_mod, json as _json_mod, secrets as _secrets_mod
+            _rc = _redis_mod.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+            _pending_raw = _rc.get(f"mcp_pending:{state}")
+            if _pending_raw:
+                _rc.delete(f"mcp_pending:{state}")
+                _pending = _json_mod.loads(_pending_raw)
+                _mcp_code = _secrets_mod.token_urlsafe(24)
+                _rc.setex(f"mcp_code:{_mcp_code}", 120, _json_mod.dumps({
+                    "client_id": _pending["client_id"], "redirect_uri": _pending["redirect_uri"],
+                    "code_challenge": _pending["code_challenge"], "user_payload": user_payload,
+                }))
+                _sep = "&" if "?" in _pending["redirect_uri"] else "?"
+                _location = f'{_pending["redirect_uri"]}{_sep}code={_mcp_code}'
+                if _pending.get("state"):
+                    _location += f'&state={_pending["state"]}'
+                return RedirectResponse(url=_location, status_code=302)
+        except Exception as _mcp_e:
+            print(f"MCP Google bridge skip: {_mcp_e}")
 
         token = create_jwt_token(user_payload)
 

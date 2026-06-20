@@ -277,6 +277,13 @@ try:
 except Exception as e:
     print(f'News router skip: {e}')
 
+# ── MCP OAuth router ─────────────────────────────────────────────────
+try:
+    from mcp_oauth_routes import router as mcp_oauth_router
+    app.include_router(mcp_oauth_router)
+except Exception as e:
+    print(f'MCP OAuth router skip: {e}')
+
 # ── CORS ─────────────────────────────────────────────────────────────
 ALLOWED_ORIGINS = [
     "https://sociomee.in",
