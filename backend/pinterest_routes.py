@@ -6,7 +6,7 @@ Pinterest API v5 — App ID: 1565248
 """
 
 import os, json, random, math, httpx
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import RedirectResponse
@@ -670,7 +670,7 @@ def _pin_job_worker(jid: str, user_id: str, title: str, description: str, media_
     try:
         _ujob(jid, status="sending")
         result = _publish_pin_sync(user_id, title, description, media_source, board_id, link)
-        _ujob(jid, status="done", pin_id=result.get("pin_id",""), sent_at=datetime.utcnow().isoformat())
+        _ujob(jid, status="done", pin_id=result.get("pin_id",""), sent_at=datetime.now(timezone.utc).isoformat())
     except Exception as e:
         _ujob(jid, status="error", error=str(e))
 
@@ -688,13 +688,15 @@ def restore_pinterest_scheduled_jobs():
     import threading
     try:
         jobs = _ljobs()
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         restored = 0
         for jid, job in jobs.items():
             if job.get("status") != "scheduled": continue
             scheduled_at = job.get("scheduled_at")
             if not scheduled_at: continue
             run_at = datetime.fromisoformat(scheduled_at)
+            if run_at.tzinfo is None:
+                run_at = run_at.replace(tzinfo=timezone.utc)
             if run_at <= now:
                 threading.Thread(target=_pin_job_worker, daemon=True, kwargs=dict(
                     jid=jid, user_id=job["user_id"], title=job.get("title",""),
@@ -750,8 +752,10 @@ async def publish(user_id: str, payload: dict):
 
     if scheduled_at:
         try:
-            sched_dt = datetime.fromisoformat(scheduled_at.replace("Z", "+00:00")).replace(tzinfo=None)
-            if sched_dt > datetime.utcnow():
+            sched_dt = datetime.fromisoformat(scheduled_at.replace("Z", "+00:00"))
+            if sched_dt.tzinfo is None:
+                sched_dt = sched_dt.replace(tzinfo=timezone.utc)
+            if sched_dt > datetime.now(timezone.utc):
                 jid = _new_job({
                     "user_id": user_id, "title": title, "description": description,
                     "media_source": media_source, "board_id": board_id, "link": link,
