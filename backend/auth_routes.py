@@ -174,27 +174,28 @@ def get_me(request: Request):
     token = auth_header.split(" ")[1]
     try:
         payload = decode_jwt_token(token)
-        import json as _json
-        from pathlib import Path as _Path
-        _quota_file = _Path(__file__).parent / "data" / "upload_quota.json"
-        try:
-            _quota = _json.loads(_quota_file.read_text()) if _quota_file.exists() else {}
-            _uq = _quota.get(payload.get("user_id", ""), {})
-            _sp = _uq.get("plan", "")
-            if _sp.startswith("premium"): payload["plan"] = "premium"
-            elif _sp.startswith("pro"): payload["plan"] = "pro"
-        except Exception:
-            pass
-        # Always inject live plan from credits
-        try:
-            from credits_manager import get_credit_status
-            live = get_credit_status(payload.get("user_id",""))
-            payload["plan"] = live.get("plan", payload.get("plan","free"))
-        except:
-            pass
-        return payload
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
+    # Token is valid from here on - any failure below should degrade
+    # gracefully, never cause a 401 (that would wrongly log the user out).
+    import json as _json
+    from pathlib import Path as _Path
+    _quota_file = _Path(__file__).parent / "data" / "upload_quota.json"
+    try:
+        _quota = _json.loads(_quota_file.read_text()) if _quota_file.exists() else {}
+        _uq = _quota.get(payload.get("user_id", ""), {})
+        _sp = _uq.get("plan", "")
+        if _sp.startswith("premium"): payload["plan"] = "premium"
+        elif _sp.startswith("pro"): payload["plan"] = "pro"
+    except Exception:
+        pass
+    try:
+        from credits_manager import get_credit_status
+        live = get_credit_status(payload.get("user_id", ""))
+        payload["plan"] = live.get("plan", payload.get("plan", "free"))
+    except Exception:
+        pass
+    return payload
 # REFRESH
 @router.post("/refresh-token")
 @limiter.limit("10/minute")

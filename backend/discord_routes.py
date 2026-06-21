@@ -81,7 +81,21 @@ def discord_disconnect(user_id: str = Query(...)):
 
 @router.post("/send")
 def discord_send(payload: SendPayload):
-    """Send a message immediately via Discord webhook."""
+    """Send a message immediately via Discord webhook.
+    Scheduling is not yet implemented - reject future scheduled_at values
+    instead of silently sending immediately."""
+    if payload.scheduled_at:
+        from datetime import datetime, timezone
+        try:
+            sched_dt = datetime.fromisoformat(payload.scheduled_at.replace("Z", "+00:00"))
+            if sched_dt.tzinfo is None:
+                sched_dt = sched_dt.replace(tzinfo=timezone.utc)
+            if sched_dt > datetime.now(timezone.utc):
+                raise HTTPException(400, "Discord scheduling is not supported yet. Please send immediately or check back soon for scheduled Discord posts.")
+        except HTTPException:
+            raise
+        except Exception:
+            pass  # if we can't parse it, fall through to immediate send rather than blocking
     data = _load()
     rec = data.get(payload.user_id)
     if not rec:

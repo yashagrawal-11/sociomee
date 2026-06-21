@@ -3,7 +3,7 @@ telegram_scheduler.py — SocioMee Telegram Post Scheduler
 Supports: text, images, videos, GIFs, scheduled posts
 """
 from __future__ import annotations
-import json, logging, os, threading, uuid
+import json, logging, os, threading, time, uuid
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -124,7 +124,9 @@ def _send_worker(jid: str, user_id: str, text: str, media_type: str,
         _ujob(jid, status="sending")
         results = []
 
-        for target in targets:
+        for i, target in enumerate(targets):
+            if i > 0:
+                time.sleep(0.4)  # avoid bursty sends that can trigger anti-spam detection
             try:
                 if media_type == "none" or not media_path:
                     _send_text(target, text)
