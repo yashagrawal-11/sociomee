@@ -141,6 +141,300 @@ function Heatmap({ data }) {
   );
 }
 
+function MiniCalendar({ value, onChange }) {
+  const today = new Date();
+  const [viewDate, setViewDate] = useState(value || today);
+  const year  = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay   = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthName  = viewDate.toLocaleString("default", { month: "long" });
+  const isPast = (d) => {
+    const cmp = new Date(year, month, d); cmp.setHours(23,59,59,999);
+    return cmp < new Date();
+  };
+  const isSelected = (d) => value && value.getFullYear()===year && value.getMonth()===month && value.getDate()===d;
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  return (
+    <div style={{ background:C.glass, border:`1.5px solid ${C.hairline}`, borderRadius:14, padding:16 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+        <button type="button" onClick={() => setViewDate(new Date(year, month - 1, 1))}
+          style={{ background:"transparent", border:"none", color:C.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>‹</button>
+        <span style={{ fontSize:13, fontWeight:700, color:C.ink }}>{monthName} {year}</span>
+        <button type="button" onClick={() => setViewDate(new Date(year, month + 1, 1))}
+          style={{ background:"transparent", border:"none", color:C.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>›</button>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginBottom:6 }}>
+        {["S","M","T","W","T","F","S"].map((d,i) => (
+          <div key={i} style={{ textAlign:"center", fontSize:10, fontWeight:700, color:C.muted, padding:"4px 0" }}>{d}</div>
+        ))}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4 }}>
+        {cells.map((d, i) => d === null ? <div key={i} /> : (
+          <button key={i} type="button" disabled={isPast(d)}
+            onClick={() => onChange(new Date(year, month, d, value?.getHours()??12, value?.getMinutes()??0))}
+            style={{
+              aspectRatio:"1", borderRadius:8, border:"none", fontSize:12, fontFamily:"inherit",
+              cursor:isPast(d) ? "not-allowed" : "pointer",
+              background:isSelected(d) ? C.red : "transparent",
+              color:isPast(d) ? C.muted : (isSelected(d) ? "#fff" : C.ink),
+              fontWeight:isSelected(d) ? 700 : 500,
+              opacity:isPast(d) ? 0.35 : 1,
+            }}>{d}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TimePicker({ value, onChange }) {
+  const h24 = value ? value.getHours() : 12;
+  const m   = value ? value.getMinutes() : 0;
+  const h12 = ((h24 % 12) || 12);
+  const ampm = h24 >= 12 ? "PM" : "AM";
+  const setTime = (newH12, newM, newAmpm) => {
+    let h = newH12 % 12;
+    if (newAmpm === "PM") h += 12;
+    const base = value || new Date();
+    onChange(new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, newM));
+  };
+  const selStyle = { padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none" };
+  return (
+    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+      <select value={h12} onChange={e => setTime(Number(e.target.value), m, ampm)} style={selStyle}>
+        {[...Array(12)].map((_,i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+      </select>
+      <span style={{ color:C.muted }}>:</span>
+      <select value={m} onChange={e => setTime(h12, Number(e.target.value), ampm)} style={selStyle}>
+        {[0,15,30,45].map(mm => <option key={mm} value={mm}>{String(mm).padStart(2,"0")}</option>)}
+      </select>
+      <select value={ampm} onChange={e => setTime(h12, m, e.target.value)} style={selStyle}>
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+    </div>
+  );
+}
+
+function Scheduler({ userId, boards, onPublished }) {
+  C = getC();
+  const [title,    setTitle   ] = useState("");
+  const [desc,     setDesc    ] = useState("");
+  const [imgB64,   setImgB64  ] = useState("");
+  const [imgCtype, setImgCtype] = useState("");
+  const [imgPreview, setImgPreview] = useState("");
+  const [link,     setLink    ] = useState("https://sociomee.in");
+  const [boardId,  setBoardId ] = useState(boards[0]?.id || "");
+  const [when,     setWhen    ] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [loading,  setLoad    ] = useState(false);
+  const [done,     setDone    ] = useState(false);
+  const [err,      setErr     ] = useState("");
+
+  const handleFile = (file) => {
+    if (!file || !file.type.startsWith("image/")) { setErr("Please select an image file."); return; }
+    setErr("");
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      const base64 = result.split(",")[1];
+      setImgB64(base64);
+      setImgCtype(file.type);
+      setImgPreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const schedule = async () => {
+    if (!title.trim()) { setErr("Title is required."); return; }
+    if (!imgB64)        { setErr("Please upload an image."); return; }
+    if (!boardId)        { setErr("Select a board."); return; }
+    if (!when)            { setErr("Pick a date and time."); return; }
+    if (when <= new Date()) { setErr("Pick a time in the future."); return; }
+    setLoad(true); setErr("");
+    try {
+      const r = await fetch(`${BASE}/pinterest/publish?user_id=${userId}`, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          title, description: desc, board_id: boardId, link,
+          image_base64: imgB64, image_content_type: imgCtype,
+          scheduled_at: when.toISOString(),
+        }),
+      });
+      const d = await r.json();
+      if (d.success) { setDone(true); onPublished?.(); }
+      else setErr(d.detail || "Failed to schedule.");
+    } catch(e) { setErr(e.message || "Network error."); }
+    finally { setLoad(false); }
+  };
+
+  if (done) return (
+    <div style={{ textAlign:"center", padding:"24px 0" }}>
+      <div style={{ fontSize:40, marginBottom:8 }}>✅</div>
+      <p style={{ fontSize:14, fontWeight:700, color:C.success, marginBottom:8 }}>Scheduled successfully!</p>
+      <p style={{ fontSize:12, color:C.muted, marginBottom:12 }}>Your pin will publish on {when.toLocaleString()}</p>
+      <button onClick={() => { setDone(false); setTitle(""); setDesc(""); setImgB64(""); setImgPreview(""); setWhen(null); }}
+        style={{ padding:"8px 20px", borderRadius:99, border:"none", background:C.red, color:"#fff", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>Schedule Another</button>
+    </div>
+  );
+
+  return (
+    <>
+      <div
+        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+        onClick={() => document.getElementById("pin-sched-file").click()}
+        style={{
+          border:`2px dashed ${dragOver ? C.red : C.hairline}`, borderRadius:14, padding: imgPreview ? 0 : 32,
+          textAlign:"center", cursor:"pointer", marginBottom:14, background:dragOver ? "rgba(230,0,35,0.05)" : C.glass,
+          overflow:"hidden", transition:"all 0.15s",
+        }}>
+        <input id="pin-sched-file" type="file" accept="image/*" style={{ display:"none" }}
+          onChange={e => handleFile(e.target.files[0])} />
+        {imgPreview ? (
+          <img src={imgPreview} alt="Preview" style={{ width:"100%", maxHeight:280, objectFit:"contain", display:"block" }} />
+        ) : (
+          <>
+            <div style={{ fontSize:32, marginBottom:8 }}>📤</div>
+            <p style={{ fontSize:13, fontWeight:600, color:C.ink, margin:0 }}>Drag and drop an image, or click to browse</p>
+            <p style={{ fontSize:11, color:C.muted, marginTop:4 }}>Vertical 2:3 ratio recommended</p>
+          </>
+        )}
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
+        <div>
+          <label style={{ fontSize:11, fontWeight:700, color:C.muted, display:"block", marginBottom:5 }}>PIN TITLE *</label>
+          <input value={title} onChange={e => setTitle(e.target.value.slice(0, 100))} placeholder="10 Content Ideas for Creators..."
+            style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
+        </div>
+        <div>
+          <label style={{ fontSize:11, fontWeight:700, color:C.muted, display:"block", marginBottom:5 }}>BOARD *</label>
+          <select value={boardId} onChange={e => setBoardId(e.target.value)}
+            style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }}>
+            {boards.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            {boards.length === 0 && <option value="">No boards found</option>}
+          </select>
+        </div>
+      </div>
+
+      <div style={{ marginBottom:10 }}>
+        <label style={{ fontSize:11, fontWeight:700, color:C.muted, display:"block", marginBottom:5 }}>DESCRIPTION</label>
+        <textarea value={desc} onChange={e => setDesc(e.target.value.slice(0, 500))} placeholder="Add keywords for Pinterest SEO..." rows={3}
+          style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", resize:"vertical", boxSizing:"border-box" }} />
+      </div>
+
+      <div style={{ marginBottom:14 }}>
+        <label style={{ fontSize:11, fontWeight:700, color:C.muted, display:"block", marginBottom:5 }}>DESTINATION LINK</label>
+        <input value={link} onChange={e => setLink(e.target.value)} placeholder="https://your-website.com"
+          style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
+      </div>
+
+      <label style={{ fontSize:11, fontWeight:700, color:C.muted, display:"block", marginBottom:8 }}>WHEN TO PUBLISH *</label>
+      <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:14 }}>
+        <MiniCalendar value={when} onChange={setWhen} />
+        <div style={{ display:"flex", flexDirection:"column", gap:8, justifyContent:"center" }}>
+          <TimePicker value={when} onChange={setWhen} />
+          {when && <p style={{ fontSize:12, color:C.success, fontWeight:600, margin:0 }}>Scheduled for {when.toLocaleString()}</p>}
+        </div>
+      </div>
+
+      <button onClick={schedule} disabled={loading} style={{ width:"100%", padding:"12px", borderRadius:99, border:"none", background:C.red, color:"#fff", fontWeight:800, fontSize:14, cursor:loading ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:8, opacity:loading ? 0.7 : 1 }}>
+        <PinterestIcon size={16} />
+        {loading ? "Scheduling…" : "Schedule Pin"}
+      </button>
+      {err && <p style={{ fontSize:12, color:C.danger, fontWeight:600, marginTop:8 }}>⚠ {err}</p>}
+    </>
+  );
+}
+
+function History({ userId }) {
+  C = getC();
+  const [scheduled, setScheduled] = useState([]);
+  const [recentPins, setRecentPins] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${BASE}/pinterest/scheduled?user_id=${userId}`).then(r => r.json()).catch(() => ({jobs:[]})),
+      fetch(`${BASE}/pinterest/pins?user_id=${userId}&limit=20`).then(r => r.json()).catch(() => []),
+    ]).then(([schedRes, pinsRes]) => {
+      setScheduled((schedRes.jobs || []).sort((a,b) => new Date(b.scheduled_at||0) - new Date(a.scheduled_at||0)));
+      setRecentPins(Array.isArray(pinsRes) ? pinsRes : (pinsRes.pins || []));
+      setLoading(false);
+    });
+  }, [userId]);
+
+  const statusBadge = (status) => {
+    const map = {
+      scheduled: { label: "Scheduled", color: C.red,     bg: "rgba(230,0,35,0.1)" },
+      pending:   { label: "Pending",   color: C.muted,   bg: "rgba(120,120,120,0.1)" },
+      sending:   { label: "Sending",   color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
+      done:      { label: "Published", color: C.success, bg: "rgba(16,185,129,0.1)" },
+      error:     { label: "Failed",    color: C.danger,  bg: "rgba(239,68,68,0.1)" },
+      cancelled: { label: "Cancelled", color: C.muted,   bg: "rgba(120,120,120,0.1)" },
+    };
+    const s = map[status] || map.pending;
+    return <span style={{ fontSize:11, fontWeight:700, color:s.color, background:s.bg, padding:"3px 10px", borderRadius:99, whiteSpace:"nowrap" }}>{s.label}</span>;
+  };
+
+  if (loading) return <p style={{ textAlign:"center", color:C.muted, fontSize:13, padding:"20px 0" }}>Loading history…</p>;
+
+  const upcoming = scheduled.filter(j => j.status === "scheduled" || j.status === "pending" || j.status === "sending");
+  const past     = scheduled.filter(j => j.status === "done" || j.status === "error" || j.status === "cancelled");
+
+  return (
+    <>
+      <p style={{ fontSize:12, fontWeight:700, color:C.muted, marginBottom:10, letterSpacing:0.5 }}>UPCOMING SCHEDULED PINS</p>
+      {upcoming.length === 0 ? (
+        <p style={{ fontSize:13, color:C.muted, marginBottom:20 }}>No pins scheduled right now.</p>
+      ) : (
+        <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:24 }}>
+          {upcoming.map(j => (
+            <div key={j.id} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:12, background:C.glass, border:`1.5px solid ${C.hairline}`, borderRadius:12, padding:"12px 14px" }}>
+              <div style={{ minWidth:0, flex:1 }}>
+                <p style={{ fontSize:13, fontWeight:600, color:C.ink, margin:0, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{j.title || "Untitled pin"}</p>
+                <p style={{ fontSize:11, color:C.muted, margin:"2px 0 0" }}>{j.scheduled_at ? new Date(j.scheduled_at).toLocaleString() : ""}</p>
+              </div>
+              {statusBadge(j.status)}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p style={{ fontSize:12, fontWeight:700, color:C.muted, marginBottom:10, letterSpacing:0.5 }}>RECENTLY PUBLISHED</p>
+      {recentPins.length === 0 && past.length === 0 ? (
+        <p style={{ fontSize:13, color:C.muted }}>No published pins yet.</p>
+      ) : (
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {past.map(j => (
+            <div key={j.id} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:12, background:C.glass, border:`1.5px solid ${C.hairline}`, borderRadius:12, padding:"12px 14px" }}>
+              <div style={{ minWidth:0, flex:1 }}>
+                <p style={{ fontSize:13, fontWeight:600, color:C.ink, margin:0, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{j.title || "Untitled pin"}</p>
+                <p style={{ fontSize:11, color:C.muted, margin:"2px 0 0" }}>{j.sent_at ? new Date(j.sent_at).toLocaleString() : (j.error || "")}</p>
+              </div>
+              {statusBadge(j.status)}
+            </div>
+          ))}
+          {recentPins.map(p => (
+            <div key={p.id} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:12, background:C.glass, border:`1.5px solid ${C.hairline}`, borderRadius:12, padding:"12px 14px" }}>
+              <div style={{ minWidth:0, flex:1 }}>
+                <p style={{ fontSize:13, fontWeight:600, color:C.ink, margin:0, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{p.title || "Untitled pin"}</p>
+                <p style={{ fontSize:11, color:C.muted, margin:"2px 0 0" }}>{p.created_at ? new Date(p.created_at).toLocaleDateString() : ""}</p>
+              </div>
+              {statusBadge("done")}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 function Publisher({ userId, boards, onPublished }) {
   C = getC();
   const [title,    setTitle   ] = useState("");
@@ -365,16 +659,18 @@ export default function PinterestDashboard({ user, topic = "" }) {
       </div>
 
       {/* Tabs */}
-      <div style={{ display:"flex", gap:7, flexWrap:"wrap", marginBottom:16, overflowX:"auto" }}>
+      <div className="pin-tabs-scroll" style={{ display:"flex", gap:7, flexWrap:"nowrap", marginBottom:16, overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
         {[
-          ["analytics","📊 Analytics"],
-          ["pins","📌 Top Pins"],
-          ["boards","🗂️ Boards"],
-          ["viral","🔥 Viral AI"],
-          ["audience","👥 Audience"],
-          ["besttime","🕐 Best Time"],
-          ["benchmark","📈 Benchmark"],
-          ["publish","✍️ Publish"],
+          ["analytics","Analytics"],
+          ["pins","Top Pins"],
+          ["boards","Boards"],
+          ["viral","Viral AI"],
+          ["audience","Audience"],
+          ["besttime","Best Time"],
+          ["benchmark","Benchmark"],
+          ["publish","Publish"],
+          ["schedule","Schedule"],
+          ["history","History"],
         ].map(([key, label]) => (
           <Tab key={key} label={label} active={tab === key} onClick={() => setTab(key)} />
         ))}
@@ -407,7 +703,7 @@ export default function PinterestDashboard({ user, topic = "" }) {
               </ResponsiveContainer>
             : <p style={{ textAlign:"center", color:C.muted, fontSize:13, padding:"40px 0" }}>No data yet.</p>
           }
-          {insights?.is_mock && <p style={{ textAlign:"center", fontSize:10, color:C.muted, marginTop:6 }}>⚠ Demo data — real analytics load after Pinterest approves your app</p>}
+          {insights?.is_mock && <p style={{ textAlign:"center", fontSize:10, color:C.muted, marginTop:6 }}>⚠ Demo data — real analytics will appear once this account has published pins with some history</p>}
         </Section>
       )}
 
@@ -693,8 +989,29 @@ export default function PinterestDashboard({ user, topic = "" }) {
           <Publisher userId={userId} boards={boards} onPublished={() => setTimeout(load, 3000)} />
         </Section>
       )}
+      {/* ── Schedule Tab ── */}
+      {tab === "schedule" && (
+        <Section title="🗓️ Schedule a Pin">
+          <Scheduler userId={userId} boards={boards} onPublished={() => setTimeout(load, 3000)} />
+        </Section>
+      )}
+      {/* ── History Tab ── */}
+      {tab === "history" && (
+        <Section title="History">
+          <History userId={userId} />
+        </Section>
+      )}
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes spin{to{transform:rotate(360deg)}}
+.pin-tabs-scroll::-webkit-scrollbar{height:4px}
+.pin-tabs-scroll::-webkit-scrollbar-track{background:transparent}
+.pin-tabs-scroll::-webkit-scrollbar-thumb{background:rgba(120,120,120,0.35);border-radius:99px}
+.pin-tabs-scroll{scrollbar-width:thin;scrollbar-color:rgba(120,120,120,0.35) transparent}
+@media (max-width:768px){
+  .pin-tabs-scroll::-webkit-scrollbar{display:none}
+  .pin-tabs-scroll{scrollbar-width:none;-ms-overflow-style:none}
+}
+`}</style>
     </div>
   );
 }

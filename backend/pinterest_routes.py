@@ -619,7 +619,7 @@ async def get_benchmark(user_id: str):
 # PUBLISH PIN
 # ══════════════════════════════════════════════════════════════════════
 
-def _publish_pin_sync(user_id: str, title: str, description: str, image_url: str, board_id: str, link: str) -> dict:
+def _publish_pin_sync(user_id: str, title: str, description: str, media_source: dict, board_id: str, link: str) -> dict:
     """Sync version of the Pinterest publish call, used by scheduled jobs firing from APScheduler."""
     import httpx as _httpx_sync
     acc = _get_account(user_id)
@@ -632,7 +632,7 @@ def _publish_pin_sync(user_id: str, title: str, description: str, image_url: str
             json={
                 "title": title, "description": description, "link": link,
                 "board_id": board_id,
-                "media_source": {"source_type": "image_url", "url": image_url},
+                "media_source": media_source,
             },
             headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
         )
@@ -666,18 +666,18 @@ def _new_job(data: dict) -> str:
     _sjobs(d)
     return jid
 
-def _pin_job_worker(jid: str, user_id: str, title: str, description: str, image_url: str, board_id: str, link: str):
+def _pin_job_worker(jid: str, user_id: str, title: str, description: str, media_source: dict, board_id: str, link: str):
     try:
         _ujob(jid, status="sending")
-        result = _publish_pin_sync(user_id, title, description, image_url, board_id, link)
+        result = _publish_pin_sync(user_id, title, description, media_source, board_id, link)
         _ujob(jid, status="done", pin_id=result.get("pin_id",""), sent_at=datetime.utcnow().isoformat())
     except Exception as e:
         _ujob(jid, status="error", error=str(e))
 
-def _schedule_pin(jid: str, run_at: datetime, user_id: str, title: str, description: str, image_url: str, board_id: str, link: str):
+def _schedule_pin(jid: str, run_at: datetime, user_id: str, title: str, description: str, media_source: dict, board_id: str, link: str):
     from telegram_scheduler import _get_scheduler
     def job():
-        _pin_job_worker(jid, user_id, title, description, image_url, board_id, link)
+        _pin_job_worker(jid, user_id, title, description, media_source, board_id, link)
         try: _get_scheduler().remove_job(jid)
         except: pass
     _ujob(jid, status="scheduled", scheduled_at=run_at.isoformat())
@@ -698,12 +698,12 @@ def restore_pinterest_scheduled_jobs():
             if run_at <= now:
                 threading.Thread(target=_pin_job_worker, daemon=True, kwargs=dict(
                     jid=jid, user_id=job["user_id"], title=job.get("title",""),
-                    description=job.get("description",""), image_url=job.get("image_url",""),
+                    description=job.get("description",""), media_source=job.get("media_source",{}),
                     board_id=job.get("board_id",""), link=job.get("link","https://sociomee.in")
                 )).start()
             else:
                 _schedule_pin(jid, run_at, job["user_id"], job.get("title",""),
-                              job.get("description",""), job.get("image_url",""),
+                              job.get("description",""), job.get("media_source",{}),
                               job.get("board_id",""), job.get("link","https://sociomee.in"))
             restored += 1
     except Exception:
@@ -733,15 +733,20 @@ async def publish(user_id: str, payload: dict):
     title       = payload.get("title", "").strip()
     description = payload.get("description", "").strip()
     image_url   = payload.get("image_url", "").strip()
+    image_b64   = payload.get("image_base64", "").strip()
+    image_ctype = payload.get("image_content_type", "image/jpeg").strip()
     board_id    = payload.get("board_id", "").strip()
     link        = payload.get("link", "https://sociomee.in").strip()
     scheduled_at = payload.get("scheduled_at", "").strip()
     if not title:
         raise HTTPException(400, "title is required")
-    if not image_url:
-        raise HTTPException(400, "image_url is required")
+    if not image_url and not image_b64:
+        raise HTTPException(400, "image_url or image_base64 is required")
     if not board_id:
         raise HTTPException(400, "board_id is required")
+    media_source = ({"source_type": "image_base64", "content_type": image_ctype, "data": image_b64}
+                     if image_b64 else
+                     {"source_type": "image_url", "url": image_url})
 
     if scheduled_at:
         try:
@@ -749,10 +754,10 @@ async def publish(user_id: str, payload: dict):
             if sched_dt > datetime.utcnow():
                 jid = _new_job({
                     "user_id": user_id, "title": title, "description": description,
-                    "image_url": image_url, "board_id": board_id, "link": link,
+                    "media_source": media_source, "board_id": board_id, "link": link,
                     "status": "pending",
                 })
-                _schedule_pin(jid, sched_dt, user_id, title, description, image_url, board_id, link)
+                _schedule_pin(jid, sched_dt, user_id, title, description, media_source, board_id, link)
                 return {"success": True, "status": "scheduled", "job_id": jid, "scheduled_at": sched_dt.isoformat()}
         except (ValueError, TypeError):
             pass
@@ -766,10 +771,7 @@ async def publish(user_id: str, payload: dict):
                 "description": description,
                 "link":        link,
                 "board_id":    board_id,
-                "media_source": {
-                    "source_type": "image_url",
-                    "url":         image_url,
-                },
+                "media_source": media_source,
             },
             headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
         )

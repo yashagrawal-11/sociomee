@@ -2,7 +2,7 @@
 discord_routes.py — SocioMee Discord Webhook Integration
 """
 from __future__ import annotations
-import json, logging, os, requests
+import json, logging, os, requests, threading
 from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
@@ -79,49 +79,138 @@ def discord_disconnect(user_id: str = Query(...)):
     _save(data)
     return {"ok": True}
 
+def _send_discord_now(user_id: str, content: str, username: str, embed_title: str, embed_color: int) -> dict:
+    """Actually send to Discord webhook right now. Used by both immediate sends and scheduled jobs firing."""
+    data = _load()
+    rec = data.get(user_id)
+    if not rec:
+        raise HTTPException(400, "Discord not connected")
+    webhook_url = rec["webhook_url"]
+    body = {"username": username, "content": content}
+    if embed_title:
+        body["embeds"] = [{"title": embed_title, "color": embed_color}]
+    r = requests.post(webhook_url, json=body, timeout=15)
+    if r.status_code not in (200, 204):
+        raise HTTPException(500, f"Discord API error: {r.status_code} {r.text}")
+    return {"ok": True, "status": "sent"}
+
+
+# -- Scheduling (reuses the same APScheduler instance Telegram uses) ----
+JOBS_FILE = Path(__file__).parent / "discord_jobs.json"
+
+def _ljobs() -> dict:
+    try: return json.loads(JOBS_FILE.read_text()) if JOBS_FILE.exists() else {}
+    except: return {}
+
+def _sjobs(d: dict):
+    JOBS_FILE.write_text(json.dumps(d, indent=2))
+
+def _ujob(jid: str, **kw):
+    d = _ljobs()
+    if jid in d:
+        d[jid].update(kw)
+        _sjobs(d)
+
+def _new_job(data: dict) -> str:
+    import uuid
+    jid = uuid.uuid4().hex[:12]
+    d = _ljobs()
+    d[jid] = data
+    _sjobs(d)
+    return jid
+
+def _discord_job_worker(jid: str, user_id: str, content: str, username: str, embed_title: str, embed_color: int):
+    try:
+        _ujob(jid, status="sending")
+        _send_discord_now(user_id, content, username, embed_title, embed_color)
+        _ujob(jid, status="done", sent_at=datetime.now(timezone.utc).isoformat())
+    except Exception as e:
+        _ujob(jid, status="error", error=str(e))
+
+def _schedule_discord_send(jid: str, run_at: datetime, user_id: str, content: str, username: str, embed_title: str, embed_color: int):
+    from telegram_scheduler import _get_scheduler
+    def job():
+        _discord_job_worker(jid, user_id, content, username, embed_title, embed_color)
+        try: _get_scheduler().remove_job(jid)
+        except: pass
+    _ujob(jid, status="scheduled", scheduled_at=run_at.isoformat())
+    _get_scheduler().add_job(job, "date", run_date=run_at, id=jid, replace_existing=True)
+    log.info("Scheduled Discord job=%s at %s", jid, run_at.isoformat())
+
+def restore_discord_scheduled_jobs():
+    """Re-schedule any pending Discord jobs after server restart."""
+    try:
+        jobs = _ljobs()
+        now = datetime.now(timezone.utc)
+        restored = 0
+        for jid, job in jobs.items():
+            if job.get("status") != "scheduled": continue
+            scheduled_at = job.get("scheduled_at")
+            if not scheduled_at: continue
+            run_at = datetime.fromisoformat(scheduled_at)
+            if run_at <= now:
+                threading.Thread(target=_discord_job_worker, daemon=True, kwargs=dict(
+                    jid=jid, user_id=job["user_id"], content=job.get("content",""),
+                    username=job.get("username","SocioMee"), embed_title=job.get("embed_title",""),
+                    embed_color=job.get("embed_color",7419530)
+                )).start()
+            else:
+                _schedule_discord_send(jid, run_at, job["user_id"], job.get("content",""),
+                                        job.get("username","SocioMee"), job.get("embed_title",""),
+                                        job.get("embed_color",7419530))
+            restored += 1
+        if restored: log.info("Restored %d scheduled Discord jobs", restored)
+    except Exception as e:
+        log.warning("restore_discord_scheduled_jobs failed: %s", e)
+
+
 @router.post("/send")
 def discord_send(payload: SendPayload):
-    """Send a message immediately via Discord webhook.
-    Scheduling is not yet implemented - reject future scheduled_at values
-    instead of silently sending immediately."""
+    """Send immediately, or schedule for later if scheduled_at is a future time."""
     if payload.scheduled_at:
-        from datetime import datetime, timezone
         try:
             sched_dt = datetime.fromisoformat(payload.scheduled_at.replace("Z", "+00:00"))
             if sched_dt.tzinfo is None:
                 sched_dt = sched_dt.replace(tzinfo=timezone.utc)
             if sched_dt > datetime.now(timezone.utc):
-                raise HTTPException(400, "Discord scheduling is not supported yet. Please send immediately or check back soon for scheduled Discord posts.")
+                data = _load()
+                if not data.get(payload.user_id):
+                    raise HTTPException(400, "Discord not connected")
+                jid = _new_job({
+                    "user_id": payload.user_id, "content": payload.content,
+                    "username": payload.username, "embed_title": payload.embed_title,
+                    "embed_color": payload.embed_color, "status": "pending",
+                })
+                _schedule_discord_send(jid, sched_dt, payload.user_id, payload.content,
+                                        payload.username, payload.embed_title, payload.embed_color)
+                return {"ok": True, "status": "scheduled", "job_id": jid, "scheduled_at": sched_dt.isoformat()}
         except HTTPException:
             raise
         except Exception:
-            pass  # if we can't parse it, fall through to immediate send rather than blocking
-    data = _load()
-    rec = data.get(payload.user_id)
-    if not rec:
-        raise HTTPException(400, "Discord not connected")
-    
-    webhook_url = rec["webhook_url"]
-    body = {
-        "username": payload.username,
-        "content": payload.content,
-    }
-    if payload.embed_title:
-        body["embeds"] = [{
-            "title": payload.embed_title,
-            "color": payload.embed_color,
-        }]
+            pass  # unparseable timestamp, fall through to immediate send
 
     try:
-        r = requests.post(webhook_url, json=body, timeout=15)
-        if r.status_code not in (200, 204):
-            raise HTTPException(500, f"Discord API error: {r.status_code} {r.text}")
+        return _send_discord_now(payload.user_id, payload.content, payload.username,
+                                  payload.embed_title, payload.embed_color)
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(500, f"Failed to send: {e}")
 
-    return {"ok": True, "status": "sent"}
+
+@router.get("/scheduled")
+def discord_list_scheduled(user_id: str = Query(...)):
+    jobs = _ljobs()
+    return {"jobs": [{"id": jid, **j} for jid, j in jobs.items() if j.get("user_id") == user_id]}
+
+
+@router.delete("/scheduled/{job_id}")
+def discord_cancel_scheduled(job_id: str):
+    from telegram_scheduler import _get_scheduler
+    try: _get_scheduler().remove_job(job_id)
+    except: pass
+    _ujob(job_id, status="cancelled")
+    return {"ok": True}
 
 @router.post("/send-content")
 def discord_send_content(user_id: str = Query(...), content: str = Query(...), title: str = Query(default="")):
