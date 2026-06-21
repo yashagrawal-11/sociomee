@@ -48,6 +48,10 @@ try:
     from persona_profiles import get_persona as _get_persona
 except Exception as _e:
     def _get_persona(name): return {"name": name, "tone": "clear", "language": "hinglish", "style_rules": [], "voice": name, "energy": "medium", "pacing": "medium"}
+try:
+    from seo_engine import generate_seo as _generate_seo
+except Exception as _e:
+    def _generate_seo(*a, **kw): return {"titles": [], "scores": [], "best_title": "", "best_score": 0, "yt_keywords": []}
 
 import json
 import os
