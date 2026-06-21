@@ -267,6 +267,16 @@ if _HAS_TG_SCHED:
         restore_scheduled_jobs()
     except Exception as e:
         log.warning("restore_scheduled_jobs failed: %s", e)
+try:
+    from discord_routes import restore_discord_scheduled_jobs
+    restore_discord_scheduled_jobs()
+except Exception as e:
+    log.warning("restore_discord_scheduled_jobs failed: %s", e)
+try:
+    from pinterest_routes import restore_pinterest_scheduled_jobs
+    restore_pinterest_scheduled_jobs()
+except Exception as e:
+    log.warning("restore_pinterest_scheduled_jobs failed: %s", e)
 if _HAS_TG_ROUTES and telegram_router is not None:
     app.include_router(telegram_router)
 if _HAS_TG_SCHED and tg_sched_router is not None:

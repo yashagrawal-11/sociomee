@@ -619,18 +619,123 @@ async def get_benchmark(user_id: str):
 # PUBLISH PIN
 # ══════════════════════════════════════════════════════════════════════
 
+def _publish_pin_sync(user_id: str, title: str, description: str, image_url: str, board_id: str, link: str) -> dict:
+    """Sync version of the Pinterest publish call, used by scheduled jobs firing from APScheduler."""
+    import httpx as _httpx_sync
+    acc = _get_account(user_id)
+    if not acc:
+        raise Exception("Pinterest not connected")
+    token = acc["access_token"]
+    with _httpx_sync.Client() as client:
+        r = client.post(
+            "https://api.pinterest.com/v5/pins",
+            json={
+                "title": title, "description": description, "link": link,
+                "board_id": board_id,
+                "media_source": {"source_type": "image_url", "url": image_url},
+            },
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+        )
+    if r.status_code not in (200, 201):
+        raise Exception(f"Pin creation failed: {r.text}")
+    pin_id = r.json().get("id", "")
+    return {"success": True, "pin_id": pin_id, "url": f"https://www.pinterest.com/pin/{pin_id}/"}
+
+
+# -- Scheduling (reuses the same APScheduler instance Telegram uses) ----
+JOBS_FILE = DATA_DIR / "pinterest_jobs.json"
+
+def _ljobs() -> dict:
+    try: return json.loads(JOBS_FILE.read_text()) if JOBS_FILE.exists() else {}
+    except: return {}
+
+def _sjobs(d: dict):
+    JOBS_FILE.write_text(json.dumps(d, indent=2))
+
+def _ujob(jid: str, **kw):
+    d = _ljobs()
+    if jid in d:
+        d[jid].update(kw)
+        _sjobs(d)
+
+def _new_job(data: dict) -> str:
+    import uuid
+    jid = uuid.uuid4().hex[:12]
+    d = _ljobs()
+    d[jid] = data
+    _sjobs(d)
+    return jid
+
+def _pin_job_worker(jid: str, user_id: str, title: str, description: str, image_url: str, board_id: str, link: str):
+    try:
+        _ujob(jid, status="sending")
+        result = _publish_pin_sync(user_id, title, description, image_url, board_id, link)
+        _ujob(jid, status="done", pin_id=result.get("pin_id",""), sent_at=datetime.utcnow().isoformat())
+    except Exception as e:
+        _ujob(jid, status="error", error=str(e))
+
+def _schedule_pin(jid: str, run_at: datetime, user_id: str, title: str, description: str, image_url: str, board_id: str, link: str):
+    from telegram_scheduler import _get_scheduler
+    def job():
+        _pin_job_worker(jid, user_id, title, description, image_url, board_id, link)
+        try: _get_scheduler().remove_job(jid)
+        except: pass
+    _ujob(jid, status="scheduled", scheduled_at=run_at.isoformat())
+    _get_scheduler().add_job(job, "date", run_date=run_at, id=jid, replace_existing=True)
+
+def restore_pinterest_scheduled_jobs():
+    """Re-schedule any pending Pinterest jobs after server restart."""
+    import threading
+    try:
+        jobs = _ljobs()
+        now = datetime.utcnow()
+        restored = 0
+        for jid, job in jobs.items():
+            if job.get("status") != "scheduled": continue
+            scheduled_at = job.get("scheduled_at")
+            if not scheduled_at: continue
+            run_at = datetime.fromisoformat(scheduled_at)
+            if run_at <= now:
+                threading.Thread(target=_pin_job_worker, daemon=True, kwargs=dict(
+                    jid=jid, user_id=job["user_id"], title=job.get("title",""),
+                    description=job.get("description",""), image_url=job.get("image_url",""),
+                    board_id=job.get("board_id",""), link=job.get("link","https://sociomee.in")
+                )).start()
+            else:
+                _schedule_pin(jid, run_at, job["user_id"], job.get("title",""),
+                              job.get("description",""), job.get("image_url",""),
+                              job.get("board_id",""), job.get("link","https://sociomee.in"))
+            restored += 1
+    except Exception:
+        pass
+
+
+@router.get("/scheduled")
+async def list_scheduled_pins(user_id: str):
+    jobs = _ljobs()
+    return {"jobs": [{"id": jid, **j} for jid, j in jobs.items() if j.get("user_id") == user_id]}
+
+
+@router.delete("/scheduled/{job_id}")
+async def cancel_scheduled_pin(job_id: str):
+    from telegram_scheduler import _get_scheduler
+    try: _get_scheduler().remove_job(job_id)
+    except: pass
+    _ujob(job_id, status="cancelled")
+    return {"ok": True}
+
+
 @router.post("/publish")
 async def publish(user_id: str, payload: dict):
     acc = _get_account(user_id)
     if not acc:
         raise HTTPException(404, "Pinterest not connected")
-
     title       = payload.get("title", "").strip()
     description = payload.get("description", "").strip()
     image_url   = payload.get("image_url", "").strip()
     board_id    = payload.get("board_id", "").strip()
     link        = payload.get("link", "https://sociomee.in").strip()
-
+    scheduled_at = payload.get("scheduled_at", "").strip()
     if not title:
         raise HTTPException(400, "title is required")
     if not image_url:
@@ -638,8 +743,21 @@ async def publish(user_id: str, payload: dict):
     if not board_id:
         raise HTTPException(400, "board_id is required")
 
-    token = acc["access_token"]
+    if scheduled_at:
+        try:
+            sched_dt = datetime.fromisoformat(scheduled_at.replace("Z", "+00:00")).replace(tzinfo=None)
+            if sched_dt > datetime.utcnow():
+                jid = _new_job({
+                    "user_id": user_id, "title": title, "description": description,
+                    "image_url": image_url, "board_id": board_id, "link": link,
+                    "status": "pending",
+                })
+                _schedule_pin(jid, sched_dt, user_id, title, description, image_url, board_id, link)
+                return {"success": True, "status": "scheduled", "job_id": jid, "scheduled_at": sched_dt.isoformat()}
+        except (ValueError, TypeError):
+            pass
 
+    token = acc["access_token"]
     async with httpx.AsyncClient() as client:
         r = await client.post(
             "https://api.pinterest.com/v5/pins",
@@ -657,7 +775,6 @@ async def publish(user_id: str, payload: dict):
         )
     if r.status_code not in (200, 201):
         raise HTTPException(400, f"Pin creation failed: {r.text}")
-
     pin_id   = r.json().get("id", "")
     username = acc.get("username", "")
     return {
