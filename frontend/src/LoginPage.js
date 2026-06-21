@@ -148,7 +148,7 @@ export default function LoginPage() {
         {/* Logo + tagline */}
         <div style={{ textAlign:"center", marginBottom:"32px" }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:"6px", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", color:"#fff", fontSize:"10px", fontWeight:"700", letterSpacing:"2px", textTransform:"uppercase", padding:"5px 14px", borderRadius:"99px", marginBottom:"16px" }}>✦ AI Content Studio</div>
-          <h1 style={{ fontSize:"clamp(28px,6vw,44px)", fontWeight:"700", color:"#ffffff", fontFamily:"'Orbitron',sans-serif", letterSpacing:"0.08em", lineHeight:1, marginBottom:"8px", textShadow:"0 0 40px rgba(124,58,237,0.3)" }}>SocioMee</h1>
+          <h1 style={{ fontSize:"clamp(28px,6vw,44px)", fontWeight:"700", color:"#ffffff", fontFamily:"'Orbitron',sans-serif", letterSpacing:"0.08em", lineHeight:1, marginBottom:"8px", textShadow:"0 0 40px rgba(124,58,237,0.3)" }}>SOCIOMEE</h1>
           
         </div>
 
@@ -314,6 +314,9 @@ export function ConfirmAge() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pending }),
       });
+      if (r.status === 429) {
+        throw new Error("You're moving a bit fast — please wait a moment and try again.");
+      }
       const data = await r.json();
       if (!r.ok) throw new Error(data.detail || "Confirmation failed");
       await handleCallback(data.token);

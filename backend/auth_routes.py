@@ -63,7 +63,7 @@ def decode_jwt_token(token: str) -> dict:
 
 # GOOGLE LOGIN
 @router.get("/google/login")
-@limiter.limit("5/minute")
+@limiter.limit("20/minute")
 def google_login(request: Request, response: Response):
     state = secrets.token_urlsafe(32)
     response.set_cookie(key="oauth_state", value=state, httponly=True, secure=True, samesite="lax", max_age=600)
