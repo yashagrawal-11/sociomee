@@ -24,9 +24,35 @@ celery_app.conf.update(
         "fetch-news-every-2-hours": {
             "task": "news.tasks.fetch_and_store_news",
             "schedule": crontab(minute="0", hour="*/2"),
-        }
+        },
+        "check-due-reminders-every-minute": {
+            "task": "news.tasks.check_due_reminders",
+            "schedule": crontab(minute="*"),
+        },
     }
 )
+
+
+@celery_app.task(name="news.tasks.check_due_reminders", bind=True, max_retries=2)
+def check_due_reminders(self):
+    """Checks for due reminders every minute and fires push notifications."""
+    sys.path.insert(0, '/var/www/sociomee/backend')
+    import reminders_manager as rm
+    from push_routes import send_push
+    due = rm.get_due_reminders()
+    for r in due:
+        try:
+            send_push(
+                r["user_id"],
+                title="SocioMee Reminder",
+                body=r["task"],
+                url="https://sociomee.in/app",
+                tag=f"reminder-{r['id']}",
+            )
+            rm.update_status(r["user_id"], r["id"], "sent")
+        except Exception as exc:
+            print(f"[reminders] push failed for {r['id']}: {exc}")
+    return {"checked": len(due)}
 
 async def _run():
     sys.path.insert(0, '/var/www/sociomee/backend')

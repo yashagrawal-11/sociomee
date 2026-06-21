@@ -352,6 +352,7 @@ class RegisterBody(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     email: str = Field(..., min_length=5, max_length=200)
     password: str = Field(..., min_length=8, max_length=128)
+    age_confirmed: bool = Field(default=False)
 
 class LoginBody(BaseModel):
     email: str = Field(..., min_length=5, max_length=200)
@@ -368,6 +369,8 @@ class ResetBody(BaseModel):
 @router.post("/register")
 @limiter.limit("3/minute")
 def register(body: RegisterBody, request: Request):
+    if not body.age_confirmed:
+        raise HTTPException(400, "You must confirm you are 18 years or older to register")
     if len(body.password) < 8:
         raise HTTPException(400, "Password must be at least 8 characters")
     users = _load_users()

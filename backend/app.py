@@ -33,6 +33,11 @@ try:
     _HAS_PUSH = True
 except Exception as _pe:
     log.warning('push_routes failed: %s', _pe); _HAS_PUSH = False; push_router = None
+try:
+    from reminder_routes import router as reminder_router
+    _HAS_REMINDERS = True
+except Exception as _re:
+    log.warning('reminder_routes failed: %s', _re); _HAS_REMINDERS = False; reminder_router = None
 
 # ── YouTube upload router ────────────────────────────────────────────
 try:
@@ -219,6 +224,8 @@ if _HAS_YT_TOOLS and yt_tools_router:
     app.include_router(yt_tools_router)
 if _HAS_PUSH and push_router:
     app.include_router(push_router)
+if _HAS_REMINDERS and reminder_router:
+    app.include_router(reminder_router)
 
 # YouTube connect router
 if _HAS_YT_ROUTES and yt_router is not None:

@@ -41,6 +41,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [otp, setOtp] = useState("");
   const [newPw, setNewPw] = useState("");
   const [err, setErr] = useState("");
@@ -74,9 +75,10 @@ export default function LoginPage() {
     if (!email.trim()) { setErr("Enter your email"); return; }
     if (password.length < 6) { setErr("Password must be at least 6 characters"); return; }
     if (password !== confirmPw) { setErr("Passwords don't match"); return; }
+    if (!ageConfirmed) { setErr("Please confirm you are 18 years or older"); return; }
     setBusy(true); setErr(""); setMsg("");
     try {
-      const r = await fetch(`${BASE}/auth/register`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ name, email, password }) });
+      const r = await fetch(`${BASE}/auth/register`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ name, email, password, age_confirmed: ageConfirmed }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.detail || "Registration failed");
       await handleCallback(d.token);
@@ -196,6 +198,14 @@ export default function LoginPage() {
                 <button onClick={() => setShowPw(s=>!s)} style={{ position:"absolute", right:"12px", top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:"rgba(255,255,255,0.4)", fontSize:"12px", fontFamily:"'Poppins',sans-serif" }}>{showPw?"Hide":"Show"}</button>
               </div>
               {inp(confirmPw, setConfirmPw, "Confirm password", "password")}
+              <label style={{ display:"flex", alignItems:"flex-start", gap:"10px", cursor:"pointer", padding:"4px 2px", userSelect:"none" }}>
+                <div onClick={() => setAgeConfirmed(a => !a)} style={{ width:"18px", height:"18px", minWidth:"18px", borderRadius:"6px", border: ageConfirmed ? "1px solid rgba(124,58,237,0.8)" : "1px solid rgba(255,255,255,0.2)", background: ageConfirmed ? "linear-gradient(135deg,#9b5cf6,#7c3aed)" : "rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", marginTop:"1px", transition:"all 0.2s ease", boxShadow: ageConfirmed ? "0 0 12px rgba(124,58,237,0.5)" : "none" }}>
+                  {ageConfirmed && <span style={{ color:"#fff", fontSize:"11px", fontWeight:"700", lineHeight:1 }}>✓</span>}
+                </div>
+                <span onClick={() => setAgeConfirmed(a => !a)} style={{ fontSize:"12.5px", lineHeight:1.5, color:"rgba(255,255,255,0.55)", fontFamily:"'Poppins',sans-serif" }}>
+                  I confirm I am 18 years of age or older
+                </span>
+              </label>
               <button onClick={handleRegister} disabled={busy} onMouseEnter={()=>setBtnHov(true)} onMouseLeave={()=>setBtnHov(false)} style={{ ...btnPrimary, opacity:busy?0.6:1, marginTop:"4px" }}>
                 {busy ? "Creating account…" : "✦ Create Account"}
               </button>
