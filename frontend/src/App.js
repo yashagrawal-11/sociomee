@@ -28,6 +28,7 @@ import SocioMeePixel from "./components/SocioMeePixel";
 import SocioMeeShare from "./components/SocioMeeShare";
 import SocioMeeCloud from "./components/SocioMeeCloud";
 import SocioMeeCalendar from "./components/SocioMeeCalendar";
+import SocioMeeReminders from "./components/SocioMeeReminders";
 import { TikTokHook, TikTokCaption, TikTokVideoIdeas, TikTokHashtags, TikTokBestTime } from "./TikTokTools";
 import { WhatsAppBroadcast, WhatsAppReplyTemplates, WhatsAppChannelPost } from "./WhatsAppTools";
 import { XTweetGenerator, XThreadGenerator, XHookGenerator, XBestTime } from "./XTools";
@@ -1397,7 +1398,7 @@ export default function App() {
     texttaudio:"Text to Audio | SocioMee", hookgenerator:"Hook Generator | SocioMee",
     biowriter:"Bio Writer | SocioMee",
     notes:"Notes | SocioMee", pixel:"Pixel | SocioMee", pdf:"PDF | SocioMee",
-    share:"Share | SocioMee", calendar:"Calendar | SocioMee", news:"News | SocioMee",
+    share:"Share | SocioMee", calendar:"Calendar | SocioMee", news:"News | SocioMee", reminders:"Reminders | SocioMee",
     vault:"Cloud | SocioMee", screenrecorder:"Screen Recorder | SocioMee",
   };
   useEffect(() => { document.title = PAGE_TITLES[activeTab] || "SocioMee"; }, [activeTab]);
@@ -1776,6 +1777,7 @@ export default function App() {
               {[
                 {tab:"history",label:"History",fn:()=>toggleTab("history"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
                 {tab:"calendar",label:"SocioMee Calendar",fn:()=>toggleTab("calendar"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
+                {tab:"reminders",label:"SocioMee Reminders",fn:()=>toggleTab("reminders"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>},
                 {tab:"news",label:"SocioMee News",fn:()=>toggleTab("news"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>},
                 {tab:"notes",label:"SocioMee Notes",fn:()=>toggleTab("notes"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>},
                 {tab:"vault",label:"SocioMee Cloud",fn:()=>toggleTab("vault"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>},
@@ -1972,6 +1974,11 @@ export default function App() {
       {activeTab==="calendar" && isLoggedIn && (
         <div style={{ marginLeft:"220px", flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:100 }}>
           <SocioMeeCalendar/>
+        </div>
+      )}
+      {activeTab==="reminders" && isLoggedIn && (
+        <div style={{ marginLeft:"220px", flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:100 }}>
+          <SocioMeeReminders/>
         </div>
       )}
       {activeTab==="share" && isLoggedIn && (
@@ -2194,7 +2201,7 @@ export default function App() {
           {activeTab==="biowriter"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><BioWriter user={user}/></div>}
           {activeTab==="thumbnail"  && isLoggedIn && <ThumbnailStudioNew/>}
 
-          <p style={{ textAlign:"center", color:"rgba(255,255,255,0.2)", fontSize:"11.5px", marginTop:"32px" }}>SocioMee · One Topic. Infinite Content · Built with 💜</p>
+          <p style={{ textAlign:"center", marginTop:"32px" }}><a href="/terms" target="_blank" rel="noreferrer" style={{ color:"rgba(255,255,255,0.3)", fontSize:"11px", textDecoration:"none" }}>SocioMee is AI and can make mistakes. Please double-check responses.</a></p>
         </div>
       </div>
 
