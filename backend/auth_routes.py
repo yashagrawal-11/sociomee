@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request, status, Response
+from fastapi import APIRouter, HTTPException, Request, status, Response, Body
 import secrets
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -153,6 +153,13 @@ async def google_callback(request: Request, code: str, state: str = None):
                 return RedirectResponse(url=_location, status_code=302)
         except Exception as _mcp_e:
             print(f"MCP Google bridge skip: {_mcp_e}")
+        from oauth_age_manager import is_age_confirmed
+        if not is_age_confirmed(user_payload["user_id"]):
+            import redis as _redis_mod2, json as _json_mod2, secrets as _secrets_mod2
+            _rc2 = _redis_mod2.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+            _pending_tok = _secrets_mod2.token_urlsafe(24)
+            _rc2.setex(f"age_pending:{_pending_tok}", 600, _json_mod2.dumps(user_payload))
+            return RedirectResponse(url=f"https://sociomee.in/app/confirm-age?pending={_pending_tok}", status_code=302)
 
         token = create_jwt_token(user_payload)
 
@@ -163,6 +170,22 @@ async def google_callback(request: Request, code: str, state: str = None):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/confirm-age")
+@limiter.limit("10/minute")
+def confirm_age_endpoint(pending: str = Body(..., embed=True)):
+    import redis as _redis_mod3, json as _json_mod3
+    _rc3 = _redis_mod3.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+    raw = _rc3.get(f"age_pending:{pending}")
+    if not raw:
+        raise HTTPException(400, "This confirmation link has expired. Please log in again.")
+    _rc3.delete(f"age_pending:{pending}")
+    user_payload = _json_mod3.loads(raw)
+    from oauth_age_manager import confirm_age
+    confirm_age(user_payload["user_id"])
+    token = create_jwt_token(user_payload)
+    return {"token": token}
 
 
 # GET USER
@@ -310,6 +333,13 @@ async def github_callback(request: Request, code: str):
                 return RedirectResponse(url=_location, status_code=302)
         except Exception as _mcp_e:
             print(f"MCP GitHub bridge skip: {_mcp_e}")
+        from oauth_age_manager import is_age_confirmed
+        if not is_age_confirmed(user_payload["user_id"]):
+            import redis as _redis_mod2, json as _json_mod2, secrets as _secrets_mod2
+            _rc2 = _redis_mod2.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+            _pending_tok = _secrets_mod2.token_urlsafe(24)
+            _rc2.setex(f"age_pending:{_pending_tok}", 600, _json_mod2.dumps(user_payload))
+            return RedirectResponse(url=f"https://sociomee.in/app/confirm-age?pending={_pending_tok}", status_code=302)
         token = create_jwt_token(user_payload)
         return RedirectResponse(
             url=f"{FRONTEND_CALLBACK_URL}?token={token}",

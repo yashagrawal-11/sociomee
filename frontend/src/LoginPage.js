@@ -297,3 +297,47 @@ export default function LoginPage() {
     </div>
   );
 }
+
+export function ConfirmAge() {
+  const { handleCallback } = useAuth();
+  const [checked, setChecked] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const handleConfirm = async () => {
+    if (!checked) { setErr("Please confirm you are 18 years or older"); return; }
+    setBusy(true); setErr("");
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const pending = params.get("pending");
+      const r = await fetch(`${BASE}/auth/confirm-age`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pending }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || "Confirmation failed");
+      await handleCallback(data.token);
+      window.location.href = "/app";
+    } catch (e) { setErr(e.message); setBusy(false); }
+  };
+
+  return (
+    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#0a0a0a", fontFamily:"'Poppins',sans-serif", padding:"24px" }}>
+      <div style={{ maxWidth:"380px", width:"100%", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"32px", textAlign:"center" }}>
+        <h2 style={{ color:"#fff", fontSize:"18px", marginBottom:"10px" }}>One last step</h2>
+        <p style={{ color:"rgba(255,255,255,0.5)", fontSize:"13px", marginBottom:"24px", lineHeight:1.6 }}>Before continuing, please confirm your age.</p>
+        <label style={{ display:"flex", alignItems:"flex-start", gap:"10px", cursor:"pointer", userSelect:"none", marginBottom:"20px", textAlign:"left" }}>
+          <div onClick={() => setChecked(c => !c)} style={{ width:"18px", height:"18px", minWidth:"18px", borderRadius:"6px", border: checked ? "1px solid rgba(124,58,237,0.8)" : "1px solid rgba(255,255,255,0.2)", background: checked ? "linear-gradient(135deg,#9b5cf6,#7c3aed)" : "rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", marginTop:"1px", transition:"all 0.2s ease" }}>
+            {checked && <span style={{ color:"#fff", fontSize:"11px", fontWeight:"700" }}>✓</span>}
+          </div>
+          <span onClick={() => setChecked(c => !c)} style={{ fontSize:"12.5px", color:"rgba(255,255,255,0.55)" }}>I confirm I am 18 years of age or older</span>
+        </label>
+        {err && <p style={{ fontSize:"12px", color:"#ef4444", marginBottom:"14px" }}>{err}</p>}
+        <button onClick={handleConfirm} disabled={busy}
+          style={{ width:"100%", padding:"14px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.08)", background: busy ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg,#9b5cf6,#7c3aed)", color:"#fff", fontWeight:"600", fontSize:"14px", cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
+          {busy ? "Confirming…" : "✦ Continue"}
+        </button>
+      </div>
+    </div>
+  );
+}

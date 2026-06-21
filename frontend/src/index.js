@@ -3,6 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { AuthProvider, useAuth } from "./AuthContext";
 import { AuthCallback } from "./LoginPage";
+import { ConfirmAge } from "./LoginPage";
 import LoginPage from "./LoginPage";
 import App from "./App";
 import YouTubeCallback from "./YouTubeCallback";
@@ -48,6 +49,7 @@ function Router() {
 
   // Google login callback
   if (path.includes("/auth/callback")) return <AuthCallback />;
+  if (path === "/app/confirm-age") return <ConfirmAge />;
 
   if (!isLoggedIn) return <LoginPage />;
   return <App />;
