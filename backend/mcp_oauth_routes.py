@@ -13,7 +13,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Request, HTTPException, Form
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 
-from auth_routes import create_jwt_token, _load_users, _verify_pw, GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI
+from auth_routes import create_jwt_token, _load_users, _verify_pw, GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI, GITHUB_CLIENT_ID, GITHUB_REDIRECT_URI
 
 import redis as redis_lib
 _redis = redis_lib.Redis(host="localhost", port=6379, db=0, decode_responses=True)
@@ -130,6 +130,7 @@ def oauth_authorize_form(client_id: str, redirect_uri: str, state: str = "",
         </form>
         <div class="divider">— or —</div>
         <a class="btn-pill" href="/oauth/authorize/google?client_id={client_id}&redirect_uri={redirect_uri}&state={state}&code_challenge={code_challenge}">Sign in with Google</a>
+        <a class="btn-pill" href="/oauth/authorize/github?client_id={client_id}&redirect_uri={redirect_uri}&state={state}&code_challenge={code_challenge}">Sign in with GitHub</a>
       </div>
     </body></html>"""
 
@@ -177,6 +178,27 @@ def oauth_authorize_google(client_id: str, redirect_uri: str, state: str = "",
     url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
     response = RedirectResponse(url=url, status_code=302)
     response.set_cookie(key="oauth_state", value=google_state, httponly=True, secure=True, samesite="lax", max_age=600)
+    return response
+
+
+@router.get("/oauth/authorize/github")
+def oauth_authorize_github(client_id: str, redirect_uri: str, state: str = "",
+                            code_challenge: str = ""):
+    client = _get_client(client_id)
+    if not client or redirect_uri not in client["redirect_uris"]:
+        raise HTTPException(400, "Unknown client or redirect_uri")
+    github_state = secrets.token_urlsafe(32)
+    _redis.setex(f"mcp_pending:{github_state}", 600, json.dumps({
+        "client_id": client_id, "redirect_uri": redirect_uri,
+        "code_challenge": code_challenge, "state": state,
+    }))
+    params = {
+        "client_id": GITHUB_CLIENT_ID, "redirect_uri": GITHUB_REDIRECT_URI,
+        "scope": "user:email", "state": github_state,
+    }
+    url = "https://github.com/login/oauth/authorize?" + urlencode(params)
+    response = RedirectResponse(url=url, status_code=302)
+    response.set_cookie(key="oauth_state", value=github_state, httponly=True, secure=True, samesite="lax", max_age=600)
     return response
 
 

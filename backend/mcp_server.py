@@ -31,6 +31,7 @@ import history_routes
 import festival_routes
 from news import store as news_store
 
+import httpx
 import redis as redis_lib
 _redis = redis_lib.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
@@ -144,6 +145,87 @@ def create_share_link(text: str, expires_minutes: int = 30) -> dict:
     }
     _redis.setex(f"share:{code}", expires_in, json.dumps(payload))
     return {"code": code, "expires_in_minutes": expires_minutes}
+
+
+@mcp.tool(title="Generate a content script", annotations={"readOnlyHint": False, "destructiveHint": False})
+def generate_content(topic: str, persona: str = "dhruvrathee", language: str = "hinglish",
+                      country: str = "in", platform: str = "youtube") -> dict:
+    """Generates a full video/content script on a topic using SocioMee's AI pipeline.
+    Costs 1 credit. If generation fails for any reason, the credit is automatically
+    refunded. persona options include: dhruvrathee, carryminati, samayraina, rebelkid,
+    shahrukhkhan, mrbeast, alexhormozi, joerogan, or default."""
+    user_id = _current_user_id()
+    if not credits_manager.use_credit(user_id):
+        status = credits_manager.get_credit_status(user_id)
+        return {"error": f"No credits remaining on your {status.get('plan','free')} plan.",
+                "credit_status": status}
+    user_plan = credits_manager.get_credit_status(user_id).get("plan", "free")
+    try:
+        from ai_router import generate_full_content
+        raw = generate_full_content(topic=topic.strip(), persona=persona.strip().lower(),
+                                     language=language.strip().lower(), country=country.strip().lower(),
+                                     plan=user_plan)
+    except Exception as e:
+        credits_manager.add_credits(user_id, 1)
+        return {"error": f"Generation failed, your credit was refunded. ({e})"}
+    structure = raw.get("structure", {})
+    titles = raw.get("titles", [])
+    script = raw.get("script", "")
+    result = {
+        "topic": topic, "platform": platform,
+        "best_title": titles[0] if titles else topic,
+        "hook": structure.get("hook", ""),
+        "script": script,
+        "word_count": len(script.split()),
+        "warnings": raw.get("errors", []),
+    }
+    try:
+        history_routes.save_generation(user_id, topic, platform, result["best_title"],
+            script[:300], [], result["word_count"], language)
+    except Exception:
+        pass
+    return result
+
+
+@mcp.tool(title="Generate hashtags", annotations={"readOnlyHint": True})
+def generate_hashtags(keyword: str, platform: str = "instagram") -> dict:
+    """Generates relevant trending hashtags for a keyword and platform
+    (instagram, youtube, twitter, or linkedin). Free, no credits used."""
+    try:
+        r = httpx.post("http://127.0.0.1:8000/hashtags/generate",
+                        json={"keyword": keyword, "platform": platform}, timeout=20)
+        r.raise_for_status()
+        return r.json()
+    except Exception as e:
+        return {"error": f"Could not generate hashtags. ({e})"}
+
+
+@mcp.tool(title="Generate hook lines", annotations={"readOnlyHint": True})
+def generate_hooks(topic: str, platform: str = "youtube", tone: str = "curiosity",
+                    language: str = "hinglish") -> dict:
+    """Generates attention-grabbing opening hook lines for a video on a topic.
+    tone options: curiosity, shock. Free, no credits used."""
+    try:
+        r = httpx.post("http://127.0.0.1:8000/hooks/generate",
+                        json={"topic": topic, "platform": platform, "tone": tone, "language": language},
+                        timeout=20)
+        r.raise_for_status()
+        return r.json()
+    except Exception as e:
+        return {"error": f"Could not generate hooks. ({e})"}
+
+
+@mcp.tool(title="Get YouTube analytics", annotations={"readOnlyHint": True})
+def get_youtube_analytics(days: int = 30) -> dict:
+    """Returns the authenticated user's connected YouTube channel analytics:
+    daily views and subscriber counts for the last N days (7 to 90, default 30)."""
+    user_id = _current_user_id()
+    days = max(7, min(days, 90))
+    try:
+        import youtube_connect
+        return youtube_connect.get_analytics(user_id, days=days)
+    except Exception as e:
+        return {"error": f"Could not fetch YouTube analytics. ({e})"}
 
 
 if __name__ == "__main__":

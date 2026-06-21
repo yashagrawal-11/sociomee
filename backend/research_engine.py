@@ -58,7 +58,7 @@ def _call_gemini(messages, max_tokens=2000):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={_GEMINI_KEY}"
     resp = _req_gemini.post(url,
         headers={"Content-Type":"application/json"},
-        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.8}},
+        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.8,"thinkingConfig":{"thinkingBudget":0}}},
         timeout=60
     )
     data = resp.json()
@@ -304,6 +304,12 @@ def _ai_chat(messages: List[Dict[str, str]], max_tokens: int = AI_MAX_TOKENS) ->
     Try NVIDIA first, fallback to DeepSeek, raise if both unavailable.
     """
     errors: List[str] = []
+    if _GEMINI_KEY:
+        try:
+            return _call_gemini(messages, max_tokens)
+        except Exception as exc:
+            log.warning("Gemini call failed: %s", exc)
+            errors.append(f"Gemini: {exc}")
 
     if NVIDIA_API_KEY:
         try:

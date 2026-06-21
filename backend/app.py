@@ -715,6 +715,11 @@ def gen_full(request: Request, payload: FullContentRequest, user: dict = Depends
     except Exception as e:
         import logging
         logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)
+        try:
+            from credits_manager import add_credits
+            add_credits(user["user_id"], 1)
+        except Exception as refund_err:
+            logging.getLogger("sociomee").error(f"Refund failed: {refund_err}", exc_info=True)
         raise HTTPException(500, "Something went wrong. Please try again.")
     normalized = _normalize(raw, payload, payload.platform.strip().lower())
     try:

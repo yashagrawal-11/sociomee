@@ -289,6 +289,26 @@ async def github_callback(request: Request, code: str):
             "provider": "github",
             "plan": "free",
         }
+        try:
+            import redis as _redis_mod, json as _json_mod, secrets as _secrets_mod
+            _rc = _redis_mod.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+            _gh_state = request.query_params.get("state", "")
+            _pending_raw = _rc.get(f"mcp_pending:{_gh_state}") if _gh_state else None
+            if _pending_raw:
+                _rc.delete(f"mcp_pending:{_gh_state}")
+                _pending = _json_mod.loads(_pending_raw)
+                _mcp_code = _secrets_mod.token_urlsafe(24)
+                _rc.setex(f"mcp_code:{_mcp_code}", 120, _json_mod.dumps({
+                    "client_id": _pending["client_id"], "redirect_uri": _pending["redirect_uri"],
+                    "code_challenge": _pending["code_challenge"], "user_payload": user_payload,
+                }))
+                _sep = "&" if "?" in _pending["redirect_uri"] else "?"
+                _location = f'{_pending["redirect_uri"]}{_sep}code={_mcp_code}'
+                if _pending.get("state"):
+                    _location += f'&state={_pending["state"]}'
+                return RedirectResponse(url=_location, status_code=302)
+        except Exception as _mcp_e:
+            print(f"MCP GitHub bridge skip: {_mcp_e}")
         token = create_jwt_token(user_payload)
         return RedirectResponse(
             url=f"{FRONTEND_CALLBACK_URL}?token={token}",

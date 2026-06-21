@@ -50,7 +50,7 @@ def _gemini_chat(messages, max_tokens=1200):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     resp = _requests.post(url,
         headers={"Content-Type":"application/json"},
-        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.8}},
+        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.8,"thinkingConfig":{"thinkingBudget":0}}},
         timeout=60
     )
     data = resp.json()
@@ -71,7 +71,7 @@ def _gemini_chat(messages: List[Dict[str, Any]], max_tokens: int = 1200) -> str:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     resp = _requests.post(url,
         headers={"Content-Type":"application/json"},
-        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.8}},
+        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.8,"thinkingConfig":{"thinkingBudget":0}}},
         timeout=60
     )
     data = resp.json()
@@ -228,7 +228,7 @@ def _smart_local_structure(topic: str, research_data: Dict, youtube_data: Dict) 
         conflict = (
             f"{t} ke baare mein ek fundamental tension hai: log isse jo samajhte hain aur jo actually hota hai — dono alag hain. "
             "Yeh perception-reality gap hi is poori discussion ka core problem hai. "
-            "Isko address kiye bina {t} ka honest analysis possible nahi hai."
+            f"Isko address kiye bina {t} ka honest analysis possible nahi hai."
         )
 
     # ── Key points ────────────────────────────────────────────────────

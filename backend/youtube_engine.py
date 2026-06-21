@@ -1927,3 +1927,38 @@ def enforce_exact_beats(beats: list, target: int = 7) -> list:
 
 # ── Convenient singleton ──────────────────────────────────
 youtube_engine = YouTubeIntelligenceEngine()
+
+def get_youtube_data(topic: str, region_code: str = "IN", relevance_language: str = "en", max_results: int = 10) -> dict:
+    """
+    Fetch real current YouTube titles and derived keywords for a topic via the
+    YouTube Data API v3 search endpoint. Never raises - returns empty lists on failure.
+    """
+    import os, re, requests
+    api_key = os.getenv("YOUTUBE_PUBLIC_API_KEY", "")
+    if not api_key:
+        return {"titles": [], "keywords": []}
+    try:
+        resp = requests.get(
+            "https://www.googleapis.com/youtube/v3/search",
+            params={
+                "part": "snippet", "q": topic, "type": "video",
+                "maxResults": max_results, "regionCode": region_code,
+                "relevanceLanguage": relevance_language, "key": api_key,
+            },
+            timeout=15,
+        )
+        if resp.status_code != 200:
+            return {"titles": [], "keywords": []}
+        items = resp.json().get("items", [])
+        titles = [it.get("snippet", {}).get("title", "") for it in items if it.get("snippet", {}).get("title")]
+        stopwords = {"the","a","an","is","in","on","for","of","to","and","with","this","that",
+                     "are","was","will","video","shorts"}
+        word_counts = {}
+        for t in titles:
+            for w in re.findall(r"[A-Za-z][A-Za-z0-9']+", t.lower()):
+                if len(w) > 2 and w not in stopwords:
+                    word_counts[w] = word_counts.get(w, 0) + 1
+        keywords = [w for w, _ in sorted(word_counts.items(), key=lambda x: -x[1])][:15]
+        return {"titles": titles[:max_results], "keywords": keywords}
+    except Exception:
+        return {"titles": [], "keywords": []}

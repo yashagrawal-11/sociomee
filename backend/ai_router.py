@@ -32,6 +32,22 @@ try:
     from ai_scriptwriter import generate_script as _generate_script
 except Exception as _e:
     def _generate_script(*a, **kw): return ""
+try:
+    from research_engine import get_research_data as _get_research_data
+except Exception as _e:
+    def _get_research_data(*a, **kw): return {}
+try:
+    from structure_engine import generate_structure as _generate_structure
+except Exception as _e:
+    def _generate_structure(*a, **kw): return {}
+try:
+    from youtube_engine import get_youtube_data as _get_youtube_data
+except Exception as _e:
+    def _get_youtube_data(*a, **kw): return {"titles": [], "keywords": []}
+try:
+    from persona_profiles import get_persona as _get_persona
+except Exception as _e:
+    def _get_persona(name): return {"name": name, "tone": "clear", "language": "hinglish", "style_rules": [], "voice": name, "energy": "medium", "pacing": "medium"}
 
 import json
 import os
@@ -59,7 +75,7 @@ def _gemini_generate(prompt: str, max_tokens: int = 8000) -> str:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
     resp = requests.post(url,
         headers={"Content-Type":"application/json"},
-        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.85}},
+        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.85,"thinkingConfig":{"thinkingBudget":0}}},
         timeout=120
     )
     data = resp.json()
@@ -101,7 +117,7 @@ def _gemini_generate(system_prompt: str, user_prompt: str, temperature: float=0.
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     resp = requests.post(url,
         headers={"Content-Type":"application/json"},
-        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":temperature}},
+        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":temperature,"thinkingConfig":{"thinkingBudget":0}}},
         timeout=120
     )
     data = resp.json()
@@ -114,6 +130,7 @@ def generate_full_content(
     persona:  str = "dhruvrathee",
     language: str = "hinglish",
     country:  str = "in",
+    plan:     str = "free",
 ) -> Dict[str, Any]:
     """
     Run the full 6-step evidence-first AI pipeline.
@@ -138,9 +155,23 @@ def generate_full_content(
             "errors": ["Topic cannot be empty."],
         }
 
-    # ── Step 1: Research + Evidence Pack (GNews → DeepSeek / Simulation) ──
-    research: Dict[str, Any] = {}
-    try:
+    # ── Plan tier config ───────────────────────────────────────────────
+    _plan = (plan or "free").lower()
+    if "premium" in _plan:
+        min_words, max_words, gen_max_tokens, do_research = 6000, 7000, 20000, True
+    elif "pro" in _plan:
+        min_words, max_words, gen_max_tokens, do_research = 3000, 5000, 16000, False
+    else:
+        min_words, max_words, gen_max_tokens, do_research = 300, 500, 4000, False
+
+    # ── Step 1: Research + Evidence Pack (Premium only) ────────────────
+    research: Dict[str, Any] = {
+        "timeline": [], "key_events": [], "insights": [],
+        "facts": [], "quotes": [], "numbers": [],
+        "controversies": [], "evidence_pack": "", "raw_count": 0, "topic": topic,
+    }
+    if do_research:
+      try:
         research = _get_research_data(
             topic=topic, language=language, country=country,
         )
@@ -151,8 +182,8 @@ def generate_full_content(
             "Step 1 complete — evidence_pack=%d chars, facts=%d, numbers=%d",
             ep_len, len(research.get("facts", [])), len(research.get("numbers", []))
         )
-    except Exception as exc:
-        errors.append(f"research_engine: {exc}")
+      except Exception as exc:
+        print(f"[PIPELINE-DEBUG] research_engine FAILED: {exc}", flush=True); errors.append(f"research_engine: {exc}")
         research = {
             "timeline": [], "key_events": [], "insights": [],
             "facts": [], "quotes": [], "numbers": [],
@@ -167,7 +198,7 @@ def generate_full_content(
             relevance_language="hi" if language == "hinglish" else "en",
         )
     except Exception as exc:
-        errors.append(f"youtube_engine: {exc}")
+        print(f"[PIPELINE-DEBUG] youtube_engine FAILED: {exc}", flush=True); errors.append(f"youtube_engine: {exc}")
         youtube_data = {"titles": [], "keywords": []}
 
     # ── Step 3: Script structure (DeepSeek — evidence-informed) ───────
@@ -179,7 +210,7 @@ def generate_full_content(
             youtube_data=youtube_data,
         )
     except Exception as exc:
-        errors.append(f"structure_engine: {exc}")
+        print(f"[PIPELINE-DEBUG] structure_engine FAILED: {exc}", flush=True); errors.append(f"structure_engine: {exc}")
         # Gemini-powered structure with persona-specific hook
         best_fact = (research.get("facts") or [""])[0]
         best_num  = (research.get("numbers") or [""])[0]
@@ -212,7 +243,7 @@ Write ONLY the hook text, nothing else."""
             hook_resp = requests.post(
                 f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}",
                 headers={"Content-Type":"application/json"},
-                json={"contents":[{"parts":[{"text":hook_prompt}]}],"generationConfig":{"maxOutputTokens":150,"temperature":0.9}},
+                json={"contents":[{"parts":[{"text":hook_prompt}]}],"generationConfig":{"maxOutputTokens":150,"temperature":0.9,"thinkingConfig":{"thinkingBudget":0}}},
                 timeout=15
             )
             hook_data = hook_resp.json()
@@ -228,7 +259,7 @@ Write ONLY the hook text, nothing else."""
             "background": f"Background of {topic} — what the documented record shows.",
             "timeline":   research.get("timeline", [])[:5],
             "conflict":   (research.get("controversies") or [{}])[0].get("claim", ""),
-            "key_points": [f["event"] if isinstance(f, dict) else str(f)
+            "key_points": [(f.get("event") or f.get("title") or str(f)) if isinstance(f, dict) else str(f)
                            for f in research.get("key_events", [])[:5]],
             "conclusion": research.get("summary", "")[:300] or f"The evidence on {topic} has clear implications.",
         }
@@ -242,31 +273,47 @@ Write ONLY the hook text, nothing else."""
             if persona_lang == "english":
                 language = "english"
     except Exception as exc:
-        errors.append(f"persona_profiles: {exc}")
+        print(f"[PIPELINE-DEBUG] persona_profiles FAILED: {exc}", flush=True); errors.append(f"persona_profiles: {exc}")
+        _style_desc = _PERSONA_STYLES.get(str(persona).lower().strip(), _DEFAULT_STYLE)
         persona_data = {
-            "name": persona, "tone": "clear", "language": language,
-            "style_rules": [], "voice": persona, "energy": "medium", "pacing": "medium",
+            "name": persona, "tone": _style_desc, "language": language,
+            "style_rules": [_style_desc], "voice": persona, "energy": "medium", "pacing": "medium",
         }
 
     # ── Step 5: Script generation (Gemma — evidence-first) ────────────
     # KEY CHANGE v2: pass persona_data (full dict) AND research (evidence pack)
     script: str = ""
     try:
-        script = _generate_script(
-            topic         = topic,
-            structure     = structure,
-            persona       = persona_data,     # ← full dict, not just voice string
-            language      = language,
-            platform      = "youtube",
-            min_words     = 3000,             # ← raised from 2000
-            max_words     = 5000,
-            research_data = research,         # ← evidence flows to Gemma
+        persona_voice = persona_data.get("voice", persona_data.get("name", "default")) if isinstance(persona_data, dict) else str(persona_data)
+        persona_tone = persona_data.get("tone", "") if isinstance(persona_data, dict) else ""
+        research_text = research.get("evidence_pack", "") if isinstance(research, dict) else ""
+        hook_text = structure.get("hook", "") if isinstance(structure, dict) else ""
+        key_points = structure.get("key_points", []) if isinstance(structure, dict) else []
+        gemini_prompt = (
+            f"Write a {min_words}-{max_words} word YouTube video script in {language} about: {topic}\n\n"
+            f"Write in the voice and style of: {persona_voice}. Style notes: {persona_tone}\n\n"
+            f"Hook to open with: {hook_text}\n\n"
+            f"Key points to cover:\n" + chr(10).join(f"- {kp}" for kp in key_points) + "\n\n"
+            f"Research and evidence to incorporate:\n{research_text[:2000]}\n\n"
+            "Write ONLY the script text itself, no preamble or explanation."
         )
+        _resp = requests.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}",
+            headers={"Content-Type": "application/json"},
+            json={"contents": [{"parts": [{"text": gemini_prompt}]}],
+                  "generationConfig": {"maxOutputTokens": gen_max_tokens, "temperature": 0.85,
+                                        "thinkingConfig": {"thinkingBudget": 0}}},
+            timeout=120,
+        )
+        _data = _resp.json()
+        if "error" in _data:
+            raise RuntimeError(f"Gemini: {_data['error']['message']}")
+        script = _data["candidates"][0]["content"]["parts"][0]["text"]
     except Exception as exc:
-        errors.append(f"ai_scriptwriter: {exc}")
+        print(f"[PIPELINE-DEBUG] gemini_script FAILED: {exc}", flush=True); errors.append(f"gemini_script: {exc}")
         script = (
             f"[Script generation failed: {exc}]\n"
-            "Ensure GOOGLE_API_KEY is set in .env and google-generativeai is installed."
+            "Gemini script generation failed. Please try again or check API keys."
         )
 
     # ── Step 6: SEO ───────────────────────────────────────────────────
