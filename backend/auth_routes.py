@@ -174,7 +174,7 @@ async def google_callback(request: Request, code: str, state: str = None):
 
 @router.post("/confirm-age")
 @limiter.limit("10/minute")
-def confirm_age_endpoint(pending: str = Body(..., embed=True)):
+def confirm_age_endpoint(request: Request, pending: str = Body(..., embed=True)):
     import redis as _redis_mod3, json as _json_mod3
     _rc3 = _redis_mod3.Redis(host="localhost", port=6379, db=0, decode_responses=True)
     raw = _rc3.get(f"age_pending:{pending}")
