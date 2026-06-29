@@ -182,6 +182,24 @@ def _low_credits_html(name: str, credits_left: int, plan: str) -> str:
     return _base_template(content)
 
 
+def _otp_html(name: str, otp: str) -> str:
+    first = name.split()[0] if name else "Creator"
+    content = f"""
+      <div class="warn-badge">🔐 Password Reset Requested</div>
+      <h1 class="h1">Hey {first}, here's your code</h1>
+      <p class="p">Use the code below to reset your SocioMee password. This code expires in <strong style="color:#fbbf24">15 minutes</strong>.</p>
+
+      <div style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.3);border-radius:14px;padding:24px;margin:20px 0;text-align:center">
+        <div style="font-size:36px;font-weight:900;color:#a78bfa;letter-spacing:6px">{otp}</div>
+      </div>
+
+      <div class="tip">
+        🔒 If you didn't request this, you can safely ignore this email — your password will not be changed. Never share this code with anyone, including anyone claiming to be SocioMee support.
+      </div>
+    """
+    return _base_template(content)
+
+
 def _plan_expiry_html(name: str, plan_label: str, days_left: int) -> str:
     first = name.split()[0] if name else "Creator"
     content = f"""
@@ -255,6 +273,26 @@ def send_low_credits_warning(to_email: str, name: str, credits_left: int, plan: 
         return True
     except Exception as e:
         log.error("send_low_credits_warning failed: %s", e)
+        return False
+
+
+def send_otp_email(to_email: str, name: str, otp: str) -> bool:
+    """Send password reset OTP. Returns True only if the email genuinely sent —
+    callers must treat a False return as a real failure, not a silent success."""
+    if not resend.api_key or not to_email:
+        log.warning("send_otp_email: missing API key or email")
+        return False
+    try:
+        resend.Emails.send({
+            "from":    FROM_EMAIL,
+            "to":      [to_email],
+            "subject": "Your SocioMee password reset code",
+            "html":    _otp_html(name, otp),
+        })
+        log.info("OTP email sent to %s", to_email)
+        return True
+    except Exception as e:
+        log.error("send_otp_email failed: %s", e)
         return False
 
 

@@ -457,7 +457,18 @@ def forgot_password(body: ForgotBody, request: Request):
     users[email]["reset_otp"] = _hash_pw(otp)
     users[email]["reset_expiry"] = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
     _save_users(users)
-    return {"message": "OTP generated", "otp": otp, "dev_mode": True}
+    # SECURITY: OTP must never be returned in the API response — it is emailed only.
+    try:
+        from email_service import send_otp_email
+        name = users[email].get("name", "")
+        sent = send_otp_email(email, name, otp)
+        if not sent:
+            import logging
+            logging.getLogger("sociomee").error(f"OTP email failed to send for {email} — user will not receive their reset code.")
+    except Exception as e:
+        import logging
+        logging.getLogger("sociomee").error(f"OTP email send raised an exception for {email}: {e}")
+    return {"message": "If this email exists, an OTP has been sent."}
 
 @router.post("/reset-password")
 def reset_password(body: ResetBody):
