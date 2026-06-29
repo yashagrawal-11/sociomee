@@ -14,6 +14,31 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from pydantic import BaseModel, Field
 
+import json as _json_logging
+from datetime import datetime as _dt_logging, timezone as _tz_logging
+
+class _JSONFormatter(logging.Formatter):
+    """Structured JSON logging — makes it possible to actually search/filter/alert on
+    logs by severity, logger name, or message content, instead of grepping plain text.
+    Falls back gracefully if any field is unexpected (never breaks logging itself)."""
+    def format(self, record):
+        try:
+            entry = {
+                "timestamp": _dt_logging.fromtimestamp(record.created, tz=_tz_logging.utc).isoformat(),
+                "level": record.levelname,
+                "logger": record.name,
+                "message": record.getMessage(),
+            }
+            if record.exc_info:
+                entry["exception"] = self.formatException(record.exc_info)
+            return _json_logging.dumps(entry)
+        except Exception:
+            return super().format(record)
+
+_log_handler = logging.StreamHandler()
+_log_handler.setFormatter(_JSONFormatter())
+logging.basicConfig(level=logging.INFO, handlers=[_log_handler], force=True)
+
 log = logging.getLogger("app")
 
 try:
@@ -488,37 +513,10 @@ def _generate_titles_with_scores(topic: str, persona: str, language: str) -> lis
     result.sort(key=lambda x: x["seo_score"], reverse=True)
     return result
 
-def _check_topic_safety(topic: str) -> bool:
-    """Returns True if topic is safe to generate content about. Returns False (block) for self-harm, sexual content, slurs, hate speech, or violence — regardless of language or spelling variant."""
-    import requests as _r, os as _os
-    try:
-        api_key = _os.environ.get("GOOGLE_API_KEY","")
-        check_prompt = f"""You are a content safety classifier. Classify the following video topic.
-Topic: "{topic}"
-Answer with ONLY one word: SAFE or UNSAFE.
-Mark UNSAFE if the topic involves: suicide or self-harm, sexual content or explicit sex acts, slurs or profanity (in any language, including Hindi/Hinglish such as bhenchod, chutiya, etc.), hate speech, graphic violence, illegal drugs, or content sexualizing minors.
-Mark UNSAFE even if the topic is spelled with extra letters, numbers, or symbols to evade filters (e.g. "sexx", "s3x", "fuckk").
-Mark SAFE only for genuinely neutral, informational, or entertainment topics with no harmful intent.
-Answer with only SAFE or UNSAFE, nothing else."""
-        resp = _r.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
-            headers={"Content-Type":"application/json"},
-            json={"contents":[{"parts":[{"text":check_prompt}]}],"generationConfig":{"maxOutputTokens":10,"temperature":0}},
-            timeout=15
-        )
-        data = resp.json()
-        if "candidates" in data:
-            verdict = data["candidates"][0]["content"]["parts"][0]["text"].strip().upper()
-            if "UNSAFE" in verdict:
-                return False
-            return True
-    except Exception as e:
-        log.warning("Topic safety check failed: %s — defaulting to BLOCK for safety", e)
-        return False
-    # If we got a response but couldn't parse it cleanly, fail closed (block).
-    return False
-
-
+# NOTE: _check_topic_safety is imported from ai_router (see top of file) — do NOT
+# redefine it here. A duplicate copy previously existed in this exact spot and
+# silently shadowed the real one, meaning fixes to the real function never applied
+# to any of this file's own usages. Single source of truth now.
 def _generate_yt_description(topic: str, hook: str, structure: dict, titles_with_score: list) -> str:
     import requests as _r, re as _re, os as _os
     t = topic.strip(); tc = t.title()
@@ -1057,12 +1055,33 @@ async def upload_for_subtitles(request: Request, file: UploadFile = File(...), l
         if transcript_resp.status_code != 200:
             raise HTTPException(status_code=502, detail=f"Transcription request failed: {transcript_resp.text}")
         transcript_id = transcript_resp.json()["id"]
+        # SECURITY: record which user owns this transcript so /subtitles/status can
+        # verify ownership later (prevents one user from viewing another's transcript
+        # just by guessing or obtaining the ID — IDOR).
+        try:
+            import redis as _redis_subtitle, json as _json_subtitle
+            _rcs = _redis_subtitle.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+            _rcs.setex(f"transcript_owner:{transcript_id}", 24*60*60, user.get("user_id", ""))
+        except Exception as _own_e:
+            log.warning("Failed to record transcript ownership: %s", _own_e)
         return {"transcript_id": transcript_id}
 
 @app.get("/subtitles/status/{transcript_id}")
 @limiter.limit("30/minute")
 async def subtitle_status(transcript_id: str, request: Request, user: dict = Depends(get_current_user)):
     import httpx, os
+    # SECURITY: verify the requesting user actually owns this transcript before
+    # returning anything (IDOR check).
+    try:
+        import redis as _redis_subtitle2
+        _rcs2 = _redis_subtitle2.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+        _owner = _rcs2.get(f"transcript_owner:{transcript_id}")
+        if _owner is not None and _owner != user.get("user_id", ""):
+            raise HTTPException(status_code=403, detail="Access denied")
+    except HTTPException:
+        raise
+    except Exception as _own_e2:
+        log.warning("Transcript ownership check failed (allowing through, record may have expired): %s", _own_e2)
     api_key = os.environ.get("ASSEMBLYAI_API_KEY", "")
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.get(
@@ -1379,8 +1398,7 @@ import secrets, base64, time
 
 @app.post("/api/share/create")
 @limiter.limit("30/hour")
-async def share_create(request: Request):
-    user = {"name": "Someone"}
+async def share_create(request: Request, user: dict = Depends(get_current_user)):
     body = await request.json()
     file_data = body.get("file", "")      # base64
     file_name = body.get("name", "file")
