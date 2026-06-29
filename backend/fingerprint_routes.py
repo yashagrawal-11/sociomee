@@ -25,9 +25,12 @@ def _save(d):
     FP_FILE.write_text(json.dumps(d, indent=2))
 
 def _get_user(request: Request):
-    auth = request.headers.get("Authorization", "")
-    if not auth.startswith("Bearer "): raise HTTPException(401, "Missing token")
-    token = auth.split(" ")[1]
+    token = request.cookies.get("sociomee_session")
+    if not token:
+        auth = request.headers.get("Authorization", "")
+        if auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token: raise HTTPException(401, "Missing token")
     try: return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
     except: raise HTTPException(401, "Invalid token")
 

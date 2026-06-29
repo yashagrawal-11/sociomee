@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional
 
 import jwt
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 # Load env so JWT_SECRET is available
@@ -19,6 +19,7 @@ load_dotenv(os.path.join(BASE_DIR, ".env"), override=True)
 
 JWT_SECRET    = os.getenv("JWT_SECRET", "")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+SESSION_COOKIE_NAME = "sociomee_session"
 
 log = logging.getLogger("middleware")
 
@@ -26,16 +27,21 @@ _bearer = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
+    request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer),
 ) -> Dict[str, Any]:
-    if not credentials or not credentials.credentials:
+    # SECURITY MIGRATION: prefer the httpOnly cookie (not readable by JS, so safe from
+    # XSS token theft). Fall back to the Authorization header for backward compatibility
+    # while the frontend migrates away from storing the token in localStorage.
+    token = request.cookies.get(SESSION_COOKIE_NAME)
+    if not token and credentials and credentials.credentials:
+        token = credentials.credentials
+    if not token:
         raise HTTPException(
             status_code=401,
             detail="Not authenticated. Please log in with Google.",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    token = credentials.credentials
 
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])

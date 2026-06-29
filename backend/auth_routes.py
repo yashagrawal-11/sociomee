@@ -178,7 +178,7 @@ async def google_callback(request: Request, code: str, state: str = None):
 
 @router.post("/confirm-age")
 @limiter.limit("10/minute")
-def confirm_age_endpoint(request: Request, pending: str = Body(..., embed=True)):
+def confirm_age_endpoint(request: Request, response: Response, pending: str = Body(..., embed=True)):
     import redis as _redis_mod3, json as _json_mod3
     _rc3 = _redis_mod3.Redis(host="localhost", port=6379, db=0, decode_responses=True)
     raw = _rc3.get(f"age_pending:{pending}")
@@ -189,16 +189,23 @@ def confirm_age_endpoint(request: Request, pending: str = Body(..., embed=True))
     from oauth_age_manager import confirm_age
     confirm_age(user_payload["user_id"])
     token = create_jwt_token(user_payload)
+    response.set_cookie(
+        key="sociomee_session", value=token, httponly=True, secure=True,
+        samesite="lax", max_age=7*24*60*60, path="/",
+    )
     return {"token": token}
 
 
 # GET USER
 @router.get("/me")
 def get_me(request: Request):
-    auth_header = request.headers.get("Authorization", "")
-    if not auth_header.startswith("Bearer "):
+    token = request.cookies.get("sociomee_session")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+    if not token:
         raise HTTPException(status_code=401, detail="Missing token")
-    token = auth_header.split(" ")[1]
     try:
         payload = decode_jwt_token(token)
     except Exception:
@@ -226,17 +233,21 @@ def get_me(request: Request):
 # REFRESH
 @router.post("/refresh-token")
 @limiter.limit("10/minute")
-def refresh_token(request: Request):
-    auth_header = request.headers.get("Authorization", "")
-
-    if not auth_header.startswith("Bearer "):
+def refresh_token(request: Request, response: Response):
+    token = request.cookies.get("sociomee_session")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+    if not token:
         raise HTTPException(status_code=401, detail="Missing token")
-
-    token = auth_header.split(" ")[1]
 
     payload = decode_jwt_token(token)
     new_token = create_jwt_token(payload)
-
+    response.set_cookie(
+        key="sociomee_session", value=new_token, httponly=True, secure=True,
+        samesite="lax", max_age=7*24*60*60, path="/",
+    )
     return {"token": new_token}
 
 
@@ -345,10 +356,17 @@ async def github_callback(request: Request, code: str):
             _rc2.setex(f"age_pending:{_pending_tok}", 600, _json_mod2.dumps(user_payload))
             return RedirectResponse(url=f"https://sociomee.in/app/confirm-age?pending={_pending_tok}", status_code=302)
         token = create_jwt_token(user_payload)
-        return RedirectResponse(
+        redirect = RedirectResponse(
             url=f"{FRONTEND_CALLBACK_URL}?token={token}",
             status_code=302,
         )
+        # SECURITY MIGRATION: set the httpOnly cookie here too, so the frontend can rely
+        # on it instead of the token in the URL once it migrates away from localStorage.
+        redirect.set_cookie(
+            key="sociomee_session", value=token, httponly=True, secure=True,
+            samesite="lax", max_age=7*24*60*60, path="/",
+        )
+        return redirect
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -430,20 +448,65 @@ def register(body: RegisterBody, request: Request):
         send_welcome_email(email, users[email].get("name", email.split("@")[0]))
     except Exception:
         pass
-    payload = {k: v for k, v in users[email].items() if k != "password"}
+    payload = {
+        "user_id": users[email].get("user_id", ""),
+        "name": users[email].get("name", ""),
+        "email": users[email].get("email", email),
+        "provider": users[email].get("provider", "email"),
+        "picture": users[email].get("picture", ""),
+        "plan": users[email].get("plan", "free"),
+        "created_at": users[email].get("created_at", ""),
+    }
     token = create_jwt_token(payload)
+    response.set_cookie(
+        key="sociomee_session", value=token, httponly=True, secure=True,
+        samesite="lax", max_age=7*24*60*60, path="/",
+    )
     return {"token": token, "user": payload}
+
+@router.post("/set-session")
+@limiter.limit("10/minute")
+def set_session(request: Request, response: Response, token: str = Body(..., embed=True)):
+    # Validates the token (so this can't be used to plant an arbitrary cookie) then sets
+    # it as the httpOnly session cookie. Called directly from sociomee.in by the frontend
+    # right after an OAuth redirect — setting the cookie here, on a same-origin request the
+    # page actually lands on, avoids the unreliable behavior of setting cookies on a
+    # redirect response that crosses through a third-party domain (Google) mid-chain.
+    try:
+        decode_jwt_token(token)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    response.set_cookie(
+        key="sociomee_session", value=token, httponly=True, secure=True,
+        samesite="lax", max_age=7*24*60*60, path="/",
+    )
+    return {"ok": True}
 
 @router.post("/login")
 @limiter.limit("5/minute")
-def login_email(body: LoginBody, request: Request):
+def login_email(body: LoginBody, request: Request, response: Response):
     users = _load_users()
     email = body.email.lower().strip()
     user = users.get(email)
     if not user or not _verify_pw(body.password, user.get("password","")):
         raise HTTPException(401, "Invalid email or password")
-    payload = {k: v for k, v in user.items() if k != "password"}
+    payload = {
+        "user_id": user.get("user_id", ""),
+        "name": user.get("name", ""),
+        "email": user.get("email", email),
+        "provider": user.get("provider", "email"),
+        "picture": user.get("picture", ""),
+        "plan": user.get("plan", "free"),
+        "created_at": user.get("created_at", ""),
+    }
     token = create_jwt_token(payload)
+    # SECURITY MIGRATION: set the token as an httpOnly cookie (not readable by JS, safe
+    # from XSS token theft) in addition to returning it in the body for now, so the
+    # current frontend keeps working while it migrates away from localStorage.
+    response.set_cookie(
+        key="sociomee_session", value=token, httponly=True, secure=True,
+        samesite="lax", max_age=7*24*60*60, path="/",
+    )
     return {"token": token, "user": payload}
 
 @router.post("/forgot-password")
