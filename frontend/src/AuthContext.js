@@ -1,72 +1,72 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 const BASE = "https://sociomee.in/api";
 const AuthContext = createContext(null);
-const TOKEN_KEY = "sociomee_token";
-function saveToken(t) { localStorage.setItem(TOKEN_KEY, t); }
-function loadToken() { return localStorage.getItem(TOKEN_KEY) || ""; }
-function clearToken() { localStorage.removeItem(TOKEN_KEY); }
+// SECURITY MIGRATION: the session now lives in an httpOnly cookie set by the backend,
+// not in localStorage. The cookie is invisible to JavaScript (that's the whole point —
+// it can't be stolen via XSS), so we no longer read/write a token value here at all.
+// credentials: "include" is required on every fetch so the browser actually sends the cookie.
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState("");
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const stored = loadToken();
-    if (!stored) { setLoading(false); return; }
-    // Refresh token silently to get latest plan
-    fetch(`${BASE}/auth/refresh-token`, { method:"POST", headers:{ Authorization:`Bearer ${stored}` } })
-      .then(r=>r.json()).then(d=>{ if(d?.token) { saveToken(d.token); } }).catch(()=>{});
-    fetch(`${BASE}/auth/me`, { headers: { Authorization: `Bearer ${stored}` } })
+    // On load, just ask the backend "who am I?" — the cookie (if present and valid)
+    // answers this automatically. No token to manage on this side at all.
+    fetch(`${BASE}/auth/refresh-token`, { method: "POST", credentials: "include" }).catch(() => {});
+    fetch(`${BASE}/auth/me`, { credentials: "include" })
       .then(r => { if (!r.ok) throw new Error("invalid"); return r.json(); })
       .then(data => {
-        setToken(stored); setUser(data);
+        setUser(data);
         if (data?.user_id) localStorage.setItem("sociomee_user_id", data.user_id);
         if (data?.email)   localStorage.setItem("sociomee_email",   data.email);
       })
-      .catch(() => { clearToken(); setUser(null); })
+      .catch(() => { setUser(null); })
       .finally(() => setLoading(false));
   }, []);
   const loginWithGoogle = useCallback(async () => {
     try {
-      const res  = await fetch(`${BASE}/auth/google/login`);
+      const res  = await fetch(`${BASE}/auth/google/login`, { credentials: "include" });
       const data = await res.json();
       if (data?.url) window.location.href = data.url;
     } catch (e) { console.error("Login failed:", e); }
   }, []);
   const loginWithGithub = useCallback(async () => {
     try {
-      const res  = await fetch(`${BASE}/auth/github/login`);
+      const res  = await fetch(`${BASE}/auth/github/login`, { credentials: "include" });
       const data = await res.json();
       if (data?.url) window.location.href = data.url;
     } catch (e) { console.error("GitHub login failed:", e); }
   }, []);
-  const handleCallback = useCallback(async (newToken) => {
-    if (!newToken) return;
-    saveToken(newToken); setToken(newToken);
+  const handleCallback = useCallback(async (token) => {
+    // Setting the cookie on the OAuth redirect itself is unreliable (it crosses through
+    // Google's domain mid-chain), so instead we call set-session directly from sociomee.in
+    // — a same-origin request — using the token the redirect put in the URL. This actually
+    // sets the cookie reliably, then we fetch the user as normal.
     try {
-      const res  = await fetch(`${BASE}/auth/me`, { headers: { Authorization: `Bearer ${newToken}` } });
+      if (token) {
+        await fetch(`${BASE}/auth/set-session`, {
+          method: "POST", credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+      }
+      const res  = await fetch(`${BASE}/auth/me`, { credentials: "include" });
       const data = await res.json();
       setUser(data);
       if (data?.user_id) localStorage.setItem("sociomee_user_id", data.user_id);
       if (data?.email)   localStorage.setItem("sociomee_email",   data.email);
-    } catch { clearToken(); setUser(null); }
+    } catch { setUser(null); }
   }, []);
   const logout = useCallback(async () => {
-    try { if (token) await fetch(`${BASE}/auth/logout`, { method: "POST", headers: { Authorization: `Bearer ${token}` } }); } catch {}
-    clearToken();
+    try { await fetch(`${BASE}/auth/logout`, { method: "POST", credentials: "include" }); } catch {}
     localStorage.removeItem("sociomee_user_id");
     localStorage.removeItem("sociomee_email");
-    setToken(""); setUser(null);
-  }, [token]);
+    setUser(null);
+  }, []);
   const refreshToken = useCallback(async () => {
-    if (!token) return;
-    try {
-      const res  = await fetch(`${BASE}/auth/refresh-token`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      if (data?.token) { saveToken(data.token); setToken(data.token); }
-    } catch (e) { console.error("Token refresh failed:", e); }
-  }, [token]);
+    try { await fetch(`${BASE}/auth/refresh-token`, { method: "POST", credentials: "include" }); } catch (e) { console.error("Token refresh failed:", e); }
+  }, []);
   return (
-    <AuthContext.Provider value={{ user, token, loading, isLoggedIn: !!user, isPro: !!(user?.plan && user.plan !== "free"), loginWithGoogle, loginWithGithub, handleCallback, logout, refreshToken }}>
+    <AuthContext.Provider value={{ user, loading, isLoggedIn: !!user, isPro: !!(user?.plan && user.plan !== "free"), loginWithGoogle, loginWithGithub, handleCallback, logout, refreshToken }}>
       {children}
     </AuthContext.Provider>
   );

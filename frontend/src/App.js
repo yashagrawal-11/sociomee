@@ -1103,9 +1103,8 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
   const [dcStatus, setDcStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const token = localStorage.getItem("sociomee_token") || "";
     Promise.allSettled([
-      fetch(BASE+"/youtube/channels/"+userId, { headers:{ Authorization:"Bearer "+token } }).then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch(BASE+"/youtube/channels/"+userId, { credentials:"include" }).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(BASE+"/telegram/connect-status?user_id="+userId).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(BASE+"/discord/status?user_id="+userId).then(r=>r.ok?r.json():null).catch(()=>null),
     ]).then(([yt,tg,dc]) => {
@@ -1116,7 +1115,7 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
       setLoading(false);
     });
   }, [userId]);
-  const disconnectYT = async (channelId) => { const t=localStorage.getItem("sociomee_token")||""; await fetch(BASE+"/youtube/disconnect-channel/"+userId+(channelId?"?channel_id="+channelId:""),{method:"DELETE",headers:{Authorization:"Bearer "+t}}).catch(()=>{}); setYtChannels(prev=>channelId?prev.filter(c=>c.channel_id!==channelId):[]); };
+  const disconnectYT = async (channelId) => { await fetch(BASE+"/youtube/disconnect-channel/"+userId+(channelId?"?channel_id="+channelId:""),{method:"DELETE",credentials:"include"}).catch(()=>{}); setYtChannels(prev=>channelId?prev.filter(c=>c.channel_id!==channelId):[]); };
   const disconnectTG = async () => { await fetch(BASE+"/telegram/disconnect?user_id="+userId,{method:"POST"}).catch(()=>{}); setTgStatus({connected:false}); };
   const RemoveBtn = ({onClick}) => <button onClick={onClick} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,61,143,0.2)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,61,143,0.08)"} style={{padding:"6px 14px",borderRadius:"99px",border:"1.5px solid rgba(255,61,143,0.4)",background:"rgba(255,61,143,0.08)",color:"#ff3d8f",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>Remove</button>;
   const DisconnectBtn = ({onClick}) => <button onClick={onClick} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.25)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} style={{padding:"6px 14px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.4)",background:"rgba(124,58,237,0.1)",color:"#a78bfa",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>Disconnect</button>;
@@ -1245,14 +1244,11 @@ function PlanGate({ plan, required="pro", onUpgrade, children, toolName="" }) {
 }
 
 export default function App() {
-  const { user, token, isLoggedIn, logout, refreshToken, loading: authLoading } = useAuth();
-  const tokenRef = useRef(token);
-  useEffect(() => { tokenRef.current = token; }, [token]);
+  const { user, isLoggedIn, logout, refreshToken, loading: authLoading } = useAuth();
 
   const apiFetch = useCallback(async (path, body) => {
     const headers = { "Content-Type":"application/json" };
-    if (tokenRef.current) headers["Authorization"] = `Bearer ${tokenRef.current}`;
-    const res = await fetch(`${BASE}${path}`, { method:"POST", headers, body:JSON.stringify(body) });
+    const res = await fetch(`${BASE}${path}`, { method:"POST", headers, credentials:"include", body:JSON.stringify(body) });
     if (!res.ok) {
       const t = await res.text().catch(()=>`HTTP ${res.status}`);
       let d=t; try{ d=JSON.parse(t).detail||t; } catch{}
@@ -1339,7 +1335,7 @@ export default function App() {
 
   useEffect(() => {
     if (!user?.user_id) return;
-    fetch(`${BASE}/credits/${user.user_id}`, { headers:{ Authorization:`Bearer ${localStorage.getItem("sociomee_token")||""}` } })
+    fetch(`${BASE}/credits/${user.user_id}`, { credentials:"include" })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (!d) return;
@@ -1893,7 +1889,7 @@ export default function App() {
             </div>
             <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)",fontFamily:"Poppins,sans-serif",marginBottom:"8px"}}>Type <span style={{color:"#ef4444",fontWeight:"700"}}>DELETE</span> to confirm</div>
             <input value={deleteConfirm} onChange={e=>setDeleteConfirm(e.target.value)} placeholder="Type DELETE here" style={{width:"100%",padding:"10px 12px",borderRadius:"8px",border:"1px solid rgba(239,68,68,0.2)",background:"rgba(255,255,255,0.03)",color:"#fff",fontSize:"13px",fontFamily:"Poppins,sans-serif",outline:"none",boxSizing:"border-box",marginBottom:"12px"}}/>
-            <button disabled={deleteConfirm!=="DELETE"} onClick={()=>{if(deleteConfirm==="DELETE"){setDeleteError("");fetch(BASE+"/auth/delete-account",{method:"DELETE",headers:{"Authorization":"Bearer "+(localStorage.getItem("sociomee_token")||"")}}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok){setDeleteError(d.detail||"Something went wrong. Please try again.");return;}localStorage.clear();window.location.href="/";}).catch(()=>setDeleteError("Network error. Please try again."));}}} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"none",background:deleteConfirm==="DELETE"?"#ef4444":"rgba(239,68,68,0.2)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:deleteConfirm==="DELETE"?"pointer":"not-allowed",fontFamily:"Poppins,sans-serif",opacity:deleteConfirm==="DELETE"?1:0.5,transition:"all 0.2s"}}>Delete My Account Permanently</button>
+            <button disabled={deleteConfirm!=="DELETE"} onClick={()=>{if(deleteConfirm==="DELETE"){setDeleteError("");fetch(BASE+"/auth/delete-account",{method:"DELETE",credentials:"include"}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok){setDeleteError(d.detail||"Something went wrong. Please try again.");return;}localStorage.clear();window.location.href="/";}).catch(()=>setDeleteError("Network error. Please try again."));}}} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"none",background:deleteConfirm==="DELETE"?"#ef4444":"rgba(239,68,68,0.2)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:deleteConfirm==="DELETE"?"pointer":"not-allowed",fontFamily:"Poppins,sans-serif",opacity:deleteConfirm==="DELETE"?1:0.5,transition:"all 0.2s"}}>Delete My Account Permanently</button>
             {deleteError && <div style={{marginTop:"10px",fontSize:"12px",color:"#ef4444",fontFamily:"Poppins,sans-serif",lineHeight:"1.5"}}>⚠️ {deleteError}</div>}
           </div>
         </div>
