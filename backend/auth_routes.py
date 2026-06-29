@@ -419,13 +419,44 @@ class ResetBody(BaseModel):
     otp: str
     new_password: str
 
+import hashlib as _pwd_hashlib
+
+def _check_password_strength(password: str) -> str | None:
+    """Returns an error message if the password is weak, or None if it's acceptable.
+    Checks both basic character variety and known data breaches (via HaveIBeenPwned's
+    privacy-preserving k-anonymity API — only a partial hash prefix is ever sent,
+    the real password never leaves this function)."""
+    if len(password) < 8:
+        return "Password must be at least 8 characters."
+    has_letter = any(c.isalpha() for c in password)
+    has_digit = any(c.isdigit() for c in password)
+    if not (has_letter and has_digit):
+        return "Password must contain at least one letter and one number."
+    common_weak = {"password", "password1", "12345678", "qwertyui", "11111111", "00000000", "letmein1"}
+    if password.lower() in common_weak:
+        return "This password is too common. Please choose a stronger one."
+    try:
+        sha1 = _pwd_hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
+        prefix, suffix = sha1[:5], sha1[5:]
+        resp = httpx.get(f"https://api.pwnedpasswords.com/range/{prefix}", timeout=5.0)
+        if resp.status_code == 200:
+            for line in resp.text.splitlines():
+                hash_suffix, count = line.split(":")
+                if hash_suffix == suffix:
+                    return "This password has appeared in a known data breach. Please choose a different one."
+    except Exception as _hibp_e:
+        log.warning("HaveIBeenPwned check failed, allowing through: %s", _hibp_e)
+    return None
+
+
 @router.post("/register")
 @limiter.limit("3/minute")
-def register(body: RegisterBody, request: Request):
+def register(body: RegisterBody, request: Request, response: Response):
     if not body.age_confirmed:
         raise HTTPException(400, "You must confirm you are 18 years or older to register")
-    if len(body.password) < 8:
-        raise HTTPException(400, "Password must be at least 8 characters")
+    _pw_error = _check_password_strength(body.password)
+    if _pw_error:
+        raise HTTPException(400, _pw_error)
     users = _load_users()
     email = body.email.lower().strip()
     if email in users:
@@ -483,7 +514,7 @@ def set_session(request: Request, response: Response, token: str = Body(..., emb
     return {"ok": True}
 
 @router.post("/login")
-@limiter.limit("5/minute")
+@limiter.limit("5/15minute")
 def login_email(body: LoginBody, request: Request, response: Response):
     users = _load_users()
     email = body.email.lower().strip()
@@ -510,7 +541,7 @@ def login_email(body: LoginBody, request: Request, response: Response):
     return {"token": token, "user": payload}
 
 @router.post("/forgot-password")
-@limiter.limit("3/minute")
+@limiter.limit("3/15minute")
 def forgot_password(body: ForgotBody, request: Request):
     users = _load_users()
     email = body.email.lower().strip()
@@ -545,6 +576,9 @@ def reset_password(body: ResetBody):
     expiry = datetime.fromisoformat(user.get("reset_expiry", "2000-01-01T00:00:00+00:00"))
     if datetime.now(timezone.utc) > expiry:
         raise HTTPException(400, "OTP expired. Request a new one.")
+    _pw_error = _check_password_strength(body.new_password)
+    if _pw_error:
+        raise HTTPException(400, _pw_error)
     users[email]["password"] = _hash_pw(body.new_password)
     users[email].pop("reset_otp", None)
     users[email].pop("reset_expiry", None)
