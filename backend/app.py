@@ -134,11 +134,12 @@ except ImportError:
     PILImage = None
 
 try:
-    from ai_router import generate_full_content as _generate_full_content, generate_content as _ai_generate
+    from ai_router import generate_full_content as _generate_full_content, generate_content as _ai_generate, _check_topic_safety
     _HAS_AI_ROUTER = True
 except Exception as e:
     log.warning("ai_router: %s", e); _HAS_AI_ROUTER = False; _generate_full_content = None
     def _ai_generate(d): return {"error": "ai_router not available"}
+    def _check_topic_safety(t): return False  # fail closed if ai_router unavailable
 
 try:
     from credits_manager import (use_credit, get_user_credits, get_credit_status,
@@ -487,9 +488,43 @@ def _generate_titles_with_scores(topic: str, persona: str, language: str) -> lis
     result.sort(key=lambda x: x["seo_score"], reverse=True)
     return result
 
+def _check_topic_safety(topic: str) -> bool:
+    """Returns True if topic is safe to generate content about. Returns False (block) for self-harm, sexual content, slurs, hate speech, or violence — regardless of language or spelling variant."""
+    import requests as _r, os as _os
+    try:
+        api_key = _os.environ.get("GOOGLE_API_KEY","")
+        check_prompt = f"""You are a content safety classifier. Classify the following video topic.
+Topic: "{topic}"
+Answer with ONLY one word: SAFE or UNSAFE.
+Mark UNSAFE if the topic involves: suicide or self-harm, sexual content or explicit sex acts, slurs or profanity (in any language, including Hindi/Hinglish such as bhenchod, chutiya, etc.), hate speech, graphic violence, illegal drugs, or content sexualizing minors.
+Mark UNSAFE even if the topic is spelled with extra letters, numbers, or symbols to evade filters (e.g. "sexx", "s3x", "fuckk").
+Mark SAFE only for genuinely neutral, informational, or entertainment topics with no harmful intent.
+Answer with only SAFE or UNSAFE, nothing else."""
+        resp = _r.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
+            headers={"Content-Type":"application/json"},
+            json={"contents":[{"parts":[{"text":check_prompt}]}],"generationConfig":{"maxOutputTokens":10,"temperature":0}},
+            timeout=15
+        )
+        data = resp.json()
+        if "candidates" in data:
+            verdict = data["candidates"][0]["content"]["parts"][0]["text"].strip().upper()
+            if "UNSAFE" in verdict:
+                return False
+            return True
+    except Exception as e:
+        log.warning("Topic safety check failed: %s — defaulting to BLOCK for safety", e)
+        return False
+    # If we got a response but couldn't parse it cleanly, fail closed (block).
+    return False
+
+
 def _generate_yt_description(topic: str, hook: str, structure: dict, titles_with_score: list) -> str:
     import requests as _r, re as _re, os as _os
     t = topic.strip(); tc = t.title()
+    if not _check_topic_safety(t):
+        return ("This topic cannot be generated. SocioMee does not create content involving self-harm, "
+                "sexual content, slurs, hate speech, or violence. Please choose a different topic.")
     kp = structure.get("key_points", [])
     best_title = titles_with_score[0]["title"] if titles_with_score else tc
     NL = "\n"
@@ -737,6 +772,8 @@ def gen_full(request: Request, payload: FullContentRequest, user: dict = Depends
             add_credits(user["user_id"], 1)
         except Exception as refund_err:
             logging.getLogger("sociomee").error(f"Refund failed: {refund_err}", exc_info=True)
+        if "UNSAFE_TOPIC" in str(e):
+            raise HTTPException(400, "This topic cannot be generated. SocioMee does not create content involving self-harm, sexual content, slurs, hate speech, or violence.")
         raise HTTPException(500, "Something went wrong. Please try again.")
     normalized = _normalize(raw, payload, payload.platform.strip().lower())
     try:
@@ -753,6 +790,8 @@ def gen_full(request: Request, payload: FullContentRequest, user: dict = Depends
 @limiter.limit("10/minute")
 def gen_platform(request: Request, payload: PlatformContentRequest, user: dict = Depends(get_current_user)):
     p = payload.platform.strip().lower(); topic = payload.topic.strip()
+    if not _check_topic_safety(topic):
+        raise HTTPException(400, "This topic cannot be generated. SocioMee does not create content involving self-harm, sexual content, slurs, hate speech, or violence.")
     err = _check_credits(user["user_id"])
     if err: return err
     try:
@@ -1092,6 +1131,8 @@ async def generate_hashtags(request: Request):
         raise HTTPException(status_code=400, detail="Keyword required")
     if len(keyword) > 100:
         raise HTTPException(status_code=400, detail="Keyword too long. Max 100 characters.")
+    if not _check_topic_safety(keyword):
+        raise HTTPException(status_code=400, detail="This topic cannot be generated. SocioMee does not create content involving self-harm, sexual content, slurs, hate speech, or violence.")
 
     kw_slug = keyword.lower().replace(" ", "")
     hashtags = []
@@ -1169,6 +1210,8 @@ async def generate_hooks(request: Request):
 
     if not topic:
         raise HTTPException(status_code=400, detail="Topic required")
+    if not _check_topic_safety(topic):
+        raise HTTPException(status_code=400, detail="This topic cannot be generated. SocioMee does not create content involving self-harm, sexual content, slurs, hate speech, or violence.")
     if len(topic) > 200:
         raise HTTPException(status_code=400, detail="Topic too long. Max 200 characters.")
 

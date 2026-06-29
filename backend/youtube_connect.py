@@ -135,9 +135,10 @@ def _get_credentials(user_id: str):
     else:
         record = raw  # legacy flat record
 
+    from crypto_utils import decrypt
     creds = Credentials(
-        token         = record.get("access_token"),
-        refresh_token = record.get("refresh_token"),
+        token         = decrypt(record.get("access_token")),
+        refresh_token = decrypt(record.get("refresh_token")),
         token_uri     = "https://oauth2.googleapis.com/token",
         client_id     = _yt_client_id(),
         client_secret = _yt_client_secret(),
@@ -295,9 +296,10 @@ def store_youtube_tokens(
     data = _load()
     user_data = data.get(user_id)
 
+    from crypto_utils import encrypt
     new_channel = {
-        "access_token":  access_token,
-        "refresh_token": refresh_token,
+        "access_token":  encrypt(access_token),
+        "refresh_token": encrypt(refresh_token),
         "channel_id":    channel_id,
         "channel_title": channel_title,
         "thumbnail_url": thumbnail_url,

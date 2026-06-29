@@ -18,6 +18,8 @@ from auth_routes import create_jwt_token, _load_users, _verify_pw, GOOGLE_CLIENT
 import redis as redis_lib
 _redis = redis_lib.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
+REFRESH_TOKEN_TTL = 60 * 60 * 24 * 30  # 30 days
+
 router = APIRouter(tags=["mcp-oauth"])
 
 ISSUER = "https://sociomee.in"
@@ -202,11 +204,40 @@ def oauth_authorize_github(client_id: str, redirect_uri: str, state: str = "",
     return response
 
 
+def _issue_refresh_token(user_payload: dict, client_id: str) -> str:
+    rt = secrets.token_urlsafe(48)
+    _redis.setex(
+        f"mcp_refresh:{rt}",
+        REFRESH_TOKEN_TTL,
+        json.dumps({"user_payload": user_payload, "client_id": client_id}),
+    )
+    return rt
+
+
 @router.post("/oauth/token")
 async def oauth_token(request: Request):
     body = await request.form()
-    if body.get("grant_type") != "authorization_code":
-        raise HTTPException(400, "Only grant_type=authorization_code is supported")
+    grant_type = body.get("grant_type")
+
+    if grant_type == "refresh_token":
+        refresh_token = body.get("refresh_token")
+        raw = _redis.get(f"mcp_refresh:{refresh_token}")
+        if not raw:
+            raise HTTPException(400, "Invalid or expired refresh_token")
+        record = json.loads(raw)
+        payload = dict(record["user_payload"])
+        payload["client_id"] = record["client_id"]
+        access_token = create_jwt_token(payload)
+        # Rotate the refresh token: issue a new one, invalidate the old one
+        _redis.delete(f"mcp_refresh:{refresh_token}")
+        new_refresh_token = _issue_refresh_token(payload, record["client_id"])
+        return {"access_token": access_token, "token_type": "Bearer",
+                "expires_in": 60 * 60 * 24, "scope": "mcp",
+                "refresh_token": new_refresh_token}
+
+    if grant_type != "authorization_code":
+        raise HTTPException(400, "Unsupported grant_type")
+
     code = body.get("code")
     redirect_uri = body.get("redirect_uri")
     code_verifier = body.get("code_verifier")
@@ -223,5 +254,7 @@ async def oauth_token(request: Request):
     payload = dict(record["user_payload"])
     payload["client_id"] = record["client_id"]
     access_token = create_jwt_token(payload)
+    refresh_token = _issue_refresh_token(payload, record["client_id"])
     return {"access_token": access_token, "token_type": "Bearer",
-            "expires_in": 60 * 60 * 24, "scope": "mcp"}
+            "expires_in": 60 * 60 * 24, "scope": "mcp",
+            "refresh_token": refresh_token}

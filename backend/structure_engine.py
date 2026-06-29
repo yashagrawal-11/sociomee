@@ -103,13 +103,25 @@ def _extract_json(text: str) -> Dict[str, Any]:
 def _format_evidence(topic: str, research_data: Dict, youtube_data: Dict) -> str:
     lines = [f"TOPIC: {topic}\n"]
     for item in research_data.get("timeline", [])[:5]:
-        lines.append(f"TIMELINE: [{item.get('date','')[:10]}] {item.get('title','')} ({item.get('source','')})")
+        if isinstance(item, dict):
+            lines.append(f"TIMELINE: [{item.get('date','')[:10]}] {item.get('title','')} ({item.get('source','')})")
+        else:
+            lines.append(f"TIMELINE: {str(item)[:150]}")
     for item in research_data.get("controversies", [])[:4]:
-        lines.append(f"CONTROVERSY: {item.get('title','')} | {item.get('summary','')[:200]}")
+        if isinstance(item, dict):
+            lines.append(f"CONTROVERSY: {item.get('title','')} | {item.get('summary','')[:200]}")
+        else:
+            lines.append(f"CONTROVERSY: {str(item)[:200]}")
     for item in research_data.get("key_events", [])[:4]:
-        lines.append(f"KEY EVENT: {item.get('title','')} | {item.get('summary','')[:200]}")
+        if isinstance(item, dict):
+            lines.append(f"KEY EVENT: {item.get('title','')} | {item.get('summary','')[:200]}")
+        else:
+            lines.append(f"KEY EVENT: {str(item)[:200]}")
     for item in research_data.get("insights", [])[:3]:
-        lines.append(f"INSIGHT: {item.get('title','')} | {item.get('summary','')[:150]}")
+        if isinstance(item, dict):
+            lines.append(f"INSIGHT: {item.get('title','')} | {item.get('summary','')[:150]}")
+        else:
+            lines.append(f"INSIGHT: {str(item)[:150]}")
     titles = youtube_data.get("titles", [])
     if titles:
         lines.append("\nYT TITLES: " + " | ".join(titles[:4]))
@@ -140,7 +152,7 @@ def _smart_local_structure(topic: str, research_data: Dict, youtube_data: Dict) 
     is_tech      = any(w in tl for w in ["ai","tech","app","software","gadget","phone","data","startup"])
 
     # ── Hook ──────────────────────────────────────────────────────────
-    if controversies and controversies[0].get("title"):
+    if controversies and isinstance(controversies[0], dict) and controversies[0].get("title"):
         hook = controversies[0]["title"] + " — aur yeh sirf shuruat thi."
     elif yt_titles:
         hook = f"'{yt_titles[0]}' — yahi woh sawal hai jo log poochh rahe hain."
@@ -154,7 +166,7 @@ def _smart_local_structure(topic: str, research_data: Dict, youtube_data: Dict) 
         hook = f"Aaj hum {t} ke us pehlu ko explore karenge jo zyaadatar coverage mein miss ho jaata hai."
 
     # ── Background ────────────────────────────────────────────────────
-    if key_events and key_events[0].get("summary"):
+    if key_events and isinstance(key_events[0], dict) and key_events[0].get("summary"):
         ev = key_events[0]
         background = f"{ev['title']}. {ev['summary'][:280]}. Yeh context {t} ko samajhne ke liye foundational hai."
     elif is_expose:
@@ -180,8 +192,12 @@ def _smart_local_structure(topic: str, research_data: Dict, youtube_data: Dict) 
     # ── Timeline ──────────────────────────────────────────────────────
     tl_items = []
     for item in timeline_items[:5]:
-        date  = item.get("date", "")[:10]
-        title = item.get("title", "")
+        if isinstance(item, dict):
+            date  = item.get("date", "")[:10]
+            title = item.get("title", "")
+        else:
+            date  = ""
+            title = str(item)
         if title:
             tl_items.append(f"{date} — {title}" if date else title)
     if not tl_items and yt_titles:
@@ -208,7 +224,7 @@ def _smart_local_structure(topic: str, research_data: Dict, youtube_data: Dict) 
             tl_items.append(e)
 
     # ── Conflict ──────────────────────────────────────────────────────
-    if controversies and controversies[0].get("summary"):
+    if controversies and isinstance(controversies[0], dict) and controversies[0].get("summary"):
         c = controversies[0]
         conflict = f"{c['title']}. {c['summary'][:280]}. Yahi woh core issue hai jisne {t} ko major talking point banaya."
     elif is_expose:
@@ -234,7 +250,7 @@ def _smart_local_structure(topic: str, research_data: Dict, youtube_data: Dict) 
     # ── Key points ────────────────────────────────────────────────────
     key_points = []
     for item in insights[:3]:
-        kp = item.get("title") or item.get("summary","")[:100]
+        kp = (item.get("title") or item.get("summary","")[:100]) if isinstance(item, dict) else str(item)[:100]
         if kp:
             key_points.append(kp)
     useful_kw = [kw for kw in yt_keywords[:8] if len(kw) > 4 and kw.lower() not in tl][:2]

@@ -33,9 +33,11 @@ PERSONAS: Dict[str, Dict[str, Any]] = {
         "energy": "low", "pacing": "slow-build",
         "tone": "Dry wit, deadpan delivery, dark comedy. States facts without exaggeration.",
         "style_rules": [
+            "Opens with a drawn-out 'Yooooo' before getting into the topic",
             "Deadpan Hinglish, longer sentences (10-15 words) with [pause] beats",
             "Anti-climax as the punchline tool",
             "Signature fillers: matlab, haan toh, sochta hoon, ye bhi theek hai",
+            "Stretches the word 'crazy' into 'crazzzzzzzzzy' when something wild comes up",
             "Never screams, never uses hyperbole",
         ],
     },

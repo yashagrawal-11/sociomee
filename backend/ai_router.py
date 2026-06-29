@@ -70,6 +70,39 @@ GOOGLE_API_KEY:   str = os.getenv("GOOGLE_API_KEY",   "")
 SCORE_THRESHOLD:  int = 75
 
 GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY", os.getenv("GOOGLE_AI_API_KEY", ""))
+
+
+def _check_topic_safety(topic: str) -> bool:
+    """Returns True if topic is safe to generate content about. Returns False (block) for
+    self-harm, sexual content, slurs, hate speech, or violence — regardless of language,
+    spelling variant, or character substitution used to evade filters."""
+    try:
+        check_prompt = f"""You are a content safety classifier. Classify the following video topic.
+Topic: "{topic}"
+Answer with ONLY one word: SAFE or UNSAFE.
+Mark UNSAFE if the topic involves: suicide or self-harm, sexual content or explicit sex acts, slurs or profanity (in any language, including Hindi/Hinglish such as bhenchod, chutiya, etc.), hate speech, graphic violence, illegal drugs, or content sexualizing minors.
+Mark UNSAFE even if the topic is spelled with extra letters, numbers, or symbols to evade filters (e.g. "sexx", "s3x", "fuckk").
+Mark SAFE only for genuinely neutral, informational, or entertainment topics with no harmful intent.
+Answer with only SAFE or UNSAFE, nothing else."""
+        resp = requests.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}",
+            headers={"Content-Type": "application/json"},
+            json={"contents": [{"parts": [{"text": check_prompt}]}], "generationConfig": {"maxOutputTokens": 10, "temperature": 0}},
+            timeout=15
+        )
+        data = resp.json()
+        if "candidates" in data:
+            verdict = data["candidates"][0]["content"]["parts"][0]["text"].strip().upper()
+            if "UNSAFE" in verdict:
+                return False
+            if "SAFE" in verdict:
+                return True
+        # Could not parse a clear verdict — fail closed.
+        return False
+    except Exception as exc:
+        import logging
+        logging.getLogger("ai_router").warning("Topic safety check failed: %s — defaulting to BLOCK for safety", exc)
+        return False
 GEMINI_MODEL = "gemini-2.5-flash"
 
 def _gemini_generate(prompt: str, max_tokens: int = 8000) -> str:
@@ -158,6 +191,9 @@ def generate_full_content(
             "best_title": "", "topic": "", "language": language,
             "errors": ["Topic cannot be empty."],
         }
+    # ── Safety gate: block self-harm, sexual content, slurs, hate speech, violence ──
+    if not _check_topic_safety(topic):
+        raise ValueError("UNSAFE_TOPIC: This topic cannot be generated. SocioMee does not create content involving self-harm, sexual content, slurs, hate speech, or violence.")
 
     # ── Plan tier config ───────────────────────────────────────────────
     _plan = (plan or "free").lower()
@@ -234,8 +270,9 @@ def generate_full_content(
         try:
             p_key = str(persona).lower().strip()
             base_hook = persona_hooks.get(p_key, persona_hooks["default"])
+            _style_hint = _PERSONA_STYLES.get(p_key, _DEFAULT_STYLE)
             hook_prompt = f"""Write a powerful YouTube video opening hook (2-3 sentences) for topic: "{topic}"
-Creator style: {p_key} (Indian YouTuber)
+Creator style: {p_key}. Style notes: {_style_hint}
 Language: Hinglish (Hindi + English mix)
 The hook must:
 - Start with the creator's signature opening style
@@ -299,6 +336,10 @@ Write ONLY the hook text, nothing else."""
             f"Hook to open with: {hook_text}\n\n"
             f"Key points to cover:\n" + chr(10).join(f"- {kp}" for kp in key_points) + "\n\n"
             f"Research and evidence to incorporate:\n{research_text[:2000]}\n\n"
+            "Structure the script in this exact order, with clear section breaks: "
+            "HOOK (grab attention in the first 2-3 sentences), MAIN CONTENT (the bulk of the script, "
+            "covering the key points above), CTA (a brief call to action, e.g. like/subscribe/comment, "
+            "in the creator's own voice, not generic), OUTRO (a short closing line that wraps the video).\n\n"
             "Write ONLY the script text itself, no preamble or explanation."
         )
         _resp = requests.post(

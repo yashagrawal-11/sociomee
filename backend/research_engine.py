@@ -571,6 +571,20 @@ def _validate_and_fill(
             for a in articles if a.get("url")
         ]
 
+    # Normalise item shape - AI sometimes returns plain strings instead of
+    # {title, summary} dicts for these fields, especially on knowledge-only
+    # (no-articles) prompts. Coerce strings into the expected dict shape so
+    # every downstream consumer can safely call .get() on items.
+    for key in ("timeline", "controversies", "key_events"):
+        normalised = []
+        for item in result.get(key, []):
+            if isinstance(item, dict):
+                normalised.append(item)
+            else:
+                normalised.append({"title": str(item), "summary": "", "date": "", "source": ""})
+        result[key] = normalised
+
+
     return result
 
 

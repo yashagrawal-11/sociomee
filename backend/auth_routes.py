@@ -1,4 +1,8 @@
-from fastapi import APIRouter, HTTPException, Request, status, Response, Body
+from fastapi import APIRouter, HTTPException, Request, status, Response, Body, Depends
+import logging
+from middleware import get_current_user
+
+log = logging.getLogger(__name__)
 import secrets
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -472,3 +476,74 @@ def reset_password(body: ResetBody):
     users[email].pop("reset_expiry", None)
     _save_users(users)
     return {"message": "Password reset successful. Please login."}
+
+
+@router.delete("/delete-account")
+def delete_account(user: dict = Depends(get_current_user)):
+    """
+    Permanently delete a user's account. Blocked if they have an active
+    paid subscription — they must cancel first. On success, removes the
+    account + credits record and disconnects every linked platform.
+    """
+    user_id = user["user_id"]
+
+    from credits_manager import get_credit_status
+    status = get_credit_status(user_id)
+    plan = status.get("plan", "free")
+    if plan != "free":
+        raise HTTPException(
+            400,
+            detail=f"You have an active {status.get('plan_label', plan)} subscription. "
+                   f"Please cancel your subscription before deleting your account."
+        )
+
+    # Disconnect every linked platform (best-effort — one failing
+    # shouldn't block the others or the account deletion itself)
+    try:
+        from youtube_connect import disconnect as _yt_disconnect
+        _yt_disconnect(user_id)
+    except Exception as e:
+        log.warning(f"delete_account: youtube disconnect failed for {user_id}: {e}")
+
+    try:
+        from pinterest_routes import _del_account as _pin_delete
+        _pin_delete(user_id)
+    except Exception as e:
+        log.warning(f"delete_account: pinterest disconnect failed for {user_id}: {e}")
+
+    try:
+        from discord_routes import discord_disconnect as _discord_disconnect
+        _discord_disconnect(user_id=user_id)
+    except Exception as e:
+        log.warning(f"delete_account: discord disconnect failed for {user_id}: {e}")
+
+    try:
+        from telegram_connect import disconnect as _tg_disconnect
+        _tg_disconnect(user_id)
+    except Exception as e:
+        log.warning(f"delete_account: telegram disconnect failed for {user_id}: {e}")
+
+    # Remove the core account + credits records
+    try:
+        import json
+        from pathlib import Path
+        users_file = Path(__file__).resolve().parent / "data" / "users.json"
+        if users_file.exists():
+            users = json.loads(users_file.read_text(encoding="utf-8"))
+            users = {k: v for k, v in users.items() if v.get("user_id") != user_id and k != user_id}
+            users_file.write_text(json.dumps(users, indent=2), encoding="utf-8")
+    except Exception as e:
+        log.warning(f"delete_account: users.json removal failed for {user_id}: {e}")
+
+    try:
+        from credits_manager import DATA_FILE as _credits_file
+        if _credits_file.exists():
+            credits = json.loads(_credits_file.read_text(encoding="utf-8"))
+            credits.pop(user_id, None)
+            _credits_file.write_text(json.dumps(credits, indent=2), encoding="utf-8")
+    except Exception as e:
+        log.warning(f"delete_account: credits_data.json removal failed for {user_id}: {e}")
+
+    log.info(f"Account deleted: user_id={user_id}")
+    return {"ok": True, "message": "Account deleted successfully."}
+

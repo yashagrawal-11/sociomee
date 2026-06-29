@@ -158,6 +158,7 @@ def youtube_status(user_id: str, user: dict = Depends(get_current_user)):
     Check whether a user has connected their YouTube channel.
     Returns basic channel info if connected.
     """
+    print(f"[DEBUG-YT-STATUS] url user_id={user_id!r} | jwt user={user!r}", flush=True)
     _verify_ownership(user.get("user_id",""), user_id)
     ytc = _ytc()
     if not ytc.is_connected(user_id):
@@ -550,6 +551,7 @@ Return ONLY valid JSON, no markdown."""
 @router.get("/channels/{user_id}")
 def youtube_get_channels(user_id: str):
     """Return all connected channels for a user."""
+    print(f"[DEBUG-YT-CHANNELS] url user_id={user_id!r}", flush=True)
     import sys
     sys.path.insert(0, "/var/www/sociomee/backend")
     ytc = _ytc()

@@ -32,6 +32,7 @@ class SendPayload(BaseModel):
     username: str = "SocioMee"
     embed_title: str = ""
     embed_color: int = 7419530  # purple
+    scheduled_at: str = ""  # ISO string, empty = send now
 
 class SchedulePayload(BaseModel):
     user_id: str
@@ -53,9 +54,10 @@ def discord_connect(payload: WebhookPayload):
     except Exception as e:
         raise HTTPException(400, f"Could not validate webhook: {e}")
 
+    from crypto_utils import encrypt
     data = _load()
     data[payload.user_id] = {
-        "webhook_url":   payload.webhook_url,
+        "webhook_url":   encrypt(payload.webhook_url),
         "server_name":   payload.server_name or wh_data.get("guild_id", "Your Server"),
         "channel_name":  payload.channel_name or wh_data.get("name", "general"),
         "webhook_name":  wh_data.get("name", "SocioMee"),
@@ -85,7 +87,8 @@ def _send_discord_now(user_id: str, content: str, username: str, embed_title: st
     rec = data.get(user_id)
     if not rec:
         raise HTTPException(400, "Discord not connected")
-    webhook_url = rec["webhook_url"]
+    from crypto_utils import decrypt
+    webhook_url = decrypt(rec["webhook_url"])
     body = {"username": username, "content": content}
     if embed_title:
         body["embeds"] = [{"title": embed_title, "color": embed_color}]

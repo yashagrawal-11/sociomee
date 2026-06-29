@@ -15,7 +15,7 @@ CATEGORY_QUERIES = {
     "creator":   ["YouTuber", "content creator", "influencer India", "viral video India"],
     "cricket":   ["cricket", "IPL", "India cricket", "T20 cricket"],
     "bollywood": ["Bollywood", "Hindi film", "Bollywood movie", "Bollywood actor"],
-    "sports":    ["sports India", "athlete India", "Olympics India", "football India"],
+    "sports":    ["sports India", "athlete India", "Olympics India", "football India", "FIFA", "Lionel Messi", "Cristiano Ronaldo", "Neymar", "Kylian Mbappe", "Argentina football", "Brazil football", "Portugal football", "football World Cup"],
     "tech":      ["AI India", "startup tech", "smartphone launch", "technology India"],
     "stocks":    ["Sensex", "Nifty", "stock market India", "share market"],
     "gaming":    ["BGMI esports", "Free Fire India", "Valorant India", "Scout gaming",

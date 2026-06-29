@@ -178,6 +178,8 @@ def generate_content(topic: str, persona: str = "dhruvrathee", language: str = "
         "script": script,
         "word_count": len(script.split()),
         "warnings": raw.get("errors", []),
+        "disclaimer": "AI-generated script. Please review and fact-check before publishing, "
+                       "especially any claims about real people, companies, regulators, or events.",
     }
     try:
         history_routes.save_generation(user_id, topic, platform, result["best_title"],

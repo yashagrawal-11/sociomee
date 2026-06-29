@@ -38,11 +38,24 @@ def _save(data: dict):
     PINTEREST_FILE.write_text(json.dumps(data, indent=2))
 
 def _get_account(user_id: str):
-    return _load().get(str(user_id))
+    from crypto_utils import decrypt
+    acc = _load().get(str(user_id))
+    if acc:
+        if acc.get("access_token"):
+            acc["access_token"] = decrypt(acc["access_token"])
+        if acc.get("refresh_token"):
+            acc["refresh_token"] = decrypt(acc["refresh_token"])
+    return acc
 
 def _set_account(user_id: str, account: dict):
+    from crypto_utils import encrypt
     data = _load()
-    data[str(user_id)] = account
+    enc_account = dict(account)
+    if enc_account.get("access_token"):
+        enc_account["access_token"] = encrypt(enc_account["access_token"])
+    if enc_account.get("refresh_token"):
+        enc_account["refresh_token"] = encrypt(enc_account["refresh_token"])
+    data[str(user_id)] = enc_account
     _save(data)
 
 def _del_account(user_id: str):

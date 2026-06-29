@@ -26,9 +26,14 @@ export default function DiscordScheduler({ user }) {
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
-    fetch(`${BASE}/discord/status?user_id=${userId}`)
-      .then(r => r.json()).then(d => { setStatus(d); setLoading(false); })
-      .catch(() => setLoading(false));
+    const fetchStatus = () => {
+      fetch(`${BASE}/discord/status?user_id=${userId}`)
+        .then(r => r.json()).then(d => { setStatus(d); setLoading(false); })
+        .catch(() => setLoading(false));
+    };
+    fetchStatus();
+    window.addEventListener("sociomee-discord-updated", fetchStatus);
+    return () => window.removeEventListener("sociomee-discord-updated", fetchStatus);
   }, [userId]);
 
   const connect = async () => {
