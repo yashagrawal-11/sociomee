@@ -37,7 +37,46 @@ class _JSONFormatter(logging.Formatter):
 
 _log_handler = logging.StreamHandler()
 _log_handler.setFormatter(_JSONFormatter())
-logging.basicConfig(level=logging.INFO, handlers=[_log_handler], force=True)
+
+class _EmailAlertHandler(logging.Handler):
+    """Sends a real email alert whenever an ERROR (or worse) is logged anywhere in the
+    app. Rate-limited to avoid flooding the inbox if something fails repeatedly in a
+    tight loop — at most one alert email per 5 minutes per unique message."""
+    def __init__(self):
+        super().__init__(level=logging.ERROR)
+        self._last_sent = {}
+        self._cooldown_seconds = 300
+
+    def emit(self, record):
+        try:
+            import time as _time_alert
+            key = f"{record.name}:{record.getMessage()[:100]}"
+            now = _time_alert.time()
+            last = self._last_sent.get(key, 0)
+            if now - last < self._cooldown_seconds:
+                return
+            self._last_sent[key] = now
+            from email_service import resend, FROM_EMAIL, _base_template
+            if not resend.api_key:
+                return
+            msg = self.format(record) if self.formatter else record.getMessage()
+            content = f"""
+              <div class="warn-badge">⚠️ Backend Error Alert</div>
+              <h1 class="h1">{record.name}</h1>
+              <p class="p" style="font-family:monospace;font-size:12px;white-space:pre-wrap">{msg[:2000]}</p>
+            """
+            resend.Emails.send({
+                "from": FROM_EMAIL,
+                "to": ["freefirelove88x@gmail.com"],
+                "subject": f"⚠️ SocioMee backend error — {record.name}",
+                "html": _base_template(content),
+            })
+        except Exception:
+            pass  # alerting must never itself crash the app
+
+_alert_handler = _EmailAlertHandler()
+_alert_handler.setFormatter(_JSONFormatter())
+logging.basicConfig(level=logging.INFO, handlers=[_log_handler, _alert_handler], force=True)
 
 log = logging.getLogger("app")
 
@@ -753,10 +792,28 @@ async def ai_generate_proxy(request: Request, user: dict = Depends(get_current_u
         # Return in Anthropic-compatible format
         return {"content":[{"type":"text","text":text}]}
 
+def _check_email_verified(user: dict) -> Optional[dict]:
+    """Returns an error response if the user's account isn't email-verified yet
+    (only applies to email/password accounts — OAuth accounts are pre-verified by
+    Google/GitHub themselves). Returns None if verification is fine to proceed."""
+    try:
+        from auth_routes import _load_users
+        users = _load_users()
+        record = users.get(user.get("email", ""))
+        if record and record.get("provider") == "email" and not record.get("email_verified", False):
+            raise HTTPException(403, "Please verify your email before generating content. Check your inbox for the verification link, or request a new one from your account settings.")
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.warning("Email verification check failed, allowing through: %s", e)
+    return None
+
+
 @app.post("/generate-full-content")
 @limiter.limit("10/minute")
 def gen_full(request: Request, payload: FullContentRequest, user: dict = Depends(get_current_user)):
     if not _HAS_AI_ROUTER or not _generate_full_content: raise HTTPException(503, "ai_router not available.")
+    _check_email_verified(user)
     err = _check_credits(user["user_id"])
     if err: return err
     try:
@@ -788,6 +845,7 @@ def gen_full(request: Request, payload: FullContentRequest, user: dict = Depends
 @limiter.limit("10/minute")
 def gen_platform(request: Request, payload: PlatformContentRequest, user: dict = Depends(get_current_user)):
     p = payload.platform.strip().lower(); topic = payload.topic.strip()
+    _check_email_verified(user)
     if not _check_topic_safety(topic):
         raise HTTPException(400, "This topic cannot be generated. SocioMee does not create content involving self-harm, sexual content, slurs, hate speech, or violence.")
     err = _check_credits(user["user_id"])
