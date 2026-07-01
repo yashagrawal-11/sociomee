@@ -4,7 +4,8 @@ Saves and retrieves past content generations per user.
 """
 import json, os
 from pathlib import Path
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from middleware import get_current_user
 from datetime import datetime, timezone
 
 router = APIRouter(prefix="/history", tags=["history"])
@@ -45,7 +46,12 @@ def save_generation(user_id: str, topic: str, platform: str,
     path.write_text(json.dumps(history, indent=2))
 
 @router.get("/{user_id}")
-def get_history(user_id: str):
+def get_history(user_id: str, user: dict = Depends(get_current_user)):
+    # SECURITY: verify the requester is actually viewing their own history (IDOR fix —
+    # this endpoint previously had zero auth, meaning anyone could view any user's
+    # entire generation history just by knowing their user_id).
+    if user.get("user_id", "") != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
     path = _history_file(user_id)
     if not path.exists():
         return []
@@ -55,7 +61,9 @@ def get_history(user_id: str):
         return []
 
 @router.delete("/{user_id}/{item_id}")
-def delete_history_item(user_id: str, item_id: str):
+def delete_history_item(user_id: str, item_id: str, user: dict = Depends(get_current_user)):
+    if user.get("user_id", "") != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
     path = _history_file(user_id)
     if not path.exists():
         return {"success": True}

@@ -83,7 +83,7 @@ PERSONA_VOICE_GUIDES: Dict[str, str] = {
         VOICE:
         - Calm, analytical, investigative
         - Always opens with "Namaskar doston" + a striking fact or question
-        - Hindi-matrix Hinglish: Hindi grammar, English technical/policy/proper-noun terms retained
+        - Hindi-matrix Hinglish (Roman script, not Devanagari): Hindi grammar, English technical/policy/proper-noun terms retained
         - Structure per section: Problem → Context → Evidence → Analysis → Implication
         - Numbers cited aloud: "pehli baat", "doosri baat", "teesri baat"
         - Cite sources aloud: "Reuters ke mutabiq", "Bloomberg ki report mein"
@@ -94,7 +94,7 @@ PERSONA_VOICE_GUIDES: Dict[str, str] = {
     "carryminati": dedent("""
         You are writing in CarryMinati (Ajey Nagar)'s exact style.
         VOICE:
-        - High energy Hindi-matrix Hinglish, aggressive roast
+        - High energy Hindi-matrix Hinglish (Roman script, not Devanagari), aggressive roast
         - Sentences: 4-8 words, chaotic rhythm
         - Must use: bhai, yaar, arre, dekh, sun
         - Pattern interrupts: sudden volume drops mid-sentence, then EXPLODE
@@ -106,7 +106,7 @@ PERSONA_VOICE_GUIDES: Dict[str, str] = {
     "samayraina": dedent("""
         You are writing in Samay Raina's exact style.
         VOICE:
-        - Dry wit, dark comedy, deadpan Hinglish
+        - Dry wit, dark comedy, deadpan Hinglish (Roman script, not Devanagari)
         - Sentences: 10-15 words, slow build with [pause] markers
         - Anti-climax is the punchline tool
         - Signature: "matlab", "haan toh", "sochta hoon", "ye bhi theek hai"
@@ -116,7 +116,7 @@ PERSONA_VOICE_GUIDES: Dict[str, str] = {
     "rebelkid": dedent("""
         You are writing in RebelKid (Apoorva Mukhija)'s exact style.
         VOICE:
-        - Bold, unapologetic, English-matrix Hinglish (~70% English)
+        - Bold, unapologetic, English-matrix Hinglish (~70% English, Roman script, not Devanagari)
         - Breathless run-on sentences followed by sharp fragments
         - Signature: "cute little red flag", "not my problem", "boundary hai"
         - Direct address to viewer: "you know what I mean?", "literally why"
@@ -333,7 +333,7 @@ def generate_script(
         try:
             voice_g = PERSONA_VOICE_GUIDES.get(persona if isinstance(persona,str) else "default", PERSONA_VOICE_GUIDES["default"])
             struct_brief = _format_structure(structure) if structure else ""
-            lang_inst = "Hinglish (Hindi grammar, English for technical terms)" if language=="hinglish" else "English only, conversational"
+            lang_inst = "Hinglish written in Roman script, not Devanagari (Hindi grammar, English for technical terms)" if language=="hinglish" else "English only, conversational"
             prompt = f"""Write a {min_words}-{max_words} word YouTube script about: "{topic}"
 
 Persona/Voice style: {voice_g[:300] if isinstance(voice_g,str) else str(voice_g)[:300]}
@@ -372,7 +372,7 @@ Requirements:
     structure_brief  = _format_structure(structure)
     is_hi            = language == "hinglish"
     lang_instruction = (
-        "Language: Hinglish. Hindi grammar matrix. English retained for technical/policy/proper nouns."
+        "Language: Hinglish. Hindi grammar matrix, but written ENTIRELY in Roman/English script (transliterated), never in Devanagari. English retained for technical/policy/proper nouns. Example of correct Hinglish script: 'Aaj hum baat karenge ek important topic ke baare mein.' NOT Devanagari like 'आज हम बात करेंगे'."
         if is_hi else
         "Language: English only. Natural, spoken, conversational."
     )

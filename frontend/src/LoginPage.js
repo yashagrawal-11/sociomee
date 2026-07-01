@@ -298,6 +298,56 @@ export default function LoginPage() {
   );
 }
 
+export function VerifyEmail() {
+  const [status, setStatus] = useState("loading");
+  const [msg, setMsg] = useState("");
+  const done = useRef(false);
+
+  useEffect(() => {
+    if (done.current) return; done.current = true;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (!token) { setMsg("No verification token found."); setStatus("error"); return; }
+    fetch(`${BASE}/auth/verify-email`, {
+      method: "POST", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    })
+      .then(async r => {
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.detail || "Verification failed");
+        setStatus("success");
+        setTimeout(() => { window.location.href = "/app"; }, 2000);
+      })
+      .catch(e => { setMsg(e.message); setStatus("error"); });
+  }, []);
+
+  return (
+    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"16px", background:"#0a0a0a", fontFamily:"'Poppins',sans-serif", padding:"24px", textAlign:"center" }}>
+      {status === "loading" && (
+        <>
+          <div style={{ width:"44px",height:"44px",borderRadius:"50%",border:"3px solid rgba(124,58,237,0.2)",borderTopColor:"#7c3aed",animation:"spin 0.7s linear infinite" }}/>
+          <p style={{ color:"rgba(255,255,255,0.5)",fontSize:"14px",fontWeight:"500",margin:0 }}>Verifying your email…</p>
+        </>
+      )}
+      {status === "success" && (
+        <>
+          <div style={{ fontSize:"40px" }}>✦</div>
+          <p style={{ color:"#fff",fontSize:"16px",fontWeight:"700",margin:0 }}>Email verified!</p>
+          <p style={{ color:"rgba(255,255,255,0.5)",fontSize:"13px",margin:0 }}>Redirecting you to SocioMee…</p>
+        </>
+      )}
+      {status === "error" && (
+        <>
+          <p style={{ color:"#ef4444",fontSize:"15px",fontWeight:"700",margin:0 }}>Verification failed</p>
+          <p style={{ color:"rgba(255,255,255,0.5)",fontSize:"13px",margin:0 }}>{msg}</p>
+          <a href="/app" style={{ color:"#a78bfa",fontSize:"13px",marginTop:"8px" }}>Back to SocioMee</a>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function ConfirmAge() {
   const { handleCallback } = useAuth();
   const [checked, setChecked] = useState(false);

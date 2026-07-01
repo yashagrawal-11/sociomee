@@ -470,6 +470,7 @@ def register(body: RegisterBody, request: Request, response: Response):
         "provider": "email",
         "picture": "",
         "plan": "free",
+        "email_verified": False,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     _save_users(users)
@@ -479,6 +480,17 @@ def register(body: RegisterBody, request: Request, response: Response):
         send_welcome_email(email, users[email].get("name", email.split("@")[0]))
     except Exception:
         pass
+    # Send verification email
+    try:
+        from email_service import send_verification_email
+        import redis as _redis_verify, secrets as _secrets_verify
+        _rc_verify = _redis_verify.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+        _verify_token = _secrets_verify.token_urlsafe(32)
+        _rc_verify.setex(f"verify_email:{_verify_token}", 24*60*60, email)
+        _verify_url = f"https://sociomee.in/app/verify-email?token={_verify_token}"
+        send_verification_email(email, users[email].get("name", email.split("@")[0]), _verify_url)
+    except Exception as _verify_e:
+        log.warning(f"Failed to send verification email to {email}: {_verify_e}")
     payload = {
         "user_id": users[email].get("user_id", ""),
         "name": users[email].get("name", ""),
@@ -512,6 +524,44 @@ def set_session(request: Request, response: Response, token: str = Body(..., emb
         samesite="lax", max_age=7*24*60*60, path="/",
     )
     return {"ok": True}
+
+@router.post("/verify-email")
+@limiter.limit("10/minute")
+def verify_email(request: Request, token: str = Body(..., embed=True)):
+    import redis as _redis_ve, json as _json_ve
+    _rc_ve = _redis_ve.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+    email = _rc_ve.get(f"verify_email:{token}")
+    if not email:
+        raise HTTPException(400, "This verification link has expired or is invalid. Please request a new one.")
+    users = _load_users()
+    if email not in users:
+        raise HTTPException(400, "Account not found.")
+    users[email]["email_verified"] = True
+    _save_users(users)
+    _rc_ve.delete(f"verify_email:{token}")
+    return {"message": "Email verified successfully."}
+
+
+@router.post("/resend-verification")
+@limiter.limit("3/minute")
+def resend_verification(body: ForgotBody, request: Request):
+    users = _load_users()
+    email = body.email.lower().strip()
+    user = users.get(email)
+    # Same anti-enumeration pattern as forgot-password: always return the same message.
+    if user and not user.get("email_verified", False):
+        try:
+            from email_service import send_verification_email
+            import redis as _redis_rv, secrets as _secrets_rv
+            _rc_rv = _redis_rv.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+            _verify_token = _secrets_rv.token_urlsafe(32)
+            _rc_rv.setex(f"verify_email:{_verify_token}", 24*60*60, email)
+            _verify_url = f"https://sociomee.in/app/verify-email?token={_verify_token}"
+            send_verification_email(email, user.get("name", email.split("@")[0]), _verify_url)
+        except Exception as _rv_e:
+            log.warning(f"Failed to resend verification email to {email}: {_rv_e}")
+    return {"message": "If this email exists and is not yet verified, a new verification link has been sent."}
+
 
 @router.post("/login")
 @limiter.limit("5/15minute")

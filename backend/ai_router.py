@@ -87,7 +87,7 @@ Answer with only SAFE or UNSAFE, nothing else."""
         resp = requests.post(
             f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}",
             headers={"Content-Type": "application/json"},
-            json={"contents": [{"parts": [{"text": check_prompt}]}], "generationConfig": {"maxOutputTokens": 10, "temperature": 0}},
+            json={"contents": [{"parts": [{"text": check_prompt}]}], "generationConfig": {"maxOutputTokens": 20, "temperature": 0, "thinkingConfig": {"thinkingBudget": 0}}},
             timeout=15
         )
         data = resp.json()
@@ -273,7 +273,7 @@ def generate_full_content(
             _style_hint = _PERSONA_STYLES.get(p_key, _DEFAULT_STYLE)
             hook_prompt = f"""Write a powerful YouTube video opening hook (2-3 sentences) for topic: "{topic}"
 Creator style: {p_key}. Style notes: {_style_hint}
-Language: Hinglish (Hindi + English mix)
+Language: Hinglish, written ENTIRELY in Roman/English script (transliterated), never Devanagari (Hindi + English mix)
 The hook must:
 - Start with the creator's signature opening style
 - Create immediate curiosity or shock
@@ -442,7 +442,7 @@ def _build_prompt(data: dict) -> str:
     style = _PERSONA_STYLES.get(personality, _DEFAULT_STYLE)
 
     lang_rule = {
-        "hinglish": "Natural spoken Hinglish. Mix Hindi and English. Keep casual, sharp, evidence-grounded.",
+        "hinglish": "Natural spoken Hinglish, written in Roman script not Devanagari. Mix Hindi and English. Keep casual, sharp, evidence-grounded.",
         "hindi":    "Natural spoken Hindi. Conversational, simple, evidence-grounded.",
     }.get(language, "Clear English. Natural, modern, evidence-grounded.")
 

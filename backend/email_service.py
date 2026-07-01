@@ -200,6 +200,24 @@ def _otp_html(name: str, otp: str) -> str:
     return _base_template(content)
 
 
+def _verify_email_html(name: str, verify_url: str) -> str:
+    first = name.split()[0] if name else "Creator"
+    content = f"""
+      <div class="success-badge">✦ One Last Step</div>
+      <h1 class="h1">Hey {first}, verify your email</h1>
+      <p class="p">Click the button below to confirm your email address and unlock full access to SocioMee.</p>
+
+      <div style="text-align:center;margin:24px 0">
+        <a href="{verify_url}" class="btn">✦ Verify My Email</a>
+      </div>
+
+      <div class="tip">
+        🔒 This link expires in 24 hours. If you didn't create a SocioMee account, you can safely ignore this email.
+      </div>
+    """
+    return _base_template(content)
+
+
 def _plan_expiry_html(name: str, plan_label: str, days_left: int) -> str:
     first = name.split()[0] if name else "Creator"
     content = f"""
@@ -293,6 +311,25 @@ def send_otp_email(to_email: str, name: str, otp: str) -> bool:
         return True
     except Exception as e:
         log.error("send_otp_email failed: %s", e)
+        return False
+
+
+def send_verification_email(to_email: str, name: str, verify_url: str) -> bool:
+    """Send email verification link after signup."""
+    if not resend.api_key or not to_email:
+        log.warning("send_verification_email: missing API key or email")
+        return False
+    try:
+        resend.Emails.send({
+            "from":    FROM_EMAIL,
+            "to":      [to_email],
+            "subject": "Verify your email — SocioMee",
+            "html":    _verify_email_html(name, verify_url),
+        })
+        log.info("Verification email sent to %s", to_email)
+        return True
+    except Exception as e:
+        log.error("send_verification_email failed: %s", e)
         return False
 
 

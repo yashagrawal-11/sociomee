@@ -1688,7 +1688,7 @@ function VideoCommentRow({ video, userId, C }) {
                   </button>
                 </div>
               </div>
-              <div style={{ fontSize:"12px", color:C.ink, lineHeight:1.6 }} dangerouslySetInnerHTML={{__html: cm.text}}/>
+              <div style={{ fontSize:"12px", color:C.ink, lineHeight:1.6, whiteSpace:"pre-wrap" }}>{cm.text}</div>
               {cm.reply_count > 0 && <div style={{ marginTop:"4px", fontSize:"9px", color:C.muted }}>💬 {cm.reply_count} replies</div>}
             </div>
           ))}
