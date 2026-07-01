@@ -902,7 +902,10 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user })
         {scores.final_score>0&&<span style={{ flexShrink:0,fontSize:"12px",fontWeight:"800",padding:"4px 12px",borderRadius:"99px",background:scoreColor(scores.final_score)+"20",color:scoreColor(scores.final_score),border:`1px solid ${scoreColor(scores.final_score)}33` }}>⭐ {scores.final_score}/100</span>}
       </div>
 
-      {result.content_mode==="deep_research"&&<div style={{ display:"inline-flex",alignItems:"center",gap:"6px",background:`${C.purple}14`,border:`1px solid ${C.purple}30`,borderRadius:"99px",padding:"4px 12px",marginBottom:"18px",fontSize:"10.5px",fontWeight:"800",color:C.purple,textTransform:"uppercase" }}>🔬 Deep Research · 6-Engine Pipeline</div>}
+      <div style={{ display:"flex",alignItems:"center",gap:"8px",flexWrap:"wrap",marginBottom:"18px" }}>
+        <div style={{ display:"inline-flex",alignItems:"center",gap:"6px",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"99px",padding:"4px 12px",fontSize:"10.5px",fontWeight:"800",color:"rgba(124,58,237,0.9)",textTransform:"uppercase" }}>✦ AI Generated</div>
+        {result.content_mode==="deep_research"&&<div style={{ display:"inline-flex",alignItems:"center",gap:"6px",background:`${C.purple}14`,border:`1px solid ${C.purple}30`,borderRadius:"99px",padding:"4px 12px",fontSize:"10.5px",fontWeight:"800",color:C.purple,textTransform:"uppercase" }}>🔬 Deep Research · 6-Engine Pipeline</div>}
+      </div>
 
       {(scores.ai_score||scores.content_score||scores.final_score)>0&&(
         <>{scores.ai_score>0&&<ScoreBar label="AI Potential" value={scores.ai_score} emoji="🔥"/>}
