@@ -7,7 +7,7 @@ from __future__ import annotations
 import hashlib, hmac, io, logging, os, re, time
 from typing import Any, Dict, Optional
 import fastapi
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import Body, Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -729,6 +729,18 @@ def home(): return {"message": "SocioMee API v3 🚀", "status": "ok"}
 
 @app.get("/health")
 def health(): return {"status": "ok"}
+
+@app.post("/validate-coupon")
+@limiter.limit("20/minute")
+def validate_coupon_endpoint(request: Request, code: str = Body(..., embed=True), plan: str = Body(..., embed=True)):
+    """Validate a coupon code for a given plan. Returns discount details if valid."""
+    try:
+        from coupon_manager import validate_coupon
+        return validate_coupon(code, plan)
+    except Exception as e:
+        log.error("validate_coupon error: %s", e)
+        return {"valid": False, "message": "Could not validate coupon. Please try again."}
+
 
 @app.get("/credits/{user_id}")
 def get_credits(user_id: str, request: Request, user: dict = Depends(get_current_user)):
