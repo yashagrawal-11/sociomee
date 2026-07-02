@@ -2162,7 +2162,7 @@ export default function App() {
           )}
 
           {activeTab==="youtube"    && isLoggedIn && <YouTubeDashboard user={user} initialTab={youtubeInitialTab}/>}
-          {activeTab==="threads"    && isLoggedIn && <ThreadsDashboard />}
+          {activeTab==="threads"    && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Threads" icon="/icons/threads.png" color="#ffffff" message="Threads integration coming soon! Schedule posts, analyze engagement and grow your audience."/></div>}
           {activeTab==="instagram"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Instagram" icon="/icons/instagram.png" color="#e1306c" message="Instagram integration coming soon. Direct posting, Reels analytics and hashtag performance."/></div>}
           {activeTab==="pinterest"  && isLoggedIn && <PinterestDashboard user={user}/>}
           {activeTab==="reddit"     && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Reddit" icon="/icons/reddit.png" color="#ff4500" message="Reddit integration coming soon. Post to subreddits and track upvotes."/></div>}
