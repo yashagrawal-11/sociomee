@@ -198,14 +198,26 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
     "SOCIOSAVE7":   { type:"flat", value:150, label:"₹150 off" },
   };
 
-  const applyCoupon = () => {
+  const applyCoupon = async () => {
     const code = coupon.trim().toUpperCase();
-    if (COUPONS[code]) {
-      setDiscount({ code, ...COUPONS[code] });
-      setCouponMsg(`✅ Code applied — ${COUPONS[code].label}!`);
-    } else {
+    if (!code) return;
+    setCouponMsg("Checking...");
+    try {
+      const res = await fetch(`${BASE}/validate-coupon`, {
+        method:"POST", headers:{"Content-Type":"application/json"}, credentials:"include",
+        body:JSON.stringify({ code, plan:"pro_monthly" }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setDiscount({ code, type:"pct", value:data.discount_pct, label:`${data.discount_pct}% off` });
+        setCouponMsg(`✅ ${data.message}`);
+      } else {
+        setDiscount(null);
+        setCouponMsg(`❌ ${data.message}`);
+      }
+    } catch {
       setDiscount(null);
-      setCouponMsg("❌ Invalid code");
+      setCouponMsg("❌ Could not validate code. Try again.");
     }
   };
 
