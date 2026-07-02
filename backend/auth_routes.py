@@ -241,21 +241,25 @@ def get_me(request: Request):
 @router.post("/refresh-token")
 @limiter.limit("10/minute")
 def refresh_token(request: Request, response: Response):
-    token = request.cookies.get("sociomee_session")
-    if not token:
-        auth_header = request.headers.get("Authorization", "")
-        if auth_header.startswith("Bearer "):
-            token = auth_header.split(" ")[1]
-    if not token:
-        raise HTTPException(status_code=401, detail="Missing token")
-
-    payload = decode_jwt_token(token)
-    new_token = create_jwt_token(payload)
-    response.set_cookie(
-        key="sociomee_session", value=new_token, httponly=True, secure=True,
-        samesite="lax", max_age=7*24*60*60, path="/",
-    )
-    return {"token": new_token}
+    try:
+        token = request.cookies.get("sociomee_session")
+        if not token:
+            auth_header = request.headers.get("Authorization", "")
+            if auth_header.startswith("Bearer "):
+                token = auth_header.split(" ")[1]
+        if not token:
+            raise HTTPException(status_code=401, detail="Missing token")
+        payload = decode_jwt_token(token)
+        new_token = create_jwt_token(payload)
+        response.set_cookie(
+            key="sociomee_session", value=new_token, httponly=True, secure=True,
+            samesite="lax", max_age=7*24*60*60, path="/",
+        )
+        return {"token": new_token}
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=401, detail="Session invalid. Please log in again.")
 
 
 # LOGOUT
