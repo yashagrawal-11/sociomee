@@ -68,6 +68,8 @@ def decode_jwt_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid session token. Please log in again.")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Session invalid. Please log in again.")
 
 
 # GOOGLE LOGIN
