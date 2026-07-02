@@ -532,7 +532,11 @@ async def get_benchmark(user_id: str):
 # ══════════════════════════════════════════════════════════════════════
 
 @router.post("/publish")
-async def publish(user_id: str, payload: dict):
+async def publish(user_id: str, request: Request):
+    try:
+        payload = await request.json()
+    except Exception as e:
+        raise HTTPException(400, f"Invalid JSON: {e}")
     acc = _get_account(user_id)
     if not acc:
         raise HTTPException(404, "Threads not connected")
@@ -546,7 +550,7 @@ async def publish(user_id: str, payload: dict):
     token       = acc["access_token"]
     threads_uid = acc["threads_uid"]
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         cr = await client.post(
             f"https://graph.threads.net/v1.0/{threads_uid}/threads",
             params={"media_type": "TEXT", "text": text, "access_token": token},
@@ -556,7 +560,7 @@ async def publish(user_id: str, payload: dict):
 
     creation_id = cr.json().get("id")
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         pr = await client.post(
             f"https://graph.threads.net/v1.0/{threads_uid}/threads_publish",
             params={"creation_id": creation_id, "access_token": token},

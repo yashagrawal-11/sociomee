@@ -284,8 +284,6 @@ export default function ThreadsDashboard({ user, topic = "" }) {
   };
 
   const handleConnect = async () => {
-    alert("Threads integration is coming soon! 🚀\\nWe are working on it and will notify you when it's ready.");
-    return;
     setConnecting(true);
     try {
       const r = await fetch(`${BASE}/threads/auth-url?user_id=${userId}`);
