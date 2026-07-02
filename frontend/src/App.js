@@ -231,7 +231,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
     },
     {
       id_monthly:"premium_monthly", id_annual:"premium_annual",
-      label:"Premium", monthly:2999, annual:23999,
+      label:"Premium", monthly:1999, annual:15999,
       credits:500, uploads:15,
       features:["500 credits/month","Unlimited word scripts","Full SEO — all platforms","15 YouTube uploads/month","Advanced AI analytics","Dedicated support","Early access to features"],
       cta:"Go Premium", highlight:true, disabled:false, badge:"Most Popular",
@@ -239,8 +239,8 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
   ];
 
   const topups = [
-    { id:"topup_99",  label:"Starter Pack", price:99,  credits:50,  cta:"Buy 50 Credits" },
-    { id:"topup_199", label:"Value Pack",   price:199, credits:120, badge:"Best Value",   cta:"Buy 120 Credits" },
+    { id:"topup_99",  label:"Starter Pack", price:99,  credits:20,  cta:"Buy 20 Credits" },
+    { id:"topup_249", label:"Value Pack",   price:249, credits:60,  badge:"Best Value",   cta:"Buy 60 Credits" },
   ];
 
   const pay = async (planId, price) => {
