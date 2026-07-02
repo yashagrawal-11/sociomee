@@ -7,7 +7,9 @@ Storage: JSON files (same pattern as threads_routes.py)
 import os, json, random, math, httpx
 from datetime import datetime, timedelta
 from pathlib import Path
-from fastapi import APIRouter, HTTPException
+import logging
+from fastapi import APIRouter, HTTPException, Request
+log = logging.getLogger(__name__)
 from fastapi.responses import RedirectResponse
 from dotenv import load_dotenv
 
@@ -684,18 +686,41 @@ async def publish(user_id: str, payload: dict):
         "url":     f"https://www.instagram.com/p/{post_id}/",
         "message": "Posted successfully to Instagram!",
     }
-@router.post("/deauth")
-async def deauth():
+
+@router.post("/deauthorize")
+async def deauthorize(request: Request):
+    """Meta calls this when a user removes the app."""
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    user_id = body.get("user_id", "unknown")
+    log.info(f"Instagram deauthorize callback for user_id={user_id}")
     return {"success": True}
 
-@router.get("/deauth")
-async def deauth_get():
+@router.get("/deauthorize")
+async def deauthorize_get():
     return {"success": True}
 
 @router.post("/delete")
-async def delete_data():
-    return {"success": True}
+async def delete_data(request: Request):
+    """Meta GDPR data deletion callback."""
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    user_id = body.get("user_id", "unknown")
+    log.info(f"Instagram data deletion request for user_id={user_id}")
+    confirmation_code = f"sociomee_del_{user_id}"
+    return {
+        "url": f"https://sociomee.in/instagram/deletion-status?id={confirmation_code}",
+        "confirmation_code": confirmation_code
+    }
 
 @router.get("/delete")
 async def delete_data_get():
     return {"success": True}
+
+@router.get("/deletion-status")
+async def deletion_status(id: str = ""):
+    return {"status": "complete", "confirmation_code": id}
