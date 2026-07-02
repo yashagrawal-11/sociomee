@@ -181,8 +181,8 @@ def get_user_credits(user_id: str) -> int:
     return get_credit_status(user_id)["credits_remaining"]
 
 
-def use_credit(user_id: str) -> bool:
-    """Deduct 1 credit atomically. Returns True if successful."""
+def use_credit(user_id: str, cost: int = 1) -> bool:
+    """Deduct credits atomically. cost=1 for small actions, cost=10 for full generation sessions. Returns True if successful."""
     with _lock:
         data    = _load()
         record  = _get_or_init(data, user_id)
@@ -194,7 +194,7 @@ def use_credit(user_id: str) -> bool:
             try: notify_out_of_credits(user_id)
             except Exception: pass
             return False
-        record["credits_remaining"] = credits - 1
+        record["credits_remaining"] = credits - cost
         data[user_id] = record
         _save(data)
         return True

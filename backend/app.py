@@ -450,7 +450,7 @@ class BonusRequest(BaseModel):
 
 # ── Helpers ───────────────────────────────────────────────────────────
 def _check_credits(user_id: str):
-    ok = use_credit(user_id)
+    ok = use_credit(user_id, cost=10)
     if not ok:
         status = get_credit_status(user_id)
         return {"error": f"No credits remaining on your {status.get('plan','free').replace('_',' ').title()} plan.", "credits": 0, "credit_status": status}
