@@ -112,7 +112,7 @@ function ComposePost({ userId, onSent, prefillText }) {
 
   return (
     <div>
-      <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink, marginBottom:"4px" }}>✍️ Compose Post</div>
+      <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink, marginBottom:"4px" }}>Compose Post</div>
       <div style={{ fontSize:"11.5px", color:C.muted, marginBottom:"14px" }}>Send text, images, videos or GIFs · supports HTML tags</div>
 
       <div style={{ position:"relative", marginBottom:"10px" }}>
@@ -147,11 +147,11 @@ function ComposePost({ userId, onSent, prefillText }) {
       )}
 
       <div style={{ marginBottom:"14px" }}>
-        <div style={{ fontSize:"10px", fontWeight:"800", color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px" }}>📅 When to Send</div>
+        <div style={{ fontSize:"10px", fontWeight:"800", color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px" }}>When to Send</div>
         <div style={{ display:"flex", gap:"6px" }}>
-          {[["now","🔴 Send Now"],["custom","📅 Schedule"]].map(([v,l]) => (
+          {[["now","Send Now"],["custom","Schedule"]].map(([v,l]) => (
             <button key={v} onClick={()=>setScheduleType(v)}
-              style={{ padding:"7px 16px", borderRadius:"9px", border:`1.5px solid ${scheduleType===v?C.tg:C.hairline}`, background:scheduleType===v?`${C.tg}15`:C.glass, color:scheduleType===v?C.tg:C.muted, fontWeight:"700", fontSize:"12px", cursor:"pointer", fontFamily:"inherit" }}>
+              style={{ padding:"8px 18px", borderRadius:"999px", border:`1.5px solid ${scheduleType===v?C.tg:C.hairline}`, background:scheduleType===v?`linear-gradient(135deg,${C.tg},#1a8ac0)`:C.glass, color:scheduleType===v?"#ffffff":C.muted, fontWeight:"700", fontSize:"12px", cursor:"pointer", fontFamily:"inherit", boxShadow:scheduleType===v?`0 2px 10px ${C.tg}44`:"none", transition:"all 0.2s" }}>
               {l}
             </button>
           ))}
@@ -162,18 +162,18 @@ function ComposePost({ userId, onSent, prefillText }) {
         )}
       </div>
 
-      {error && <div style={{ background:`${C.danger}12`, border:`1px solid ${C.danger}44`, borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:C.danger, fontWeight:"600" }}>⚠ {error}</div>}
+      {error && <div style={{ background:`${C.danger}12`, border:`1px solid ${C.danger}44`, borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:C.danger, fontWeight:"600" }}>{error}</div>}
 
       {result && (
         <div style={{ background:`${C.success}12`, border:`1px solid ${C.success}44`, borderRadius:"10px", padding:"12px 14px", marginBottom:"12px" }}>
-          <div style={{ fontSize:"13px", fontWeight:"800", color:C.success, marginBottom:"3px" }}>{result.status==="scheduled"?"⏰ Scheduled!":"✅ Sent!"}</div>
+          <div style={{ fontSize:"13px", fontWeight:"800", color:C.success, marginBottom:"3px" }}>{result.status==="scheduled"?"Scheduled!":"Sent!"}</div>
           <div style={{ fontSize:"11.5px", color:C.ink }}>{result.message}</div>
           {result.targets?.length>0 && <div style={{ fontSize:"10px", color:C.muted, marginTop:"3px" }}>→ {result.targets.join(", ")}</div>}
         </div>
       )}
 
       <button onClick={send} disabled={loading||(!text.trim()&&!media)}
-        style={{ width:"100%", padding:"13px", borderRadius:"12px", border:"none", background:(loading||(!text.trim()&&!media))?"rgba(42,171,238,0.3)":`linear-gradient(135deg,#2aabee,#1a8ac0)`, color:"white", fontWeight:"800", fontSize:"14px", cursor:(loading||(!text.trim()&&!media))?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", boxShadow:(loading||(!text.trim()&&!media))?"none":"0 4px 20px rgba(42,171,238,0.35)" }}>
+        style={{ width:"100%", padding:"14px", borderRadius:"999px", border:"none", background:(loading||(!text.trim()&&!media))?"rgba(42,171,238,0.3)":`linear-gradient(135deg,#2aabee,#1a8ac0)`, color:"white", fontWeight:"800", fontSize:"14px", cursor:(loading||(!text.trim()&&!media))?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", boxShadow:(loading||(!text.trim()&&!media))?"none":"0 4px 20px rgba(42,171,238,0.35)" }}>
         {loading?<><Spinner size={16} color="white"/>{scheduleType==="custom"?"Scheduling…":"Sending…"}</>:<><TGIcon size={16}/>{scheduleType==="custom"?"Schedule Post":"Send to Telegram"}</>}
       </button>
       <div style={{ marginTop:"8px", fontSize:"10.5px", color:C.muted, textAlign:"center" }}>Sends to personal Telegram + channel (if connected)</div>
@@ -247,7 +247,7 @@ function BulkPost({ userId, onSent }) {
 
   return (
     <div>
-      <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink, marginBottom:"4px" }}>📦 Bulk Post</div>
+      <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink, marginBottom:"4px" }}>Bulk Post</div>
       <div style={{ fontSize:"11.5px", color:C.muted, marginBottom:"14px" }}>Select multiple images/videos/GIFs — each gets its own caption</div>
 
       {/* Drop zone */}
@@ -261,15 +261,15 @@ function BulkPost({ userId, onSent }) {
         <div style={{ fontSize:"10px", color:C.muted, marginTop:"3px" }}>Images · Videos · GIFs · Max 50 MB each</div>
       </div>
 
-      {error && <div style={{ background:`${C.danger}12`, border:`1px solid ${C.danger}44`, borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:C.danger }}>⚠ {error}</div>}
+      {error && <div style={{ background:`${C.danger}12`, border:`1px solid ${C.danger}44`, borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:C.danger }}>{error}</div>}
 
       {/* Global schedule */}
       {items.length > 0 && (
         <>
           <div style={{ background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:"12px", padding:"12px 14px", marginBottom:"14px" }}>
-            <div style={{ fontSize:"10px", fontWeight:"800", color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px" }}>📅 Schedule All Posts</div>
+            <div style={{ fontSize:"10px", fontWeight:"800", color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px" }}>Schedule All Posts</div>
             <div style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>
-              {[["now","🔴 Send Now"],["custom","📅 Custom Time"]].map(([v,l]) => (
+              {[["now","Send Now"],["custom","Custom Time"]].map(([v,l]) => (
                 <button key={v} onClick={()=>setGlobalSched(v)}
                   style={{ padding:"6px 14px", borderRadius:"9px", border:`1.5px solid ${globalSched===v?C.tg:C.hairline}`, background:globalSched===v?`${C.tg}15`:C.glass, color:globalSched===v?C.tg:C.muted, fontWeight:"700", fontSize:"11px", cursor:"pointer", fontFamily:"inherit" }}>
                   {l}
@@ -363,7 +363,7 @@ function AICaption({ userId, onUseCaption }) {
 
   return (
     <div>
-      <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink, marginBottom:"4px" }}>🤖 AI Caption Generator</div>
+      <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink, marginBottom:"4px" }}>AI Caption Generator</div>
       <div style={{ fontSize:"11.5px", color:C.muted, marginBottom:"14px" }}>Enter topic → get viral caption, hook, hashtags, CTA + best time</div>
 
       <input value={topic} onChange={e=>setTopic(e.target.value)} onKeyDown={e=>e.key==="Enter"&&generate()}
@@ -387,16 +387,16 @@ function AICaption({ userId, onUseCaption }) {
         </select>
       </div>
 
-      {error && <div style={{ background:`${C.danger}12`, border:`1px solid ${C.danger}44`, borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:C.danger }}>⚠ {error}</div>}
+      {error && <div style={{ background:`${C.danger}12`, border:`1px solid ${C.danger}44`, borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:C.danger }}>{error}</div>}
 
       <button onClick={generate} disabled={loading||!topic.trim()}
         style={{ width:"100%", padding:"12px", borderRadius:"12px", border:"none", background:(loading||!topic.trim())?"rgba(42,171,238,0.3)":`linear-gradient(135deg,#2aabee,#1a8ac0)`, color:"white", fontWeight:"800", fontSize:"14px", cursor:(loading||!topic.trim())?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", marginBottom:"14px" }}>
-        {loading?<><Spinner size={16} color="white"/>Generating…</>:"✨ Generate AI Caption"}
+        {loading?<><Spinner size={16} color="white"/>Generating…</>:"Generate AI Caption"}
       </button>
 
       {result && (
         <div style={{ background:`${C.tg}08`, border:`1.5px solid ${C.tg}33`, borderRadius:"12px", padding:"14px" }}>
-          <div style={{ fontSize:"10px", fontWeight:"900", color:C.tg, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"10px" }}>🤖 AI Caption Pack</div>
+          <div style={{ fontSize:"10px", fontWeight:"900", color:C.tg, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"10px" }}>AI Caption Pack</div>
 
           {/* Hook */}
           {result.hook && (
@@ -564,10 +564,10 @@ function PostsHistory({ userId, refreshKey }) {
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"14px" }}>
-        <div style={{ fontSize:"13px", fontWeight:"800", color:C.ink }}>📋 All Posts ({jobs.length})</div>
+        <div style={{ fontSize:"13px", fontWeight:"800", color:C.ink }}>All Posts ({jobs.length})</div>
         <button onClick={load} style={{ fontSize:"11px", padding:"4px 12px", borderRadius:"8px", border:`1px solid ${C.hairline}`, background:"transparent", color:C.muted, cursor:"pointer", fontFamily:"inherit" }}>↺ Refresh</button>
       </div>
-      {scheduled.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.warn, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px" }}>⏰ Scheduled ({scheduled.length})</div>{scheduled.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
+      {scheduled.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.warn, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px" }}>Scheduled ({scheduled.length})</div>{scheduled.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
       {sending.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.tg, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:scheduled.length?"12px":"0" }}>📤 Sending ({sending.length})</div>{sending.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
       {done.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.success, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:(scheduled.length||sending.length)?"12px":"0" }}>✅ Sent ({done.length})</div>{done.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
       {failed.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.danger, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:"12px" }}>❌ Failed ({failed.length})</div>{failed.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
@@ -665,14 +665,14 @@ export default function TelegramScheduler({ user }) {
             {tgInfo?.channel_verified&&<div style={{ fontSize:"10px", color:C.tg, fontWeight:"700" }}>+ {tgInfo.channel} 📢</div>}
           </div>
         </div>
-        <button onClick={handleDisconnect} style={{ fontSize:"11px", color:C.danger, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit", textDecoration:"underline" }}>Disconnect</button>
+        <button onClick={handleDisconnect} style={{ fontSize:"11px", fontWeight:"700", color:C.danger, background:`${C.danger}14`, border:`1px solid ${C.danger}40`, borderRadius:"999px", padding:"6px 16px", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>Disconnect</button>
       </div>
 
       {/* Tabs */}
-      <div style={{ display:"flex", gap:"4px", marginBottom:"16px", background:`${C.tg}10`, borderRadius:"12px", padding:"4px" }}>
-        {[["compose","✍️ Compose"],["bulk","📦 Bulk"],["ai","🤖 AI Caption"],["posts","📋 Posts"]].map(([id,label]) => (
+      <div style={{ display:"flex", gap:"6px", marginBottom:"16px", background:`${C.tg}0d`, borderRadius:"999px", padding:"5px" }}>
+        {[["compose","Compose"],["bulk","Bulk"],["ai","AI Caption"],["posts","Posts"]].map(([id,label]) => (
           <button key={id} onClick={()=>setActiveTab(id)}
-            style={{ flex:1, padding:"8px 4px", borderRadius:"9px", border:"none", background:activeTab===id?C.glass:"transparent", color:activeTab===id?C.tg:C.muted, fontWeight:activeTab===id?"800":"600", fontSize:"11px", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", boxShadow:activeTab===id?"0 1px 4px rgba(0,0,0,0.08)":"none" }}>
+            style={{ flex:1, padding:"9px 4px", borderRadius:"999px", border:"none", background:activeTab===id?`linear-gradient(135deg,${C.tg},#1a8ac0)`:"transparent", color:activeTab===id?"#ffffff":C.muted, fontWeight:activeTab===id?"800":"600", fontSize:"11.5px", cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s", boxShadow:activeTab===id?`0 2px 10px ${C.tg}55`:"none" }}>
             {label}
           </button>
         ))}

@@ -2,14 +2,343 @@
 discord_routes.py — SocioMee Discord Webhook Integration
 """
 from __future__ import annotations
-import json, logging, os, requests, threading
+import json, logging, os, requests, threading, httpx
 from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DISCORD_CLIENT_ID     = os.getenv("DISCORD_CLIENT_ID", "")
+DISCORD_CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET", "")
+DISCORD_BOT_TOKEN      = os.getenv("DISCORD_BOT_TOKEN", "")
+DISCORD_REDIRECT_URI  = os.getenv("DISCORD_REDIRECT_URI", "https://sociomee.in/api/discord/callback")
+DISCORD_BOT_PERMISSIONS = "536988672"
 
 log = logging.getLogger("discord_routes")
 router = APIRouter(prefix="/discord", tags=["discord"])
+
+
+# ══════════════════════════════════════════════════════════════════════
+# BOT OAUTH CONNECT (full account/server connection, not just webhook)
+# ══════════════════════════════════════════════════════════════════════
+
+GUILDS_FILE = Path(__file__).parent / "discord_guilds.json"
+
+def _load_guilds() -> dict:
+    try: return json.loads(GUILDS_FILE.read_text()) if GUILDS_FILE.exists() else {}
+    except: return {}
+
+def _save_guilds(d: dict):
+    GUILDS_FILE.write_text(json.dumps(d, indent=2))
+
+
+DISCORD_SERVER_LIMITS = {
+    "free":             0,
+    "pro_monthly":      2,
+    "pro_annual":       2,
+    "premium_monthly":  4,
+    "premium_annual":   4,
+}
+
+def _get_server_limit(user_id: str) -> int:
+    try:
+        from credits_manager import get_credit_status
+        plan = get_credit_status(user_id).get("plan", "free")
+        return DISCORD_SERVER_LIMITS.get(plan, 0)
+    except:
+        return 0
+
+
+@router.get("/oauth-url")
+def discord_oauth_url(user_id: str = Query(...)):
+    if not DISCORD_CLIENT_ID:
+        raise HTTPException(500, "DISCORD_CLIENT_ID not configured")
+
+    limit = _get_server_limit(user_id)
+    if limit == 0:
+        raise HTTPException(403, "Upgrade to Pro or Premium to connect Discord servers.")
+
+    guilds = _load_guilds()
+    current = len(guilds.get(user_id, []))
+    if current >= limit:
+        raise HTTPException(403, f"Server limit reached ({limit}). Upgrade your plan to connect more servers.")
+    url = (
+        "https://discord.com/oauth2/authorize"
+        f"?client_id={DISCORD_CLIENT_ID}"
+        f"&permissions={DISCORD_BOT_PERMISSIONS}"
+        "&integration_type=0"
+        "&scope=bot+applications.commands"
+        f"&redirect_uri={DISCORD_REDIRECT_URI}"
+        "&response_type=code"
+        f"&state={user_id}"
+    )
+    return {"url": url}
+
+
+@router.get("/callback")
+async def discord_callback(code: str, guild_id: str = Query(default=""), state: str = Query(default="")):
+    user_id = state
+    if not user_id:
+        raise HTTPException(400, "Missing state (user_id)")
+
+    # Exchange code for user access token (optional, mainly to confirm the flow / get identity)
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            "https://discord.com/api/oauth2/token",
+            data={
+                "client_id":     DISCORD_CLIENT_ID,
+                "client_secret": DISCORD_CLIENT_SECRET,
+                "grant_type":    "authorization_code",
+                "code":          code,
+                "redirect_uri":  DISCORD_REDIRECT_URI,
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+
+    if not guild_id:
+        return RedirectResponse("https://sociomee.in?discord=no_guild_selected")
+
+    limit = _get_server_limit(user_id)
+    guilds_check = _load_guilds()
+    current = len(guilds_check.get(user_id, []))
+    already_connected = any(g.get("guild_id") == guild_id for g in guilds_check.get(user_id, []))
+    if not already_connected and current >= limit:
+        return RedirectResponse("https://sociomee.in?discord=limit_reached")
+
+    # Fetch guild info + channels using the BOT token (bot was just added to this guild)
+    async with httpx.AsyncClient() as client:
+        g = await client.get(
+            f"https://discord.com/api/v10/guilds/{guild_id}",
+            headers={"Authorization": f"Bot {DISCORD_BOT_TOKEN}"},
+        )
+        chans = await client.get(
+            f"https://discord.com/api/v10/guilds/{guild_id}/channels",
+            headers={"Authorization": f"Bot {DISCORD_BOT_TOKEN}"},
+        )
+
+    guild_name = g.json().get("name", "Discord Server") if g.status_code == 200 else "Discord Server"
+    text_channels = []
+    if chans.status_code == 200:
+        for c in chans.json():
+            if c.get("type") == 0:  # 0 = GUILD_TEXT
+                text_channels.append({"id": c["id"], "name": c["name"]})
+
+    guilds = _load_guilds()
+    user_guilds = guilds.get(user_id, [])
+    # Replace if guild already connected, else append
+    user_guilds = [g_ for g_ in user_guilds if g_.get("guild_id") != guild_id]
+    user_guilds.append({
+        "guild_id":     guild_id,
+        "guild_name":   guild_name,
+        "channels":     text_channels,
+        "connected_at": datetime.now(timezone.utc).isoformat(),
+    })
+    guilds[user_id] = user_guilds
+    _save_guilds(guilds)
+
+    return RedirectResponse("https://sociomee.in?discord=connected")
+
+
+@router.get("/guilds")
+def discord_list_guilds(user_id: str = Query(...)):
+    guilds = _load_guilds()
+    return {"guilds": guilds.get(user_id, [])}
+
+
+@router.post("/refresh-channels")
+async def discord_refresh_channels(user_id: str = Query(...), guild_id: str = Query(...)):
+    if not DISCORD_BOT_TOKEN:
+        raise HTTPException(500, "DISCORD_BOT_TOKEN not configured")
+    async with httpx.AsyncClient() as client:
+        chans = await client.get(
+            f"https://discord.com/api/v10/guilds/{guild_id}/channels",
+            headers={"Authorization": f"Bot {DISCORD_BOT_TOKEN}"},
+        )
+    if chans.status_code != 200:
+        raise HTTPException(400, f"Failed to fetch channels: {chans.text}")
+
+    text_channels = [{"id": c["id"], "name": c["name"]} for c in chans.json() if c.get("type") == 0]
+
+    guilds = _load_guilds()
+    user_guilds = guilds.get(user_id, [])
+    for g in user_guilds:
+        if g.get("guild_id") == guild_id:
+            g["channels"] = text_channels
+    guilds[user_id] = user_guilds
+    _save_guilds(guilds)
+    return {"ok": True, "channels": text_channels}
+
+
+@router.post("/remove-guild")
+def discord_remove_guild(user_id: str = Query(...), guild_id: str = Query(...)):
+    guilds = _load_guilds()
+    user_guilds = guilds.get(user_id, [])
+    guilds[user_id] = [g for g in user_guilds if g.get("guild_id") != guild_id]
+    _save_guilds(guilds)
+    return {"ok": True}
+
+
+class BotSendPayload(BaseModel):
+    user_id: str
+    guild_id: str
+    channel_id: str
+    content: str
+    image_url: str = ""
+
+
+def _bot_send_sync(guild_id: str, channel_id: str, content: str, image_url: str) -> dict:
+    """Synchronous version for use inside scheduled jobs (APScheduler runs sync callables)."""
+    body = {"content": content}
+    if image_url:
+        body["embeds"] = [{"image": {"url": image_url}}]
+    r = requests.post(
+        f"https://discord.com/api/v10/channels/{channel_id}/messages",
+        json=body,
+        headers={"Authorization": f"Bot {DISCORD_BOT_TOKEN}"},
+        timeout=15,
+    )
+    if r.status_code not in (200, 201):
+        raise Exception(f"Discord send failed: {r.text}")
+    return r.json()
+
+
+@router.post("/bot-send")
+async def discord_bot_send(payload: BotSendPayload):
+    if not DISCORD_BOT_TOKEN:
+        raise HTTPException(500, "DISCORD_BOT_TOKEN not configured")
+    if not payload.content.strip() and not payload.image_url.strip():
+        raise HTTPException(400, "content or image_url required")
+
+    body = {"content": payload.content}
+    if payload.image_url:
+        body["embeds"] = [{"image": {"url": payload.image_url}}]
+
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            f"https://discord.com/api/v10/channels/{payload.channel_id}/messages",
+            json=body,
+            headers={"Authorization": f"Bot {DISCORD_BOT_TOKEN}"},
+        )
+    if r.status_code not in (200, 201):
+        raise HTTPException(400, f"Discord send failed: {r.text}")
+    msg = r.json()
+    return {"ok": True, "message_id": msg.get("id", "")}
+
+
+BOT_JOBS_FILE = Path(__file__).parent / "discord_bot_jobs.json"
+
+def _lbjobs() -> dict:
+    try: return json.loads(BOT_JOBS_FILE.read_text()) if BOT_JOBS_FILE.exists() else {}
+    except: return {}
+
+def _sbjobs(d: dict):
+    BOT_JOBS_FILE.write_text(json.dumps(d, indent=2))
+
+def _ubjob(jid: str, **kw):
+    d = _lbjobs()
+    if jid in d:
+        d[jid].update(kw)
+        _sbjobs(d)
+
+def _new_bjob(data: dict) -> str:
+    import uuid
+    jid = uuid.uuid4().hex[:12]
+    d = _lbjobs()
+    d[jid] = data
+    _sbjobs(d)
+    return jid
+
+def _bot_job_worker(jid: str, guild_id: str, channel_id: str, content: str, image_url: str):
+    try:
+        _ubjob(jid, status="sending")
+        _bot_send_sync(guild_id, channel_id, content, image_url)
+        _ubjob(jid, status="done", sent_at=datetime.now(timezone.utc).isoformat())
+    except Exception as e:
+        _ubjob(jid, status="error", error=str(e))
+
+def _schedule_bot_send(jid: str, run_at: datetime, guild_id: str, channel_id: str, content: str, image_url: str):
+    from telegram_scheduler import _get_scheduler
+    def job():
+        _bot_job_worker(jid, guild_id, channel_id, content, image_url)
+        try: _get_scheduler().remove_job(jid)
+        except: pass
+    _ubjob(jid, status="scheduled", scheduled_at=run_at.isoformat())
+    _get_scheduler().add_job(job, "date", run_date=run_at, id=jid, replace_existing=True)
+    log.info("Scheduled Discord bot job=%s at %s", jid, run_at.isoformat())
+
+def restore_discord_bot_scheduled_jobs():
+    """Re-schedule pending bot-send jobs after server restart."""
+    try:
+        jobs = _lbjobs()
+        now = datetime.now(timezone.utc)
+        restored = 0
+        for jid, job in jobs.items():
+            if job.get("status") != "scheduled": continue
+            scheduled_at = job.get("scheduled_at")
+            if not scheduled_at: continue
+            run_at = datetime.fromisoformat(scheduled_at)
+            if run_at <= now:
+                threading.Thread(target=_bot_job_worker, daemon=True, kwargs=dict(
+                    jid=jid, guild_id=job["guild_id"], channel_id=job["channel_id"],
+                    content=job.get("content",""), image_url=job.get("image_url","")
+                )).start()
+            else:
+                _schedule_bot_send(jid, run_at, job["guild_id"], job["channel_id"],
+                                    job.get("content",""), job.get("image_url",""))
+            restored += 1
+        if restored: log.info("Restored %d scheduled Discord bot jobs", restored)
+    except Exception as e:
+        log.warning("restore_discord_bot_scheduled_jobs failed: %s", e)
+
+
+class BotSchedulePayload(BaseModel):
+    user_id: str
+    guild_id: str
+    channel_id: str
+    content: str
+    image_url: str = ""
+    scheduled_at: str
+
+
+@router.post("/bot-schedule")
+def discord_bot_schedule(payload: BotSchedulePayload):
+    if not payload.content.strip() and not payload.image_url.strip():
+        raise HTTPException(400, "content or image_url required")
+    try:
+        sched_dt = datetime.fromisoformat(payload.scheduled_at.replace("Z", "+00:00"))
+        if sched_dt.tzinfo is None:
+            sched_dt = sched_dt.replace(tzinfo=timezone.utc)
+    except Exception:
+        raise HTTPException(400, "Invalid scheduled_at timestamp")
+
+    if sched_dt <= datetime.now(timezone.utc):
+        raise HTTPException(400, "scheduled_at must be in the future")
+
+    jid = _new_bjob({
+        "user_id": payload.user_id, "guild_id": payload.guild_id, "channel_id": payload.channel_id,
+        "content": payload.content, "image_url": payload.image_url, "status": "pending",
+    })
+    _schedule_bot_send(jid, sched_dt, payload.guild_id, payload.channel_id, payload.content, payload.image_url)
+    return {"ok": True, "status": "scheduled", "job_id": jid, "scheduled_at": sched_dt.isoformat()}
+
+
+@router.get("/bot-scheduled")
+def discord_bot_list_scheduled(user_id: str = Query(...)):
+    jobs = _lbjobs()
+    return {"jobs": [{"id": jid, **j} for jid, j in jobs.items() if j.get("user_id") == user_id]}
+
+
+@router.delete("/bot-scheduled/{job_id}")
+def discord_bot_cancel_scheduled(job_id: str):
+    from telegram_scheduler import _get_scheduler
+    try: _get_scheduler().remove_job(job_id)
+    except: pass
+    _ubjob(job_id, status="cancelled")
+    return {"ok": True}
 
 DATA_FILE = Path(__file__).parent / "discord_accounts.json"
 

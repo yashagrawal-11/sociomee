@@ -633,8 +633,11 @@ def _vtype(item):
     return "video"
 
 
-def get_all_videos(user_id: str, max_results: int = 50) -> List[Dict]:
+def get_all_videos(user_id: str, max_results: int = 50, _tried: set = None) -> List[Dict]:
     """Fetch all uploaded videos via uploads playlist."""
+    if _tried is None:
+        _tried = set()
+    _tried.add(user_id)
     try:
         creds   = _get_credentials(user_id)
         youtube = _build_youtube_client(creds)
@@ -721,12 +724,12 @@ def get_all_videos(user_id: str, max_results: int = 50) -> List[Dict]:
         try:
             all_data = _load()
             for uid, info in all_data.items():
-                if uid == user_id: continue
+                if uid in _tried: continue
                 channels = info.get("channels", [])
                 for ch in channels:
                     if ch.get("channel_id") == all_data.get(user_id,{}).get("active_channel_id",""):
                         log.info("Retrying with fresher token uid=%s", uid)
-                        return get_all_videos(uid, max_results)
+                        return get_all_videos(uid, max_results, _tried)
         except Exception as e2:
             log.warning("fallback also failed: %s", e2)
         return []

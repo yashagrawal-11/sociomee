@@ -20,7 +20,7 @@ router = APIRouter(prefix="/instagram", tags=["instagram"])
 IG_APP_ID       = os.getenv("IG_APP_ID", "")
 IG_APP_SECRET   = os.getenv("IG_APP_SECRET", "")
 IG_REDIRECT_URI = os.getenv("IG_REDIRECT_URI", "https://sociomee.in/instagram/callback")
-IG_SCOPE        = "instagram_basic,instagram_content_publish,instagram_manage_insights,instagram_manage_comments,pages_show_list,pages_read_engagement"
+IG_SCOPE        = "instagram_basic,instagram_content_publish,instagram_manage_insights,instagram_manage_comments,pages_show_list,pages_read_engagement,business_management"
 
 # ── Storage helpers ────────────────────────────────────────────────
 DATA_DIR = Path(__file__).parent / "data"
@@ -67,6 +67,7 @@ async def get_auth_url(user_id: str):
         f"&scope={IG_SCOPE}"
         f"&response_type=code"
         f"&state={user_id}"
+        f"&config_id=1341878247385333"
     )
     return {"url": url}
 
@@ -117,7 +118,44 @@ async def instagram_callback(code: str, state: str = ""):
             f"https://graph.facebook.com/v19.0/{fb_user_id}/accounts",
             params={"access_token": long_token},
         )
-    pages = pages_r.json().get("data", [])
+    pages_json = pages_r.json()
+    pages = pages_json.get("data", [])
+    print(f"DEBUG ME_ACCOUNTS_COUNT: {len(pages)}", flush=True)
+    print(f"DEBUG RAW_PAGES: {pages}", flush=True)
+
+    # TEMP: also check known page IDs directly (Meta /me/accounts listing bug workaround)
+    known_page_ids = ["1047416205120240"]
+    for kpid in known_page_ids:
+        if not any(p.get("id") == kpid for p in pages):
+            async with httpx.AsyncClient() as client:
+                kp_r = await client.get(
+                    f"https://graph.facebook.com/v19.0/{kpid}",
+                    params={"fields": "id,name,access_token", "access_token": long_token},
+                )
+            if kp_r.status_code == 200:
+                pages.append(kp_r.json())
+
+    if True:
+        # Always also check Business Manager owned/client pages
+        async with httpx.AsyncClient() as client:
+            biz_r = await client.get(
+                "https://graph.facebook.com/v19.0/me/businesses",
+                params={"access_token": long_token},
+            )
+        businesses = biz_r.json().get("data", [])
+        print(f"DEBUG BUSINESSES: {businesses}", flush=True)
+
+        for biz in businesses:
+            biz_id = biz.get("id")
+            for endpoint in ["owned_pages", "client_pages"]:
+                async with httpx.AsyncClient() as client:
+                    bp_r = await client.get(
+                        f"https://graph.facebook.com/v19.0/{biz_id}/{endpoint}",
+                        params={"access_token": long_token, "fields": "id,name,access_token"},
+                    )
+                bp_data = bp_r.json().get("data", [])
+                print(f"DEBUG {endpoint.upper()} for biz {biz_id}: {bp_data}", flush=True)
+                pages.extend(bp_data)
 
     ig_account = None
     page_token = long_token
@@ -646,7 +684,12 @@ async def get_benchmark(user_id: str):
 # ══════════════════════════════════════════════════════════════════════
 
 @router.post("/publish")
-async def publish(user_id: str, payload: dict):
+async def publish(user_id: str, request: Request):
+    try:
+        payload = await request.json()
+    except Exception as e:
+        print(f"DEBUG PUBLISH JSON PARSE ERROR: {e}", flush=True)
+        raise HTTPException(400, f"Invalid JSON body: {e}")
     acc = _get_account(user_id)
     if not acc:
         raise HTTPException(404, "Instagram not connected")

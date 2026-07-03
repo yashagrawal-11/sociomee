@@ -7,188 +7,305 @@ const DiscordIcon = ({ size = 20 }) => (
   </svg>
 );
 
+const Spinner = ({ size = 16, color = "#fff" }) => (
+  <div style={{ width: size, height: size, borderRadius: "50%", border: `2.5px solid ${color}33`, borderTopColor: color, animation: "dspin 0.7s linear infinite", display: "inline-block", flexShrink: 0 }} />
+);
+
 export default function DiscordScheduler({ user }) {
   const userId = user?.user_id || localStorage.getItem("sociomee_user_id") || "";
-  const [status,      setStatus     ] = useState(null);
-  const [loading,     setLoading    ] = useState(true);
-  const [webhookUrl,  setWebhookUrl ] = useState("");
-  const [serverName,  setServerName ] = useState("");
-  const [channelName, setChannelName] = useState("");
-  const [connecting,  setConnecting ] = useState(false);
-  const [connErr,     setConnErr    ] = useState("");
-  const [content,     setContent    ] = useState("");
-  const [sending,     setSending    ] = useState(false);
-  const [sendResult,  setSendResult ] = useState(null);
-  const [schedType,   setSchedType  ] = useState("now");
-  const [schedAt,     setSchedAt    ] = useState("");
+  const [loading,    setLoading   ] = useState(true);
+  const [guilds,     setGuilds    ] = useState([]);
+  const [activeGuild,setActiveGuild] = useState(null);
+  const [activeChan, setActiveChan] = useState(null);
+  const [connecting, setConnecting] = useState(false);
+  const [content,    setContent   ] = useState("");
+  const [imageUrl,   setImageUrl  ] = useState("");
+  const [sending,    setSending   ] = useState(false);
+  const [sendResult, setSendResult] = useState(null);
+  const [schedType,  setSchedType ] = useState("now");
+  const [schedAt,    setSchedAt   ] = useState("");
 
   const DC = "#5865F2";
-
-  useEffect(() => {
-    if (!userId) { setLoading(false); return; }
-    const fetchStatus = () => {
-      fetch(`${BASE}/discord/status?user_id=${userId}`)
-        .then(r => r.json()).then(d => { setStatus(d); setLoading(false); })
-        .catch(() => setLoading(false));
-    };
-    fetchStatus();
-    window.addEventListener("sociomee-discord-updated", fetchStatus);
-    return () => window.removeEventListener("sociomee-discord-updated", fetchStatus);
-  }, [userId]);
-
-  const connect = async () => {
-    if (!webhookUrl.startsWith("https://discord.com/api/webhooks/") &&
-        !webhookUrl.startsWith("https://discordapp.com/api/webhooks/")) {
-      setConnErr("Please enter a valid Discord webhook URL"); return;
-    }
-    setConnecting(true); setConnErr("");
-    try {
-      const r = await fetch(`${BASE}/discord/connect`, {
-        method: "POST", headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ user_id: userId, webhook_url: webhookUrl, server_name: serverName, channel_name: channelName })
-      });
-      const d = await r.json();
-      if (!r.ok) { setConnErr(d.detail || "Connection failed"); }
-      else { setStatus({ connected: true, ...d, webhook_url: webhookUrl, server_name: serverName, channel_name: channelName }); }
-    } catch(e) { setConnErr("Connection failed. Check the URL."); }
-    setConnecting(false);
+  const C = {
+    glass: "rgba(255,255,255,0.05)", hairline: "rgba(255,255,255,0.08)",
+    ink: "#ffffff", muted: "rgba(255,255,255,0.45)",
+    success: "#22c55e", danger: "#ef4444",
   };
 
-  const disconnect = async () => {
-    if (!window.confirm("Disconnect Discord?")) return;
-    await fetch(`${BASE}/discord/disconnect?user_id=${userId}`, { method:"POST" });
-    setStatus({ connected: false }); setWebhookUrl(""); setContent("");
+  const loadGuilds = () => {
+    if (!userId) { setLoading(false); return; }
+    fetch(`${BASE}/discord/guilds?user_id=${userId}`)
+      .then(r => r.json())
+      .then(d => {
+        const list = d.guilds || [];
+        setGuilds(list);
+        if (list.length) {
+          setActiveGuild(g => g && list.find(x => x.guild_id === g.guild_id) ? g : list[0]);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { loadGuilds(); /* eslint-disable-next-line */ }, [userId]);
+
+  useEffect(() => {
+    if (activeGuild && activeGuild.channels?.length) {
+      setActiveChan(c => c && activeGuild.channels.find(x => x.id === c.id) ? c : activeGuild.channels[0]);
+    } else {
+      setActiveChan(null);
+    }
+  }, [activeGuild]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const dstatus = params.get("discord");
+    if (dstatus === "connected") {
+      loadGuilds();
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (dstatus === "limit_reached") {
+      setConnectErr("Server limit reached for your plan. Upgrade to connect more servers.");
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (dstatus === "no_guild_selected") {
+      setConnectErr("No server was selected. Please try again.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  const [connectErr, setConnectErr] = useState("");
+
+  const connect = async () => {
+    setConnecting(true); setConnectErr("");
+    try {
+      const r = await fetch(`${BASE}/discord/oauth-url?user_id=${userId}`);
+      const d = await r.json();
+      if (r.ok && d.url) {
+        window.location.href = d.url;
+      } else {
+        setConnectErr(d.detail || "Could not start connection.");
+        setConnecting(false);
+      }
+    } catch { setConnectErr("Something went wrong."); setConnecting(false); }
+  };
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refreshChannels = async () => {
+    setRefreshing(true);
+    try {
+      const r = await fetch(`${BASE}/discord/refresh-channels?user_id=${userId}&guild_id=${activeGuild.guild_id}`, { method: "POST" });
+      const d = await r.json();
+      if (d.ok) {
+        setGuilds(gs => gs.map(g => g.guild_id === activeGuild.guild_id ? { ...g, channels: d.channels } : g));
+        setActiveGuild(g => ({ ...g, channels: d.channels }));
+      }
+    } catch {}
+    setRefreshing(false);
+  };
+
+  const removeGuild = async (guildId) => {
+    if (!window.confirm("Remove this server?")) return;
+    await fetch(`${BASE}/discord/remove-guild?user_id=${userId}&guild_id=${guildId}`, { method: "POST" });
+    loadGuilds();
   };
 
   const send = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() && !imageUrl.trim()) return;
+    if (!activeGuild || !activeChan) return;
+
+    if (schedType === "custom") {
+      if (!schedAt) { setSendResult("error"); return; }
+      setSending(true); setSendResult(null);
+      try {
+        const r = await fetch(`${BASE}/discord/bot-schedule`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: userId,
+            guild_id: activeGuild.guild_id,
+            channel_id: activeChan.id,
+            content,
+            image_url: imageUrl,
+            scheduled_at: new Date(schedAt).toISOString(),
+          })
+        });
+        const d = await r.json();
+        if (r.ok && d.ok) {
+          setSendResult("scheduled"); setContent(""); setImageUrl(""); setSchedAt("");
+          setTimeout(() => setSendResult(null), 3000);
+        } else {
+          setSendResult("error");
+        }
+      } catch { setSendResult("error"); }
+      setSending(false);
+      return;
+    }
+
     setSending(true); setSendResult(null);
     try {
-      const r = await fetch(`${BASE}/discord/send`, {
-        method: "POST", headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ user_id: userId, content, username: "SocioMee" })
+      const r = await fetch(`${BASE}/discord/bot-send`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          guild_id: activeGuild.guild_id,
+          channel_id: activeChan.id,
+          content,
+          image_url: imageUrl,
+        })
       });
       const d = await r.json();
-      if (r.ok) { setSendResult("sent"); setContent(""); setTimeout(() => setSendResult(null), 3000); }
-      else { setSendResult("error"); }
+      if (r.ok && d.ok) {
+        setSendResult("sent"); setContent(""); setImageUrl("");
+        setTimeout(() => setSendResult(null), 3000);
+      } else {
+        setSendResult("error");
+      }
     } catch { setSendResult("error"); }
     setSending(false);
   };
 
-  const C = {
-    bg: "rgba(88,101,242,0.08)", card: "rgba(255,255,255,0.04)",
-    glass: "rgba(255,255,255,0.05)", hairline: "rgba(255,255,255,0.08)",
-    ink: "#ffffff", muted: "rgba(255,255,255,0.45)",
-    success: "#22c55e", danger: "#ef4444", purple: "#7c3aed",
-  };
+  if (loading) return <div style={{ padding: 20, color: C.muted, fontSize: 13 }}>Loading…</div>;
 
-  if (loading) return <div style={{ padding:20, color:C.muted, fontSize:13 }}>Loading…</div>;
+  const styleTag = (
+    <style>{`@keyframes dspin { to { transform: rotate(360deg); } }`}</style>
+  );
 
-  if (!status?.connected) return (
-    <div style={{ padding:"24px 20px", maxWidth:520, margin:"0 auto" }}>
-      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20 }}>
-        <div style={{ width:40, height:40, borderRadius:"50%", background:`${DC}22`, display:"flex", alignItems:"center", justifyContent:"center", color:DC }}>
-          <DiscordIcon size={22}/>
+  if (!guilds.length) return (
+    <div style={{ padding: "24px 20px", maxWidth: 520, margin: "0 auto" }}>
+      {styleTag}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+        <div style={{ width: 40, height: 40, borderRadius: "50%", background: `${DC}22`, display: "flex", alignItems: "center", justifyContent: "center", color: DC }}>
+          <DiscordIcon size={22} />
         </div>
         <div>
-          <div style={{ fontSize:15, fontWeight:800, color:C.ink }}>Connect Discord</div>
-          <div style={{ fontSize:11, color:C.muted }}>Post to your server via webhook</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>Connect Discord</div>
+          <div style={{ fontSize: 11, color: C.muted }}>Add SocioMee's bot to your server</div>
         </div>
       </div>
 
-      {/* How to guide */}
-      <div style={{ background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:12, padding:"14px 16px", marginBottom:16, fontSize:12, color:C.muted, lineHeight:1.7 }}>
-        <div style={{ color:C.ink, fontWeight:700, marginBottom:6 }}>📋 How to get your webhook URL:</div>
-        <div>1. Open Discord → your server → a text channel</div>
-        <div>2. Click ⚙️ Edit Channel → Integrations → Webhooks</div>
-        <div>3. Click <strong style={{color:C.ink}}>New Webhook</strong> → Copy Webhook URL</div>
-        <div>4. Paste it below</div>
+      <div style={{ background: C.glass, border: `1px solid ${C.hairline}`, borderRadius: 12, padding: "14px 16px", marginBottom: 20, fontSize: 12.5, color: C.muted, lineHeight: 1.7 }}>
+        Connecting lets SocioMee post messages and images directly to the channels you choose, manage schedules, and bulk-post — no manual webhook setup needed.
       </div>
 
-      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-        <input value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)}
-          placeholder="https://discord.com/api/webhooks/..."
-          style={{ padding:"11px 14px", borderRadius:10, border:`1.5px solid ${DC}44`, background:"rgba(255,255,255,0.05)", color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none" }}/>
-        <div style={{ display:"flex", gap:8 }}>
-          <input value={serverName} onChange={e => setServerName(e.target.value)}
-            placeholder="Server name (optional)"
-            style={{ flex:1, padding:"9px 12px", borderRadius:10, border:`1px solid ${C.hairline}`, background:"rgba(255,255,255,0.04)", color:C.ink, fontSize:12, fontFamily:"inherit", outline:"none" }}/>
-          <input value={channelName} onChange={e => setChannelName(e.target.value)}
-            placeholder="#channel (optional)"
-            style={{ flex:1, padding:"9px 12px", borderRadius:10, border:`1px solid ${C.hairline}`, background:"rgba(255,255,255,0.04)", color:C.ink, fontSize:12, fontFamily:"inherit", outline:"none" }}/>
+      {connectErr && (
+        <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 14, fontSize: 12.5, fontWeight: 600, color: C.danger }}>
+          {connectErr}
         </div>
-        {connErr && <div style={{ color:C.danger, fontSize:12 }}>⚠️ {connErr}</div>}
-        <button onClick={connect} disabled={connecting || !webhookUrl}
-          style={{ padding:"11px", borderRadius:10, border:"none", background:`linear-gradient(135deg,${DC},#4752c4)`, color:"#fff", fontWeight:800, fontSize:13, cursor:"pointer", fontFamily:"inherit", opacity: connecting||!webhookUrl ? 0.6:1 }}>
-          {connecting ? "Connecting…" : <><DiscordIcon size={14}/> &nbsp;Connect Discord</>}
-        </button>
-      </div>
+      )}
+      <button onClick={connect} disabled={connecting}
+        style={{ width: "100%", padding: "13px", borderRadius: 999, border: "none", background: `linear-gradient(135deg,${DC},#4752c4)`, color: "#fff", fontWeight: 800, fontSize: 14, cursor: connecting ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: connecting ? 0.7 : 1, boxShadow: `0 4px 20px ${DC}44` }}>
+        {connecting ? <><Spinner size={16} />Connecting…</> : <><DiscordIcon size={16} />Connect Discord</>}
+      </button>
     </div>
   );
 
   return (
-    <div style={{ padding:"20px", maxWidth:560, margin:"0 auto" }}>
-      {/* Connected header */}
-      <div style={{ display:"flex", alignItems:"center", gap:10, background:C.glass, border:`1px solid ${DC}33`, borderRadius:12, padding:"10px 14px", marginBottom:18 }}>
-        <div style={{ width:34, height:34, borderRadius:"50%", background:`${DC}22`, display:"flex", alignItems:"center", justifyContent:"center", color:DC, flexShrink:0 }}>
-          <DiscordIcon size={18}/>
-        </div>
-        <div style={{ flex:1 }}>
-          <div style={{ fontSize:12, fontWeight:800, color:C.ink }}>
-            {status.server_name || "Discord"} {status.channel_name ? `· #${status.channel_name}` : ""}
-          </div>
-          <div style={{ fontSize:10, color:DC, fontWeight:600 }}>✓ Webhook connected</div>
-        </div>
-        <button onClick={disconnect} style={{ padding:"4px 10px", borderRadius:99, border:`1px solid ${C.danger}44`, background:C.danger+"10", color:C.danger, fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
-          Disconnect
+    <div style={{ padding: "20px", maxWidth: 560, margin: "0 auto" }}>
+      {styleTag}
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, overflowX: "auto", paddingBottom: 2 }}>
+        {guilds.map(g => (
+          <button key={g.guild_id} onClick={() => setActiveGuild(g)}
+            style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 999, border: `1.5px solid ${activeGuild?.guild_id === g.guild_id ? DC : C.hairline}`, background: activeGuild?.guild_id === g.guild_id ? `linear-gradient(135deg,${DC},#4752c4)` : C.glass, color: activeGuild?.guild_id === g.guild_id ? "#fff" : C.muted, fontWeight: 700, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+            <DiscordIcon size={12} />{g.guild_name}
+          </button>
+        ))}
+        <button onClick={connect} disabled={connecting}
+          style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 999, border: `1.5px dashed ${C.hairline}`, background: "transparent", color: C.muted, fontWeight: 700, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+          + Add Server
         </button>
       </div>
 
-      {/* Compose */}
-      <div style={{ background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:14, padding:16, marginBottom:14 }}>
-        <div style={{ fontSize:11, fontWeight:700, color:C.muted, marginBottom:8, textTransform:"uppercase", letterSpacing:1 }}>
-          <DiscordIcon size={11}/> &nbsp;Compose Message
-        </div>
-        <textarea value={content} onChange={e => setContent(e.target.value)}
-          placeholder="Write your Discord message… supports markdown **bold**, *italic*, `code`"
-          rows={5}
-          style={{ width:"100%", padding:"11px 13px", borderRadius:10, border:`1.5px solid ${DC}33`, background:"rgba(255,255,255,0.04)", color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", resize:"vertical", boxSizing:"border-box", lineHeight:1.6 }}/>
-
-        {/* Schedule type */}
-        <div style={{ display:"flex", gap:6, marginTop:10, marginBottom:12 }}>
-          {[["now","Send Now"],["custom","Schedule"]].map(([v,l]) => (
-            <button key={v} onClick={() => setSchedType(v)}
-              style={{ padding:"6px 14px", borderRadius:9, border:`1.5px solid ${schedType===v?DC:C.hairline}`, background:schedType===v?`${DC}18`:C.glass, color:schedType===v?DC:C.muted, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
-              {l}
+      {activeGuild && (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, background: C.glass, border: `1px solid ${DC}33`, borderRadius: 12, padding: "10px 14px", marginBottom: 14 }}>
+            <div style={{ width: 34, height: 34, borderRadius: "50%", background: `${DC}22`, display: "flex", alignItems: "center", justifyContent: "center", color: DC, flexShrink: 0 }}>
+              <DiscordIcon size={18} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: C.ink }}>{activeGuild.guild_name}</div>
+              <div style={{ fontSize: 10, color: DC, fontWeight: 600 }}>Bot connected</div>
+            </div>
+            <button onClick={() => removeGuild(activeGuild.guild_id)}
+              style={{ fontSize: 11, fontWeight: 700, color: C.danger, background: `${C.danger}14`, border: `1px solid ${C.danger}40`, borderRadius: 999, padding: "6px 16px", cursor: "pointer", fontFamily: "inherit" }}>
+              Disconnect
             </button>
-          ))}
-        </div>
-
-        {schedType==="custom" && (
-          <input type="datetime-local" value={schedAt} onChange={e => setSchedAt(e.target.value)}
-            style={{ width:"100%", padding:"9px 12px", borderRadius:9, border:`1px solid ${DC}44`, background:"rgba(255,255,255,0.05)", color:C.ink, fontSize:12, fontFamily:"inherit", outline:"none", marginBottom:10, boxSizing:"border-box" }}/>
-        )}
-
-        {sendResult==="sent" && (
-          <div style={{ background:"rgba(34,197,94,0.1)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:9, padding:"9px 13px", marginBottom:10, fontSize:12, fontWeight:700, color:C.success }}>
-            ✅ Sent to Discord!
           </div>
-        )}
-        {sendResult==="error" && (
-          <div style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.3)", borderRadius:9, padding:"9px 13px", marginBottom:10, fontSize:12, fontWeight:700, color:C.danger }}>
-            ❌ Failed to send. Check webhook URL.
+
+          {activeGuild.channels?.length > 0 && (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: C.muted, textTransform: "uppercase", letterSpacing: 1 }}>Channel</div>
+                <button onClick={refreshChannels} disabled={refreshing}
+                  style={{ fontSize: 10.5, fontWeight: 700, color: DC, background: "transparent", border: "none", cursor: refreshing ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: refreshing ? 0.5 : 1 }}>
+                  {refreshing ? "Refreshing…" : "Refresh"}
+                </button>
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {activeGuild.channels.map(c => (
+                  <button key={c.id} onClick={() => setActiveChan(c)}
+                    style={{ padding: "7px 14px", borderRadius: 999, border: `1.5px solid ${activeChan?.id === c.id ? DC : C.hairline}`, background: activeChan?.id === c.id ? `${DC}18` : C.glass, color: activeChan?.id === c.id ? DC : C.muted, fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+                    #{c.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div style={{ background: C.glass, border: `1px solid ${C.hairline}`, borderRadius: 14, padding: 16, marginBottom: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+              Compose Message
+            </div>
+            <textarea value={content} onChange={e => setContent(e.target.value)}
+              placeholder="Write your Discord message… supports markdown **bold**, *italic*, `code`"
+              rows={5}
+              style={{ width: "100%", padding: "11px 13px", borderRadius: 10, border: `1.5px solid ${DC}33`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 13, fontFamily: "inherit", outline: "none", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6 }} />
+
+            <input value={imageUrl} onChange={e => setImageUrl(e.target.value)}
+              placeholder="Image URL (optional)"
+              style={{ width: "100%", padding: "10px 13px", borderRadius: 10, border: `1px solid ${C.hairline}`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 12.5, fontFamily: "inherit", outline: "none", marginTop: 8, boxSizing: "border-box" }} />
+
+            <div style={{ display: "flex", gap: 6, marginTop: 12, marginBottom: 12 }}>
+              {[["now", "Send Now"], ["custom", "Schedule"]].map(([v, l]) => (
+                <button key={v} onClick={() => setSchedType(v)}
+                  style={{ padding: "8px 18px", borderRadius: 999, border: `1.5px solid ${schedType === v ? DC : C.hairline}`, background: schedType === v ? `linear-gradient(135deg,${DC},#4752c4)` : C.glass, color: schedType === v ? "#fff" : C.muted, fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit", boxShadow: schedType === v ? `0 2px 10px ${DC}44` : "none" }}>
+                  {l}
+                </button>
+              ))}
+            </div>
+
+            {schedType === "custom" && (
+              <input type="datetime-local" value={schedAt} onChange={e => setSchedAt(e.target.value)}
+                style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: `1px solid ${DC}44`, background: "rgba(255,255,255,0.05)", color: C.ink, fontSize: 12, fontFamily: "inherit", outline: "none", marginBottom: 10, boxSizing: "border-box" }} />
+            )}
+
+            {sendResult === "sent" && (
+              <div style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontSize: 12, fontWeight: 700, color: C.success }}>
+                Sent to Discord!
+              </div>
+            )}
+            {sendResult === "scheduled" && (
+              <div style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontSize: 12, fontWeight: 700, color: C.success }}>
+                Post scheduled!
+              </div>
+            )}
+            {sendResult === "error" && (
+              <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontSize: 12, fontWeight: 700, color: C.danger }}>
+                Failed to send. Try again.
+              </div>
+            )}
+
+            <button onClick={send} disabled={sending || (!content.trim() && !imageUrl.trim()) || !activeChan}
+              style={{ width: "100%", padding: "14px", borderRadius: 999, border: "none", background: (sending || (!content.trim() && !imageUrl.trim()) || !activeChan) ? "rgba(255,255,255,0.08)" : `linear-gradient(135deg,${DC},#4752c4)`, color: "#fff", fontWeight: 800, fontSize: 14, cursor: (sending || (!content.trim() && !imageUrl.trim()) || !activeChan) ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: (sending || (!content.trim() && !imageUrl.trim()) || !activeChan) ? "none" : `0 4px 20px ${DC}44` }}>
+              {sending ? <><Spinner size={16} />Sending…</> : <><DiscordIcon size={16} />{schedType === "custom" ? "Schedule Post" : "Send to Discord"}</>}
+            </button>
           </div>
-        )}
 
-        <button onClick={send} disabled={sending || !content.trim()}
-          style={{ width:"100%", padding:"11px", borderRadius:10, border:"none", background:sending||!content.trim()?"rgba(255,255,255,0.08)":`linear-gradient(135deg,${DC},#4752c4)`, color:"#fff", fontWeight:800, fontSize:13, cursor:sending||!content.trim()?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
-          {sending ? "Sending…" : <><DiscordIcon size={14}/> &nbsp;{schedType==="custom"?"Schedule Post":"Send to Discord"}</>}
-        </button>
-      </div>
-
-      <div style={{ fontSize:10, color:C.muted, textAlign:"center" }}>
-        Messages are sent to your connected Discord channel via webhook
-      </div>
+          <div style={{ fontSize: 10, color: C.muted, textAlign: "center" }}>
+            Posted as SocioMee AI bot to #{activeChan?.name || "…"} in {activeGuild.guild_name}
+          </div>
+        </>
+      )}
     </div>
   );
 }
