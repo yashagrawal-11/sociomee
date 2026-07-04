@@ -171,30 +171,21 @@ export default function DiscordScheduler({ user }) {
   );
 
   if (!guilds.length) return (
-    <div style={{ padding: "24px 20px", maxWidth: 520, margin: "0 auto" }}>
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"32px 24px", gap:"16px", textAlign:"center" }}>
       {styleTag}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-        <div style={{ width: 40, height: 40, borderRadius: "50%", background: `${DC}22`, display: "flex", alignItems: "center", justifyContent: "center", color: DC }}>
-          <DiscordIcon size={22} />
-        </div>
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>Connect Discord</div>
-          <div style={{ fontSize: 11, color: C.muted }}>Add SocioMee's bot to your server</div>
-        </div>
+      <div style={{ width:"64px", height:"64px", borderRadius:"50%", background:`${DC}20`, border:`2px solid ${DC}50`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <DiscordIcon size={28} color={DC}/>
       </div>
-
-      <div style={{ background: C.glass, border: `1px solid ${C.hairline}`, borderRadius: 12, padding: "14px 16px", marginBottom: 20, fontSize: 12.5, color: C.muted, lineHeight: 1.7 }}>
-        Connecting lets SocioMee post messages and images directly to the channels you choose, manage schedules, and bulk-post — no manual webhook setup needed.
-      </div>
-
+      <h3 style={{ fontSize:"16px", fontWeight:"900", color:"#fff", margin:0 }}>Connect Discord</h3>
+      <p style={{ fontSize:"12.5px", color:"rgba(255,255,255,0.45)", lineHeight:1.6, maxWidth:"280px", margin:0 }}>Post messages, images, and schedule content directly to your Discord server channels.</p>
       {connectErr && (
-        <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 14, fontSize: 12.5, fontWeight: 600, color: C.danger }}>
+        <div style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.3)", borderRadius:10, padding:"10px 14px", fontSize:"12.5px", fontWeight:600, color:"#ef4444", width:"100%", maxWidth:"300px" }}>
           {connectErr}
         </div>
       )}
       <button onClick={connect} disabled={connecting}
-        style={{ width: "100%", padding: "13px", borderRadius: 999, border: "none", background: `linear-gradient(135deg,${DC},#4752c4)`, color: "#fff", fontWeight: 800, fontSize: 14, cursor: connecting ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: connecting ? 0.7 : 1, boxShadow: `0 4px 20px ${DC}44` }}>
-        {connecting ? <><Spinner size={16} />Connecting…</> : <><DiscordIcon size={16} />Connect Discord</>}
+        style={{ display:"flex", alignItems:"center", gap:"8px", padding:"12px 24px", borderRadius:"12px", border:"none", background:`linear-gradient(135deg,${DC},#4752c4)`, color:"#fff", fontWeight:"800", fontSize:"14px", cursor:connecting?"not-allowed":"pointer", fontFamily:"inherit", opacity:connecting?0.7:1, boxShadow:`0 4px 20px ${DC}44` }}>
+        {connecting ? <><Spinner size={16}/>Connecting…</> : <><DiscordIcon size={16} color="#fff"/>Connect Discord</>}
       </button>
     </div>
   );
