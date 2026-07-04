@@ -4,9 +4,7 @@ from middleware import get_current_user
 
 log = logging.getLogger(__name__)
 import secrets
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-limiter = Limiter(key_func=get_remote_address)
+from limiter_shared import limiter
 from fastapi.responses import RedirectResponse
 from dotenv import load_dotenv
 from urllib.parse import urlencode

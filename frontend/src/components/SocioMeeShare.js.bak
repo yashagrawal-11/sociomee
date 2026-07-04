@@ -26,28 +26,16 @@ function formatTime(secs) {
   return `${m}:${String(s).padStart(2,'0')}`;
 }
 
-// ── Line icons (replacing emoji for visual consistency) ──────────────
-function IconUpload({ size=28, color="#a78bfa" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4"/><path d="M6 10l6-6 6 6"/><path d="M4 20h16"/></svg>;
-}
-function IconDownload({ size=28, color="#a78bfa" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v12"/><path d="M6 12l6 6 6-6"/><path d="M4 20h16"/></svg>;
-}
-function IconPaperclip({ size=32, color="rgba(255,255,255,0.4)" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.5l-8.5 8.5a4.5 4.5 0 0 1-6.36-6.36l9-9a3 3 0 0 1 4.24 4.24l-8.5 8.5a1.5 1.5 0 0 1-2.12-2.12l7.5-7.5"/></svg>;
-}
-
-function FileIcon({ type, size=26 }) {
+function FileIcon({ type }) {
   const isImg  = type?.startsWith("image/");
   const isPDF  = type === "application/pdf";
   const isVid  = type?.startsWith("video/");
   const isAud  = type?.startsWith("audio/");
-  const stroke = "#a78bfa";
-  if (isImg) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>;
-  if (isPDF) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>;
-  if (isVid) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M17 10l5-3v10l-5-3"/></svg>;
-  if (isAud) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>;
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>;
+  if (isImg)  return <span style={{fontSize:"28px"}}>🖼️</span>;
+  if (isPDF)  return <span style={{fontSize:"28px"}}>📄</span>;
+  if (isVid)  return <span style={{fontSize:"28px"}}>🎬</span>;
+  if (isAud)  return <span style={{fontSize:"28px"}}>🎵</span>;
+  return <span style={{fontSize:"28px"}}>📁</span>;
 }
 
 export default function SocioMeeShare() {
@@ -89,6 +77,7 @@ export default function SocioMeeShare() {
     if (!file) return;
     setLoading(true);
     try {
+      // Convert file to base64
       const base64 = await new Promise((res, rej) => {
         const reader = new FileReader();
         reader.onload = e => res(e.target.result);
@@ -115,6 +104,7 @@ export default function SocioMeeShare() {
       setCode(data.code);
       setShareUrl(url);
 
+      // Generate QR
       const qr = await QRCode.toDataURL(url, { width: 200, margin: 2, color: { dark: "#000000", light: "#ffffff" } });
       setQrUrl(qr);
       startCountdown(expires);
@@ -176,8 +166,7 @@ export default function SocioMeeShare() {
         @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
         @keyframes ping{0%{transform:scale(1);opacity:1}75%,100%{transform:scale(1.8);opacity:0}}
-        .share-btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px);}
-        .share-btn-secondary:hover{background:rgba(255,255,255,0.06)!important;border-color:rgba(255,255,255,0.2)!important;}
+        .share-btn:hover{background:rgba(124,58,237,0.2)!important;border-color:rgba(124,58,237,0.4)!important;color:#a78bfa!important;}
         .share-upload:hover{border-color:rgba(124,58,237,0.5)!important;background:rgba(124,58,237,0.06)!important;}
         .share-card{animation:fadeUp 0.3s ease-out;}
         ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.3);border-radius:99px}
@@ -205,49 +194,46 @@ export default function SocioMeeShare() {
 
         {/* HOME */}
         {mode === "home" && (
-          <div className="share-card" style={{ width:"100%", maxWidth:"520px", textAlign:"center" }}>
+          <div className="share-card" style={{ width:"100%", maxWidth:"480px", textAlign:"center" }}>
             <div style={{ width:"72px", height:"72px", borderRadius:"18px", background:"rgba(124,58,237,0.12)", border:"1px solid rgba(124,58,237,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px" }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
             </div>
             <h3 style={{ fontSize:"24px", fontWeight:"800", color:C.white, margin:"0 0 8px", fontFamily:"'Orbitron',sans-serif", letterSpacing:"2px", textTransform:"uppercase" }}>SocioMee Share</h3>
-            <p style={{ fontSize:"14px", color:C.muted, margin:"0 0 32px", lineHeight:1.7, fontFamily:C.font, maxWidth:"420px", marginLeft:"auto", marginRight:"auto" }}>Transfer files instantly between your phone and PC. No app, no Bluetooth, no compression. Just a 6-digit code.</p>
+            <p style={{ fontSize:"14px", color:C.muted, margin:"0 0 32px", lineHeight:1.7, fontFamily:C.font }}>Transfer files instantly between your phone and PC. No app, no Bluetooth, no compression. Just a 6-digit code.</p>
 
-            <div style={{ display:"flex", gap:"14px", justifyContent:"center", marginBottom:"36px" }}>
-              <button onClick={()=>setMode("send")} className="share-btn-primary"
-                style={{ flex:1, maxWidth:"200px", padding:"22px 20px", borderRadius:"16px", border:"none", background:"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:"#fff", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s", boxShadow:"0 8px 24px rgba(124,58,237,0.3)" }}>
-                <div style={{ display:"flex", justifyContent:"center", marginBottom:"10px" }}><IconUpload size={26} color="#fff"/></div>
+            <div style={{ display:"flex", gap:"12px", justifyContent:"center" }}>
+              <button onClick={()=>setMode("send")}
+                style={{ flex:1, maxWidth:"180px", padding:"14px 20px", borderRadius:"14px", border:"1px solid rgba(124,58,237,0.4)", background:"rgba(124,58,237,0.12)", color:"#a78bfa", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+                <div style={{ fontSize:"24px", marginBottom:"8px" }}>📤</div>
                 Send a File
-                <div style={{ fontSize:"10px", fontWeight:"400", color:"rgba(255,255,255,0.7)", marginTop:"4px" }}>Upload from this device</div>
+                <div style={{ fontSize:"10px", fontWeight:"400", color:"rgba(255,255,255,0.3)", marginTop:"4px" }}>Upload from this device</div>
               </button>
-              <button onClick={()=>setMode("receive")} className="share-btn-secondary"
-                style={{ flex:1, maxWidth:"200px", padding:"22px 20px", borderRadius:"16px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.03)", color:C.white, fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
-                <div style={{ display:"flex", justifyContent:"center", marginBottom:"10px" }}><IconDownload size={26} color="rgba(255,255,255,0.7)"/></div>
+              <button onClick={()=>setMode("receive")}
+                style={{ flex:1, maxWidth:"180px", padding:"14px 20px", borderRadius:"14px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.03)", color:C.white, fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+                <div style={{ fontSize:"24px", marginBottom:"8px" }}>📥</div>
                 Receive a File
                 <div style={{ fontSize:"10px", fontWeight:"400", color:"rgba(255,255,255,0.3)", marginTop:"4px" }}>Enter a 6-digit code</div>
               </button>
             </div>
 
-            {/* How it works — connected step flow */}
-            <div style={{ padding:"24px", borderRadius:"18px", background:"rgba(255,255,255,0.02)", border:`1px solid ${C.border}`, textAlign:"left" }}>
-              <p style={{ fontSize:"10px", fontWeight:"700", color:C.muted, letterSpacing:"1.5px", textTransform:"uppercase", fontFamily:C.font, marginBottom:"18px" }}>How it works</p>
-              <div style={{ position:"relative" }}>
-                <div style={{ position:"absolute", left:"11px", top:"11px", bottom:"11px", width:"1px", background:"rgba(124,58,237,0.25)" }} />
-                <div style={{ display:"flex", flexDirection:"column", gap:"16px" }}>
-                  {[
-                    ["1", "Upload a file on your phone"],
-                    ["2", "Get a 6-digit code or QR"],
-                    ["3", "Open SocioMee on your PC"],
-                    ["4", "Enter the code and download instantly"],
-                  ].map(([n, t]) => (
-                    <div key={n} style={{ display:"flex", gap:"12px", alignItems:"center", position:"relative" }}>
-                      <span style={{ width:"22px", height:"22px", borderRadius:"50%", background:"#0a0a0a", border:"1px solid rgba(124,58,237,0.4)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", fontWeight:"800", color:"#a78bfa", flexShrink:0, fontFamily:C.font, zIndex:1 }}>{n}</span>
-                      <span style={{ fontSize:"13px", color:"rgba(255,255,255,0.65)", fontFamily:C.font }}>{t}</span>
-                    </div>
-                  ))}
-                </div>
+            {/* How it works */}
+            <div style={{ marginTop:"32px", padding:"20px", borderRadius:"16px", background:"rgba(255,255,255,0.02)", border:`1px solid ${C.border}` }}>
+              <p style={{ fontSize:"10px", fontWeight:"700", color:C.muted, letterSpacing:"1.5px", textTransform:"uppercase", fontFamily:C.font, marginBottom:"14px" }}>How it works</p>
+              <div style={{ display:"flex", flexDirection:"column", gap:"10px", textAlign:"left" }}>
+                {[
+                  ["1", "Upload a file on your phone"],
+                  ["2", "Get a 6-digit code or QR"],
+                  ["3", "Open SocioMee on your PC"],
+                  ["4", "Enter the code and download instantly"],
+                ].map(([n, t]) => (
+                  <div key={n} style={{ display:"flex", gap:"10px", alignItems:"center" }}>
+                    <span style={{ width:"22px", height:"22px", borderRadius:"50%", background:"rgba(124,58,237,0.2)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", fontWeight:"800", color:"#a78bfa", flexShrink:0, fontFamily:C.font }}>{n}</span>
+                    <span style={{ fontSize:"13px", color:"rgba(255,255,255,0.6)", fontFamily:C.font }}>{t}</span>
+                  </div>
+                ))}
               </div>
-              <div style={{ marginTop:"18px", padding:"12px 14px", borderRadius:"10px", background:"rgba(124,58,237,0.06)", border:"1px solid rgba(124,58,237,0.15)" }}>
-                <p style={{ fontSize:"11px", color:"rgba(255,255,255,0.4)", margin:0, fontFamily:C.font, lineHeight:1.6 }}>Files are stored temporarily for 30 minutes. Max 50MB. No compression. Original quality always.</p>
+              <div style={{ marginTop:"14px", padding:"10px", borderRadius:"8px", background:"rgba(124,58,237,0.06)", border:"1px solid rgba(124,58,237,0.15)" }}>
+                <p style={{ fontSize:"11px", color:"rgba(255,255,255,0.4)", margin:0, fontFamily:C.font }}>Files are stored temporarily for 30 minutes. Max 50MB. No compression. Original quality always.</p>
               </div>
             </div>
           </div>
@@ -258,6 +244,7 @@ export default function SocioMeeShare() {
           <div className="share-card" style={{ width:"100%", maxWidth:"500px" }}>
             <h3 style={{ fontSize:"18px", fontWeight:"800", color:C.white, margin:"0 0 20px", fontFamily:C.font }}>Send a File</h3>
 
+            {/* File upload */}
             {!file ? (
               <div className="share-upload"
                 onDragOver={e=>{e.preventDefault();setDragOver(true)}}
@@ -265,7 +252,7 @@ export default function SocioMeeShare() {
                 onDrop={e=>{e.preventDefault();setDragOver(false);handleFile(e.dataTransfer.files[0])}}
                 onClick={()=>fileInputRef.current?.click()}
                 style={{ padding:"40px 24px", border:`2px dashed ${dragOver?"rgba(124,58,237,0.6)":"rgba(255,255,255,0.1)"}`, borderRadius:"16px", background:dragOver?"rgba(124,58,237,0.06)":"rgba(255,255,255,0.02)", cursor:"pointer", textAlign:"center", transition:"all 0.2s", marginBottom:"16px" }}>
-                <div style={{ display:"flex", justifyContent:"center", marginBottom:"14px" }}><IconPaperclip size={32}/></div>
+                <div style={{ fontSize:"36px", marginBottom:"12px" }}>📎</div>
                 <p style={{ fontSize:"14px", fontWeight:"600", color:C.white, margin:"0 0 6px", fontFamily:C.font }}>Drop your file here</p>
                 <p style={{ fontSize:"12px", color:C.muted, margin:0, fontFamily:C.font }}>Any file type. Max 50MB. Images, videos, PDFs, scripts.</p>
                 <input ref={fileInputRef} type="file" style={{ display:"none" }} onChange={e=>{handleFile(e.target.files[0]);e.target.value="";}}/>
@@ -281,12 +268,14 @@ export default function SocioMeeShare() {
               </div>
             )}
 
+            {/* Message */}
             <div style={{ marginBottom:"16px" }}>
               <p style={{ fontSize:"11px", color:C.muted, margin:"0 0 6px", fontFamily:C.font }}>Message (optional)</p>
               <input value={message} onChange={e=>setMessage(e.target.value)} placeholder="Add a note for the recipient..."
                 style={{ width:"100%", padding:"10px 14px", borderRadius:"10px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.04)", color:C.white, fontSize:"13px", fontFamily:C.font, outline:"none", boxSizing:"border-box" }}/>
             </div>
 
+            {/* Expiry */}
             <div style={{ marginBottom:"20px" }}>
               <p style={{ fontSize:"11px", color:C.muted, margin:"0 0 6px", fontFamily:C.font }}>Link expires in</p>
               <div style={{ display:"flex", gap:"6px" }}>
@@ -301,7 +290,7 @@ export default function SocioMeeShare() {
 
             <button onClick={sendFile} disabled={!file || loading}
               style={{ width:"100%", padding:"12px", borderRadius:"99px", border:"none", background:!file?"rgba(255,255,255,0.06)":"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:!file?"rgba(255,255,255,0.3)":"#fff", fontSize:"14px", fontWeight:"700", cursor:!file?"not-allowed":"pointer", fontFamily:C.font, display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
-              {loading ? <><div style={{ width:"14px", height:"14px", borderRadius:"50%", border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#fff", animation:"spin 0.8s linear infinite" }}/> Uploading...</> : "Generate Share Code"}
+              {loading ? <><div style={{ width:"14px", height:"14px", borderRadius:"50%", border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#fff", animation:"spin 0.8s linear infinite" }}/> Uploading...</> : "✦ Generate Share Code"}
             </button>
 
             <button onClick={()=>setMode("home")} style={{ width:"100%", marginTop:"8px", padding:"10px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"transparent", color:C.muted, fontSize:"13px", cursor:"pointer", fontFamily:C.font }}>
@@ -313,6 +302,7 @@ export default function SocioMeeShare() {
         {/* SENT — show code + QR */}
         {mode === "sent" && (
           <div className="share-card" style={{ width:"100%", maxWidth:"460px", textAlign:"center" }}>
+            {/* Live indicator */}
             <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", marginBottom:"20px" }}>
               <div style={{ position:"relative", width:"10px", height:"10px" }}>
                 <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"#10b981", animation:"ping 1.5s ease-out infinite" }}/>
@@ -323,6 +313,7 @@ export default function SocioMeeShare() {
               </span>
             </div>
 
+            {/* 6-digit code */}
             <div style={{ background:"rgba(124,58,237,0.08)", border:"1px solid rgba(124,58,237,0.25)", borderRadius:"20px", padding:"24px", marginBottom:"20px" }}>
               <p style={{ fontSize:"11px", fontWeight:"700", color:C.muted, letterSpacing:"2px", textTransform:"uppercase", fontFamily:C.font, marginBottom:"12px" }}>Share Code</p>
               <div style={{ display:"flex", gap:"8px", justifyContent:"center", marginBottom:"16px" }}>
@@ -344,6 +335,7 @@ export default function SocioMeeShare() {
               </div>
             </div>
 
+            {/* QR Code */}
             {qrUrl && (
               <div style={{ marginBottom:"20px" }}>
                 <p style={{ fontSize:"11px", color:C.muted, fontFamily:C.font, marginBottom:"10px" }}>Or scan QR code on your other device</p>
@@ -353,6 +345,7 @@ export default function SocioMeeShare() {
               </div>
             )}
 
+            {/* File info */}
             {file && (
               <div style={{ padding:"12px", borderRadius:"10px", background:"rgba(255,255,255,0.03)", border:`1px solid ${C.border}`, display:"flex", gap:"10px", alignItems:"center", textAlign:"left" }}>
                 <FileIcon type={file.type}/>
@@ -372,12 +365,11 @@ export default function SocioMeeShare() {
         {/* RECEIVE */}
         {mode === "receive" && (
           <div className="share-card" style={{ width:"100%", maxWidth:"400px", textAlign:"center" }}>
-            <div style={{ width:"64px", height:"64px", borderRadius:"16px", background:"rgba(124,58,237,0.12)", border:"1px solid rgba(124,58,237,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
-              <IconDownload size={28}/>
-            </div>
+            <div style={{ fontSize:"40px", marginBottom:"16px" }}>📥</div>
             <h3 style={{ fontSize:"18px", fontWeight:"800", color:C.white, margin:"0 0 8px", fontFamily:C.font }}>Receive a File</h3>
             <p style={{ fontSize:"13px", color:C.muted, margin:"0 0 28px", fontFamily:C.font }}>Enter the 6-digit code from the sender's device.</p>
 
+            {/* Code input */}
             <div style={{ display:"flex", gap:"8px", justifyContent:"center", marginBottom:"20px" }}>
               {[0,1,2,3,4,5].map(i => (
                 <input key={i} maxLength={1} value={inputCode[i]||""}
@@ -409,8 +401,8 @@ export default function SocioMeeShare() {
         {mode === "received" && received && (
           <div className="share-card" style={{ width:"100%", maxWidth:"440px" }}>
             <div style={{ textAlign:"center", marginBottom:"24px" }}>
-              <div style={{ width:"64px", height:"64px", borderRadius:"16px", background:"rgba(124,58,237,0.12)", border:"1px solid rgba(124,58,237,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px" }}>
-                <FileIcon type={received.type} size={30}/>
+              <div style={{ fontSize:"48px", marginBottom:"12px" }}>
+                <FileIcon type={received.type}/>
               </div>
               <h3 style={{ fontSize:"18px", fontWeight:"800", color:C.white, margin:"0 0 4px", fontFamily:C.font }}>{received.name}</h3>
               <p style={{ fontSize:"12px", color:C.muted, margin:0, fontFamily:C.font }}>{formatBytes(received.size)} · from {received.sender}</p>
@@ -423,6 +415,7 @@ export default function SocioMeeShare() {
               </div>
             )}
 
+            {/* Preview for images */}
             {received.type?.startsWith("image/") && received.file && (
               <div style={{ borderRadius:"12px", overflow:"hidden", marginBottom:"20px", background:"rgba(255,255,255,0.03)", border:`1px solid ${C.border}` }}>
                 <img src={received.file} alt={received.name} style={{ width:"100%", display:"block", maxHeight:"300px", objectFit:"contain" }}/>

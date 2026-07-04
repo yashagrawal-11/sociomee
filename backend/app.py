@@ -258,7 +258,7 @@ RZP_SECRET  = os.getenv("RAZORPAY_KEY_SECRET",  "")
 
 # ══════════════════════════════════════════════════════════════════════
 # ── Rate limiter ──────────────────────────────────────────────────────
-limiter = Limiter(key_func=get_remote_address, default_limits=["300/minute"])
+from limiter_shared import limiter
 try:
     from referral_routes import router as referral_router
     _HAS_REFERRAL = True
