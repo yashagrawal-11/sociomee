@@ -26,7 +26,7 @@ def send_push(user_id,title,body,url="https://sociomee.in/app",tag="sociomee",re
         from pywebpush import webpush, WebPushException
         subs=_load(); user_subs=subs.get(user_id,[])
         if not user_subs: return False
-        payload=json.dumps({"title":title,"body":body,"url":url,"tag":tag,"requireInteraction":require_interaction})
+        payload=json.dumps({"title":title,"body":body,"url":url,"tag":tag,"requireInteraction":require_interaction,"icon":"https://sociomee.in/s_logo.png","badge":"https://sociomee.in/s_logo.png"})
         dead=[]
         for sub in user_subs:
             try:
