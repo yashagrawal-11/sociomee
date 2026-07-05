@@ -62,6 +62,8 @@ export default function SocioMeeShare() {
   const [shareUrl, setShareUrl] = useState("");
   const [received, setReceived] = useState(null);
   const [copied, setCopied]   = useState(false);
+  const [reported, setReported] = useState(false);
+  const [reporting, setReporting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [countdown, setCountdown] = useState(null);
   const fileInputRef = useRef(null);
@@ -166,7 +168,21 @@ export default function SocioMeeShare() {
   const reset = () => {
     clearInterval(timerRef.current);
     setMode("home"); setFile(null); setMessage(""); setCode(""); setQrUrl("");
-    setShareUrl(""); setReceived(null); setInputCode(""); setCountdown(null);
+    setShareUrl(""); setReceived(null); setInputCode(""); setCountdown(null); setReported(false); setReporting(false);
+  };
+
+  const reportFile = async () => {
+    if (reported || !received) return;
+    setReporting(true);
+    try {
+      await fetch(`${API}/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: received.code, reason: "User reported inappropriate or harmful content" }),
+      });
+      setReported(true);
+    } catch(e) {}
+    finally { setReporting(false); }
   };
 
   return (
@@ -438,6 +454,13 @@ export default function SocioMeeShare() {
             <p style={{ fontSize:"11px", color:"rgba(255,255,255,0.2)", textAlign:"center", marginTop:"8px", fontFamily:C.font }}>
               Once downloaded, file will be available in your device's Downloads folder.
             </p>
+            <div style={{ marginTop:"20px", paddingTop:"16px", borderTop:"1px solid rgba(255,255,255,0.05)", textAlign:"center" }}>
+              <p style={{ fontSize:"10px", color:"rgba(255,255,255,0.2)", margin:"0 0 8px", fontFamily:C.font }}>Is this file harmful or inappropriate?</p>
+              <button onClick={reportFile} disabled={reported || reporting}
+                style={{ padding:"7px 18px", borderRadius:"99px", border:"1px solid rgba(239,68,68,0.25)", background:"rgba(239,68,68,0.06)", color:reported?"rgba(255,255,255,0.25)":"rgba(239,68,68,0.6)", fontSize:"11px", fontWeight:"600", cursor:reported?"default":"pointer", fontFamily:C.font }}>
+                {reported ? "Reported & Removed" : reporting ? "Reporting..." : "Report this file"}
+              </button>
+            </div>
           </div>
         )}
       </div>
