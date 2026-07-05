@@ -135,7 +135,26 @@ def _check_and_reset(record: Dict[str, Any]) -> Dict[str, Any]:
             new_credits = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
             record["credits_remaining"] = new_credits
             record["last_reset"]        = _now_iso()
-            try: notify_credits_restored(user_id, new_credits)
+            try:
+                notify_credits_restored(user_id, new_credits)
+                _email = record.get("email", "")
+                _name = record.get("name", "")
+                if _email:
+                    from email_service import send_low_credits_warning
+                    # Reuse low credits template with full credits to signal restoration
+                    from resend import Emails as _E
+                    import os as _os
+                    from email_service import _base_template, FROM_EMAIL, BRAND_PURPLE
+                    _first = _name.split()[0] if _name else "creator"
+                    _content = f"""
+                      <div style="display:inline-block;background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.4);border-radius:99px;padding:6px 16px;font-size:12px;font-weight:700;color:#34d399;margin-bottom:16px">Credits Restored</div>
+                      <h1 style="font-size:22px;font-weight:800;color:#ede8ff;margin:0 0 8px">{new_credits} fresh credits just dropped, {_first}.</h1>
+                      <p style="font-size:14px;color:#c4b5fd;line-height:1.8;margin:0 0 16px">Your monthly credits have been reset. Time to create.</p>
+                      <div style="text-align:center;margin:24px 0">
+                        <a href="https://sociomee.in/app" style="display:inline-block;padding:13px 28px;border-radius:99px;background:linear-gradient(135deg,{BRAND_PURPLE},#ff3d8f);color:#fff;font-weight:800;font-size:14px;text-decoration:none">Start Creating</a>
+                      </div>
+                    """
+                    _E.send({{"from": FROM_EMAIL, "to": [_email], "subject": f"credits just dropped — {{new_credits}} ready to use", "html": _base_template(_content)}})
             except Exception: pass
     except Exception:
         pass
@@ -196,6 +215,9 @@ def use_credit(user_id: str, cost: int = 1) -> bool:
                 _email = record.get("email", "")
                 _name = record.get("name", "")
                 _plan = record.get("plan", "free")
+                if _plan == "free":
+                    from push_routes import send_push
+                    send_push(user_id, "upgrade to pro.", "200 credits/month for ₹499. your free credits are gone.", "https://sociomee.in/app", "upgrade-nudge", True)
                 if _email:
                     from email_service import send_low_credits_warning
                     send_low_credits_warning(_email, _name, 0, _plan)
