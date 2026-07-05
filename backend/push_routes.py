@@ -86,7 +86,7 @@ def notify_welcome(user_id, name=""):
     ]
     return send_push(
         user_id,
-        f"welcome to the socio world, {first}",
+        f"welcome to socio world, {first}. you're in.",
         random.choice(bodies),
         "https://sociomee.in/app",
         "welcome",
