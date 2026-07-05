@@ -51,8 +51,14 @@ async def subscribe(request: Request):
     user_id=body.get("user_id",""); sub=body.get("subscription",{})
     if not user_id or not sub.get("endpoint"): return JSONResponse({"error":"missing fields"},status_code=400)
     subs=_load(); user_subs=subs.get(user_id,[])
-    if sub["endpoint"] not in [s.get("endpoint") for s in user_subs]:
+    is_new_sub = sub["endpoint"] not in [s.get("endpoint") for s in user_subs]
+    if is_new_sub:
         user_subs.append(sub); subs[user_id]=user_subs; _save(subs)
+    # Fire welcome push on first subscription
+    try:
+        notify_welcome(user_id)
+    except Exception as _we:
+        log.warning("welcome push on subscribe failed: %s", _we)
     return {"success":True,"count":len(user_subs)}
 
 @router.post("/unsubscribe")
