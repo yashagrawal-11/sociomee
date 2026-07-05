@@ -191,7 +191,14 @@ def use_credit(user_id: str, cost: int = 1) -> bool:
         if credits <= 0:
             data[user_id] = record
             _save(data)
-            try: notify_out_of_credits(user_id)
+            try:
+                notify_out_of_credits(user_id)
+                _email = record.get("email", "")
+                _name = record.get("name", "")
+                _plan = record.get("plan", "free")
+                if _email:
+                    from email_service import send_low_credits_warning
+                    send_low_credits_warning(_email, _name, 0, _plan)
             except Exception: pass
             return False
         new_credits = credits - cost
