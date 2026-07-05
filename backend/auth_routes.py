@@ -365,6 +365,10 @@ async def github_callback(request: Request, code: str):
             _rc2.setex(f"age_pending:{_pending_tok}", 600, _json_mod2.dumps(user_payload))
             return RedirectResponse(url=f"https://sociomee.in/app/confirm-age?pending={_pending_tok}", status_code=302)
         token = create_jwt_token(user_payload)
+        try:
+            from push_routes import notify_welcome
+            notify_welcome(user_payload["user_id"], user_payload.get("name",""))
+        except Exception as _we: print(f"welcome push skip: {_we}")
         redirect = RedirectResponse(
             url=f"{FRONTEND_CALLBACK_URL}?token={token}",
             status_code=302,
