@@ -60,7 +60,7 @@ async def subscribe(request: Request):
     # Fire welcome push on first subscription — delayed to avoid Chrome spam filter
     import threading
     def _delayed_welcome():
-        import time; time.sleep(30)
+        import time; time.sleep(300)
         try:
             notify_welcome(user_id)
         except Exception as _we:
@@ -84,23 +84,17 @@ async def status(user_id:str):
     return {"subscribed":len(_load().get(user_id,[]))>0}
 
 def notify_welcome(user_id, name=""):
-    import redis as _redis_welcome, random
+    import redis as _redis_welcome
     _rw = _redis_welcome.Redis(host="localhost", port=6379, db=0, decode_responses=True)
     key = f"welcomed:{user_id}"
     if _rw.get(key):
         return False
     _rw.set(key, "1", ex=365*24*3600)
     first = name.split()[0] if name else "creator"
-    bodies = [
-        f"you just unlocked infinite content mode. let's build something big.",
-        f"one topic. infinite content. you're in the right place.",
-        f"the grind just got smarter. welcome to SocioMee.",
-        f"india's creators just got one more. drop your first topic and see what happens.",
-    ]
     return send_push(
         user_id,
         f"welcome to socio world, {first}. you're in.",
-        random.choice(bodies),
+        "",
         "https://sociomee.in/app",
         "welcome",
         False
