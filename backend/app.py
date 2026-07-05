@@ -1471,7 +1471,7 @@ async def remove_bg(request: Request, user: dict = Depends(get_current_user)):
 # ── SocioMee Share ─────────────────────────────────────────────────────────
 import secrets, base64, time
 
-@app.post("/api/share/create")
+@app.post("/share/create")
 @limiter.limit("30/hour")
 async def share_create(request: Request, user: dict = Depends(get_current_user)):
     body = await request.json()
@@ -1503,7 +1503,7 @@ async def share_create(request: Request, user: dict = Depends(get_current_user))
     _rc.setex(key, expires_in, json.dumps(payload))
     return {"code": code, "expires_in": expires_in}
 
-@app.get("/api/share/{code}")
+@app.get("/share/{code}")
 async def share_get(code: str, request: Request):
     import json, redis as _redis_mod
     _rc = _redis_mod.Redis(host="localhost", port=6379, db=0, decode_responses=True)
@@ -1524,7 +1524,7 @@ async def share_get(code: str, request: Request):
         "file": data["file"],  # base64
     }
 
-@app.delete("/api/share/{code}")
+@app.delete("/share/{code}")
 async def share_delete(code: str, user: dict = Depends(get_current_user)):
     import redis as _redis_mod
     _rc = _redis_mod.Redis(host="localhost", port=6379, db=0, decode_responses=True)
