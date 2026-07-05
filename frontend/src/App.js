@@ -2119,7 +2119,14 @@ export default function App() {
                   </div>
                 )}
 
-                {error && <div style={{ background:"rgba(248,113,113,0.1)", border:"1px solid rgba(248,113,113,0.3)", borderRadius:"10px", padding:"12px 16px", marginBottom:"16px", color:"#f87171", fontSize:"13px" }}>⚠ {error}</div>}
+                {error && (
+                  <div style={{ background:"rgba(248,113,113,0.08)", border:"1px solid rgba(248,113,113,0.25)", borderRadius:"12px", padding:"12px 16px", marginBottom:"16px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"12px" }}>
+                    <span style={{ color:"#f87171", fontSize:"13px", fontWeight:"600" }}>⚠ {error}</span>
+                    {(error.toLowerCase().includes("credit") || error.toLowerCase().includes("limit")) && (
+                      <a href="https://sociomee.in/pricing" style={{ padding:"7px 16px", borderRadius:"99px", background:"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:"#fff", fontSize:"12px", fontWeight:"800", textDecoration:"none", whiteSpace:"nowrap", fontFamily:"Poppins,sans-serif" }}>View Pricing →</a>
+                    )}
+                  </div>
+                )}
 
                 {/* Generate Button - Glass style */}
                 <button onClick={handleSubmit} disabled={loading||!keyword.trim()}
