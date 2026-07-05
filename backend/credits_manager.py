@@ -194,9 +194,22 @@ def use_credit(user_id: str, cost: int = 1) -> bool:
             try: notify_out_of_credits(user_id)
             except Exception: pass
             return False
-        record["credits_remaining"] = credits - cost
+        new_credits = credits - cost
+        record["credits_remaining"] = new_credits
         data[user_id] = record
         _save(data)
+        # Low credits warning at 3 credits remaining
+        if new_credits <= 3 and new_credits > 0:
+            try:
+                from push_routes import send_push
+                from email_service import send_low_credits_warning
+                _email = record.get("email", "")
+                _name = record.get("name", "")
+                _plan = record.get("plan", "free")
+                send_push(user_id, "running low on credits", f"only {new_credits} left this month. top up before you run out.", "https://sociomee.in/app", "low-credits", False)
+                if _email:
+                    send_low_credits_warning(_email, _name, new_credits, _plan)
+            except Exception: pass
         return True
 
 
