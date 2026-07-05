@@ -1364,7 +1364,7 @@ export default function App() {
     if (!platform)       { setError("Please select a platform."); return; }
     if (!tone)           { setError("Please choose a tone."); return; }
     const currentCredits = creditStatus?.credits_remaining ?? creditStatus?.credits ?? 20;
-    if (Number(currentCredits) <= 0) { openPricing("nocredits"); return; }
+    if (Number(currentCredits) <= 0) { window.location.href = "https://sociomee.in/pricing"; return; }
     setError(""); setLoading(true); setResult(null);
     try {
       let data;
@@ -1378,7 +1378,7 @@ export default function App() {
       if (user?.user_id) {
         fetch(`${BASE}/credits/${user.user_id}`).then(r=>r.ok?r.json():null).then(d=>{ if(d) setCreditStatus({ plan:d.plan||"free", plan_label:d.plan_label||"Free", credits_remaining:d.credits_remaining??d.credits??20, credits:d.credits_remaining??d.credits??20, monthly_limit:d.monthly_limit??20, next_reset:d.next_reset||"" }); }).catch(()=>{});
       }
-      if (data?.error && data?.credits <= 0) { openPricing("nocredits"); setLoading(false); return; }
+      if (data?.error && data?.credits <= 0) { window.location.href = "https://sociomee.in/pricing"; setLoading(false); return; }
       if (data?.error) { setError(data.error); setLoading(false); return; }
       setResult(data);
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior:"smooth", block:"start" }), 120);
