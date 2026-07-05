@@ -188,7 +188,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
   const [coupon,    setCoupon   ] = useState("");
   const [couponMsg, setCouponMsg] = useState("");
   const [discount,  setDiscount ] = useState(null);
-  const [showCoupon, setShowCoupon] = useState(false);
+  const [showCoupon, setShowCoupon] = useState(true);
   const [billing,   setBilling  ] = useState("annual"); // default annual
 
   const COUPONS = {
@@ -274,7 +274,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
 
   return (
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position:"fixed",inset:0,zIndex:9999,background:"rgba(13,0,21,0.85)",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"16px",overflowY:"auto" }}>
+      style={{ position:"fixed",inset:0,zIndex:9999,background:"rgba(5,0,15,0.92)",backdropFilter:"blur(20px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"16px",overflowY:"auto" }}>
       <div style={{ width:"100%",maxWidth:"700px",background:C.pageBg.includes("150d")||C.pageBg.includes("0d08")?"linear-gradient(145deg,#1f0d35,#150d2a 50%,#0d0820)":"linear-gradient(145deg,#fff0f7,#f5f3ff 50%,#eff6ff)",borderRadius:"28px",boxShadow:"0 40px 100px rgba(124,58,237,0.4)",overflow:"hidden",animation:"slideUp 0.25s ease",position:"relative" }}>
 
         {/* Header */}
@@ -317,10 +317,10 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
               <p style={{ fontSize:"11px",fontWeight:"900",letterSpacing:"1.4px",textTransform:"uppercase",color:C.muted,marginBottom:"12px" }}>⚡ Quick Top-Up — Buy Credits Instantly</p>
               <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"8px" }}>
                 {topups.map(t => (
-                  <div key={t.id} style={{ background:C.glass,border:`1.5px solid ${C.purple}33`,borderRadius:"16px",padding:"16px",display:"flex",flexDirection:"column",gap:"8px",position:"relative" }}>
+                  <div key={t.id} style={{ background:"rgba(124,58,237,0.1)",border:"1.5px solid rgba(124,58,237,0.3)",borderRadius:"16px",padding:"16px",display:"flex",flexDirection:"column",gap:"8px",position:"relative" }}>
                     {t.badge && <div style={{ position:"absolute",top:"-10px",right:"12px",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontSize:"9px",fontWeight:"900",padding:"2px 8px",borderRadius:"99px" }}>{t.badge}</div>}
-                    <div style={{ fontSize:"13px",fontWeight:"800",color:C.ink }}>{t.label}</div>
-                    <div style={{ fontSize:"24px",fontWeight:"900",color:C.ink }}>₹{calcPrice(t.price)}</div>
+                    <div style={{ fontSize:"13px",fontWeight:"800",color:"#ede8ff" }}>{t.label}</div>
+                    <div style={{ fontSize:"24px",fontWeight:"900",color:"#ffffff" }}>₹{calcPrice(t.price)}</div>
                     <div style={{ fontSize:"12px",fontWeight:"700",color:C.purple }}>+{t.credits} credits</div>
                     <button onClick={() => pay(t.id, t.price)} disabled={!!paying} style={{ width:"100%",padding:"9px",borderRadius:"10px",border:"none",background:`linear-gradient(135deg,${C.teal},${C.purple})`,color:"#fff",fontWeight:"800",fontSize:"12px",cursor:paying?"not-allowed":"pointer",fontFamily:"inherit",opacity:paying&&paying!==t.id?0.6:1 }}>
                       {paying===t.id?"Processing…":t.cta}
@@ -343,17 +343,17 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
               const saving = basePrice - finalP;
 
               return (
-                <div key={plan.label} style={{ background:plan.highlight?`linear-gradient(145deg,${C.purple}22,${C.rose}18)`:C.glass,border:`2px solid ${plan.highlight?C.purple:C.hairline}`,borderRadius:"18px",padding:"18px",display:"flex",flexDirection:"column",gap:"8px",position:"relative" }}>
+                <div key={plan.label} style={{ background:plan.highlight?"linear-gradient(145deg,rgba(124,58,237,0.25),rgba(255,61,143,0.15))":"rgba(255,255,255,0.04)",border:`2px solid ${plan.highlight?"#7c3aed":"rgba(255,255,255,0.08)"}`,borderRadius:"18px",padding:"18px",display:"flex",flexDirection:"column",gap:"8px",position:"relative" }}>
                   {plan.badge && (
                     <div style={{ position:"absolute",top:"-12px",left:"50%",transform:"translateX(-50%)",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontSize:"9px",fontWeight:"900",letterSpacing:"1px",textTransform:"uppercase",padding:"4px 12px",borderRadius:"99px",whiteSpace:"nowrap" }}>{plan.badge}</div>
                   )}
                   {billing==="annual" && !isFree && (
                     <div style={{ position:"absolute",top:"-12px",right:"10px",background:"#fbbf24",color:"#78350f",fontSize:"9px",fontWeight:"900",padding:"3px 8px",borderRadius:"99px" }}>BEST DEAL</div>
                   )}
-                  <div style={{ fontSize:"15px",fontWeight:"900",color:C.ink }}>{plan.label}</div>
+                  <div style={{ fontSize:"15px",fontWeight:"900",color:"#ede8ff" }}>{plan.label}</div>
                   <div style={{ display:"flex",alignItems:"baseline",gap:"3px",flexWrap:"wrap" }}>
                     {saving > 0 && <span style={{ fontSize:"12px",color:C.muted,textDecoration:"line-through" }}>₹{basePrice}</span>}
-                    <span style={{ fontSize:"24px",fontWeight:"900",color:C.ink,letterSpacing:"-1px" }}>
+                    <span style={{ fontSize:"24px",fontWeight:"900",color:"#ffffff",letterSpacing:"-1px" }}>
                       {isFree ? "Free" : `₹${finalP}`}
                     </span>
                     {!isFree && <span style={{ fontSize:"11px",color:C.muted }}>/{billing==="annual"?"yr":"mo"}</span>}
@@ -365,7 +365,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
                   <div style={{ fontSize:"11px",fontWeight:"700",color:C.purple }}>{plan.credits} credits/mo · {plan.uploads > 0 ? `${plan.uploads} uploads` : "No uploads"}</div>
                   <div style={{ flex:1,marginTop:"4px" }}>
                     {plan.features.map((f,i) => (
-                      <div key={i} style={{ fontSize:"11px",color:C.slate,marginBottom:"4px",display:"flex",gap:"5px",alignItems:"flex-start" }}>
+                      <div key={i} style={{ fontSize:"11px",color:"rgba(196,181,253,0.8)",marginBottom:"4px",display:"flex",gap:"5px",alignItems:"flex-start" }}>
                         <span style={{ color:C.success,flexShrink:0,marginTop:"1px" }}>✓</span><span>{f}</span>
                       </div>
                     ))}
@@ -403,12 +403,17 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
           <div style={{ marginBottom:"16px" }}>
             <button onClick={() => setShowCoupon(s => !s)} style={{ background:"none",border:"none",color:C.purple,fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",padding:"4px 0",textDecoration:"underline" }}>🎟️ Have a promo code?</button>
             {showCoupon && (
-              <div style={{ background:`${C.purple}08`,border:`1.5px solid ${C.purple}22`,borderRadius:"14px",padding:"16px",marginTop:"10px" }}>
+              <div style={{ background:"rgba(124,58,237,0.1)",border:"1.5px solid rgba(124,58,237,0.3)",borderRadius:"14px",padding:"16px",marginTop:"10px" }}>
                 <div style={{ display:"flex",gap:"8px" }}>
-                  <input value={coupon} onChange={e => setCoupon(e.target.value.toUpperCase())} onKeyDown={e => e.key==="Enter" && applyCoupon()} placeholder="Enter code e.g. SOCIO10" style={{ flex:1,padding:"10px 14px",borderRadius:"10px",border:`1.5px solid ${C.hairline}`,background:C.glass,color:C.ink,fontSize:"13px",fontFamily:"inherit",outline:"none",letterSpacing:"1px",fontWeight:"700" }} />
+                  <input value={coupon} onChange={e => setCoupon(e.target.value.toUpperCase())} onKeyDown={e => e.key==="Enter" && applyCoupon()} placeholder="Enter code e.g. SOCIO10" style={{ flex:1,padding:"10px 14px",borderRadius:"10px",border:"1.5px solid rgba(124,58,237,0.4)",background:"rgba(255,255,255,0.05)",color:"#ede8ff",fontSize:"13px",fontFamily:"inherit",outline:"none",letterSpacing:"1px",fontWeight:"700" }} />
                   <button onClick={applyCoupon} style={{ padding:"10px 18px",borderRadius:"10px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>Apply</button>
                 </div>
-                {couponMsg && <p style={{ fontSize:"12px",fontWeight:"700",color:couponMsg.startsWith("✅")?C.success:C.danger,marginTop:"8px" }}>{couponMsg}</p>}
+                {couponMsg && (
+                  <div style={{ marginTop:"10px",padding:"10px 14px",borderRadius:"10px",background:couponMsg.startsWith("✅")?"rgba(52,211,153,0.15)":"rgba(239,68,68,0.12)",border:`1px solid ${couponMsg.startsWith("✅")?"rgba(52,211,153,0.4)":"rgba(239,68,68,0.3)"}` }}>
+                    <p style={{ fontSize:"13px",fontWeight:"800",color:couponMsg.startsWith("✅")?"#34d399":"#f87171",margin:0 }}>{couponMsg}</p>
+                    {couponMsg.startsWith("✅") && <p style={{ fontSize:"11px",color:"rgba(52,211,153,0.7)",margin:"4px 0 0",fontWeight:"600" }}>Discount applied to all plans above</p>}
+                  </div>
+                )}
               </div>
             )}
           </div>
