@@ -179,80 +179,67 @@ async function runRazorpayCheckout({ planId, userId, email, onSuccess, onError }
 // PRICING POPUP
 // ══════════════════════════════════════════════════════════════════════
 // PRICING POPUP REPLACEMENT for App.js
-// Replace the entire PricingPopup function with this
-
 function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
-  const [paying,    setPaying   ] = useState(null);
-  const [payErr,    setPayErr   ] = useState("");
-  const [doneMsg,   setDoneMsg  ] = useState("");
-  const [coupon,    setCoupon   ] = useState("");
-  const [couponMsg, setCouponMsg] = useState("");
-  const [discount,  setDiscount ] = useState(null);
-  const [showCoupon, setShowCoupon] = useState(true);
-  const [billing,   setBilling  ] = useState("annual"); // default annual
+  const [paying,     setPaying    ] = useState(null);
+  const [payErr,     setPayErr    ] = useState("");
+  const [doneMsg,    setDoneMsg   ] = useState("");
+  const [coupon,     setCoupon    ] = useState("");
+  const [couponMsg,  setCouponMsg ] = useState("");
+  const [discount,   setDiscount  ] = useState(null);
+  const [billing,    setBilling   ] = useState("monthly");
+  const [fading,     setFading    ] = useState(false);
 
-  const COUPONS = {
-    "SOCIO10":      { type:"pct",  value:10,  label:"10% off" },
-    "SOCIOMEE143":  { type:"pct",  value:15,  label:"15% off" },
-    "SOCIOLOVE7":   { type:"flat", value:100, label:"₹100 off" },
-    "SOCIOSAVE7":   { type:"flat", value:150, label:"₹150 off" },
+  const isNocredits = mode === "nocredits";
+
+  const switchBilling = (next) => {
+    if (next === billing) return;
+    setFading(true);
+    setTimeout(() => { setBilling(next); setFading(false); }, 180);
   };
 
   const applyCoupon = async () => {
     const code = coupon.trim().toUpperCase();
     if (!code) return;
-    setCouponMsg("Checking...");
+    setCouponMsg("checking...");
     try {
       const res = await fetch(`${BASE}/validate-coupon`, {
         method:"POST", headers:{"Content-Type":"application/json"}, credentials:"include",
-        body:JSON.stringify({ code, plan:"pro_monthly" }),
+        body: JSON.stringify({ code, plan:"pro_monthly" }),
       });
       const data = await res.json();
       if (data.valid) {
-        setDiscount({ code, type:"pct", value:data.discount_pct, label:`${data.discount_pct}% off` });
-        setCouponMsg(`✅ ${data.message}`);
+        setDiscount({ code, value: data.discount_pct });
+        setCouponMsg("activated");
       } else {
         setDiscount(null);
-        setCouponMsg(`❌ ${data.message}`);
+        setCouponMsg("invalid code");
       }
     } catch {
       setDiscount(null);
-      setCouponMsg("❌ Could not validate code. Try again.");
+      setCouponMsg("could not validate. try again.");
     }
   };
 
   const calcPrice = (base) => {
-    if (!discount) return base;
-    if (discount.type === "pct") return Math.round(base * (1 - discount.value / 100));
-    return Math.max(0, base - discount.value);
+    if (!discount || !base) return base;
+    return Math.round(base * (1 - discount.value / 100));
   };
 
   const plans = [
-    {
-      id:"free", label:"Free", monthly:0, annual:0,
-      credits:20, uploads:0,
+    { id:"free", label:"Free", monthly:0, annual:0, credits:20, uploads:0,
       features:["20 credits/month","Short scripts ≤500 words","Basic SEO — 2 platforms","Community support"],
-      cta:"Get Started Free", highlight:false, disabled:false, badge:null,
-    },
-    {
-      id_monthly:"pro_monthly", id_annual:"pro_annual",
-      label:"Pro", monthly:499, annual:3999,
-      credits:200, uploads:4,
-      features:["200 credits/month","3000-5000 word scripts","Full SEO — 8 platforms","4 YouTube uploads/month","Thumbnail analyzer","Priority support"],
-      cta:"Upgrade to Pro", highlight:false, disabled:false, badge:null,
-    },
-    {
-      id_monthly:"premium_monthly", id_annual:"premium_annual",
-      label:"Premium", monthly:1999, annual:15999,
-      credits:500, uploads:15,
-      features:["500 credits/month","Unlimited word scripts","Full SEO — all platforms","15 YouTube uploads/month","Advanced AI analytics","Dedicated support","Early access to features"],
-      cta:"Go Premium", highlight:true, disabled:false, badge:"Most Popular",
-    },
+      cta:"Get Started Free" },
+    { id_m:"pro_monthly", id_a:"pro_annual", label:"Pro", monthly:499, annual:3999, credits:200, uploads:4, popular:true,
+      features:["200 credits/month","3000–5000 word scripts","Full SEO — 8 platforms","4 YouTube uploads/month","Thumbnail analyzer","Priority support"],
+      cta:"Upgrade to Pro" },
+    { id_m:"premium_monthly", id_a:"premium_annual", label:"Premium", monthly:1999, annual:15999, credits:500, uploads:15,
+      features:["500 credits/month","Unlimited word scripts","Full SEO — all platforms","15 YouTube uploads/month","Advanced AI analytics","Dedicated support","Early access"],
+      cta:"Go Premium" },
   ];
 
   const topups = [
     { id:"topup_99",  label:"Starter Pack", price:99,  credits:20,  cta:"Buy 20 Credits" },
-    { id:"topup_249", label:"Value Pack",   price:249, credits:60,  badge:"Best Value",   cta:"Buy 60 Credits" },
+    { id:"topup_249", label:"Value Pack",   price:249, credits:60,  cta:"Buy 60 Credits", badge:"Best Value" },
   ];
 
   const pay = async (planId, price) => {
@@ -262,7 +249,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
     await runRazorpayCheckout({
       planId, userId, email,
       onSuccess: result => {
-        setDoneMsg(result.message || "Payment successful! 🎉");
+        setDoneMsg(result.message || "Payment successful!");
         setPaying(null);
         setTimeout(() => { onSuccess(result); onClose(); }, 2000);
       },
@@ -270,165 +257,148 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
     });
   };
 
-  const isNocredits = mode === "nocredits";
+  const S = {
+    overlay: { position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,0.95)",backdropFilter:"blur(32px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"16px",overflowY:"auto" },
+    modal: { width:"100%",maxWidth:"680px",background:"#0a0a0f",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"24px",boxShadow:"0 32px 80px rgba(0,0,0,0.9),0 0 0 1px rgba(255,255,255,0.04)",overflow:"hidden",animation:"smPop 0.2s ease",fontFamily:"Poppins,sans-serif" },
+    header: { background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",padding:"24px 28px 20px",position:"relative" },
+    headerTitle: { fontSize:"22px",fontWeight:"900",color:"#fff",margin:"0 0 4px",fontFamily:"Orbitron,sans-serif",letterSpacing:"1px" },
+    headerSub: { fontSize:"12px",color:"rgba(255,255,255,0.8)",margin:0 },
+    closeBtn: { position:"absolute",top:"16px",right:"16px",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",width:"28px",height:"28px",borderRadius:"50%",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center" },
+    toggle: { display:"flex",gap:"4px",background:"rgba(0,0,0,0.3)",borderRadius:"99px",padding:"3px",marginTop:"14px",width:"fit-content" },
+    toggleBtn: (active) => ({ padding:"5px 16px",borderRadius:"99px",border:"none",background:active?"#fff":"transparent",color:active?"#7c3aed":"rgba(255,255,255,0.7)",fontWeight:"800",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif",transition:"all 0.15s" }),
+    body: { padding:"20px 24px" },
+    sectionLabel: { fontSize:"10px",fontWeight:"700",letterSpacing:"2px",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",marginBottom:"10px" },
+    topupGrid: { display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginBottom:"16px" },
+    topupCard: { background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"14px",position:"relative" },
+    plansGrid: { display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px",marginBottom:"16px" },
+    planCard: (highlight) => ({ background:highlight?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.02)",border:`1px solid ${highlight?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.05)"}`,borderRadius:"16px",padding:"16px",display:"flex",flexDirection:"column",gap:"6px",position:"relative",boxShadow:highlight?"0 8px 32px rgba(0,0,0,0.4)":"none" }),
+    planName: { fontSize:"13px",fontWeight:"800",color:"#ede8ff" },
+    planPrice: { fontSize:"22px",fontWeight:"900",color:"#fff",letterSpacing:"-0.5px" },
+    planSub: { fontSize:"10px",color:"rgba(167,139,250,0.8)",fontWeight:"600" },
+    feature: { fontSize:"10px",color:"rgba(196,181,253,0.75)",display:"flex",gap:"5px",alignItems:"flex-start" },
+    pillBtn: (primary) => ({ width:"100%",padding:"9px 0",borderRadius:"99px",border:"none",background:primary?"linear-gradient(135deg,#7c3aed,#9b5cf6)":"rgba(124,58,237,0.15)",color:primary?"#fff":"rgba(167,139,250,0.9)",fontWeight:"800",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif",marginTop:"auto",transition:"all 0.15s",border:primary?"none":"1px solid rgba(124,58,237,0.25)" }),
+    couponWrap: { background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"12px",padding:"12px 14px",marginBottom:"12px" },
+    couponInput: { flex:1,padding:"8px 12px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",color:"#fff",fontSize:"12px",fontFamily:"Poppins,sans-serif",outline:"none",letterSpacing:"1px",fontWeight:"700" },
+    couponBtn: { padding:"8px 16px",borderRadius:"99px",border:"none",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontWeight:"800",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif" },
+    badge: { position:"absolute",top:"-9px",right:"10px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontSize:"8px",fontWeight:"900",padding:"2px 7px",borderRadius:"99px" },
+    popularTag: { position:"absolute",top:"-9px",left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontSize:"8px",fontWeight:"900",padding:"2px 10px",borderRadius:"99px",whiteSpace:"nowrap" },
+  };
 
   return (
-    <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position:"fixed",inset:0,zIndex:9999,background:"rgba(5,0,15,0.92)",backdropFilter:"blur(20px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"16px",overflowY:"auto" }}>
-      <div style={{ width:"100%",maxWidth:"700px",background:C.pageBg.includes("150d")||C.pageBg.includes("0d08")?"linear-gradient(145deg,#1f0d35,#150d2a 50%,#0d0820)":"linear-gradient(145deg,#fff0f7,#f5f3ff 50%,#eff6ff)",borderRadius:"28px",boxShadow:"0 40px 100px rgba(124,58,237,0.4)",overflow:"hidden",animation:"slideUp 0.25s ease",position:"relative" }}>
+    <div onClick={e => { if (e.target === e.currentTarget) onClose(); }} style={S.overlay}>
+      <div style={S.modal}>
+        <style>{`@keyframes smPop{from{opacity:0;transform:scale(0.97) translateY(8px)}to{opacity:1;transform:none}}`}</style>
 
         {/* Header */}
-        <div style={{ background:`linear-gradient(135deg,${C.purple},${C.rose})`,padding:"28px 32px 24px",position:"relative" }}>
-          <button onClick={onClose} style={{ position:"absolute",top:"16px",right:"16px",background:"rgba(255,255,255,0.2)",border:"none",color:"#fff",width:"32px",height:"32px",borderRadius:"50%",cursor:"pointer",fontSize:"18px",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"inherit" }}>✕</button>
-          <div style={{ fontSize:"11px",fontWeight:"900",letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,0.8)",marginBottom:"8px" }}>✦ SocioMee Plans</div>
-          <h2 style={{ fontSize:"24px",fontWeight:"900",color:"#fff",lineHeight:1.2,marginBottom:"6px" }}>
-            {isNocredits ? "You're out of credits 🔒" : "Choose Your Plan"}
-          </h2>
-          <p style={{ fontSize:"13px",color:"rgba(255,255,255,0.85)",lineHeight:1.5 }}>
-            {isNocredits ? "Top up instantly or upgrade for more credits every month." : "Upgrade to unlock more credits, uploads, and AI features."}
-          </p>
-
-          {/* Billing toggle */}
-          <div style={{ display:"flex",alignItems:"center",gap:"12px",marginTop:"16px",background:"rgba(255,255,255,0.15)",borderRadius:"99px",padding:"4px",width:"fit-content" }}>
-            <button onClick={() => setBilling("monthly")} style={{ padding:"6px 18px",borderRadius:"99px",border:"none",background:billing==="monthly"?"#fff":"transparent",color:billing==="monthly"?C.purple:"rgba(255,255,255,0.8)",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s" }}>Monthly</button>
-            <button onClick={() => setBilling("annual")} style={{ padding:"6px 18px",borderRadius:"99px",border:"none",background:billing==="annual"?"#fff":"transparent",color:billing==="annual"?C.purple:"rgba(255,255,255,0.8)",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s",display:"flex",alignItems:"center",gap:"6px" }}>
-              Annual <span style={{ fontSize:"10px",background:"#fbbf24",color:"#78350f",padding:"2px 6px",borderRadius:"99px",fontWeight:"900" }}>SAVE 30%</span>
+        <div style={S.header}>
+          <button onClick={onClose} style={S.closeBtn}>✕</button>
+          <div style={{ fontSize:"9px",fontWeight:"700",letterSpacing:"2px",color:"rgba(255,255,255,0.7)",textTransform:"uppercase",marginBottom:"6px" }}>✦ SocioMee Plans</div>
+          <h2 style={S.headerTitle}>{isNocredits ? "out of credits." : "choose your plan."}</h2>
+          <p style={S.headerSub}>{isNocredits ? "top up instantly or upgrade for more every month." : "upgrade to unlock more credits, uploads and AI features."}</p>
+          <div style={S.toggle}>
+            <button style={S.toggleBtn(billing==="monthly")} onClick={() => switchBilling("monthly")}>Monthly</button>
+            <button style={S.toggleBtn(billing==="annual")} onClick={() => switchBilling("annual")}>
+              Annual <span style={{ background:"#fbbf24",color:"#78350f",fontSize:"8px",padding:"1px 5px",borderRadius:"99px",fontWeight:"900",marginLeft:"3px" }}>SAVE 33%</span>
             </button>
           </div>
         </div>
 
-        {doneMsg && (
-          <div style={{ padding:"16px 32px",background:C.success+"18",borderBottom:`1px solid ${C.success}33`,textAlign:"center" }}>
-            <span style={{ fontSize:"20px" }}>🎉</span>
-            <p style={{ fontSize:"14px",fontWeight:"700",color:C.success,marginTop:"6px" }}>{doneMsg}</p>
-          </div>
-        )}
-        {payErr && (
-          <div style={{ padding:"10px 32px",background:C.danger+"12",borderBottom:`1px solid ${C.danger}22` }}>
-            <p style={{ fontSize:"12.5px",color:C.danger,fontWeight:"600" }}>⚠ {payErr}</p>
-          </div>
-        )}
+        <div style={S.body}>
+          {doneMsg && <div style={{ padding:"10px 14px",background:"rgba(52,211,153,0.12)",border:"1px solid rgba(52,211,153,0.3)",borderRadius:"10px",marginBottom:"12px",textAlign:"center",fontSize:"13px",fontWeight:"700",color:"#34d399" }}>🎉 {doneMsg}</div>}
+          {payErr && <div style={{ padding:"8px 14px",background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:"10px",marginBottom:"12px",fontSize:"12px",color:"#f87171",fontWeight:"600" }}>⚠ {payErr}</div>}
 
-        <div style={{ padding:"24px",background:"linear-gradient(180deg,rgba(13,8,32,0.5),rgba(13,8,32,0.8))" }}>
-
-          {/* Top-up section for nocredits mode */}
+          {/* Top-ups */}
+          {isNocredits && <p style={S.sectionLabel}>⚡ Quick top-up</p>}
           {isNocredits && (
-            <div style={{ marginBottom:"24px" }}>
-              <p style={{ fontSize:"11px",fontWeight:"900",letterSpacing:"1.4px",textTransform:"uppercase",color:C.muted,marginBottom:"12px" }}>⚡ Quick Top-Up — Buy Credits Instantly</p>
-              <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"8px" }}>
-                {topups.map(t => (
-                  <div key={t.id} style={{ background:"rgba(124,58,237,0.1)",border:"1.5px solid rgba(124,58,237,0.3)",borderRadius:"16px",padding:"16px",display:"flex",flexDirection:"column",gap:"8px",position:"relative" }}>
-                    {t.badge && <div style={{ position:"absolute",top:"-10px",right:"12px",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontSize:"9px",fontWeight:"900",padding:"2px 8px",borderRadius:"99px" }}>{t.badge}</div>}
-                    <div style={{ fontSize:"13px",fontWeight:"800",color:"#ede8ff" }}>{t.label}</div>
-                    <div style={{ fontSize:"24px",fontWeight:"900",color:"#ffffff" }}>₹{calcPrice(t.price)}</div>
-                    <div style={{ fontSize:"12px",fontWeight:"700",color:C.purple }}>+{t.credits} credits</div>
-                    <button onClick={() => pay(t.id, t.price)} disabled={!!paying} style={{ width:"100%",padding:"9px",borderRadius:"10px",border:"none",background:`linear-gradient(135deg,${C.teal},${C.purple})`,color:"#fff",fontWeight:"800",fontSize:"12px",cursor:paying?"not-allowed":"pointer",fontFamily:"inherit",opacity:paying&&paying!==t.id?0.6:1 }}>
-                      {paying===t.id?"Processing…":t.cta}
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <div style={{ height:"1px",background:`linear-gradient(90deg,transparent,${C.hairline},transparent)`,margin:"20px 0" }}/>
-              <p style={{ fontSize:"11px",fontWeight:"900",letterSpacing:"1.4px",textTransform:"uppercase",color:C.muted,marginBottom:"12px" }}>📦 Or Upgrade for Monthly Credits</p>
+            <div style={S.topupGrid}>
+              {topups.map(t => (
+                <div key={t.id} style={S.topupCard}>
+                  {t.badge && <div style={S.badge}>{t.badge}</div>}
+                  <div style={{ fontSize:"11px",fontWeight:"700",color:"#ede8ff",marginBottom:"4px" }}>{t.label}</div>
+                  <div style={{ fontSize:"20px",fontWeight:"900",color:"#fff" }}>₹{calcPrice(t.price)}</div>
+                  <div style={{ fontSize:"10px",color:"#a78bfa",fontWeight:"600",marginBottom:"8px" }}>+{t.credits} credits</div>
+                  <button onClick={() => pay(t.id, t.price)} disabled={!!paying} style={S.pillBtn(true)}>{paying===t.id?"processing…":t.cta}</button>
+                </div>
+              ))}
             </div>
           )}
 
           {/* Plans */}
-          <div style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"10px",marginBottom:"20px" }}>
+          <p style={S.sectionLabel}>{isNocredits ? "📦 or upgrade for monthly credits" : "📦 plans"}</p>
+          <div style={S.plansGrid}>
             {plans.map(plan => {
               const isFree = plan.id === "free";
-              const planId = isFree ? "free" : billing==="annual" ? plan.id_annual : plan.id_monthly;
-              const basePrice = isFree ? 0 : billing==="annual" ? plan.annual : plan.monthly;
-              const finalP = calcPrice(basePrice);
-              const saving = basePrice - finalP;
-
+              const planId = isFree ? "free" : billing==="annual" ? plan.id_a : plan.id_m;
+              const base = isFree ? 0 : billing==="annual" ? plan.annual : plan.monthly;
+              const final = calcPrice(base);
               return (
-                <div key={plan.label} style={{ background:plan.highlight?"linear-gradient(145deg,rgba(124,58,237,0.3),rgba(255,61,143,0.2))":"rgba(255,255,255,0.03)",border:`2px solid ${plan.highlight?"#7c3aed":"rgba(255,255,255,0.08)"}`,borderRadius:"18px",padding:"18px",display:"flex",flexDirection:"column",gap:"8px",position:"relative" }}>
-                  {plan.badge && (
-                    <div style={{ position:"absolute",top:"-12px",left:"50%",transform:"translateX(-50%)",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontSize:"9px",fontWeight:"900",letterSpacing:"1px",textTransform:"uppercase",padding:"4px 12px",borderRadius:"99px",whiteSpace:"nowrap" }}>{plan.badge}</div>
-                  )}
-                  {billing==="annual" && !isFree && (
-                    <div style={{ position:"absolute",top:"-12px",right:"10px",background:"#fbbf24",color:"#78350f",fontSize:"9px",fontWeight:"900",padding:"3px 8px",borderRadius:"99px" }}>BEST DEAL</div>
-                  )}
-                  <div style={{ fontSize:"15px",fontWeight:"900",color:"#ede8ff" }}>{plan.label}</div>
-                  <div style={{ display:"flex",alignItems:"baseline",gap:"3px",flexWrap:"wrap" }}>
-                    {saving > 0 && <span style={{ fontSize:"12px",color:C.muted,textDecoration:"line-through" }}>₹{basePrice}</span>}
-                    <span style={{ fontSize:"24px",fontWeight:"900",color:"#ffffff",letterSpacing:"-1px" }}>
-                      {isFree ? "Free" : `₹${finalP}`}
-                    </span>
-                    {!isFree && <span style={{ fontSize:"11px",color:C.muted }}>/{billing==="annual"?"yr":"mo"}</span>}
+                <div key={plan.label} style={S.planCard(plan.popular)}>
+                  {plan.popular && <div style={S.popularTag}>✦ POPULAR</div>}
+                  <div style={S.planName}>{plan.label}</div>
+                  <div style={{ opacity:fading?0:1,transition:"opacity 0.15s" }}>
+                    <div style={S.planPrice}>{isFree ? "Free" : `₹${final}`}</div>
+                    {!isFree && <div style={{ fontSize:"9px",color:"rgba(255,255,255,0.4)" }}>/{billing==="annual"?"yr":"mo"}{discount&&base!==final?` (${discount.value}% off)`:""}</div>}
                   </div>
-                  {saving > 0 && <div style={{ fontSize:"10px",color:C.success,fontWeight:"700" }}>You save ₹{saving}!</div>}
-                  {billing==="annual" && !isFree && (
-                    <div style={{ fontSize:"10px",color:C.muted }}>≈ ₹{Math.round(finalP/12)}/month</div>
-                  )}
-                  <div style={{ fontSize:"11px",fontWeight:"700",color:C.purple }}>{plan.credits} credits/mo · {plan.uploads > 0 ? `${plan.uploads} uploads` : "No uploads"}</div>
-                  <div style={{ flex:1,marginTop:"4px" }}>
+                  <div style={S.planSub}>{plan.credits} credits · {plan.uploads>0?`${plan.uploads} uploads`:"no uploads"}</div>
+                  <div style={{ height:"1px",background:"rgba(255,255,255,0.06)",margin:"6px 0" }}/>
+                  <div style={{ flex:1 }}>
                     {plan.features.map((f,i) => (
-                      <div key={i} style={{ fontSize:"11px",color:"rgba(196,181,253,0.8)",marginBottom:"4px",display:"flex",gap:"5px",alignItems:"flex-start" }}>
-                        <span style={{ color:C.success,flexShrink:0,marginTop:"1px" }}>✓</span><span>{f}</span>
+                      <div key={i} style={{ ...S.feature,marginBottom:"3px" }}>
+                        <span style={{ color:"#7c3aed",flexShrink:0 }}>✓</span><span>{f}</span>
                       </div>
                     ))}
                   </div>
-                  <button onClick={() => pay(planId, basePrice)} disabled={paying===planId}
-                    style={{ width:"100%",padding:"10px",borderRadius:"12px",border:"none",background:isFree?`${C.purple}18`:plan.highlight?`linear-gradient(135deg,${C.purple},${C.rose})`:C.purple,color:isFree?C.purple:"#fff",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit",opacity:paying&&paying!==planId?0.6:1,border:isFree?`1.5px solid ${C.purple}44`:"none" }}>
-                    {paying===planId ? "Processing…" : plan.cta}
+                  <button onClick={() => pay(planId, base)} disabled={!!paying} style={{ ...S.pillBtn(plan.popular||!isFree),marginTop:"10px",opacity:paying&&paying!==planId?0.5:1 }}>
+                    {paying===planId?"processing…":plan.cta}
                   </button>
                 </div>
               );
             })}
           </div>
 
-          {/* Top-up for non-nocredits mode */}
+          {/* Non-nocredits topups */}
           {!isNocredits && (
             <>
-              <p style={{ fontSize:"11px",fontWeight:"900",letterSpacing:"1.4px",textTransform:"uppercase",color:C.muted,marginBottom:"12px" }}>⚡ Quick Top-Up — Buy Credits</p>
-              <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"20px" }}>
+              <p style={S.sectionLabel}>⚡ quick top-up</p>
+              <div style={S.topupGrid}>
                 {topups.map(t => (
-                  <div key={t.id} style={{ background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"14px",padding:"16px",display:"flex",flexDirection:"column",gap:"8px",position:"relative" }}>
-                    {t.badge && <div style={{ position:"absolute",top:"-10px",right:"12px",background:C.warn,color:"#fff",fontSize:"9px",fontWeight:"900",padding:"2px 8px",borderRadius:"99px" }}>{t.badge}</div>}
-                    <div style={{ fontSize:"13px",fontWeight:"800",color:"#ede8ff" }}>{t.label}</div>
-                    <span style={{ fontSize:"22px",fontWeight:"900",color:"#ffffff" }}>₹{calcPrice(t.price)}</span>
-                    <div style={{ fontSize:"12px",fontWeight:"700",color:C.purple }}>+{t.credits} credits</div>
-                    <button onClick={() => pay(t.id, t.price)} disabled={!!paying} style={{ width:"100%",padding:"9px",borderRadius:"10px",border:"none",background:`linear-gradient(135deg,${C.teal},${C.purple})`,color:"#fff",fontWeight:"800",fontSize:"12px",cursor:paying?"not-allowed":"pointer",fontFamily:"inherit",opacity:paying&&paying!==t.id?0.6:1 }}>
-                      {paying===t.id?"Processing…":t.cta}
-                    </button>
+                  <div key={t.id} style={S.topupCard}>
+                    {t.badge && <div style={S.badge}>{t.badge}</div>}
+                    <div style={{ fontSize:"11px",fontWeight:"700",color:"#ede8ff",marginBottom:"4px" }}>{t.label}</div>
+                    <div style={{ fontSize:"20px",fontWeight:"900",color:"#fff" }}>₹{calcPrice(t.price)}</div>
+                    <div style={{ fontSize:"10px",color:"#a78bfa",fontWeight:"600",marginBottom:"8px" }}>+{t.credits} credits</div>
+                    <button onClick={() => pay(t.id, t.price)} disabled={!!paying} style={S.pillBtn(true)}>{paying===t.id?"processing…":t.cta}</button>
                   </div>
                 ))}
               </div>
             </>
           )}
 
-          {/* Coupon code */}
-          <div style={{ marginBottom:"16px" }}>
-            <button onClick={() => setShowCoupon(s => !s)} style={{ background:"none",border:"none",color:C.purple,fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",padding:"4px 0",textDecoration:"underline" }}>🎟️ Have a promo code?</button>
-            {showCoupon && (
-              <div style={{ background:"rgba(124,58,237,0.1)",border:"1.5px solid rgba(124,58,237,0.3)",borderRadius:"14px",padding:"16px",marginTop:"10px" }}>
-                <div style={{ display:"flex",gap:"8px" }}>
-                  <input value={coupon} onChange={e => setCoupon(e.target.value.toUpperCase())} onKeyDown={e => e.key==="Enter" && applyCoupon()} placeholder="Enter code e.g. SOCIO10" style={{ flex:1,padding:"10px 14px",borderRadius:"10px",border:"1.5px solid rgba(124,58,237,0.4)",background:"rgba(255,255,255,0.05)",color:"#ede8ff",fontSize:"13px",fontFamily:"inherit",outline:"none",letterSpacing:"1px",fontWeight:"700" }} />
-                  <button onClick={applyCoupon} style={{ padding:"10px 18px",borderRadius:"10px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontWeight:"800",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>Apply</button>
-                </div>
-                {couponMsg && (
-                  <div style={{ marginTop:"10px",padding:"10px 14px",borderRadius:"10px",background:couponMsg.startsWith("✅")?"rgba(52,211,153,0.15)":"rgba(239,68,68,0.12)",border:`1px solid ${couponMsg.startsWith("✅")?"rgba(52,211,153,0.4)":"rgba(239,68,68,0.3)"}` }}>
-                    <p style={{ fontSize:"13px",fontWeight:"800",color:couponMsg.startsWith("✅")?"#34d399":"#f87171",margin:0 }}>{couponMsg}</p>
-                    {couponMsg.startsWith("✅") && <p style={{ fontSize:"11px",color:"rgba(52,211,153,0.7)",margin:"4px 0 0",fontWeight:"600" }}>Discount applied to all plans above</p>}
-                  </div>
-                )}
+          {/* Coupon */}
+          <div style={S.couponWrap}>
+            <div style={{ fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.4)",marginBottom:"8px",letterSpacing:"1px" }}>🎟 PROMO CODE</div>
+            <div style={{ display:"flex",gap:"6px" }}>
+              <input value={coupon} onChange={e => setCoupon(e.target.value.toUpperCase())} onKeyDown={e => e.key==="Enter" && applyCoupon()} placeholder="enter promo code" style={S.couponInput}/>
+              <button onClick={applyCoupon} style={S.couponBtn}>Apply</button>
+            </div>
+            {couponMsg && (
+              <div style={{ marginTop:"8px",padding:"7px 10px",borderRadius:"8px",background:couponMsg==="activated"?"rgba(52,211,153,0.12)":"rgba(239,68,68,0.1)",border:`1px solid ${couponMsg==="activated"?"rgba(52,211,153,0.3)":"rgba(239,68,68,0.2)"}` }}>
+                <span style={{ fontSize:"12px",fontWeight:"800",color:couponMsg==="activated"?"#34d399":"#f87171" }}>
+                  {couponMsg==="activated" ? `✅ code activated — ${discount?.value}% off applied to all plans` : `❌ ${couponMsg}`}
+                </span>
               </div>
             )}
           </div>
 
-          <p style={{ textAlign:"center",fontSize:"11px",color:"rgba(196,181,253,0.5)" }}>🔒 Secured by Razorpay · UPI, Cards, NetBanking · Instant activation</p>
+          <p style={{ textAlign:"center",fontSize:"10px",color:"rgba(255,255,255,0.2)",margin:0 }}>🔒 Secured by Razorpay · UPI · Cards · NetBanking · Instant activation</p>
         </div>
       </div>
-      <style>{`@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}`}</style>
     </div>
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════
-// MICRO COMPONENTS
-// ══════════════════════════════════════════════════════════════════════
+
+
 function CopyBtn({ text, size="sm" }) {
   const [copied, setCopied] = useState(false);
   const copy = () => { navigator.clipboard.writeText(String(text||"")); setCopied(true); setTimeout(()=>setCopied(false), 1800); };
