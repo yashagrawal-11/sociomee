@@ -737,7 +737,8 @@ def validate_coupon_endpoint(request: Request, code: str = Body(..., embed=True)
     """Validate a coupon code for a given plan. Returns discount details if valid."""
     try:
         from coupon_manager import validate_coupon
-        return validate_coupon(code, plan)
+        _ip = request.headers.get("X-Real-IP", request.client.host if request.client else "")
+        return validate_coupon(code, plan, _ip)
     except Exception as e:
         log.error("validate_coupon error: %s", e)
         return {"valid": False, "message": "Could not validate coupon. Please try again."}

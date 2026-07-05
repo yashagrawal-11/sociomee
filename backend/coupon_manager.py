@@ -46,6 +46,16 @@ def validate_coupon(code: str, plan_key: str) -> dict:
     coupon = COUPONS.get(code)
 
     if not coupon:
+        if client_ip:
+            try:
+                import redis as _rcm2
+                _rc2 = _rcm2.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+                fails = _rc2.incr(f"coupon_fails:{client_ip}")
+                _rc2.expire(f"coupon_fails:{client_ip}", 3600)
+                if int(fails) >= 5:
+                    _rc2.set(f"coupon_lockout:{client_ip}", "1", ex=3600)
+            except Exception:
+                pass
         return {"valid": False, "message": "Invalid coupon code."}
 
     if not coupon["active"]:
