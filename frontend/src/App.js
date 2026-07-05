@@ -2123,7 +2123,7 @@ export default function App() {
                   <div style={{ background:"transparent", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"12px", padding:"12px 16px", marginBottom:"16px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"12px" }}>
                     <span style={{ color:"#f87171", fontSize:"13px", fontWeight:"600" }}>⚠ {error}</span>
                     {(error.toLowerCase().includes("credit") || error.toLowerCase().includes("limit")) && (
-                      <a href="https://sociomee.in/pricing" style={{ padding:"7px 20px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.6)", background:"rgba(124,58,237,0.15)", backdropFilter:"blur(16px)", color:"#fff", fontSize:"13px", fontWeight:"800", textDecoration:"none", whiteSpace:"nowrap", fontFamily:"inherit", letterSpacing:"1px", boxShadow:"0 0 24px rgba(124,58,237,0.5),0 0 60px rgba(124,58,237,0.2)" }}>✦ Pricing</a>
+                      <a href="https://sociomee.in/pricing" style={{ padding:"9px 24px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.22)", background:"rgba(255,255,255,0.07)", backdropFilter:"blur(16px)", WebkitBackdropFilter:"blur(16px)", color:"#fff", fontSize:"13px", fontWeight:"500", textDecoration:"none", whiteSpace:"nowrap", fontFamily:"Poppins,sans-serif", letterSpacing:"0.04em", boxShadow:"inset 0 1px 0 rgba(255,255,255,0.15),0 4px 16px rgba(0,0,0,0.3)", transition:"all 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}>✦ Pricing</a>
                     )}
                   </div>
                 )}
