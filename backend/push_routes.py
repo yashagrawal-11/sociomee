@@ -54,11 +54,18 @@ async def subscribe(request: Request):
     is_new_sub = sub["endpoint"] not in [s.get("endpoint") for s in user_subs]
     if is_new_sub:
         user_subs.append(sub); subs[user_id]=user_subs; _save(subs)
-    # Fire welcome push on first subscription
-    try:
-        notify_welcome(user_id)
-    except Exception as _we:
-        log.warning("welcome push on subscribe failed: %s", _we)
+    # Only fire welcome for real logged-in users (not anonymous/empty)
+    if not user_id or len(user_id) < 5:
+        return {"success":True,"count":len(user_subs)}
+    # Fire welcome push on first subscription — delayed to avoid Chrome spam filter
+    import threading
+    def _delayed_welcome():
+        import time; time.sleep(30)
+        try:
+            notify_welcome(user_id)
+        except Exception as _we:
+            log.warning("welcome push delayed failed: %s", _we)
+    threading.Thread(target=_delayed_welcome, daemon=True).start()
     return {"success":True,"count":len(user_subs)}
 
 @router.post("/unsubscribe")
