@@ -487,6 +487,10 @@ def register(body: RegisterBody, request: Request, response: Response):
     try:
         from email_service import send_welcome_email
         send_welcome_email(email, users[email].get("name", email.split("@")[0]))
+        try:
+            from push_routes import notify_welcome
+            notify_welcome(users[email].get("user_id",""), users[email].get("name",""))
+        except Exception as _we: print(f"welcome push skip: {_we}")
     except Exception:
         pass
     # Send verification email
