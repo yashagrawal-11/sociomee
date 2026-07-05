@@ -309,7 +309,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
           </div>
         )}
 
-        <div style={{ padding:"24px" }}>
+        <div style={{ padding:"24px",background:"linear-gradient(180deg,rgba(13,8,32,0.5),rgba(13,8,32,0.8))" }}>
 
           {/* Top-up section for nocredits mode */}
           {isNocredits && (
@@ -343,7 +343,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
               const saving = basePrice - finalP;
 
               return (
-                <div key={plan.label} style={{ background:plan.highlight?"linear-gradient(145deg,rgba(124,58,237,0.25),rgba(255,61,143,0.15))":"rgba(255,255,255,0.04)",border:`2px solid ${plan.highlight?"#7c3aed":"rgba(255,255,255,0.08)"}`,borderRadius:"18px",padding:"18px",display:"flex",flexDirection:"column",gap:"8px",position:"relative" }}>
+                <div key={plan.label} style={{ background:plan.highlight?"linear-gradient(145deg,rgba(124,58,237,0.3),rgba(255,61,143,0.2))":"rgba(255,255,255,0.03)",border:`2px solid ${plan.highlight?"#7c3aed":"rgba(255,255,255,0.08)"}`,borderRadius:"18px",padding:"18px",display:"flex",flexDirection:"column",gap:"8px",position:"relative" }}>
                   {plan.badge && (
                     <div style={{ position:"absolute",top:"-12px",left:"50%",transform:"translateX(-50%)",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontSize:"9px",fontWeight:"900",letterSpacing:"1px",textTransform:"uppercase",padding:"4px 12px",borderRadius:"99px",whiteSpace:"nowrap" }}>{plan.badge}</div>
                   )}
@@ -385,10 +385,10 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
               <p style={{ fontSize:"11px",fontWeight:"900",letterSpacing:"1.4px",textTransform:"uppercase",color:C.muted,marginBottom:"12px" }}>⚡ Quick Top-Up — Buy Credits</p>
               <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"20px" }}>
                 {topups.map(t => (
-                  <div key={t.id} style={{ background:C.glass,border:`1.5px solid ${C.hairline}`,borderRadius:"14px",padding:"16px",display:"flex",flexDirection:"column",gap:"8px",position:"relative" }}>
+                  <div key={t.id} style={{ background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"14px",padding:"16px",display:"flex",flexDirection:"column",gap:"8px",position:"relative" }}>
                     {t.badge && <div style={{ position:"absolute",top:"-10px",right:"12px",background:C.warn,color:"#fff",fontSize:"9px",fontWeight:"900",padding:"2px 8px",borderRadius:"99px" }}>{t.badge}</div>}
-                    <div style={{ fontSize:"13px",fontWeight:"800",color:C.ink }}>{t.label}</div>
-                    <span style={{ fontSize:"22px",fontWeight:"900",color:C.ink }}>₹{calcPrice(t.price)}</span>
+                    <div style={{ fontSize:"13px",fontWeight:"800",color:"#ede8ff" }}>{t.label}</div>
+                    <span style={{ fontSize:"22px",fontWeight:"900",color:"#ffffff" }}>₹{calcPrice(t.price)}</span>
                     <div style={{ fontSize:"12px",fontWeight:"700",color:C.purple }}>+{t.credits} credits</div>
                     <button onClick={() => pay(t.id, t.price)} disabled={!!paying} style={{ width:"100%",padding:"9px",borderRadius:"10px",border:"none",background:`linear-gradient(135deg,${C.teal},${C.purple})`,color:"#fff",fontWeight:"800",fontSize:"12px",cursor:paying?"not-allowed":"pointer",fontFamily:"inherit",opacity:paying&&paying!==t.id?0.6:1 }}>
                       {paying===t.id?"Processing…":t.cta}
@@ -418,7 +418,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
             )}
           </div>
 
-          <p style={{ textAlign:"center",fontSize:"11px",color:C.muted }}>🔒 Secured by Razorpay · UPI, Cards, NetBanking · Instant activation</p>
+          <p style={{ textAlign:"center",fontSize:"11px",color:"rgba(196,181,253,0.5)" }}>🔒 Secured by Razorpay · UPI, Cards, NetBanking · Instant activation</p>
         </div>
       </div>
       <style>{`@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}`}</style>
