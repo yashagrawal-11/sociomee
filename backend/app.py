@@ -1530,3 +1530,17 @@ async def share_delete(code: str, user: dict = Depends(get_current_user)):
     _rc = _redis_mod.Redis(host="localhost", port=6379, db=0, decode_responses=True)
     _rc.delete(f"share:{code}")
     return {"deleted": True}
+
+# ── SocioMee Share — Abuse Report ──────────────────────────────────────────
+@app.post("/share/report")
+@limiter.limit("10/hour")
+async def share_report(request: Request):
+    body = await request.json()
+    code = body.get("code", "unknown")
+    reason = body.get("reason", "not specified")
+    reporter_ip = request.headers.get("X-Real-IP", request.client.host)
+    import logging, redis as _redis_report
+    _rc_report = _redis_report.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+    logging.warning(f"[ABUSE REPORT] code={code} reason={reason} ip={reporter_ip}")
+    _rc_report.delete(f"share:{code}")
+    return {"status": "reported", "message": "Thank you. The file has been removed and will be reviewed."}
