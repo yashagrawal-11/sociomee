@@ -1454,7 +1454,7 @@ export default function App() {
 
         {/* Logo */}
         <div style={{padding:"16px 16px 14px",borderBottom:"1px solid rgba(255,255,255,0.05)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <a href="https://sociomee.in" style={{fontSize:"16px",fontWeight:"900",fontFamily:"'Orbitron',sans-serif",color:"#fff",letterSpacing:"2px",textDecoration:"none",cursor:"pointer"}}>SOCIOMEE</a>
+          <a href="https://sociomee.in" target="_blank" rel="noopener noreferrer" style={{fontSize:"16px",fontWeight:"900",fontFamily:"'Orbitron',sans-serif",color:"#fff",letterSpacing:"2px",textDecoration:"none",cursor:"pointer"}}>SOCIOMEE</a>
           {sidebarOpen && <button onClick={()=>setSidebarOpen(false)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",width:"28px",height:"28px",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"rgba(255,255,255,0.5)",fontSize:"14px",fontWeight:"300"}}>✕</button>}
         </div>
 
@@ -2013,7 +2013,7 @@ export default function App() {
 
           <div style={{ marginBottom:"28px" }}>
             
-            <h1 style={{ fontSize:"clamp(28px,4vw,44px)", fontWeight:"700", fontFamily:"'Orbitron',sans-serif", color:"#fff", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"6px" }}>SOCIOMEE</h1>
+            <a href="https://sociomee.in" target="_blank" rel="noopener noreferrer" style={{ fontSize:"clamp(28px,4vw,44px)", fontWeight:"700", fontFamily:"'Orbitron',sans-serif", color:"#fff", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"6px", textDecoration:"none", cursor:"pointer", display:"block" }}>SOCIOMEE</a>
             <p style={{ fontSize:"15px", color:"rgba(255,255,255,0.35)" }}>{t("oneTopicInfinite")}</p>
           </div>
 
