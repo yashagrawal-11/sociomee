@@ -1454,7 +1454,7 @@ export default function App() {
 
         {/* Logo */}
         <div style={{padding:"16px 16px 14px",borderBottom:"1px solid rgba(255,255,255,0.05)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{fontSize:"16px",fontWeight:"900",fontFamily:"'Orbitron',sans-serif",color:"#fff",letterSpacing:"2px"}}>SOCIOMEE</div>
+          <a href="https://sociomee.in" style={{fontSize:"16px",fontWeight:"900",fontFamily:"'Orbitron',sans-serif",color:"#fff",letterSpacing:"2px",textDecoration:"none"}}>SOCIOMEE</a>
           {sidebarOpen && <button onClick={()=>setSidebarOpen(false)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",width:"28px",height:"28px",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"rgba(255,255,255,0.5)",fontSize:"14px",fontWeight:"300"}}>✕</button>}
         </div>
 
