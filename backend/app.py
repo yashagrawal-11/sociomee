@@ -1030,6 +1030,17 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
         "description": caption,
         "hashtags": result.get("hashtags", []),
     }
+    try:
+        from history_routes import save_generation
+        save_generation(user["user_id"], topic, p,
+            result.get("best_title") or result.get("topic","") or topic,
+            (caption or "")[:300],
+            result.get("hashtags", []),
+            len((caption or "").split()),
+            getattr(payload, "language", "hinglish"))
+    except Exception as _he:
+        import logging
+        logging.getLogger("sociomee").warning(f"history save failed: {_he}")
     return _attach_credits(result, user["user_id"])
 
 @app.post("/thumbnail/ab-test")
