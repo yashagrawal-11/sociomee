@@ -1419,6 +1419,7 @@ export default function App() {
 
   const [keyword,      setKeyword    ] = useState("");
   const [videoFile,    setVideoFile  ] = useState(null);
+  const [isListening,  setIsListening] = useState(false);
   const [selectedTitle, setSelectedTitle] = useState("");
   const [platform,     setPlatform   ] = useState("youtube");
   const [tone,         setTone       ] = useState("casual");
@@ -2302,8 +2303,34 @@ export default function App() {
                 <div style={{ position:"relative", marginBottom:videoFile?"8px":"20px" }}>
                   <input value={keyword} onChange={e=>setKeyword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
                     placeholder={videoFile ? "Enter keyword or video title for better results..." : t("keywordPlaceholder")}
-                    style={{ width:"100%", padding:"14px 52px 14px 22px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.25)", outline:"none", fontSize:"15px", color:"#fff", background:"rgba(255,255,255,0.05)", fontFamily:"inherit", boxSizing:"border-box", transition:"border 0.2s" }}
+                    style={{ width:"100%", padding:"14px 92px 14px 22px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.25)", outline:"none", fontSize:"15px", color:"#fff", background:"rgba(255,255,255,0.05)", fontFamily:"inherit", boxSizing:"border-box", transition:"border 0.2s" }}
                     onFocus={e=>e.target.style.borderColor="#7c3aed"} onBlur={e=>e.target.style.borderColor="rgba(124,58,237,0.25)"}/>
+                  <button type="button" title="Speak your keyword" onClick={()=>{
+                    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                      alert("Voice input not supported in this browser. Try Chrome.");
+                      return;
+                    }
+                    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    const rec = new SR();
+                    rec.lang = "en-IN";
+                    rec.continuous = false;
+                    rec.interimResults = false;
+                    rec.maxAlternatives = 1;
+                    rec.onstart = () => setIsListening(true);
+                    rec.onend = () => setIsListening(false);
+                    rec.onerror = (e) => { console.error("Speech error:", e.error); setIsListening(false); };
+                    rec.onresult = (e) => {
+                      const transcript = e.results[0][0].transcript.trim();
+                      setKeyword(transcript);
+                      setIsListening(false);
+                    };
+                    rec.start();
+                  }} style={{ position:"absolute", right:"50px", top:"50%", transform:"translateY(-50%)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:isListening?"rgba(124,58,237,0.4)":"rgba(255,255,255,0.08)", border:"none", transition:"all 0.2s" }}>
+                    {isListening
+                      ? <svg width="14" height="14" viewBox="0 0 24 24" fill="#a78bfa" stroke="none"><circle cx="12" cy="12" r="6"><animate attributeName="r" values="6;10;6" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.4;1" dur="1s" repeatCount="indefinite"/></circle></svg>
+                      : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    }
+                  </button>
                   <label title={videoFile?"Change video file":"Attach video file"} style={{ position:"absolute", right:"12px", top:"50%", transform:"translateY(-50%)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:videoFile?"rgba(124,58,237,0.3)":"rgba(255,255,255,0.08)" }}>
                     {videoFile
                       ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
