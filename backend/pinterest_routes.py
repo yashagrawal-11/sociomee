@@ -26,6 +26,23 @@ DATA_DIR       = Path(__file__).parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 PINTEREST_FILE = DATA_DIR / "pinterest_accounts.json"
 
+PINTEREST_LIMITS = {
+    "free":             0,
+    "pro_monthly":      2,
+    "pro_annual":       2,
+    "premium_monthly":  4,
+    "premium_annual":   4,
+}
+
+def _get_pinterest_limit(user_id: str) -> int:
+    try:
+        from credits_manager import get_credit_status
+        plan = get_credit_status(user_id).get("plan", "free")
+        return PINTEREST_LIMITS.get(plan, 0)
+    except:
+        return 0
+
+
 def _load() -> dict:
     if PINTEREST_FILE.exists():
         try:

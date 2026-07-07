@@ -581,11 +581,11 @@ def discord_send_content(user_id: str = Query(...), content: str = Query(...), t
 
 # ── Multi-webhook support ─────────────────────────────────────────────
 DISCORD_LIMITS = {
-    "free":             1,
+    "free":             0,
     "pro_monthly":      2,
     "pro_annual":       2,
-    "premium_monthly":  5,
-    "premium_annual":   5,
+    "premium_monthly":  4,
+    "premium_annual":   4,
 }
 
 def _get_limit(user_id: str) -> int:

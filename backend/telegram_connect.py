@@ -371,11 +371,11 @@ def start_polling():
 
 # ── Multi-channel support ─────────────────────────────────────────────
 CHANNEL_LIMITS = {
-    "free":             1,
+    "free":             0,
     "pro_monthly":      2,
     "pro_annual":       2,
-    "premium_monthly":  5,
-    "premium_annual":   5,
+    "premium_monthly":  4,
+    "premium_annual":   4,
 }
 
 def get_channel_limit(user_id: str) -> int:
