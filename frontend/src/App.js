@@ -559,14 +559,14 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
   const all = Object.keys(seoPacks).filter(k=>seoPacks[k]&&Object.keys(seoPacks[k]).length>0);
   const [active, setActive] = useState(all.includes(defaultPlatform)?defaultPlatform:all[0]||"youtube");
   if (!all.length) return null;
-  const meta = { youtube:{icon:"▶",color:"#ff0000"},instagram:{icon:"📸",color:"#e1306c"},tiktok:{icon:"🎵",color:"#010101"},x:{icon:"𝕏",color:"#000000"},facebook:{icon:"f",color:"#1877f2"},threads:{icon:"@",color:"#000000"},pinterest:{icon:"P",color:"#e60023"},telegram:{icon:"✈",color:"#2aabee"} };
+  const meta = { youtube:{icon:"/icons/youtube.png",color:"#ff0000"},instagram:{icon:"/icons/instagram.png",color:"#e1306c"},tiktok:{icon:"/icons/tiktok.png",color:"#010101"},x:{icon:"/icons/x.png",color:"#ffffff"},facebook:{icon:"/icons/facebook.png",color:"#1877f2"},threads:{icon:"/icons/threads.png",color:"#ffffff"},pinterest:{icon:"/icons/pinterest.png",color:"#e60023"},telegram:{icon:"/icons/telegram.png",color:"#2aabee"},linkedin:{icon:"/icons/linkedin.png",color:"#0077b5"},reddit:{icon:"/icons/reddit.png",color:"#ff4500"},quora:{icon:"/icons/quora.png",color:"#b92b27"} };
   const pack = seoPacks[active]||{};
   const content = (
     <div style={{ display:"flex",flexDirection:"column",gap:"12px" }}>
       {(pack.description||pack.caption||pack.post) && (
         <div>
           <SectionHead icon="📝" title={active==="youtube"?"Description":"Caption"} copyText={pack.description||pack.caption||pack.post}/>
-          <div style={{ background:C.glass,borderRadius:"12px",padding:"14px 16px",fontSize:"13px",lineHeight:1.7,whiteSpace:"pre-wrap",color:C.ink,border:`1px solid ${C.hairline}`,maxHeight:"200px",overflowY:"auto" }}>{pack.description||pack.caption||pack.post}</div>
+          <div className="dark-scroll" style={{ background:C.glass,borderRadius:"12px",padding:"14px 16px",fontSize:"13px",lineHeight:1.7,whiteSpace:"pre-wrap",color:C.ink,border:`1px solid ${C.hairline}`,maxHeight:"200px",overflowY:"auto" }}>{pack.description||pack.caption||pack.post}</div>
         </div>
       )}
       {active==="youtube"&&pack.timestamps?.length>0 && (
@@ -587,9 +587,13 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
   );
   return (
     <div style={{ marginBottom:"24px" }}>
-      <SectionHead icon="🌐" title="Platform SEO Packs"/>
       <div style={{ display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"14px" }}>
-        {all.map(p=>{ const pm=meta[p]||{icon:"●",color:C.purple}; const isA=active===p; return <button key={p} onClick={()=>setActive(p)} style={{ padding:"5px 13px",borderRadius:"99px",border:`1.5px solid ${isA?pm.color:C.hairline}`,background:isA?pm.color+"18":C.pillBg,color:isA?pm.color:C.muted,fontWeight:"700",fontSize:"11.5px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.14s" }}>{pm.icon} {p.charAt(0).toUpperCase()+p.slice(1)}</button>; })}
+        {all.map(p=>{ const pm=meta[p]||{icon:"",color:C.purple}; const isA=active===p; return (
+          <button key={p} onClick={()=>setActive(p)} style={{ display:"flex",alignItems:"center",gap:"6px",padding:"5px 13px",borderRadius:"99px",border:`1.5px solid ${isA?pm.color:C.hairline}`,background:isA?pm.color+"18":C.pillBg,color:isA?pm.color:C.muted,fontWeight:"700",fontSize:"11.5px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.14s" }}>
+            {pm.icon && <img src={pm.icon} alt="" style={{width:"14px",height:"14px",objectFit:"contain"}} onError={e=>e.target.style.display="none"}/>}
+            {p.charAt(0).toUpperCase()+p.slice(1)}
+          </button>
+        ); })}
       </div>
       {isPro ? content : <ProLock label="Full platform SEO packs — Pro feature" onUpgradeClick={onUpgradeClick}>{content}</ProLock>}
     </div>
@@ -1060,7 +1064,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
       {false && (
         <div style={{ marginBottom:"20px" }}>
           <SectionHead icon="📋" title="YouTube Description" copyText={result.seo_description||result.youtube_description}/>
-          <div style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"12px",padding:"16px",fontSize:"13px",lineHeight:1.8,color:C.ink,whiteSpace:"pre-wrap",fontFamily:"inherit",maxHeight:"220px",overflowY:"auto" }}>
+          <div className="dark-scroll" style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"12px",padding:"16px",fontSize:"13px",lineHeight:1.8,color:C.ink,whiteSpace:"pre-wrap",fontFamily:"inherit",maxHeight:"220px",overflowY:"auto" }}>
             {result.seo_description||result.youtube_description}
           </div>
         </div>
@@ -1083,7 +1087,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
       {displayScript&&(
         <div style={{ marginBottom:"22px" }}>
           <SectionHead icon="📜" title={`Recommended Script${isCapped?" (Preview — 500 words)":""}`} copyText={isPro?rawScript:displayScript}/>
-          <div style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"14px",padding:"20px 24px",maxHeight:isPro?"520px":"none",overflowY:isPro?"auto":"visible" }}>
+          <div className="dark-scroll" style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"14px",padding:"20px 24px",maxHeight:isPro?"520px":"none",overflowY:isPro?"auto":"visible" }}>
             <ScriptRenderer text={displayScript} capped={isCapped}/>
           </div>
           {isCapped&&(
@@ -2519,6 +2523,11 @@ export default function App() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800;900&family=Orbitron:wght@400;700;900&display=swap');
+        .dark-scroll::-webkit-scrollbar { width: 6px; }
+        .dark-scroll::-webkit-scrollbar-track { background: transparent; }
+        .dark-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 99px; }
+        .dark-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+        .dark-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent; }
         *{box-sizing:border-box;margin:0;padding:0;}
         @keyframes shimmer{to{background-position:400px 0;}}
         @keyframes spin{to{transform:rotate(360deg);}}
