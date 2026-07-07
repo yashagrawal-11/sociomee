@@ -1440,6 +1440,70 @@ export default function App() {
   const [notifSettings, setNotifSettings] = useState({newFeatures:true,weeklyTips:true,usageAlerts:true,proOffers:false});
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [openGroups, setOpenGroups] = useState({youtube:true, instagram:false, telegram:false, pinterest:false, threads:false, reddit:false, linkedin:false, facebook:false, tiktok:false, whatsapp:false, xtools:false, analytics:false});
+  const [myApps, setMyApps] = useState([]);
+  const [appsCatalog, setAppsCatalog] = useState([]);
+  const [showAppStore, setShowAppStore] = useState(false);
+  const appUserId = localStorage.getItem("sociomee_user_id") || user?.user_id || "";
+
+  useEffect(() => {
+    fetch(BASE + "/apps/catalog").then(r=>r.json()).then(d=>setAppsCatalog(d.apps||[])).catch(()=>{});
+  }, []);
+
+  useEffect(() => {
+    if (!appUserId) return;
+    const params = new URLSearchParams(window.location.search);
+    const getApp = params.get("get_app");
+    if (getApp && APP_TAB_MAP[getApp]) {
+      // Skip the plain fetch here — the get_app effect below handles add + fetch together
+      return;
+    }
+    fetch(BASE + "/apps/my/" + appUserId).then(r=>r.json()).then(d=>setMyApps(d.added||[])).catch(()=>{});
+  }, [appUserId]);
+
+  const handleAddApp = (appId) => {
+    if (!appUserId) return;
+    fetch(BASE + "/apps/add", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ user_id: appUserId, app_id: appId })
+    }).then(r=>r.json()).then(d=>{ if(d.added) setMyApps(d.added); }).catch(()=>{});
+  };
+
+  const handleRemoveApp = (appId) => {
+    if (!appUserId) return;
+    fetch(BASE + "/apps/remove", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ user_id: appUserId, app_id: appId })
+    }).then(r=>r.json()).then(d=>{ if(d.added) setMyApps(d.added); }).catch(()=>{});
+  };
+
+  const APP_ICONS = {
+    notes:    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+    cloud:    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+    share:    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>,
+    pixel:    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
+    pdf:      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+    calendar: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+    reminders:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+    news:     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>,
+  };
+  const APP_TAB_MAP = { notes:"notes", vault:"vault", share:"share", pixel:"pixel", pdf:"pdf", calendar:"calendar", reminders:"reminders", news:"news" };
+
+  // Handle ?get_app= deep link from the Store page
+  useEffect(() => {
+    if (!appUserId) return;
+    const params = new URLSearchParams(window.location.search);
+    const getApp = params.get("get_app");
+    if (getApp && APP_TAB_MAP[getApp]) {
+      fetch(BASE + "/apps/add", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ user_id: appUserId, app_id: getApp })
+      }).then(r=>r.json()).then(d=>{
+        if (d.added) setMyApps(d.added);
+        setActiveTab(APP_TAB_MAP[getApp]);
+        window.history.replaceState({}, "", "/app");
+      }).catch(()=>{});
+    }
+  }, [appUserId]);
   const toggleGroup = (g) => setOpenGroups(prev=>({...prev,[g]:!prev[g]}));
   const [youtubeInitialTab, setYoutubeInitialTab] = useState("analytics");
   const resultRef = useRef(null);
@@ -1638,6 +1702,25 @@ export default function App() {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             Generate
           </button>
+
+          {/* Apps - single entry point like ChatGPT */}
+          <button onClick={()=>setShowAppStore(true)} style={{display:"flex",alignItems:"center",gap:"10px",padding:"9px 12px",borderRadius:"8px",border:"none",background:"transparent",color:"rgba(255,255,255,0.45)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.05)";e.currentTarget.style.color="rgba(255,255,255,0.85)";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(255,255,255,0.45)";}}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Apps
+          </button>
+          {myApps.map(appId => {
+            const appInfo = appsCatalog.find(a=>a.id===appId);
+            if (!appInfo) return null;
+            const tab = APP_TAB_MAP[appId] || appId;
+            return (
+              <button key={appId} onClick={()=>{toggleTab(tab);setSidebarOpen(false);}}
+                style={{display:"flex",alignItems:"center",gap:"10px",padding:"8px 12px 8px 30px",borderRadius:"8px",border:"none",borderLeft:activeTab===tab?"3px solid rgba(255,255,255,0.6)":"3px solid transparent",background:activeTab===tab?"rgba(255,255,255,0.08)":"transparent",color:activeTab===tab?"#fff":"rgba(255,255,255,0.4)",fontSize:"12.5px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}>
+                {APP_ICONS[appInfo.icon]}{appInfo.label.replace("SocioMee ","")}
+              </button>
+            );
+          })}
 
           {/* Channels label */}
           <div style={{fontSize:"9px",fontWeight:"700",color:"rgba(255,255,255,0.18)",letterSpacing:"1.5px",padding:"12px 12px 4px",textTransform:"uppercase"}}>Connect</div>
@@ -1929,29 +2012,21 @@ export default function App() {
               ))}
             </div>
           )}
-          {/* Analytics & Tools */}
-          <button onClick={()=>toggleGroup("analytics")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.analytics?"rgba(124,58,237,0.06)":"transparent",color:openGroups.analytics?"#a78bfa":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
-            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Analytics & {t("tools")}</span>
+          {/* Analytics & Tools - simplified: History + Guides only */}
+          <button onClick={()=>toggleGroup("analytics")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.analytics?"rgba(255,255,255,0.06)":"transparent",color:openGroups.analytics?"rgba(255,255,255,0.85)":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>{t("tools")}</span>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.analytics?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           {openGroups.analytics && (
-            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(124,58,237,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(255,255,255,0.12)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
               {[
                 {tab:"history",label:t("history"),fn:()=>toggleTab("history"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
-                {tab:"calendar",label:t("socioMeeCalendar"),fn:()=>toggleTab("calendar"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
-                {tab:"reminders",label:t("socioMeeReminders"),fn:()=>toggleTab("reminders"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>},
-                {tab:"news",label:t("socioMeeNews"),fn:()=>toggleTab("news"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>},
-                {tab:"notes",label:t("socioMeeNotes"),fn:()=>toggleTab("notes"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>},
-                {tab:"vault",label:t("socioMeeCloud"),fn:()=>toggleTab("vault"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>},
-                {tab:"share",label:t("socioMeeShare"),fn:()=>toggleTab("share"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>},
-                {tab:"pixel",label:t("socioMeePixel"),fn:()=>toggleTab("pixel"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>},
-                {tab:"pdf",label:t("socioMeePdf"),fn:()=>toggleTab("pdf"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>},
                 {tab:"guides",label:t("guides"),fn:()=>window.open("https://sociomee.in/blog","_blank"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>},
               ].map(item=>(
                 <button key={item.tab} onClick={item.fn}
-                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #7c3aed":"2px solid transparent",background:activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent",color:activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid rgba(255,255,255,0.6)":"2px solid transparent",background:activeTab===item.tab?"rgba(255,255,255,0.08)":"transparent",color:activeTab===item.tab?"#fff":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent";}}>
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#fff":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(255,255,255,0.08)":"transparent";}}>
                   {item.icon}{item.label}
                 </button>
               ))}
@@ -2049,6 +2124,39 @@ export default function App() {
             <input value={deleteConfirm} onChange={e=>setDeleteConfirm(e.target.value)} placeholder="Type DELETE here" style={{width:"100%",padding:"10px 12px",borderRadius:"8px",border:"1px solid rgba(239,68,68,0.2)",background:"rgba(255,255,255,0.03)",color:"#fff",fontSize:"13px",fontFamily:"Poppins,sans-serif",outline:"none",boxSizing:"border-box",marginBottom:"12px"}}/>
             <button disabled={deleteConfirm!=="DELETE"} onClick={()=>{if(deleteConfirm==="DELETE"){setDeleteError("");fetch(BASE+"/auth/delete-account",{method:"DELETE",credentials:"include"}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok){setDeleteError(d.detail||"Something went wrong. Please try again.");return;}localStorage.clear();window.location.href="/";}).catch(()=>setDeleteError("Network error. Please try again."));}}} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"none",background:deleteConfirm==="DELETE"?"#ef4444":"rgba(239,68,68,0.2)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:deleteConfirm==="DELETE"?"pointer":"not-allowed",fontFamily:"Poppins,sans-serif",opacity:deleteConfirm==="DELETE"?1:0.5,transition:"all 0.2s"}}>Delete My Account Permanently</button>
             {deleteError && <div style={{marginTop:"10px",fontSize:"12px",color:"#ef4444",fontFamily:"Poppins,sans-serif",lineHeight:"1.5"}}>⚠️ {deleteError}</div>}
+          </div>
+        </div>
+      )}
+      {/* APP STORE MODAL */}
+      {showAppStore && (
+        <div onClick={()=>setShowAppStore(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+          <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"640px",maxHeight:"80vh",overflowY:"auto",background:"rgba(14,14,16,0.98)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"28px",boxShadow:"0 24px 80px rgba(0,0,0,0.9)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"22px"}}>
+              <div><h2 style={{fontSize:"18px",fontWeight:"800",color:"#fff",margin:0}}>Explore Apps</h2><p style={{fontSize:"12px",color:"rgba(255,255,255,0.35)",marginTop:"3px"}}>Add tools to your sidebar</p></div>
+              <button onClick={()=>setShowAppStore(false)} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>✕</button>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
+              {appsCatalog.map(app => {
+                const added = myApps.includes(app.id);
+                const isFreeUser = !isPro;
+                return (
+                  <div key={app.id} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px",display:"flex",flexDirection:"column",gap:"10px",opacity:isFreeUser?0.55:1}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                      <div style={{width:"34px",height:"34px",borderRadius:"10px",background:"rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.8)",flexShrink:0}}>{APP_ICONS[app.icon]}</div>
+                      <div style={{fontSize:"13.5px",fontWeight:"700",color:"#fff"}}>{app.label.replace("SocioMee ","")}</div>
+                    </div>
+                    <div style={{fontSize:"11.5px",color:"rgba(255,255,255,0.4)",lineHeight:1.5,flex:1}}>{app.desc}</div>
+                    {isFreeUser ? (
+                      <button onClick={()=>{setShowAppStore(false);setShowPlansPopup(true);}} style={{padding:"8px",borderRadius:"8px",border:"none",background:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.6)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>🔒 Upgrade to Pro</button>
+                    ) : added ? (
+                      <button onClick={()=>handleRemoveApp(app.id)} style={{padding:"8px",borderRadius:"8px",border:"1px solid rgba(239,68,68,0.3)",background:"rgba(239,68,68,0.08)",color:"#ef4444",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>Remove</button>
+                    ) : (
+                      <button onClick={()=>handleAddApp(app.id)} style={{padding:"8px",borderRadius:"8px",border:"none",background:"rgba(255,255,255,0.9)",color:"#0a0a0a",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>+ Add</button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

@@ -731,6 +731,47 @@ def home(): return {"message": "SocioMee API v3 🚀", "status": "ok"}
 @app.get("/health")
 def health(): return {"status": "ok"}
 
+@app.post("/apps/notify-interest")
+def apps_notify_interest(app_id: str = Body(..., embed=True)):
+    """Records interest in a coming-soon app. Simple counter file, no auth required."""
+    import json
+    from pathlib import Path
+    f = Path(__file__).parent / "app_interest.json"
+    try:
+        data = json.loads(f.read_text()) if f.exists() else {}
+    except Exception:
+        data = {}
+    data[app_id] = data.get(app_id, 0) + 1
+    f.write_text(json.dumps(data, indent=2))
+    return {"success": True}
+
+@app.get("/apps/catalog")
+def apps_catalog():
+    """Returns the full list of available SocioMee apps."""
+    import user_apps
+    return {"apps": user_apps.ALL_APPS}
+
+@app.get("/apps/my/{user_id}")
+def apps_my(user_id: str):
+    """Returns the list of app ids this user has added to their sidebar."""
+    import user_apps
+    return {"added": user_apps.get_user_apps(user_id)}
+
+@app.post("/apps/add")
+def apps_add(user_id: str = Body(..., embed=True), app_id: str = Body(..., embed=True)):
+    import user_apps
+    try:
+        updated = user_apps.add_app(user_id, app_id)
+        return {"success": True, "added": updated}
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+@app.post("/apps/remove")
+def apps_remove(user_id: str = Body(..., embed=True), app_id: str = Body(..., embed=True)):
+    import user_apps
+    updated = user_apps.remove_app(user_id, app_id)
+    return {"success": True, "added": updated}
+
 @app.post("/validate-coupon")
 @limiter.limit("20/minute")
 def validate_coupon_endpoint(request: Request, code: str = Body(..., embed=True), plan: str = Body(..., embed=True)):
