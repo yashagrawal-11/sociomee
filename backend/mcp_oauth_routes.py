@@ -79,6 +79,8 @@ def oauth_authorize_form(client_id: str, redirect_uri: str, state: str = "",
         raise HTTPException(400, "Unknown client or redirect_uri")
     if code_challenge_method != "S256":
         raise HTTPException(400, "Only S256 PKCE is supported")
+    _raw_name = client.get("client_name", "MCP Client")
+    client_display_name = _raw_name if _raw_name and _raw_name != "MCP Client" else "this app"
     return f"""<html><head><style>
       @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@800;900&family=Poppins:wght@400;500;600;700&display=swap');
       *{{box-sizing:border-box;}}
@@ -116,8 +118,8 @@ def oauth_authorize_form(client_id: str, redirect_uri: str, state: str = "",
       <div class="glow"></div>
       <div class="card">
         <div class="logo">SOCIOMEE</div>
-        <h2>Connect Claude to SocioMee</h2>
-        <p class="sub">Log in to allow Claude to read your credit status, news, calendar, history, and create share links.</p>
+        <h2>Connect {client_display_name} to SocioMee</h2>
+        <p class="sub">Log in to allow {client_display_name} to read your credit status, news, calendar, history, and create share links.</p>
         <form method="post" action="/oauth/authorize">
           <input type="hidden" name="client_id" value="{client_id}"/>
           <input type="hidden" name="redirect_uri" value="{redirect_uri}"/>

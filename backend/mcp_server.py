@@ -92,7 +92,7 @@ mcp = FastMCP(
     ),
     transport_security=TransportSecuritySettings(
         allowed_hosts=["mcp.sociomee.in", "127.0.0.1:8010", "localhost:8010"],
-        allowed_origins=["https://claude.ai", "https://mcp.sociomee.in"],
+        allowed_origins=["https://claude.ai", "https://mcp.sociomee.in", "https://chatgpt.com", "https://chat.openai.com", "https://platform.openai.com"],
     ),
 )
 
@@ -125,7 +125,7 @@ def get_generation_history(limit: int = 20) -> list:
     """Returns the authenticated user's most recent SocioMee content
     generations (topic, platform, title, hashtags, word count). Read-only."""
     limit = max(1, min(limit, 50))
-    return history_routes.get_history(_current_user_id())[:limit]
+    return history_routes._get_history_internal(_current_user_id())[:limit]
 
 
 @mcp.tool(title="Create a SocioMee share link", annotations={"readOnlyHint": False, "destructiveHint": False})

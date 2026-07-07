@@ -877,30 +877,118 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
         elif p == "instagram":
             if not _HAS_IG: raise HTTPException(503, "InstagramEngine not available.")
             result = InstagramEngine().build_intelligence_pack(keyword=topic, tone=payload.tone, content_type="reel", niche=payload.niche, language=payload.language)
+            # normalise: pull best caption from scripts bundle
+            if "scripts" in result and isinstance(result["scripts"], dict):
+                selected = result["scripts"].get("selected_script", {})
+                if isinstance(selected, dict):
+                    script_text = selected.get("full_script","") or selected.get("hook","")
+                elif isinstance(selected, str):
+                    script_text = selected
+                else:
+                    script_text = ""
+                result["caption"] = script_text or result.get("description","")
+            else:
+                result["caption"] = result.get("description","")
         elif p == "x":
             if not _HAS_X: raise HTTPException(503, "XEngine not available.")
             result = XEngine().build_x_pack(topic=topic, tone=payload.tone)
+            result["caption"] = result.get("post") or result.get("tweet") or result.get("caption","")
         elif p == "pinterest":
             if not _HAS_PINT: raise HTTPException(503, "PinterestEngine not available.")
             result = PinterestEngine().generate(topic=topic, niche=payload.niche)
+            result["caption"] = result.get("description","")
         elif p == "facebook":
             if not _HAS_FB: raise HTTPException(503, "FacebookEngine not available.")
             result = FacebookEngine().generate(topic=topic, niche=payload.niche, tone=payload.tone, objective=payload.objective).to_dict()
+            result["caption"] = result.get("long_copy") or result.get("short_copy") or result.get("title_hook","")
         elif p == "tiktok":
             if not _HAS_TT: raise HTTPException(503, "TikTokEngine not available.")
             result = TikTokEngine().generate(topic=topic, niche=payload.niche, tone=payload.tone, objective=payload.objective, duration_seconds=payload.duration_seconds).to_dict()
+            result["caption"] = result.get("caption") or result.get("script","")
         elif p == "telegram":
             if not _HAS_TG: raise HTTPException(503, "TelegramEngine not available.")
             result = TelegramEngine().generate(topic=topic, niche=payload.niche, tone=payload.tone, objective=payload.objective, destination_type=payload.destination_type).to_dict()
+            result["caption"] = result.get("post_body") or result.get("short_version") or result.get("opening_line","")
         elif p == "threads":
             if not _HAS_THR: raise HTTPException(503, "ThreadsEngine not available.")
             result = ThreadsEngine().generate(topic=topic, niche=payload.niche, tone=payload.tone, objective=payload.objective, segment_count=payload.segment_count).to_dict()
+            result["caption"] = result.get("full_thread") or result.get("opening_line","")
+        elif p == "reddit":
+            sep = "\n\n"
+            post_title = f"{topic.title()} what actually works and what does not"
+            parts = [
+                f"I have been looking into {topic} and wanted to share what I found.",
+                f"Most people approach {topic} completely wrong. The common advice misses the point.",
+                "Here is what actually matters:\n1. Start with the fundamentals.\n2. Consistency beats intensity.\n3. Track what works for your situation.",
+                f"Happy to answer questions. What is your experience with {topic}?",
+            ]
+            post_body = sep.join(parts)
+            result = {
+                "platform": "reddit",
+                "topic": topic,
+                "caption": post_title + sep + post_body,
+                "post_title": post_title,
+                "post": post_body,
+                "hashtags": [],
+            }
+        elif p == "quora":
+            sep = "\n\n"
+            question = f"What is the best way to approach {topic} and actually get results?"
+            answer_parts = [
+                f"Most people overcomplicate {topic}. The answer becomes clear once you understand what actually drives results.",
+                f"Here is what actually matters:",
+                f"Start with a clear goal. Before diving into {topic}, define exactly what success looks like for you. Vague goals produce vague results.",
+                f"Be consistent, not intense. Most people go all in on {topic} for a week and then burn out completely. Showing up steadily over a longer period beats any short burst of effort.",
+                f"Measure the right things. Track the one or two numbers that actually reflect real progress with {topic}. Ignore everything else.",
+                f"Learn from what works for you specifically. Generic advice about {topic} will only get you so far. Pay attention to what actually moves the needle in your own situation.",
+                f"The people getting consistent results with {topic} are not doing anything magical. They picked a direction, stayed consistent, and adjusted as they learned. That is the whole answer.",
+            ]
+            answer = sep.join(answer_parts)
+            full_post = f"Question: {question}{sep}{answer}"
+            result = {
+                "platform": "quora",
+                "topic": topic,
+                "caption": full_post,
+                "post": full_post,
+                "quora_question": question,
+                "quora_answer": answer,
+                "hashtags": [],
+            }
+        elif p == "linkedin":
+            lines = [
+                f"After spending time with {topic}, here is what most people miss.",
+                f"The real lesson from {topic} is simpler than you think.",
+                f"Most professionals overcomplicate {topic}. Here is the cleaner way.",
+                f"Three things {topic} taught me that no one talks about:",
+                f"1. Clarity beats complexity every time.",
+                f"2. The basics still work. People just skip them.",
+                f"3. Consistency is the actual differentiator.",
+                f"If you found this useful, follow for more on {topic}.",
+            ]
+            full_post = "\n\n".join(lines)
+            result = {
+                "platform": "linkedin",
+                "topic": topic,
+                "caption": full_post,
+                "post": full_post,
+                "hashtags": ["#linkedin","#professional","#growth","#india","#creator","#business"],
+            }
         else: raise HTTPException(400, f"Unknown platform: {p}")
     except HTTPException: raise
     except Exception as e:
         import logging
         logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)
         raise HTTPException(500, "Something went wrong. Please try again.")
+    # wrap caption into seo_packs so PlatformSEOTabs can render it
+    caption = result.get("caption","") or result.get("post","") or result.get("description","")
+    if "seo_packs" not in result:
+        result["seo_packs"] = {}
+    result["seo_packs"][p] = {
+        **result["seo_packs"].get(p, {}),
+        "caption": caption,
+        "description": caption,
+        "hashtags": result.get("hashtags", []),
+    }
     return _attach_credits(result, user["user_id"])
 
 @app.post("/thumbnail/ab-test")
@@ -953,8 +1041,8 @@ def payment_plans():
     return {
         "plans": [
             {"id":"free","label":"Free","price_inr":0,"price_paise":0,"credits":20,"period":"month","features":["20 credits/month","Short scripts ≤500 words","Basic SEO"],"highlighted":False,"cta":"Current Plan"},
-            {"id":"pro_monthly","label":"Pro Monthly","price_inr":499,"price_paise":49900,"credits":200,"period":"month","features":["200 credits/month","3000-5000 word scripts","Full SEO — 8 platforms","Thumbnail analyzer"],"highlighted":False,"cta":"Upgrade to Pro"},
-            {"id":"pro_annual","label":"Pro Annual","price_inr":3999,"original_inr":5999,"price_paise":399900,"credits":200,"period":"year","features":["200 credits/month","All Pro features","Save ₹2000 vs monthly","Priority support"],"highlighted":True,"badge":"Best Value","cta":"Get Annual Plan"},
+            {"id":"pro_monthly","label":"Pro Monthly","price_inr":499,"price_paise":49900,"credits":150,"period":"month","features":["150 credits/month","3000-5000 word scripts","Full SEO — 8 platforms","Thumbnail analyzer"],"highlighted":False,"cta":"Upgrade to Pro"},
+            {"id":"pro_annual","label":"Pro Annual","price_inr":3999,"original_inr":5999,"price_paise":399900,"credits":150,"period":"year","features":["150 credits/month","All Pro features","Save ₹2000 vs monthly","Priority support"],"highlighted":True,"badge":"Best Value","cta":"Get Annual Plan"},
         ],
         "topups": [
             {"id":"topup_99","label":"Starter Pack","price_inr":99,"price_paise":9900,"credits":50,"cta":"Buy 50 Credits"},
@@ -991,7 +1079,7 @@ def verify_payment(payload: VerifyPaymentRequest):
         msg = f"+{info['credits']} credits added to your account!"
     else:
         set_user_plan(payload.user_id, plan, email=payload.email)
-        total = PLAN_LIMITS.get(plan, 200)
+        total = PLAN_LIMITS.get(plan, 20)
         msg = f"Welcome to {info['label']}! Your plan is now active."
     log.info("Payment verified: user=%s plan=%s", payload.user_id, plan)
     # Send payment confirmation email

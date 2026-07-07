@@ -100,11 +100,13 @@ const PLATFORMS = [
   {id:"youtube",   label:"YouTube",   img:"/icons/youtube.png",   color:"#ff0000"},
   {id:"instagram", label:"Instagram", img:"/icons/instagram.png", color:"#e1306c"},
   {id:"linkedin",  label:"LinkedIn",  img:"/icons/linkedin.png?v=2",  color:"#0077b5"},
-  {id:"reddit",    label:"Reddit",    img:"/icons/reddit.png",    color:"#ff4500"},
+  {id:"x",         label:"X",         img:"/icons/x.png",         color:"#ffffff"},
   {id:"facebook",  label:"Facebook",  img:"/icons/facebook.png",  color:"#1877f2"},
   {id:"threads",   label:"Threads",   img:"/icons/threads.png",   color:"#ffffff"},
   {id:"pinterest", label:"Pinterest", img:"/icons/pinterest.png", color:"#e60023"},
   {id:"telegram",  label:"Telegram",  img:"/icons/telegram.png",  color:"#2aabee"},
+  {id:"reddit",    label:"Reddit",    img:"/icons/reddit.png",    color:"#ff4500"},
+  {id:"quora",     label:"Quora",     img:"/icons/quora.png",     color:"#b92b27"},
 ];
 
 const TONES = [
@@ -230,10 +232,10 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
       features:["20 credits/month","Short scripts ≤500 words","Basic SEO — 2 platforms","Community support"],
       cta:"Get Started Free" },
     { id_m:"pro_monthly", id_a:"pro_annual", label:"Pro", monthly:499, annual:3999, credits:200, uploads:4, popular:true,
-      features:["200 credits/month","3000–5000 word scripts","Full SEO — 8 platforms","4 YouTube uploads/month","Thumbnail analyzer","Priority support"],
+      features:["150 credits/month","3000–5000 word scripts","Full SEO — 8 platforms","4 YouTube uploads/month","Thumbnail analyzer","Priority support"],
       cta:"Upgrade to Pro" },
     { id_m:"premium_monthly", id_a:"premium_annual", label:"Premium", monthly:1999, annual:15999, credits:500, uploads:15,
-      features:["500 credits/month","Unlimited word scripts","Full SEO — all platforms","15 YouTube uploads/month","Advanced AI analytics","Dedicated support","Early access"],
+      features:["300 credits/month","Unlimited word scripts","Full SEO — all platforms","15 YouTube uploads/month","Advanced AI analytics","Dedicated support","Early access"],
       cta:"Go Premium" },
   ];
 
@@ -509,10 +511,11 @@ function CreditBadge({ creditStatus, onUpgradeClick }) {
 // ══════════════════════════════════════════════════════════════════════
 // TITLE PICKER
 // ══════════════════════════════════════════════════════════════════════
-function TitlePicker({ titlesWithScore=[], bestTitle="", isPro, onUpgradeClick }) {
+function TitlePicker({ titlesWithScore=[], bestTitle="", isPro, onUpgradeClick, onSelect }) {
   const [sel, setSel] = useState(0);
-  if (!titlesWithScore.length && !bestTitle) return null;
   const selTitle = titlesWithScore[sel]?.title || bestTitle;
+  useEffect(() => { if (onSelect) onSelect(selTitle); }, [selTitle]);
+  if (!titlesWithScore.length && !bestTitle) return null;
   return (
     <div style={{ marginBottom:"24px" }}>
       <SectionHead icon="🎯" title="Title Candidates" copyText={titlesWithScore.map(t=>t.title).join("\n")}/>
@@ -699,6 +702,158 @@ function TGIcon({ size=16, color="#fff" }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// PLATFORM SEND BAR
+// ══════════════════════════════════════════════════════════════════════
+const SEND_PLATFORMS = [
+  { id:"youtube",   label:"YouTube",   color:"#ff0000", icon:"/icons/youtube.png", supports:["youtube"] },
+
+  { id:"telegram",  label:"Telegram",  color:"#2aabee", icon:"/icons/telegram.png",
+    supports:["telegram","all"] },
+  { id:"pinterest", label:"Pinterest", color:"#e60023", icon:"/icons/pinterest.png",
+    supports:["pinterest"] },
+  { id:"discord",   label:"Discord",   color:"#5865f2", icon:"/icons/discord.png", svg:<svg width="14" height="14" viewBox="0 0 24 24" fill="#5865f2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>,
+    supports:["discord","all"] },
+  { id:"instagram", label:"Instagram", color:"#e1306c", icon:"/icons/instagram.png",
+    supports:["instagram","threads"], comingSoon:true },
+  { id:"threads",   label:"Threads",   color:"#ffffff", icon:"/icons/threads.png",
+    supports:["threads","instagram"], comingSoon:true },
+];
+
+function PlatformSendBar({ result, platform, user, videoFile, selectedTitle }) {
+  const userId = localStorage.getItem("sociomee_user_id") || user?.user_id || "";
+  const [connections, setConnections] = useState({});
+  const [sendStatus, setSendStatus] = useState({});
+
+  useEffect(() => {
+    if (!userId) return;
+    const check = async () => {
+      await new Promise(r => setTimeout(r, 500)); // small delay to let auth settle
+      const conn = {};
+      try {
+        const tg = await fetch(`${BASE}/telegram/connect-status?user_id=${userId}`).then(r=>r.ok?r.json():null);
+        conn.telegram = tg?.connected || false;
+      } catch { conn.telegram = false; }
+      try {
+        const pt = await fetch(`${BASE}/pinterest/status?user_id=${userId}`).then(r=>r.ok?r.json():null);
+        conn.pinterest = pt?.connected || false;
+      } catch { conn.pinterest = false; }
+      try {
+        const yt = await fetch(`${BASE}/youtube/channels/${userId}`, {credentials:"include"}).then(r=>r.ok?r.json():null);
+        const chs = yt?.channels || [];
+        conn.youtube = Array.isArray(chs) && chs.length > 0;
+      } catch { conn.youtube = false; }
+      try {
+        const dc = await fetch(`${BASE}/discord/guilds?user_id=${userId}`).then(r=>r.ok?r.json():null);
+        conn.discord = Array.isArray(dc?.guilds) && dc.guilds.length > 0;
+      } catch { conn.discord = false; }
+      conn.instagram = false;
+      conn.threads = false;
+      setConnections(conn);
+    };
+    check();
+  }, [userId, result]);
+
+  const isActive = (sp) => {
+    if (sp.comingSoon) return false;
+    if (sp.id === "youtube") return connections.youtube && !!videoFile;
+    if (!connections[sp.id]) return false;
+    return sp.supports.includes(platform) || sp.supports.includes("all");
+  };
+
+  const handleSend = async (sp) => {
+    if (!isActive(sp)) return;
+    const text = result?.caption || result?.script_text || result?.post_body || result?.hook || "";
+    const title = result?.best_title || result?.topic || "";
+    if (sp.id === "youtube") {
+      if (!videoFile) { alert("Please attach a video file first using the + button in the keyword field."); return; }
+      setSendStatus(s=>({...s, youtube:"sending"}));
+      try {
+        const fd = new FormData();
+        fd.append("user_id", userId);
+        fd.append("keyword", selectedTitle || title || "");
+        fd.append("video_type", "video");
+        fd.append("schedule_type", "now");
+        fd.append("privacy", "public");
+        fd.append("language", "Hindi/English");
+        fd.append("video", videoFile);
+        const r = await fetch(`${BASE}/youtube/upload/auto`, {method:"POST", body:fd, credentials:"include"});
+        if(!r.ok) { const err = await r.json().catch(()=>({})); throw new Error(err.detail||"Upload failed"); }
+        setSendStatus(s=>({...s, youtube:"sent"}));
+        setTimeout(()=>setSendStatus(s=>({...s, youtube:"idle"})), 4000);
+      } catch(e) {
+        alert("YouTube upload failed: " + e.message);
+        setSendStatus(s=>({...s, youtube:"idle"}));
+      }
+      return;
+    }
+    setSendStatus(s => ({...s, [sp.id]: "sending"}));
+    try {
+      if (sp.id === "telegram") {
+        const tgMsg = (title ? title + "\n\n" : "") + text.slice(0, 2000);
+        const r = await fetch(`${BASE}/telegram/send-quick`, {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ user_id: userId, text: tgMsg })
+        });
+        if (!r.ok) throw new Error("failed");
+      } else if (sp.id === "discord") {
+        const cleanText = text.replace(/\[Script generation failed.*?\]/gs, "").trim();
+        if (!cleanText || cleanText.length < 10 || cleanText.includes("generation failed") || cleanText.includes("quota exceeded") || cleanText.includes("check API keys")) throw new Error("No valid content to send");
+        const r = await fetch(`${BASE}/discord/quick-send?user_id=${encodeURIComponent(userId)}&content=${encodeURIComponent(cleanText.slice(0,1900))}&title=${encodeURIComponent(title)}`, {method:"POST"});
+        if (!r.ok) throw new Error("failed");
+      } else if (sp.id === "pinterest") {
+        const r = await fetch(`${BASE}/pinterest/create-pin`, {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ user_id: userId, title, description: text.slice(0,500) })
+        });
+        if (!r.ok) throw new Error("failed");
+      }
+      setSendStatus(s => ({...s, [sp.id]: "sent"}));
+      setTimeout(() => setSendStatus(s => ({...s, [sp.id]: "idle"})), 3000);
+    } catch {
+      setSendStatus(s => ({...s, [sp.id]: "error"}));
+      setTimeout(() => setSendStatus(s => ({...s, [sp.id]: "idle"})), 3000);
+    }
+  };
+
+  return (
+    <div style={{ marginTop:"20px", paddingTop:"16px", borderTop:`1px solid ${C.hairline}` }}>
+      <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.25)", marginBottom:"12px" }}>
+        Send to
+      </div>
+
+      <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
+        {SEND_PLATFORMS.map(sp => {
+          const active = isActive(sp);
+          const status = sendStatus[sp.id] || "idle";
+          const connected = connections[sp.id];
+          const supported = sp.supports.includes(platform) || sp.supports.includes("all");
+          return (
+            <button key={sp.id} onClick={() => handleSend(sp)}
+              disabled={!active}
+              title={sp.comingSoon ? "Coming soon" : !connected ? `Connect ${sp.label} first` : !supported ? `Not available for ${platform} content` : `Send to ${sp.label}`}
+              style={{
+                display:"flex", alignItems:"center", gap:"6px",
+                padding:"8px 14px", borderRadius:"99px",
+                border:`1.5px solid ${active ? sp.color + "60" : "rgba(255,255,255,0.08)"}`,
+                background: status==="sent" ? "rgba(34,197,94,0.15)" : active ? `${sp.color}15` : "rgba(255,255,255,0.03)",
+                color: status==="sent" ? "#22c55e" : active ? sp.color : "rgba(255,255,255,0.25)",
+                fontSize:"12px", fontWeight:"700", cursor: active ? "pointer" : "not-allowed",
+                fontFamily:"inherit", opacity: active ? 1 : 0.45,
+                transition:"all 0.15s",
+              }}>
+              {sp.svg ? <span style={{opacity: active ? 1 : 0.4, display:"flex"}}>{sp.svg}</span> : <img src={sp.icon} alt={sp.label} style={{ width:"14px", height:"14px", objectFit:"contain", opacity: active ? 1 : 0.4 }} onError={e=>e.target.style.display="none"}/>}
+              {status==="sending" ? "Sending..." : status==="sent" ? "Sent ✓" : sp.comingSoon ? sp.label + " (soon)" : sp.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // TELEGRAM CONNECT + SEND
 // ══════════════════════════════════════════════════════════════════════
 function TelegramSend({ result, platform, user }) {
@@ -833,7 +988,7 @@ function TelegramSend({ result, platform, user }) {
 // ══════════════════════════════════════════════════════════════════════
 // RESULT PANEL
 // ══════════════════════════════════════════════════════════════════════
-function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user }) {
+function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, onTitleSelect, videoFile, selectedTitle }) {
   if (!result) return null;
   const scores   = result.scores||{};
   const sections = result.sections||[];
@@ -900,7 +1055,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user })
         {scores.final_score>0&&<ScoreBar label="Final Score" value={scores.final_score} emoji="⭐"/>}<Divider/></>
       )}
 
-      <TitlePicker titlesWithScore={titlesWS} bestTitle={result.best_title} isPro={isPro} onUpgradeClick={onUpgradeClick}/>
+      <TitlePicker titlesWithScore={titlesWS} bestTitle={result.best_title} isPro={isPro} onUpgradeClick={onUpgradeClick} onSelect={onTitleSelect}/>
 
       {false && (
         <div style={{ marginBottom:"20px" }}>
@@ -927,7 +1082,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user })
 
       {displayScript&&(
         <div style={{ marginBottom:"22px" }}>
-          <SectionHead icon="📜" title={`Full Script${isCapped?" (Preview — 500 words)":""}`} copyText={isPro?rawScript:displayScript}/>
+          <SectionHead icon="📜" title={`Recommended Script${isCapped?" (Preview — 500 words)":""}`} copyText={isPro?rawScript:displayScript}/>
           <div style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"14px",padding:"20px 24px",maxHeight:isPro?"520px":"none",overflowY:isPro?"auto":"visible" }}>
             <ScriptRenderer text={displayScript} capped={isCapped}/>
           </div>
@@ -974,9 +1129,9 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user })
         </button>}
       </div>
       
-      <ThumbnailStudio keyword={keyword} title={result.best_title||result.hook||keyword} isPro={isPro} onUpgradeClick={onUpgradeClick}/>
+      {platform==="youtube" && <ThumbnailStudio keyword={keyword} title={result.best_title||result.hook||keyword} isPro={isPro} onUpgradeClick={onUpgradeClick}/>}
       {result.credits!==undefined&&<p style={{ textAlign:"center",fontSize:"12px",color:C.muted,fontWeight:"600",marginTop:"20px" }}>💳 {result.credits} credits remaining this month</p>}
-      <TelegramSend result={result} platform={platform} user={user} />
+      <PlatformSendBar result={result} platform={platform} user={user} videoFile={videoFile} selectedTitle={selectedTitle}/>
     </Card>
   );
 }
@@ -1259,6 +1414,8 @@ export default function App() {
   }, []);
 
   const [keyword,      setKeyword    ] = useState("");
+  const [videoFile,    setVideoFile  ] = useState(null);
+  const [selectedTitle, setSelectedTitle] = useState("");
   const [platform,     setPlatform   ] = useState("youtube");
   const [tone,         setTone       ] = useState("casual");
   const [personality,  setPersonality] = useState("dhruvrathee");
@@ -2031,18 +2188,40 @@ export default function App() {
 
                 {/* Keyword Input */}
                 <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>{t("keywordTopic")}</div>
-                <input value={keyword} onChange={e=>setKeyword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-                  placeholder={t("keywordPlaceholder")}
-                  style={{ width:"100%", padding:"14px 22px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.25)", outline:"none", fontSize:"15px", color:"#fff", background:"rgba(255,255,255,0.05)", fontFamily:"inherit", boxSizing:"border-box", marginBottom:"20px", transition:"border 0.2s" }}
-                  onFocus={e=>e.target.style.borderColor="#7c3aed"} onBlur={e=>e.target.style.borderColor="rgba(124,58,237,0.25)"}/>
+                <div style={{ position:"relative", marginBottom:videoFile?"8px":"20px" }}>
+                  <input value={keyword} onChange={e=>setKeyword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
+                    placeholder={videoFile ? "Enter keyword or video title for better results..." : t("keywordPlaceholder")}
+                    style={{ width:"100%", padding:"14px 52px 14px 22px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.25)", outline:"none", fontSize:"15px", color:"#fff", background:"rgba(255,255,255,0.05)", fontFamily:"inherit", boxSizing:"border-box", transition:"border 0.2s" }}
+                    onFocus={e=>e.target.style.borderColor="#7c3aed"} onBlur={e=>e.target.style.borderColor="rgba(124,58,237,0.25)"}/>
+                  <label title={videoFile?"Change video file":"Attach video file"} style={{ position:"absolute", right:"12px", top:"50%", transform:"translateY(-50%)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:videoFile?"rgba(124,58,237,0.3)":"rgba(255,255,255,0.08)" }}>
+                    {videoFile
+                      ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                      : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    }
+                    <input type="file" accept="video/*" style={{ display:"none" }}
+                      onChange={e=>{
+                        const file=e.target.files[0];
+                        if(!file) return;
+                        if(file.size>500*1024*1024){alert("File too large. Max 500MB.");return;}
+                        setVideoFile(file);
+                      }}/>
+                  </label>
+                </div>
+                {videoFile&&(
+                  <div style={{ display:"flex",alignItems:"center",gap:"8px",marginBottom:"20px",padding:"8px 16px",borderRadius:"99px",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.2)" }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2"/><polygon points="10,8 16,12 10,16"/></svg>
+                    <span style={{ fontSize:"12px",color:"#a78bfa",fontWeight:"600",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{videoFile.name}</span>
+                    <button onClick={()=>setVideoFile(null)} style={{ background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,0.4)",fontSize:"18px",lineHeight:1,padding:"0 2px" }}>x</button>
+                  </div>
+                )}
 
                 {/* Platform Grid */}
                 <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>{t("platformLabel")}</div>
-                <div className="platform-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"8px", marginBottom:"20px" }}>
+                <div className="platform-grid" style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:"6px", marginBottom:"20px" }}>
                   {PLATFORMS.map(p=>(
                     <button key={p.id} onClick={()=>setPlatform(p.id)}
-                      style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"6px", padding:"12px 8px", borderRadius:"28px", border:`1.5px solid ${platform===p.id?p.color:"rgba(255,255,255,0.08)"}`, background:platform===p.id?`${p.color}18`:"rgba(255,255,255,0.03)", color:platform===p.id?p.color:"rgba(255,255,255,0.5)", fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", boxShadow:platform===p.id?`0 0 12px ${p.color}30`:"none" }}>
-                      <img src={p.img} alt={p.label} style={{ width:"22px", height:"22px", objectFit:"contain" }} onError={e=>e.target.style.display="none"}/><span className="platform-label">{p.label}</span>
+                      style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"4px", padding:"10px 4px", borderRadius:"16px", border:`1.5px solid ${platform===p.id?p.color:"rgba(255,255,255,0.08)"}`, background:platform===p.id?`${p.color}18`:"rgba(255,255,255,0.03)", color:platform===p.id?p.color:"rgba(255,255,255,0.5)", fontSize:"10px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", boxShadow:platform===p.id?`0 0 12px ${p.color}30`:"none" }}>
+                      <img src={p.img} alt={p.label} style={{ width:"20px", height:"20px", objectFit:"contain" }} onError={e=>e.target.style.display="none"}/><span className="platform-label">{p.label}</span>
                     </button>
                   ))}
                 </div>
@@ -2149,7 +2328,7 @@ export default function App() {
               )}
 
               <div ref={resultRef}>
-                {result && <ResultPanel result={result} platform={platform} keyword={keyword} isPro={isPro} onUpgradeClick={()=>openPricing("upgrade")} user={user}/>}
+                {result && <ResultPanel result={result} platform={platform} keyword={keyword} isPro={isPro} onUpgradeClick={()=>openPricing("upgrade")} user={user} onTitleSelect={setSelectedTitle} videoFile={videoFile} selectedTitle={selectedTitle}/>}
               </div>
             </>
           )}

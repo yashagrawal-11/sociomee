@@ -21,10 +21,10 @@ from typing import Any, Dict, Optional
 # ── Plan config ───────────────────────────────────────────────────────
 PLAN_LIMITS: Dict[str, int] = {
     "free":             20,
-    "pro_monthly":      200,
-    "pro_annual":       200,
-    "premium_monthly":  500,
-    "premium_annual":   500,
+    "pro_monthly":      150,
+    "pro_annual":       150,
+    "premium_monthly":  300,
+    "premium_annual":   300,
 }
 
 PLAN_PRICES: Dict[str, Dict[str, Any]] = {
@@ -225,6 +225,7 @@ def use_credit(user_id: str, cost: int = 1) -> bool:
             return False
         new_credits = credits - cost
         record["credits_remaining"] = new_credits
+        record["last_generated"] = datetime.now(timezone.utc).isoformat()
         data[user_id] = record
         _save(data)
         # Low credits warning at 3 credits remaining

@@ -206,6 +206,31 @@ def _bot_send_sync(guild_id: str, channel_id: str, content: str, image_url: str)
     return r.json()
 
 
+
+@router.post("/quick-send")
+async def discord_quick_send(user_id: str = Query(...), content: str = Query(...), title: str = Query(default="")):
+    """Send content to user's first connected Discord guild/channel. No webhook needed."""
+    from credits_manager import use_credit, get_credit_status
+    if not use_credit(user_id, cost=1):
+        raise HTTPException(402, detail="Not enough credits to send content.")
+    guilds = _load_guilds()
+    user_guilds = guilds.get(user_id, [])
+    if not user_guilds:
+        raise HTTPException(400, "Discord not connected")
+    guild = user_guilds[0]
+    channels = guild.get("channels", [])
+    if not channels:
+        raise HTTPException(400, "No channels found in Discord server")
+    channel_id = channels[0]["id"]
+    guild_id = guild["guild_id"]
+    full_content = f"**{title}**\n\n{content}" if title else content
+    return await discord_bot_send(BotSendPayload(
+        user_id=user_id,
+        guild_id=guild_id,
+        channel_id=channel_id,
+        content=full_content[:2000],
+    ))
+
 @router.post("/bot-send")
 async def discord_bot_send(payload: BotSendPayload):
     if not DISCORD_BOT_TOKEN:

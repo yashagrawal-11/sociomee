@@ -272,6 +272,10 @@ async def rauto(user_id:str=Form(...),keyword:str=Form(...),video_type:str=Form(
     if plan=="free": raise HTTPException(403,detail={"error":"upgrade_required","message":"Requires Pro or Premium"})
     q=get_upload_status(user_id,plan)
     if not q["can_upload"]: raise HTTPException(429,detail={"error":"quota_exceeded","message":"Monthly limit reached"})
+    from credits_manager import use_credit, get_credit_status
+    if not use_credit(user_id, cost=5):
+        status = get_credit_status(user_id)
+        raise HTTPException(402, detail={"error":"no_credits","message":f"Not enough credits. You have {status.get('credits_remaining',0)} credits remaining."})
     vb=await video.read()
     if len(vb)>256*1024*1024: raise HTTPException(413,"Max 256 MB")
     isshort=video_type.lower()=="short"

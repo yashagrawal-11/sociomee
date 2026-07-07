@@ -73,6 +73,10 @@ def disconnect(user_id: str = Query(...)):
 
 @router.post("/send-content")
 def send_content(payload: SendContentRequest):
+    from credits_manager import use_credit, get_credit_status
+    if not use_credit(payload.user_id, cost=1):
+        from fastapi import HTTPException
+        raise HTTPException(402, detail="Not enough credits to send content.")
     tc = _tc()
     try:
         return tc.send_content_pack(

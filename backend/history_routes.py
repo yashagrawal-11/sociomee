@@ -45,13 +45,10 @@ def save_generation(user_id: str, topic: str, platform: str,
     history = history[:50]  # keep last 50 only
     path.write_text(json.dumps(history, indent=2))
 
-@router.get("/{user_id}")
-def get_history(user_id: str, user: dict = Depends(get_current_user)):
-    # SECURITY: verify the requester is actually viewing their own history (IDOR fix —
-    # this endpoint previously had zero auth, meaning anyone could view any user's
-    # entire generation history just by knowing their user_id).
-    if user.get("user_id", "") != user_id:
-        raise HTTPException(status_code=403, detail="Access denied")
+def _get_history_internal(user_id: str) -> list:
+    """Plain callable version of the history lookup, for use outside a FastAPI
+    request context (e.g. the MCP server, which authenticates the caller through
+    its own JWT verifier and passes an already-verified user_id directly)."""
     path = _history_file(user_id)
     if not path.exists():
         return []
@@ -59,6 +56,16 @@ def get_history(user_id: str, user: dict = Depends(get_current_user)):
         return json.loads(path.read_text())
     except Exception:
         return []
+
+
+@router.get("/{user_id}")
+def get_history(user_id: str, user: dict = Depends(get_current_user)):
+    # SECURITY: verify the requester is actually viewing their own history (IDOR fix —
+    # this endpoint previously had zero auth, meaning anyone could view any user's
+    # entire generation history just by knowing their user_id).
+    if user.get("user_id", "") != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    return _get_history_internal(user_id)
 
 @router.delete("/{user_id}/{item_id}")
 def delete_history_item(user_id: str, item_id: str, user: dict = Depends(get_current_user)):

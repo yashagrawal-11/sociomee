@@ -76,6 +76,27 @@ def _check_topic_safety(topic: str) -> bool:
     """Returns True if topic is safe to generate content about. Returns False (block) for
     self-harm, sexual content, slurs, hate speech, or violence — regardless of language,
     spelling variant, or character substitution used to evade filters."""
+    # Fast-path allowlist: obviously safe topics bypass Gemini entirely
+    _SAFE_KEYWORDS = [
+        "skincare","makeup","beauty","haircare","fitness","yoga","workout","diet","nutrition",
+        "recipe","cooking","food","travel","vlog","gaming","game","review","tech","mobile",
+        "crypto","finance","money","invest","startup","business","marketing","seo","social media",
+        "youtube","instagram","linkedin","creator","influencer","content","blog","podcast",
+        "fashion","style","outfit","clothing","shopping","education","study","exam","career",
+        "motivation","productivity","mindset","health","wellness","meditation","music","dance",
+        "art","design","photography","coding","programming","ai","chatgpt","iphone","android",
+        "cricket","football","ipl","bollywood","movie","series","netflix","amazon",
+    ]
+    t_lower = topic.lower()
+    if any(kw in t_lower for kw in _SAFE_KEYWORDS):
+        return True
+    # Hard-block obvious violations without calling Gemini
+    _BLOCK_KEYWORDS = [
+        "suicide","self harm","self-harm","kill myself","rape","porn","sex act","nude",
+        "child abuse","csam","bhenchod","chutiya","madarchod","fuck you",
+    ]
+    if any(kw in t_lower for kw in _BLOCK_KEYWORDS):
+        return False
     try:
         check_prompt = f"""You are a content safety classifier. Classify the following video topic.
 Topic: "{topic}"
@@ -97,12 +118,12 @@ Answer with only SAFE or UNSAFE, nothing else."""
                 return False
             if "SAFE" in verdict:
                 return True
-        # Could not parse a clear verdict — fail closed.
-        return False
+        # Could not parse a clear verdict — fail open (allow) to avoid blocking legitimate topics
+        return True
     except Exception as exc:
         import logging
-        logging.getLogger("ai_router").warning("Topic safety check failed: %s — defaulting to BLOCK for safety", exc)
-        return False
+        logging.getLogger("ai_router").warning("Topic safety check failed: %s — defaulting to ALLOW (fail open)", exc)
+        return True
 GEMINI_MODEL = "gemini-2.5-flash"
 
 def _gemini_generate(prompt: str, max_tokens: int = 8000) -> str:

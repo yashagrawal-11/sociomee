@@ -29,8 +29,41 @@ celery_app.conf.update(
             "task": "news.tasks.check_due_reminders",
             "schedule": crontab(minute="*"),
         },
+        "idle-nudge-morning": {
+            "task": "news.tasks.send_idle_nudges",
+            "schedule": crontab(hour=9, minute=15),
+        },
+        "idle-nudge-afternoon": {
+            "task": "news.tasks.send_idle_nudges",
+            "schedule": crontab(hour=14, minute=30),
+        },
+        "idle-nudge-evening": {
+            "task": "news.tasks.send_idle_nudges",
+            "schedule": crontab(hour=19, minute=45),
+        },
+        "idle-nudge-late-night": {
+            "task": "news.tasks.send_idle_nudges",
+            "schedule": crontab(hour=23, minute=10),
+        },
     }
 )
+
+import random as _random_tasks
+
+@celery_app.task(name="news.tasks.send_idle_nudges", bind=True, max_retries=2)
+def send_idle_nudges(self):
+    """Sends a random time-appropriate engagement nudge to all subscribed users."""
+    sys.path.insert(0, '/var/www/sociomee/backend')
+    from push_routes import notify_idle_nudge, get_idle_eligible_user_ids
+    user_ids = get_idle_eligible_user_ids(idle_days=2)
+    sent = 0
+    for uid in user_ids:
+        try:
+            if notify_idle_nudge(uid):
+                sent += 1
+        except Exception as exc:
+            print(f"[idle-nudge] push failed for {uid}: {exc}")
+    return {"sent": sent, "total": len(user_ids)}
 
 
 @celery_app.task(name="news.tasks.check_due_reminders", bind=True, max_retries=2)
