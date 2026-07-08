@@ -79,7 +79,7 @@ const DARK_THEME = {
 
 let C = { ...DARK_THEME };
 
-const BASE = "https://sociomee.in/api";
+const BASE = window.location.origin + "/api";
 
 // ══════════════════════════════════════════════════════════════════════
 // STATIC DATA
@@ -1395,7 +1395,7 @@ function PlanGate({ plan, required="pro", onUpgrade, children, toolName="" }) {
       <h2 style={{fontSize:"20px",fontWeight:"800",color:"#fff",margin:"0 0 8px",fontFamily:"Poppins,sans-serif"}}>{toolName || "Pro Feature"}</h2>
       <p style={{fontSize:"14px",color:"rgba(255,255,255,0.45)",margin:"0 0 24px",lineHeight:1.7,maxWidth:"360px"}}>This tool is available on the Pro plan and above. Upgrade to unlock all SocioMee Store tools, YouTube uploads and full AI features.</p>
       <button onClick={onUpgrade}
-        onClick={()=>window.location.href="https://sociomee.in/pricing"} style={{padding:"12px 28px",borderRadius:"99px",border:"none",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif"}}>
+        onClick={()=>window.location.href="/pricing"} style={{padding:"12px 28px",borderRadius:"99px",border:"none",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif"}}>
         Upgrade to Pro — ₹499/month
       </button>
       <p style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",marginTop:"12px",fontFamily:"Poppins,sans-serif"}}>Cancel anytime. Instant access after payment.</p>
@@ -1490,8 +1490,9 @@ export default function App() {
     calendar: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
     reminders:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
     news:     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>,
+    recorder: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,
   };
-  const APP_TAB_MAP = { notes:"notes", vault:"vault", share:"share", pixel:"pixel", pdf:"pdf", calendar:"calendar", reminders:"reminders", news:"news" };
+  const APP_TAB_MAP = { notes:"notes", vault:"vault", share:"share", pixel:"pixel", pdf:"pdf", calendar:"calendar", reminders:"reminders", news:"news", screenrecorder:"screenrecorder" };
 
   // Handle ?get_app= deep link from the Store page
   useEffect(() => {
@@ -1679,7 +1680,7 @@ export default function App() {
 
         {/* Logo */}
         <div style={{padding:"16px 16px 14px",borderBottom:"1px solid rgba(255,255,255,0.05)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <a href="https://sociomee.in" target="_blank" rel="noopener noreferrer" style={{fontSize:"16px",fontWeight:"900",fontFamily:"'Orbitron',sans-serif",color:"#fff",letterSpacing:"2px",textDecoration:"none",cursor:"pointer"}}>SOCIOMEE</a>
+          <a href="/" target="_blank" rel="noopener noreferrer" style={{fontSize:"16px",fontWeight:"900",fontFamily:"'Orbitron',sans-serif",color:"#fff",letterSpacing:"2px",textDecoration:"none",cursor:"pointer"}}>SOCIOMEE</a>
           {sidebarOpen && <button onClick={()=>setSidebarOpen(false)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",width:"28px",height:"28px",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"rgba(255,255,255,0.5)",fontSize:"14px",fontWeight:"300"}}>✕</button>}
         </div>
 
@@ -1758,7 +1759,6 @@ export default function App() {
                 {tab:"seo",label:t("seo"),fn:()=>{setYoutubeInitialTab("seo");setActiveTab("youtube");setSidebarOpen(false);},icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>},
                 {tab:"yt-evergreen",label:t("evergreenScore"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22V12M12 12C12 8 8 6 6 6c1 3 3 5 6 6zM12 12C12 8 16 6 18 6c-1 3-3 5-6 6z"/></svg>},
                 {tab:"yt-ideas",label:t("dailyVideoIdeas"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>},
-                {tab:"screenrecorder",label:t("screenRecorder"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>},
               ].map(item=>(
                 <button key={item.tab} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
                   style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #7c3aed":"2px solid transparent",background:activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent",color:activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
@@ -2025,7 +2025,7 @@ export default function App() {
             <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(255,255,255,0.12)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
               {[
                 {tab:"history",label:t("history"),fn:()=>toggleTab("history"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
-                {tab:"guides",label:t("guides"),fn:()=>window.open("https://sociomee.in/blog","_blank"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>},
+                {tab:"guides",label:t("guides"),fn:()=>window.open("/blog","_blank"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>},
               ].map(item=>(
                 <button key={item.tab} onClick={item.fn}
                   style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid rgba(255,255,255,0.6)":"2px solid transparent",background:activeTab===item.tab?"rgba(255,255,255,0.08)":"transparent",color:activeTab===item.tab?"#fff":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
@@ -2040,7 +2040,7 @@ export default function App() {
 
         {/* Bottom */}
         <div style={{flexShrink:0,borderTop:"1px solid rgba(255,255,255,0.05)",padding:"12px 8px"}}>
-          {!isPro&&<a href="https://sociomee.in/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"10px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontSize:"13px",fontWeight:"700",textDecoration:"none",boxShadow:"0 0 20px rgba(124,58,237,0.35)",marginBottom:"8px"}}>✦ Upgrade to Pro</a>}
+          {!isPro&&<a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"10px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontSize:"13px",fontWeight:"700",textDecoration:"none",boxShadow:"0 0 20px rgba(124,58,237,0.35)",marginBottom:"8px"}}>✦ Upgrade to Pro</a>}
           <button onClick={logout} style={{width:"100%",padding:"9px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>{t("signout")}</button>
         </div>
 
@@ -2179,13 +2179,13 @@ export default function App() {
             </div>
             {plan==="free" && (
               <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-                <a href="https://sociomee.in/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"800",fontSize:"14px",textDecoration:"none",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>✦ Upgrade to Pro — ₹499/mo</a>
-                <a href="https://sociomee.in/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.6)",fontWeight:"700",fontSize:"14px",textDecoration:"none"}}>View All Plans</a>
+                <a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"800",fontSize:"14px",textDecoration:"none",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>✦ Upgrade to Pro — ₹499/mo</a>
+                <a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.6)",fontWeight:"700",fontSize:"14px",textDecoration:"none"}}>View All Plans</a>
               </div>
             )}
             {plan==="pro" && (
               <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-                <a href="https://sociomee.in/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"800",fontSize:"14px",textDecoration:"none",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>⬆ Upgrade to Premium — ₹1,999/mo</a>
+                <a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"800",fontSize:"14px",textDecoration:"none",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>⬆ Upgrade to Premium — ₹1,999/mo</a>
                 <button style={{padding:"13px",borderRadius:"99px",background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.3)",color:"#a78bfa",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit"}}>Cancel Subscription</button>
               </div>
             )}
@@ -2282,7 +2282,7 @@ export default function App() {
 
           <div style={{ marginBottom:"28px" }}>
             
-            <a href="https://sociomee.in" target="_blank" rel="noopener noreferrer" style={{ fontSize:"clamp(28px,4vw,44px)", fontWeight:"700", fontFamily:"'Orbitron',sans-serif", color:"#fff", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"6px", textDecoration:"none", cursor:"pointer", display:"block" }}>SOCIOMEE</a>
+            <a href="/" target="_blank" rel="noopener noreferrer" style={{ fontSize:"clamp(28px,4vw,44px)", fontWeight:"700", fontFamily:"'Orbitron',sans-serif", color:"#fff", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"6px", textDecoration:"none", cursor:"pointer", display:"block" }}>SOCIOMEE</a>
             <p style={{ fontSize:"15px", color:"rgba(255,255,255,0.35)" }}>{t("oneTopicInfinite")}</p>
           </div>
 
@@ -2440,7 +2440,7 @@ export default function App() {
                   <div style={{ background:"transparent", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"12px", padding:"12px 16px", marginBottom:"16px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"12px" }}>
                     <span style={{ color:"#f87171", fontSize:"13px", fontWeight:"600" }}>⚠ {error}</span>
                     {(error.toLowerCase().includes("credit") || error.toLowerCase().includes("limit")) && (
-                      <a href="https://sociomee.in/pricing" style={{ padding:"9px 24px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.22)", background:"rgba(255,255,255,0.07)", backdropFilter:"blur(16px)", WebkitBackdropFilter:"blur(16px)", color:"#fff", fontSize:"13px", fontWeight:"500", textDecoration:"none", whiteSpace:"nowrap", fontFamily:"Poppins,sans-serif", letterSpacing:"0.04em", boxShadow:"inset 0 1px 0 rgba(255,255,255,0.15),0 4px 16px rgba(0,0,0,0.3)", transition:"all 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}>✦ Pricing</a>
+                      <a href="/pricing" style={{ padding:"9px 24px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.22)", background:"rgba(255,255,255,0.07)", backdropFilter:"blur(16px)", WebkitBackdropFilter:"blur(16px)", color:"#fff", fontSize:"13px", fontWeight:"500", textDecoration:"none", whiteSpace:"nowrap", fontFamily:"Poppins,sans-serif", letterSpacing:"0.04em", boxShadow:"inset 0 1px 0 rgba(255,255,255,0.15),0 4px 16px rgba(0,0,0,0.3)", transition:"all 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}>✦ Pricing</a>
                     )}
                   </div>
                 )}

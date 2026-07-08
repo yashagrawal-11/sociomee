@@ -2,7 +2,7 @@
 mcp_server.py — SocioMee MCP Connector
 Exposes a small set of read-mostly tools to Claude via the Model Context Protocol.
 Runs as its own process (PM2: sociomee-mcp) on port 8010, reverse-proxied at
-https://mcp.sociomee.in by Nginx.
+https://mcp.sociomeeai.com by Nginx.
 
 Tool surface is deliberately narrow: no money movement (SocioMee Pay excluded),
 no AI image/video/audio generation (Pixel/Thumbnail Studio excluded) — both are
@@ -86,13 +86,13 @@ mcp = FastMCP(
     streamable_http_path="/mcp",
     token_verifier=SocioMeeTokenVerifier(),
     auth=AuthSettings(
-        issuer_url="https://sociomee.in",
-        resource_server_url="https://mcp.sociomee.in",
+        issuer_url="https://sociomeeai.com",
+        resource_server_url="https://mcp.sociomeeai.com",
         required_scopes=["mcp"],
     ),
     transport_security=TransportSecuritySettings(
-        allowed_hosts=["mcp.sociomee.in", "127.0.0.1:8010", "localhost:8010"],
-        allowed_origins=["https://claude.ai", "https://mcp.sociomee.in", "https://chatgpt.com", "https://chat.openai.com", "https://platform.openai.com"],
+        allowed_hosts=["mcp.sociomeeai.com", "mcp.sociomee.in", "127.0.0.1:8010", "localhost:8010"],
+        allowed_origins=["https://claude.ai", "https://mcp.sociomeeai.com", "https://mcp.sociomee.in", "https://chatgpt.com", "https://chat.openai.com", "https://platform.openai.com"],
     ),
 )
 

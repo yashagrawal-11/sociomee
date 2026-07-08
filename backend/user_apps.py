@@ -21,6 +21,7 @@ ALL_APPS = [
     {"id": "calendar",  "label": "SocioMee Calendar",  "desc": "Plan your posting schedule across platforms.",         "icon": "calendar"},
     {"id": "reminders", "label": "SocioMee Reminders", "desc": "Set reminders for your content schedule.",             "icon": "reminders"},
     {"id": "news",      "label": "SocioMee News",      "desc": "AI-curated creator news and trending updates.",       "icon": "news"},
+    {"id": "screenrecorder", "label": "Screen Recorder", "desc": "Record your screen in HD for tutorials, demos, and gameplay.", "icon": "recorder"},
 ]
 
 DEFAULT_APPS: List[str] = []

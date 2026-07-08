@@ -22,7 +22,7 @@ REFRESH_TOKEN_TTL = 60 * 60 * 24 * 30  # 30 days
 
 router = APIRouter(tags=["mcp-oauth"])
 
-ISSUER = "https://sociomee.in"
+ISSUER = "https://sociomeeai.com"
 CODE_TTL = 120
 CLIENT_TTL = 60 * 60 * 24 * 90
 
