@@ -25,9 +25,8 @@ export function AuthCallback() {
       handleCallback(token)
         .then(() => {
           setStatus("success");
-          setTimeout(() => {
-            window.location.href = is_new === "true" ? "/onboarding" : "/app";
-          }, 800);
+          if (is_new === "true") sessionStorage.setItem("show_onboarding", "true");
+          window.location.href = is_new === "true" ? "/onboarding" : "/app";
         })
         .catch(() => { setMsg("Callback failed."); setStatus("error"); });
     } else { setMsg(error || "No token received."); setStatus("error"); }

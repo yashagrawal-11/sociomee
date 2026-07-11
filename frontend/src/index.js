@@ -10,7 +10,7 @@ import YouTubeCallback from "./YouTubeCallback";
 const pulse = {animation:"pulse 1.5s ease-in-out infinite",background:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)",backgroundSize:"200% 100%"};
 
 function OnboardingPage() {
-  const { user } = useAuth();
+  React.useEffect(() => { document.title = "Onboarding | SocioMee AI"; return () => { document.title = "SocioMee"; }; }, []);
   const [selected, setSelected] = React.useState(null);
 
   const Card = ({ id, icon, title, desc }) => (
@@ -22,9 +22,10 @@ function OnboardingPage() {
   );
 
   return (
-    <div style={{ minHeight:"100vh", background:"#080810", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"24px", fontFamily:"'DM Sans',sans-serif" }}>
+    <div style={{ minHeight:"100vh", background:"#000000", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"24px", fontFamily:"'Poppins',sans-serif" }}>
       <div style={{ width:"100%", maxWidth:"480px" }}>
         <div style={{ textAlign:"center", marginBottom:"32px" }}>
+          <img src="/app/s_logo.png" alt="SocioMee" style={{ width:"52px", height:"52px", borderRadius:"14px", marginBottom:"16px", objectFit:"contain" }}/>
           <div style={{ fontSize:"22px", fontWeight:"800", color:"#fff", marginBottom:"8px" }}>How will you use SocioMee?</div>
           <div style={{ fontSize:"14px", color:"rgba(255,255,255,0.35)" }}>This helps us personalise your experience</div>
         </div>
@@ -39,24 +40,23 @@ function OnboardingPage() {
           >Continue</button>
         )}
       </div>
-      <style>{`*{box-sizing:border-box;margin:0;padding:0}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');*{box-sizing:border-box;margin:0;padding:0}`}</style>
     </div>
   );
 }
 
 function SkeletonLoader() {
   return (
-    <div style={{display:"flex",minHeight:"100vh",background:"#0a0a0a",fontFamily:"sans-serif"}}>
+    <div style={{display:"flex",minHeight:"100vh",background:"#0a0a0a"}}>
       <div style={{width:"220px",flexShrink:0,background:"rgba(6,4,15,0.97)",borderRight:"1px solid rgba(124,58,237,0.1)",padding:"20px 16px",display:"flex",flexDirection:"column",gap:"12px"}}>
         <div style={{height:"22px",borderRadius:"6px",width:"110px",...pulse}}/>
         <div style={{height:"44px",borderRadius:"10px",marginTop:"4px",...pulse}}/>
-        <div style={{height:"12px",borderRadius:"4px",width:"60px",marginTop:"12px",...pulse}}/>
-        {[1,2,3,4,5,6,7].map(i=><div key={i} style={{height:"32px",borderRadius:"8px",...pulse}}/>)}
+        {[1,2,3,4,5].map(i=><div key={i} style={{height:"32px",borderRadius:"8px",...pulse}}/>)}
       </div>
       <div style={{flex:1,padding:"48px 32px"}}>
         <div style={{maxWidth:"860px",margin:"0 auto",display:"flex",flexDirection:"column",gap:"20px"}}>
           <div style={{height:"40px",borderRadius:"8px",width:"260px",...pulse}}/>
-          <div style={{height:"54px",borderRadius:"99px",...pulse,marginTop:"4px"}}/>
+          <div style={{height:"54px",borderRadius:"99px",...pulse}}/>
         </div>
       </div>
       <style>{"@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}*{box-sizing:border-box;margin:0;padding:0}"}</style>
@@ -67,16 +67,25 @@ function SkeletonLoader() {
 function Router() {
   const { isLoggedIn, loading } = useAuth();
   const path = window.location.pathname;
-  // normalize /login and /onboarding to work alongside /app
-  if (path === "/login" && !isLoggedIn) return <LoginPage/>;
-  if (path === "/onboarding" && isLoggedIn) return <OnboardingPage/>;
 
-  if (loading) return <SkeletonLoader/>;
-
+  // Always handle these before auth check
   if (path === "/youtube/callback" || path === "/youtube/callback/") return <YouTubeCallback/>;
   if (path.includes("/auth/callback")) return <AuthCallback/>;
-  if (path === "/onboarding") return isLoggedIn ? <OnboardingPage/> : <LoginPage/>;
+
+  // Wait for auth to resolve
+  if (loading) return <SkeletonLoader/>;
+
+  // Route based on auth state and path
   if (path === "/login") return isLoggedIn ? <App/> : <LoginPage/>;
+  if (path === "/onboarding") {
+    if (!isLoggedIn) return <LoginPage/>;
+    sessionStorage.setItem("show_onboarding", "true");
+    return <OnboardingPage/>;
+  }
+  if (isLoggedIn && sessionStorage.getItem("show_onboarding") === "true") {
+    sessionStorage.removeItem("show_onboarding");
+    return <OnboardingPage/>;
+  }
   if (!isLoggedIn) return <LoginPage/>;
   return <App/>;
 }

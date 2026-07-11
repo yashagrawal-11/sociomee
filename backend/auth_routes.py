@@ -170,10 +170,13 @@ async def google_callback(request: Request, code: str, state: str = None):
             _rc2.setex(f"age_pending:{_pending_tok}", 600, _json_mod2.dumps(user_payload))
             return RedirectResponse(url=f"https://sociomeeai.com/app/confirm-age?pending={_pending_tok}", status_code=302)
 
+        _users_db = _load_users()
+        _uemail = user_payload.get("email", "")
+        _is_new = _uemail not in _users_db
         token = create_jwt_token(user_payload)
 
         return RedirectResponse(
-            url=f"{FRONTEND_CALLBACK_URL}?token={token}",
+            url=f"{FRONTEND_CALLBACK_URL}?token={token}&is_new={'true' if _is_new else 'false'}",
             status_code=302,
         )
 
@@ -370,7 +373,7 @@ async def github_callback(request: Request, code: str):
             notify_welcome(user_payload["user_id"], user_payload.get("name",""))
         except Exception as _we: print(f"welcome push skip: {_we}")
         redirect = RedirectResponse(
-            url=f"{FRONTEND_CALLBACK_URL}?token={token}",
+            url=f"{FRONTEND_CALLBACK_URL}?token={token}&is_new=false",
             status_code=302,
         )
         # SECURITY MIGRATION: set the httpOnly cookie here too, so the frontend can rely
