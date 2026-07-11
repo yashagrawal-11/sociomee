@@ -235,13 +235,13 @@ function ConnectYouTube({ userId }) {
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%" }}>
         <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(255,0,0,0.12)", border:"2px solid rgba(255,0,0,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <svg viewBox="0 0 24 24" width="32" height="32" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          <img src="/icons/youtube.png" style={{ width:32, height:32, objectFit:"contain" }} alt="YouTube"/>
         </div>
         <h3 style={{ fontSize:16, fontWeight:900, color:C.ink, margin:0 }}>Connect YouTube</h3>
         <p style={{ fontSize:12.5, color:C.muted, lineHeight:1.6, maxWidth:280, margin:0 }}>Get real analytics, AI growth predictions, festival content calendar and more.</p>
         {err && <p style={{ color:C.danger, fontSize:12, fontWeight:600, margin:0 }}>⚠ {err}</p>}
         <button onClick={handleConnect} disabled={loading} style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 24px", borderRadius:99, border:"none", background:"rgba(255,0,0,0.85)", color:"#fff", fontWeight:800, fontSize:14, cursor:loading?"not-allowed":"pointer", fontFamily:"inherit", boxShadow:"0 4px 20px rgba(255,0,0,0.3)", opacity:loading?0.7:1 }}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          <img src="/icons/youtube.png" style={{ width:16, height:16, objectFit:"contain" }} alt=""/>
           {loading ? "Redirecting…" : "Connect YouTube"}
         </button>
       </div>

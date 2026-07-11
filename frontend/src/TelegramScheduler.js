@@ -515,7 +515,21 @@ function PostsHistory({ userId, refreshKey }) {
     finally { setCancelling(prev=>({...prev,[jobId]:false})); }
   };
 
-  if (loading) return <div style={{ display:"flex", justifyContent:"center", padding:"40px" }}><Spinner size={28} color={getC().tg}/></div>;
+  if (loading) return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
+      <div style={{ width:"100%", maxWidth:"420px", display:"flex", flexDirection:"column", gap:12 }}>
+        <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+          <div style={{ width:44,height:44,borderRadius:"50%",background:"rgba(42,171,238,0.1)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0 }}/>
+          <div style={{ flex:1, display:"flex", flexDirection:"column", gap:6 }}>
+            <div style={{ width:"40%",height:12,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+            <div style={{ width:"25%",height:10,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+          </div>
+        </div>
+        {[1,2,3].map(i=><div key={i} style={{ height:48,borderRadius:12,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>)}
+      </div>
+    </div>
+  );
   if (!jobs.length) return (
     <div style={{ textAlign:"center", padding:"40px", color:C.muted }}>
       <div style={{ fontSize:"36px", marginBottom:"12px" }}>📭</div>
@@ -592,10 +606,11 @@ export default function TelegramScheduler({ user }) {
 
   useEffect(() => {
     if (!userId) return;
+    const _t0=Date.now();
     fetch(`${BASE}/telegram/connect-status?user_id=${userId}`)
       .then(r=>r.json())
-      .then(d=>{ setTgStatus(d.connected?"connected":"disconnected"); if(d.connected)setTgInfo(d); })
-      .catch(()=>setTgStatus("disconnected"));
+      .then(d=>{ setTimeout(()=>{ setTgStatus(d.connected?"connected":"disconnected"); if(d.connected)setTgInfo(d); }, Math.max(0,600-(Date.now()-_t0))); })
+      .catch(()=>setTimeout(()=>setTgStatus("disconnected"),Math.max(0,600-(Date.now()-_t0))));
   }, [userId]);
 
   useEffect(() => {
