@@ -124,6 +124,14 @@ except Exception as e:
     log.warning("threads_routes failed: %s", e); _HAS_THREADS_ROUTES = False; threads_router = None
 
 try:
+    from subscription_routes import router as subscription_router
+except Exception as e:
+    log.warning("subscription_routes failed: %s", e); subscription_router = None
+try:
+    from phone_auth_routes import router as phone_auth_router
+except Exception as e:
+    log.warning("phone_auth_routes failed: %s", e); phone_auth_router = None
+try:
     from facebook_auth_routes import router as fb_auth_router
 except Exception as e:
     log.warning("facebook_auth_routes failed: %s", e); fb_auth_router = None
@@ -308,6 +316,8 @@ if _HAS_YT_ROUTES and yt_router is not None:
 # Threads router
 if _HAS_THREADS_ROUTES and threads_router is not None:
     app.include_router(threads_router)
+if subscription_router: app.include_router(subscription_router)
+if phone_auth_router: app.include_router(phone_auth_router)
 if fb_auth_router: app.include_router(fb_auth_router)
 if bug_router: app.include_router(bug_router)
 # WhatsApp router

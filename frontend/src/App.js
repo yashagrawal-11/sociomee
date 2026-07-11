@@ -247,16 +247,63 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
   const pay = async (planId, price) => {
     if (planId === "free") { onClose(); return; }
     setPaying(planId); setPayErr("");
-    const finalPrice = calcPrice(price);
-    await runRazorpayCheckout({
-      planId, userId, email,
-      onSuccess: result => {
-        setDoneMsg(result.message || "Payment successful!");
-        setPaying(null);
-        setTimeout(() => { onSuccess(result); onClose(); }, 2000);
-      },
-      onError: msg => { setPayErr(msg); setPaying(null); },
-    });
+    // Topups use one-time orders; plans use subscriptions
+    const isTopup = planId.startsWith("topup_");
+    if (isTopup) {
+      const finalPrice = calcPrice(price);
+      await runRazorpayCheckout({
+        planId, userId, email,
+        onSuccess: result => {
+          setDoneMsg(result.message || "Credits added!");
+          setPaying(null);
+          setTimeout(() => { onSuccess(result); onClose(); }, 2000);
+        },
+        onError: msg => { setPayErr(msg); setPaying(null); },
+      });
+    } else {
+      // Subscription autopay flow
+      try {
+        const loaded = await loadRazorpay();
+        if (!loaded) { setPayErr("Razorpay SDK failed to load."); setPaying(null); return; }
+        const res = await fetch(`${BASE}/subscription/create`, {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ user_id: userId, email, plan: planId }),
+        });
+        if (!res.ok) { const e = await res.json().catch(()=>({})); setPayErr(e.detail||"Failed to create subscription."); setPaying(null); return; }
+        const sub = await res.json();
+        new window.Razorpay({
+          key: sub.key_id,
+          subscription_id: sub.subscription_id,
+          name: "SocioMee",
+          description: sub.plan_label,
+          prefill: { email },
+          theme: { color: "#7c3aed" },
+          modal: { ondismiss: () => setPaying(null) },
+          handler: async response => {
+            try {
+              const verify = await fetch(`${BASE}/subscription/verify`, {
+                method: "POST", headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({
+                  user_id: userId, email, plan: planId,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_subscription_id: response.razorpay_subscription_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+              });
+              const result = await verify.json();
+              if (result.success) {
+                setDoneMsg(result.message || "Subscription active!");
+                setPaying(null);
+                setTimeout(() => { onSuccess(result); onClose(); }, 2000);
+              } else {
+                setPayErr("Verification failed. Contact support.");
+                setPaying(null);
+              }
+            } catch { setPayErr("Verification failed. Contact support."); setPaying(null); }
+          },
+        }).open();
+      } catch(e) { setPayErr(e.message || "Something went wrong."); setPaying(null); }
+    }
   };
 
   const S = {
