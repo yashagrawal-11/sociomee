@@ -34,7 +34,7 @@ function OnboardingPage() {
           <Card id="business" icon="🏢" title="Business" desc="I manage content for a brand, agency or team"/>
         </div>
         {selected && (
-          <button onClick={() => window.location.href="/pricing"} style={{ width:"100%", padding:"14px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.06)", color:"#fff", fontWeight:"700", fontSize:"14px", cursor:"pointer", fontFamily:"inherit", backdropFilter:"blur(20px)", transition:"all 0.15s" }}
+          <button onClick={() => window.location.href="/app"} style={{ width:"100%", padding:"14px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.06)", color:"#fff", fontWeight:"700", fontSize:"14px", cursor:"pointer", fontFamily:"inherit", backdropFilter:"blur(20px)", transition:"all 0.15s" }}
             onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.1)"}
             onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.06)"}
           >Continue</button>
@@ -79,11 +79,6 @@ function Router() {
   if (path === "/login") return isLoggedIn ? <App/> : <LoginPage/>;
   if (path === "/onboarding") {
     if (!isLoggedIn) return <LoginPage/>;
-    sessionStorage.setItem("show_onboarding", "true");
-    return <OnboardingPage/>;
-  }
-  if (isLoggedIn && sessionStorage.getItem("show_onboarding") === "true") {
-    sessionStorage.removeItem("show_onboarding");
     return <OnboardingPage/>;
   }
   if (!isLoggedIn) return <LoginPage/>;
