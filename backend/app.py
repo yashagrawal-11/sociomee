@@ -124,6 +124,10 @@ except Exception as e:
     log.warning("threads_routes failed: %s", e); _HAS_THREADS_ROUTES = False; threads_router = None
 
 try:
+    from facebook_auth_routes import router as fb_auth_router
+except Exception as e:
+    log.warning("facebook_auth_routes failed: %s", e); fb_auth_router = None
+try:
     from bug_routes import router as bug_router
 except Exception as e:
     log.warning("bug_routes failed: %s", e); bug_router = None
@@ -304,6 +308,7 @@ if _HAS_YT_ROUTES and yt_router is not None:
 # Threads router
 if _HAS_THREADS_ROUTES and threads_router is not None:
     app.include_router(threads_router)
+if fb_auth_router: app.include_router(fb_auth_router)
 if bug_router: app.include_router(bug_router)
 # WhatsApp router
 if _HAS_WA_ROUTES and whatsapp_router is not None:
