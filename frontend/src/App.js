@@ -2411,7 +2411,7 @@ export default function App() {
             <div style={{ textAlign:"center", padding:"60px 20px" }}>
               <h2 style={{ color:"#fff", fontFamily:"'Orbitron',sans-serif", fontSize:"22px", marginBottom:"12px" }}>{t("welcomeTitle")}</h2>
               <p style={{ color:"rgba(255,255,255,0.4)", marginBottom:"24px" }}>{t("welcomeBody")}</p>
-              <a href="/app/login" style={{ padding:"12px 32px", borderRadius:"99px", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", color:"#fff", fontWeight:"800", textDecoration:"none", fontSize:"14px" }}>{t("logIn")}</a>
+              <a href="/login" style={{ padding:"12px 32px", borderRadius:"99px", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", color:"#fff", fontWeight:"800", textDecoration:"none", fontSize:"14px" }}>{t("logIn")}</a>
             </div>
           )}
 

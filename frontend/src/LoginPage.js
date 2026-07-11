@@ -33,7 +33,7 @@ export function AuthCallback() {
     } else { setMsg(error || "No token received."); setStatus("error"); }
   }, [handleCallback]);
   return (
-    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"16px", background:"#080810", fontFamily:"'DM Sans',sans-serif" }}>
+    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"16px", background:"#000000", fontFamily:"'DM Sans',sans-serif" }}>
       {status === "loading" && <><div style={{ width:"36px",height:"36px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.08)",borderTopColor:"rgba(255,255,255,0.6)",animation:"spin 0.7s linear infinite" }}/><p style={{ color:"rgba(255,255,255,0.4)",fontSize:"14px",margin:0 }}>Signing you in</p></>}
       {status === "success" && <p style={{ color:"rgba(255,255,255,0.7)",fontSize:"15px",margin:0 }}>Redirecting</p>}
       {status === "error" && <><p style={{ color:"rgba(239,68,68,0.8)",fontSize:"14px",margin:0,maxWidth:"300px",textAlign:"center" }}>{msg}</p><button onClick={() => window.location.href="/app"} style={{ padding:"10px 24px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.06)",color:"#fff",fontWeight:"600",cursor:"pointer",fontFamily:"inherit" }}>Go back</button></>}
@@ -162,11 +162,11 @@ export default function LoginPage() {
   );
 
   return (
-    <div style={{ minHeight:"100vh", background:"#080810", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"24px", fontFamily:"'DM Sans',sans-serif" }}>
+    <div style={{ minHeight:"100vh", background:"#000000", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"24px", fontFamily:"'DM Sans',sans-serif" }}>
       <div style={{ width:"100%", maxWidth:"400px" }}>
         <div style={{ textAlign:"center", marginBottom:"32px" }}>
-          <div style={{ fontSize:"28px", fontWeight:"800", color:"#fff", letterSpacing:"-0.5px", marginBottom:"6px" }}>SocioMee AI</div>
-          <div style={{ fontSize:"14px", color:"rgba(255,255,255,0.35)" }}>One topic. Infinite content.</div>
+          <img src="/s_logo.png" alt="SocioMee" style={{ width:"52px", height:"52px", borderRadius:"14px", marginBottom:"16px", objectFit:"contain" }}/>
+          <div style={{ fontSize:"13px", color:"rgba(255,255,255,0.3)" }}>One topic. Infinite content.</div>
         </div>
 
         {step === "main" && (
@@ -183,11 +183,11 @@ export default function LoginPage() {
               <IconBtn onClick={() => window.location.href=`${BASE}/auth/facebook/login`}><FacebookIcon/></IconBtn>
             </div>
 
-            <button onClick={() => setStep("email")} style={{ width:"100%", padding:"14px", borderRadius:G.pill, border:G.border, background:"transparent", color:"rgba(255,255,255,0.55)", fontWeight:"600", fontSize:"14px", cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", transition:"all 0.15s" }}
-              onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.04)"}
-              onMouseLeave={e => e.currentTarget.style.background="transparent"}
+            <button onClick={() => setStep("email")} style={{ width:"100%", padding:"14px", borderRadius:G.pill, border:G.border, background:G.bg, color:"#fff", fontWeight:"600", fontSize:"14px", cursor:"pointer", fontFamily:"inherit", backdropFilter:G.blur, display:"flex", alignItems:"center", justifyContent:"center", gap:"10px", transition:"all 0.15s" }}
+              onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"}
+              onMouseLeave={e => e.currentTarget.style.background=G.bg}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
               Continue with Email
             </button>
 

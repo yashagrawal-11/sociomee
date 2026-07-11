@@ -67,6 +67,9 @@ function SkeletonLoader() {
 function Router() {
   const { isLoggedIn, loading } = useAuth();
   const path = window.location.pathname;
+  // normalize /login and /onboarding to work alongside /app
+  if (path === "/login" && !isLoggedIn) return <LoginPage/>;
+  if (path === "/onboarding" && isLoggedIn) return <OnboardingPage/>;
 
   if (loading) return <SkeletonLoader/>;
 
