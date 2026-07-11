@@ -236,12 +236,13 @@ export default function ThreadsDashboard({ user, topic = "" }) {
   const [predLoading,setPredLoading] = useState(false);
 
   const load = useCallback(async () => {
-    if (!userId) { setLoading(false); return; }
+    const _t0 = Date.now();
+    if (!userId) { setTimeout(()=>setLoading(false), 600); return; }
     setLoading(true);
     try {
       const sr = await fetch(`${BASE}/threads/status?user_id=${userId}`);
       const st = await sr.json();
-      if (!st.connected) { setConnected(false); setLoading(false); return; }
+      if (!st.connected) { setConnected(false); setTimeout(()=>setLoading(false), Math.max(0, 600-(Date.now()-_t0))); return; }
       setConnected(true);
       setProfile(st);
 
@@ -318,12 +319,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
         <p style={{ fontSize:12.5, color:C.muted, maxWidth:280, lineHeight:1.7, margin:0 }}>
           Get full analytics, viral predictions, audience insights, and best time to post — all in one place.
         </p>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, width:"100%", textAlign:"left" }}>
-          {["Views, likes & engagement", "Viral post predictor", "Audience demographics", "Best time to post heatmap", "Competitor benchmarking", "Publish directly"].map((f, i) => (
-            <div key={i} style={{ fontSize:12, color:C.slate, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 12px" }}>{f}</div>
-          ))}
-        </div>
-        <button onClick={handleConnect} disabled={connecting} style={{ padding:"13px 36px", borderRadius:99, border:"none", background:"#000", color:"#fff", fontWeight:800, fontSize:14, cursor: connecting ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:10, boxShadow:"0 8px 24px rgba(0,0,0,0.25)", opacity: connecting ? 0.7 : 1 }}>
+        <button onClick={handleConnect} disabled={connecting} style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 24px", borderRadius:99, border:"none", background:"rgba(255,255,255,0.1)", color:"#fff", fontWeight:800, fontSize:14, cursor: connecting ? "not-allowed" : "pointer", fontFamily:"inherit", boxShadow:"0 4px 16px rgba(0,0,0,0.3)", opacity: connecting ? 0.7 : 1 }}>
           <ThreadsIcon size={18} color="#fff" />
           {connecting ? "Redirecting…" : "Connect with Threads"}
         </button>

@@ -235,12 +235,13 @@ export default function InstagramDashboard({ user, topic = "" }) {
   const [predLoading, setPredLoading] = useState(false);
 
   const load = useCallback(async () => {
-    if (!userId) { setLoading(false); return; }
+    const _t0 = Date.now();
+    if (!userId) { setTimeout(()=>setLoading(false), 600); return; }
     setLoading(true);
     try {
       const sr = await fetch(`${BASE}/instagram/status?user_id=${userId}`);
       const st = await sr.json();
-      if (!st.connected) { setConnected(false); setLoading(false); return; }
+      if (!st.connected) { setConnected(false); setTimeout(()=>setLoading(false), Math.max(0, 600-(Date.now()-_t0))); return; }
       setConnected(true);
       setProfile(st);
 

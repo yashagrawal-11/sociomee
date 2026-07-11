@@ -33,7 +33,8 @@ export default function DiscordScheduler({ user }) {
   };
 
   const loadGuilds = () => {
-    if (!userId) { setLoading(false); return; }
+    const _t0 = Date.now();
+    if (!userId) { setTimeout(()=>setLoading(false), 600); return; }
     fetch(`${BASE}/discord/guilds?user_id=${userId}`)
       .then(r => r.json())
       .then(d => {
