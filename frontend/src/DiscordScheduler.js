@@ -166,7 +166,8 @@ export default function DiscordScheduler({ user }) {
   };
 
   if (loading) return (
-    <div style={{ padding:"24px", display:"flex", flexDirection:"column", gap:12 }}>
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
+      <div style={{ width:"100%", maxWidth:"420px", display:"flex", flexDirection:"column", gap:12 }}>
       <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
       <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
         <div style={{ width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0 }}/>
@@ -177,6 +178,7 @@ export default function DiscordScheduler({ user }) {
       </div>
       {[1,2,3].map(i=><div key={i} style={{ height:48,borderRadius:12,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>)}
     </div>
+      </div>
   );
 
   const styleTag = (

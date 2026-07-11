@@ -294,7 +294,8 @@ export default function ThreadsDashboard({ user, topic = "" }) {
   };
 
   if (loading) return (
-    <div style={{ padding:"24px", display:"flex", flexDirection:"column", gap:12 }}>
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
+      <div style={{ width:"100%", maxWidth:"420px", display:"flex", flexDirection:"column", gap:12 }}>
       <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
       <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
         <div style={{ width:52,height:52,borderRadius:"50%",background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0 }}/>
@@ -305,6 +306,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
       </div>
       {[1,2,3].map(i=><div key={i} style={{ height:56,borderRadius:12,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>)}
       <div style={{ height:120,borderRadius:12,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+      </div>
     </div>
   );
 
