@@ -556,8 +556,8 @@ function PostsHistory({ userId, refreshKey }) {
               {cancelling[job.job_id]?"…":"Cancel"}
             </button>
           )}
-        </div>
       </div>
+    </div>
     );
   };
 
@@ -632,7 +632,8 @@ export default function TelegramScheduler({ user }) {
   if (tgStatus==="checking") return <div style={{ display:"flex", justifyContent:"center", padding:"40px" }}><Spinner size={28} color={getC().tg}/></div>;
 
   if (tgStatus==="disconnected") return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"32px 24px", gap:"16px", textAlign:"center" }}>
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"32px 24px" }}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"16px", textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%" }}>
       <div style={{ width:"64px", height:"64px", borderRadius:"50%", background:"rgba(42,171,238,0.12)", border:"2px solid rgba(42,171,238,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
         <TGIcon size={28} color="#2aabee"/>
       </div>
@@ -651,6 +652,7 @@ export default function TelegramScheduler({ user }) {
           <p style={{ fontSize:"11px", color:C.muted, marginTop:"8px" }}>{polling?"⏳ Waiting…":"Tap the link above"}</p>
         </div>
       )}
+      </div>
     </div>
   );
 

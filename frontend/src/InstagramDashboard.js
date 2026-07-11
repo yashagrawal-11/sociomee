@@ -183,7 +183,7 @@ function Publisher({ userId, topic, onPublished }) {
       {result.url && <a href={result.url} target="_blank" rel="noreferrer" style={{ fontSize:12, color:C.pink, fontWeight:600 }}>View on Instagram →</a>}
       <br />
       <button onClick={() => { setResult(null); setCaption(""); setImageUrl(""); }} style={{ marginTop:12, padding:"8px 20px", borderRadius:99, border:"none", background:C.pink, color:"#fff", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>Post Another</button>
-    </div>
+      </div>
   );
 
   return (
@@ -296,30 +296,40 @@ export default function InstagramDashboard({ user, topic = "" }) {
     } catch { setConnecting(false); }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div style={{ padding:"24px", display:"flex", flexDirection:"column", gap:12 }}>
+      <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
+      <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+        <div style={{ width:52,height:52,borderRadius:"50%",background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0 }}/>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", gap:6 }}>
+          <div style={{ width:"45%",height:13,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+          <div style={{ width:"30%",height:10,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+        </div>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
+        {[1,2,3,4,5,6].map(i=><div key={i} style={{ height:80,borderRadius:10,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>)}
+      </div>
+      {[1,2].map(i=><div key={i} style={{ height:40,borderRadius:10,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>)}
+    </div>
+  );
 
   // ── Not connected ──────────────────────────────────────────────────
   if (!connected) return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"52px 24px", gap:16, textAlign:"center" }}>
-      <div style={{ width:72, height:72, borderRadius:20, background:C.ig, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 12px 32px rgba(225,48,108,0.3)" }}>
-        <IGIcon size={38} />
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%" }}>
+        <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(225,48,108,0.12)", border:"2px solid rgba(225,48,108,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <IGIcon size={30} />
+        </div>
+        <h3 style={{ fontSize:16, fontWeight:900, color:C.ink, margin:0 }}>Connect Instagram</h3>
+        <p style={{ fontSize:12.5, color:C.muted, maxWidth:280, lineHeight:1.7, margin:0 }}>Get full analytics, viral predictions, Reels insights, audience data, and best time to post.</p>
+        <div style={{ background:"rgba(255,193,7,0.08)", border:"1px solid rgba(255,193,7,0.2)", borderRadius:10, padding:"10px 14px", fontSize:12, color:"rgba(255,193,7,0.8)", lineHeight:1.6, textAlign:"left" }}>
+          Requires Instagram Business or Creator account linked to a Facebook Page.
+        </div>
+        <button onClick={handleConnect} disabled={connecting} style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 24px", borderRadius:99, border:"none", background:C.ig, color:"#fff", fontWeight:800, fontSize:14, cursor: connecting ? "not-allowed" : "pointer", fontFamily:"inherit", boxShadow:"0 4px 20px rgba(225,48,108,0.35)", opacity: connecting ? 0.7 : 1 }}>
+          <IGIcon size={16} />
+          {connecting ? "Redirecting…" : "Connect with Instagram"}
+        </button>
       </div>
-      <h2 style={{ fontSize:20, fontWeight:900, color:C.ink }}>Connect Instagram</h2>
-      <p style={{ fontSize:13, color:C.muted, maxWidth:320, lineHeight:1.7 }}>
-        Get full analytics, viral predictions, Reels insights, audience data, and best time to post.
-      </p>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, maxWidth:340, width:"100%", textAlign:"left" }}>
-        {["📊 Impressions, reach & engagement", "🔥 Viral Reel predictor", "🎬 Reels & Stories analytics", "👥 Audience demographics", "🕐 Best time to post heatmap", "✍️ Publish directly to Instagram"].map((f, i) => (
-          <div key={i} style={{ fontSize:12, color:C.slate, background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:10, padding:"8px 12px" }}>{f}</div>
-        ))}
-      </div>
-      <div style={{ background:`${C.warn}15`, border:`1px solid ${C.warn}44`, borderRadius:12, padding:"12px 16px", maxWidth:340, fontSize:12, color:C.slate, textAlign:"left", lineHeight:1.6 }}>
-        ⚠ <strong>Requires Instagram Business or Creator account</strong> linked to a Facebook Page. Personal accounts are not supported by Meta's API.
-      </div>
-      <button onClick={handleConnect} disabled={connecting} style={{ padding:"13px 36px", borderRadius:99, border:"none", background:C.ig, color:"#fff", fontWeight:800, fontSize:14, cursor: connecting ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:10, boxShadow:"0 8px 24px rgba(225,48,108,0.3)", opacity: connecting ? 0.7 : 1 }}>
-        <IGIcon size={18} />
-        {connecting ? "Redirecting…" : "Connect with Instagram"}
-      </button>
     </div>
   );
 

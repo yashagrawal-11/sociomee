@@ -232,7 +232,8 @@ function ConnectYouTube({ userId }) {
     finally { setLoading(false); }
   };
   return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"52px 24px", gap:"20px" }}>
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"20px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"420px", width:"100%", textAlign:"center" }}>
       <div style={{ width:"72px", height:"72px", borderRadius:"18px", background:"#ff0000", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 12px 32px #ff000044" }}>
         <svg viewBox="0 0 24 24" width="40" height="40" fill="white"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
       </div>
@@ -244,6 +245,7 @@ function ConnectYouTube({ userId }) {
       <button onClick={handleConnect} disabled={loading} style={{ padding:"14px 32px", borderRadius:"14px", border:"none", background:"linear-gradient(135deg,#ff0000,#cc0000)", color:"white", fontWeight:"800", fontSize:"15px", cursor:loading?"not-allowed":"pointer", fontFamily:"inherit", boxShadow:"0 12px 32px #ff000044" }}>
         {loading ? "Redirecting…" : "▶ Connect YouTube Channel"}
       </button>
+      </div>
     </div>
   );
 }

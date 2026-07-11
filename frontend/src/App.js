@@ -2649,25 +2649,27 @@ export default function App() {
           {activeTab==="threads"    && isLoggedIn && <ThreadsDashboard user={user}/>}
           {activeTab==="instagram"  && isLoggedIn && <InstagramDashboard />}
           {activeTab==="facebook" && isLoggedIn && (
-            <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"20px",padding:"48px 32px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:"16px",minHeight:"400px"}}>
-              <div style={{width:"72px",height:"72px",borderRadius:"50%",background:"rgba(24,119,242,0.12)",border:"2px solid rgba(24,119,242,0.3)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:"8px"}}>
-                <img src="/icons/facebook.png" style={{width:36,height:36,objectFit:"contain"}} alt="Facebook"/>
-              </div>
-              <h2 style={{fontSize:"20px",fontWeight:"800",color:"#fff",margin:0}}>Connect Facebook</h2>
-              <p style={{fontSize:"14px",color:"rgba(255,255,255,0.45)",maxWidth:"320px",lineHeight:1.6,margin:0}}>Publish posts to your Facebook Page, track engagement, and manage your content — all from SocioMee.</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:"10px",justifyContent:"center",margin:"8px 0"}}>
-                {["Post to Facebook Pages","Page analytics","Schedule posts","Manage comments"].map(f=>(
-                  <div key={f} style={{padding:"6px 14px",borderRadius:"99px",background:"rgba(24,119,242,0.08)",border:"1px solid rgba(24,119,242,0.2)",color:"rgba(255,255,255,0.6)",fontSize:"12px",fontWeight:"600"}}>{f}</div>
-                ))}
-              </div>
-              <div style={{padding:"12px 20px",borderRadius:"12px",background:"rgba(255,193,7,0.08)",border:"1px solid rgba(255,193,7,0.2)",color:"rgba(255,193,7,0.8)",fontSize:"12px",maxWidth:"360px",lineHeight:1.5}}>
-                Facebook integration is currently under review. It will be available once Meta approves our app.
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"70vh"}}>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",gap:"16px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"40px 32px",maxWidth:"420px",width:"100%"}}>
+                <div style={{width:"72px",height:"72px",borderRadius:"50%",background:"rgba(24,119,242,0.12)",border:"2px solid rgba(24,119,242,0.3)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <img src="/icons/facebook.png" style={{width:36,height:36,objectFit:"contain"}} alt="Facebook"/>
+                </div>
+                <h2 style={{fontSize:"20px",fontWeight:"800",color:"#fff",margin:0}}>Connect Facebook</h2>
+                <p style={{fontSize:"14px",color:"rgba(255,255,255,0.45)",maxWidth:"320px",lineHeight:1.6,margin:0}}>Publish posts to your Facebook Page, track engagement, and manage your content — all from SocioMee.</p>
+                <div style={{display:"flex",flexWrap:"wrap",gap:"10px",justifyContent:"center"}}>
+                  {["Post to Facebook Pages","Page analytics","Schedule posts","Manage comments"].map(f=>(
+                    <div key={f} style={{padding:"6px 14px",borderRadius:"99px",background:"rgba(24,119,242,0.08)",border:"1px solid rgba(24,119,242,0.2)",color:"rgba(255,255,255,0.6)",fontSize:"12px",fontWeight:"600"}}>{f}</div>
+                  ))}
+                </div>
+                <div style={{padding:"12px 20px",borderRadius:"12px",background:"rgba(255,193,7,0.08)",border:"1px solid rgba(255,193,7,0.2)",color:"rgba(255,193,7,0.8)",fontSize:"12px",maxWidth:"360px",lineHeight:1.5}}>
+                  Facebook integration is currently under review. It will be available once Meta approves our app.
+                </div>
               </div>
             </div>
           )}
           {activeTab==="pinterest"  && isLoggedIn && <PinterestDashboard user={user}/>}
           {activeTab==="reddit"     && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Reddit" icon="/icons/reddit.png" color="#ff4500" message="Reddit integration coming soon. Post to subreddits and track upvotes."/></div>}
-          {activeTab==="telegram" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TelegramScheduler user={user}/></div>}
+          {activeTab==="telegram" && isLoggedIn && <TelegramScheduler user={user}/>}
           {activeTab==="discord"    && isLoggedIn && <DiscordScheduler user={user}/>}
           {activeTab==="history"    && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HistoryPanel user={user} onReuse={(topic,platform)=>{ setKeyword(topic); setPlatform(platform); setActiveTab("generate"); }}/></div>}
           {activeTab==="news" && isLoggedIn && <SocioMeeNews userId={user?.email||"anonymous"}/>}

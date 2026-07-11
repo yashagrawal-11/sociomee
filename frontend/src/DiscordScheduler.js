@@ -164,29 +164,43 @@ export default function DiscordScheduler({ user }) {
     setSending(false);
   };
 
-  if (loading) return <div style={{ padding: 20, color: C.muted, fontSize: 13 }}>Loading…</div>;
+  if (loading) return (
+    <div style={{ padding:"24px", display:"flex", flexDirection:"column", gap:12 }}>
+      <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
+      <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+        <div style={{ width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0 }}/>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", gap:6 }}>
+          <div style={{ width:"40%",height:12,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+          <div style={{ width:"25%",height:10,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+        </div>
+      </div>
+      {[1,2,3].map(i=><div key={i} style={{ height:48,borderRadius:12,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>)}
+    </div>
+  );
 
   const styleTag = (
     <style>{`@keyframes dspin { to { transform: rotate(360deg); } }`}</style>
   );
 
   if (!guilds.length) return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"32px 24px", gap:"16px", textAlign:"center" }}>
-      {styleTag}
-      <div style={{ width:"64px", height:"64px", borderRadius:"50%", background:`${DC}20`, border:`2px solid ${DC}50`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <DiscordIcon size={28} color={DC}/>
-      </div>
-      <h3 style={{ fontSize:"16px", fontWeight:"900", color:"#fff", margin:0 }}>Connect Discord</h3>
-      <p style={{ fontSize:"12.5px", color:"rgba(255,255,255,0.45)", lineHeight:1.6, maxWidth:"280px", margin:0 }}>Post messages, images, and schedule content directly to your Discord server channels.</p>
-      {connectErr && (
-        <div style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.3)", borderRadius:10, padding:"10px 14px", fontSize:"12.5px", fontWeight:600, color:"#ef4444", width:"100%", maxWidth:"300px" }}>
-          {connectErr}
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"16px", textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%" }}>
+        {styleTag}
+        <div style={{ width:"64px", height:"64px", borderRadius:"50%", background:`${DC}18`, border:`2px solid ${DC}44`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <DiscordIcon size={28} color={DC}/>
         </div>
-      )}
-      <button onClick={connect} disabled={connecting}
-        style={{ display:"flex", alignItems:"center", gap:"8px", padding:"12px 24px", borderRadius:"12px", border:"none", background:`linear-gradient(135deg,${DC},#4752c4)`, color:"#fff", fontWeight:"800", fontSize:"14px", cursor:connecting?"not-allowed":"pointer", fontFamily:"inherit", opacity:connecting?0.7:1, boxShadow:`0 4px 20px ${DC}44` }}>
-        {connecting ? <><Spinner size={16}/>Connecting…</> : <><DiscordIcon size={16} color="#fff"/>Connect Discord</>}
-      </button>
+        <h3 style={{ fontSize:"16px", fontWeight:"900", color:"#fff", margin:0 }}>Connect Discord</h3>
+        <p style={{ fontSize:"12.5px", color:"rgba(255,255,255,0.45)", lineHeight:1.6, maxWidth:"280px", margin:0 }}>Post messages, images, and schedule content directly to your Discord server channels.</p>
+        {connectErr && (
+          <div style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.3)", borderRadius:10, padding:"10px 14px", fontSize:"12.5px", fontWeight:600, color:"#ef4444", width:"100%" }}>
+            {connectErr}
+          </div>
+        )}
+        <button onClick={connect} disabled={connecting}
+          style={{ display:"flex", alignItems:"center", gap:"8px", padding:"12px 24px", borderRadius:99, border:"none", background:`linear-gradient(135deg,${DC},#4752c4)`, color:"#fff", fontWeight:"800", fontSize:"14px", cursor:connecting?"not-allowed":"pointer", fontFamily:"inherit", opacity:connecting?0.7:1, boxShadow:`0 4px 20px ${DC}44` }}>
+          {connecting ? <><Spinner size={16}/>Connecting…</> : <><DiscordIcon size={16} color="#fff"/>Connect Discord</>}
+        </button>
+      </div>
     </div>
   );
 

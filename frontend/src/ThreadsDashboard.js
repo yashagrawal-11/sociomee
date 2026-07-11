@@ -292,27 +292,42 @@ export default function ThreadsDashboard({ user, topic = "" }) {
     } catch (e) { setConnecting(false); }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div style={{ padding:"24px", display:"flex", flexDirection:"column", gap:12 }}>
+      <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
+      <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+        <div style={{ width:52,height:52,borderRadius:"50%",background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0 }}/>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", gap:6 }}>
+          <div style={{ width:"40%",height:13,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+          <div style={{ width:"25%",height:10,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+        </div>
+      </div>
+      {[1,2,3].map(i=><div key={i} style={{ height:56,borderRadius:12,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>)}
+      <div style={{ height:120,borderRadius:12,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+    </div>
+  );
 
   // ── Not connected ──────────────────────────────────────────────────
   if (!connected) return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"52px 24px", gap:16, textAlign:"center" }}>
-      <div style={{ width:72, height:72, borderRadius:20, background:"#000", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 12px 32px rgba(0,0,0,0.3)" }}>
-        <ThreadsIcon size={40} color="#fff" />
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"380px", width:"100%" }}>
+        <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(255,255,255,0.06)", border:"2px solid rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <ThreadsIcon size={30} color="#fff" />
+        </div>
+        <h2 style={{ fontSize:18, fontWeight:900, color:C.ink, margin:0 }}>Connect Threads</h2>
+        <p style={{ fontSize:12.5, color:C.muted, maxWidth:280, lineHeight:1.7, margin:0 }}>
+          Get full analytics, viral predictions, audience insights, and best time to post — all in one place.
+        </p>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, width:"100%", textAlign:"left" }}>
+          {["Views, likes & engagement", "Viral post predictor", "Audience demographics", "Best time to post heatmap", "Competitor benchmarking", "Publish directly"].map((f, i) => (
+            <div key={i} style={{ fontSize:12, color:C.slate, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 12px" }}>{f}</div>
+          ))}
+        </div>
+        <button onClick={handleConnect} disabled={connecting} style={{ padding:"13px 36px", borderRadius:99, border:"none", background:"#000", color:"#fff", fontWeight:800, fontSize:14, cursor: connecting ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:10, boxShadow:"0 8px 24px rgba(0,0,0,0.25)", opacity: connecting ? 0.7 : 1 }}>
+          <ThreadsIcon size={18} color="#fff" />
+          {connecting ? "Redirecting…" : "Connect with Threads"}
+        </button>
       </div>
-      <h2 style={{ fontSize:20, fontWeight:900, color:C.ink }}>Connect Threads</h2>
-      <p style={{ fontSize:13, color:C.muted, maxWidth:320, lineHeight:1.7 }}>
-        Get full analytics, viral predictions, audience insights, and best time to post — all in one place.
-      </p>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, maxWidth:320, width:"100%", textAlign:"left" }}>
-        {["📊 Views, likes & engagement", "🔥 Viral post predictor", "👥 Audience demographics", "🕐 Best time to post heatmap", "📈 Competitor benchmarking", "✍️ Publish directly"].map((f, i) => (
-          <div key={i} style={{ fontSize:12, color:C.slate, background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:10, padding:"8px 12px" }}>{f}</div>
-        ))}
-      </div>
-      <button onClick={handleConnect} disabled={connecting} style={{ padding:"13px 36px", borderRadius:99, border:"none", background:"#000", color:"#fff", fontWeight:800, fontSize:14, cursor: connecting ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:10, boxShadow:"0 8px 24px rgba(0,0,0,0.25)", opacity: connecting ? 0.7 : 1 }}>
-        <ThreadsIcon size={18} color="#fff" />
-        {connecting ? "Redirecting…" : "Connect with Threads"}
-      </button>
     </div>
   );
 

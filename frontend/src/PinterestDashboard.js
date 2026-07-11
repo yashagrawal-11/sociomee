@@ -278,7 +278,7 @@ function Scheduler({ userId, boards, onPublished }) {
       <p style={{ fontSize:12, color:C.muted, marginBottom:12 }}>Your pin will publish on {when.toLocaleString()}</p>
       <button onClick={() => { setDone(false); setTitle(""); setDesc(""); setImgB64(""); setImgPreview(""); setWhen(null); }}
         style={{ padding:"8px 20px", borderRadius:99, border:"none", background:C.red, color:"#fff", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>Schedule Another</button>
-    </div>
+      </div>
   );
 
   return (
@@ -603,29 +603,39 @@ export default function PinterestDashboard({ user, topic = "" }) {
     } catch { setConnecting(false); }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div style={{ padding:"24px", display:"flex", flexDirection:"column", gap:12 }}>
+      <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
+      <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+        <div style={{ width:52,height:52,borderRadius:"50%",background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0 }}/>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", gap:6 }}>
+          <div style={{ width:"40%",height:13,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+          <div style={{ width:"25%",height:10,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
+        </div>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+        {[1,2,3,4].map(i=><div key={i} style={{ height:100,borderRadius:10,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>)}
+      </div>
+      {[1,2].map(i=><div key={i} style={{ height:40,borderRadius:10,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>)}
+    </div>
+  );
 
   // ── Not connected ──────────────────────────────────────────────────
   if (!connected) return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"52px 24px", gap:16, textAlign:"center" }}>
-      <div style={{ width:72, height:72, borderRadius:20, background:PINTEREST_RED, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 12px 32px rgba(230,0,35,0.3)" }}>
-        <svg width={40} height={40} viewBox="0 0 24 24" fill="#fff">
-          <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
-        </svg>
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%" }}>
+        <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(230,0,35,0.12)", border:"2px solid rgba(230,0,35,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <svg width={32} height={32} viewBox="0 0 24 24" fill={PINTEREST_RED}>
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
+          </svg>
+        </div>
+        <h3 style={{ fontSize:16, fontWeight:900, color:C.ink, margin:0 }}>Connect Pinterest</h3>
+        <p style={{ fontSize:12.5, color:C.muted, maxWidth:280, lineHeight:1.7, margin:0 }}>Track your pins, boards, viral predictions, audience insights and best time to post.</p>
+        <button onClick={handleConnect} disabled={connecting} style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 24px", borderRadius:99, border:"none", background:PINTEREST_RED, color:"#fff", fontWeight:800, fontSize:14, cursor: connecting ? "not-allowed" : "pointer", fontFamily:"inherit", boxShadow:"0 4px 20px rgba(230,0,35,0.35)", opacity: connecting ? 0.7 : 1 }}>
+          <PinterestIcon size={16} />
+          {connecting ? "Redirecting…" : "Connect with Pinterest"}
+        </button>
       </div>
-      <h2 style={{ fontSize:20, fontWeight:900, color:C.ink }}>Connect Pinterest</h2>
-      <p style={{ fontSize:13, color:C.muted, maxWidth:320, lineHeight:1.7 }}>
-        Track your pins, boards, viral predictions, audience insights and best time to post.
-      </p>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, maxWidth:340, width:"100%", textAlign:"left" }}>
-        {["📌 Pin & board analytics", "🔥 Viral pin predictor", "👥 Audience demographics", "🕐 Best time to post", "📈 Creator benchmarking", "✍️ Publish pins directly"].map((f, i) => (
-          <div key={i} style={{ fontSize:12, color:C.slate, background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:10, padding:"8px 12px" }}>{f}</div>
-        ))}
-      </div>
-      <button onClick={handleConnect} disabled={connecting} style={{ padding:"13px 36px", borderRadius:99, border:"none", background:PINTEREST_RED, color:"#fff", fontWeight:800, fontSize:14, cursor: connecting ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:10, boxShadow:"0 8px 24px rgba(230,0,35,0.3)", opacity: connecting ? 0.7 : 1 }}>
-        <PinterestIcon size={18} />
-        {connecting ? "Redirecting…" : "Connect with Pinterest"}
-      </button>
     </div>
   );
 
