@@ -145,7 +145,7 @@ Website:
 
 ⚠️ Copyright Disclaimer under Section 107 of the copyright act 1976, allowance is made for fair use.
 
-🤖 Uploaded by SocioMee AI · sociomee.in"""
+Uploaded by SocioMee AI · sociomeeai.com"""
 
 def gen_seo(kw,vt="video",lang="Hindi/English",prem=True):
     extra = ',\n  "hook":"15 sec script",\n  "thumbnail_idea":"thumbnail concept",\n  "best_title_alternatives":["a","b","c"]' if prem else ""

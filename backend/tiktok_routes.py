@@ -8,7 +8,7 @@ TikTok OAuth uses the official Content Posting API.
 Required .env:
     TIKTOK_CLIENT_KEY    = your_client_key
     TIKTOK_CLIENT_SECRET = your_client_secret
-    TIKTOK_REDIRECT_URI  = https://sociomee.in/api/tiktok/callback
+    TIKTOK_REDIRECT_URI  = https://sociomeeai.com/api/tiktok/callback
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ router = APIRouter(prefix="/tiktok", tags=["tiktok"])
 
 TIKTOK_CLIENT_KEY    = os.getenv("TIKTOK_CLIENT_KEY",    "")
 TIKTOK_CLIENT_SECRET = os.getenv("TIKTOK_CLIENT_SECRET", "")
-TIKTOK_REDIRECT_URI  = os.getenv("TIKTOK_REDIRECT_URI",  "https://sociomee.in/api/tiktok/callback")
+TIKTOK_REDIRECT_URI  = os.getenv("TIKTOK_REDIRECT_URI",  "https://sociomeeai.com/api/tiktok/callback")
 TIKTOK_SCOPE         = "user.info.basic,user.info.stats,video.list,video.publish"
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
@@ -152,7 +152,7 @@ async def tiktok_callback(code: str = Query(...), state: str = Query("")):
         "expires_at":    (datetime.now(timezone.utc) + timedelta(seconds=expires_in)).isoformat(),
     })
 
-    return RedirectResponse(url="https://sociomee.in/app?tiktok=connected")
+    return RedirectResponse(url="https://sociomeeai.com/app?tiktok=connected")
 
 
 @router.get("/connect-status")

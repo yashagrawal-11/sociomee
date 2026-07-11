@@ -143,7 +143,7 @@ export default function SocioMeePixel() {
     try {
       // Use remove.bg API via a simple fetch with form data
       const token = localStorage.getItem("sociomee_token");
-      const res = await fetch("https://sociomee.in/api/removebg", {
+      const res = await fetch("https://sociomeeai.com/api/removebg", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ image }),

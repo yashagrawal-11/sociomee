@@ -1,5 +1,5 @@
 const VAPID_PUBLIC="BEByuC2Mkl9PWIgaiOFEgIcXjn6GSmlBo4tstvA8TS9d-PJtFshfg5KVqGQr75hb3-AWnFTsKZOnc1hF0OjTXLY";
-const BASE="https://sociomee.in/api";
+const BASE="https://sociomeeai.com/api";
 
 function urlBase64ToUint8Array(b64){
   const pad="=".repeat((4-b64.length%4)%4);

@@ -123,6 +123,10 @@ try:
 except Exception as e:
     log.warning("threads_routes failed: %s", e); _HAS_THREADS_ROUTES = False; threads_router = None
 
+try:
+    from bug_routes import router as bug_router
+except Exception as e:
+    log.warning("bug_routes failed: %s", e); bug_router = None
 # ── Instagram router ──────────────────────────────────────────────────
 try:
     from instagram_routes import router as instagram_router
@@ -300,6 +304,7 @@ if _HAS_YT_ROUTES and yt_router is not None:
 # Threads router
 if _HAS_THREADS_ROUTES and threads_router is not None:
     app.include_router(threads_router)
+if bug_router: app.include_router(bug_router)
 # WhatsApp router
 if _HAS_WA_ROUTES and whatsapp_router is not None:
     app.include_router(whatsapp_router)
@@ -405,7 +410,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
-            "connect-src 'self' https://api.razorpay.com https://sociomee.in; "
+            "connect-src 'self' https://api.razorpay.com https://sociomeeai.com https://sociomee.in; "
             "frame-src https://api.razorpay.com https://checkout.razorpay.com;"
         )
         # Remove server info header
@@ -1147,6 +1152,17 @@ def verify_payment(payload: VerifyPaymentRequest):
             amount=amount_inr,
             payment_id=payload.razorpay_payment_id,
         )
+        # Send GST invoice (only for plan purchases, not top-ups)
+        if info.get("type") != "topup":
+            from email_service import send_invoice_email
+            send_invoice_email(
+                to_email=payload.email,
+                name=payload.email.split("@")[0],
+                plan_label=info["label"],
+                amount=amount_inr,
+                payment_id=payload.razorpay_payment_id,
+                order_id=payload.razorpay_order_id,
+            )
     except Exception as _e:
         log.warning("Payment email failed: %s", _e)
     return {"success": True, "message": msg, "plan": plan, "plan_label": info["label"], "credits": total, "credit_status": get_credit_status(payload.user_id)}

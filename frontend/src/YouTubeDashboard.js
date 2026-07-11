@@ -11,7 +11,7 @@ import {
 import YouTubeUpload from "./YouTubeUpload";
 import VideoPerformance from "./VideoPerformance";
 
-const BASE = "https://sociomee.in/api";
+const BASE = "https://sociomeeai.com/api";
 const YT_LANG = () => localStorage.getItem("sociomee_lang") || "en";
 
 const getToken = () => localStorage.getItem("sociomee_token") || "";
@@ -762,7 +762,7 @@ function SEOTab({ userId, channel, C }) {
   const [videoUrl,   setVideoUrl  ] = useState("");
   const [videoScore, setVideoScore] = useState(null);
   const [scoreLoad,  setScoreLoad ] = useState(false);
-  const BASE = "https://sociomee.in/api";
+  const BASE = "https://sociomeeai.com/api";
 const YT_LANG = () => localStorage.getItem("sociomee_lang") || "en";
 
 const getToken = () => localStorage.getItem("sociomee_token") || "";
@@ -1089,7 +1089,7 @@ function SuggestedCompetitors({ userId, C }) {
 
   useEffect(() => {
     if (!userId) return;
-    fetch(`https://sociomee.in/api/youtube/suggested-competitors?user_id=${userId}`)
+    fetch(`https://sociomeeai.com/api/youtube/suggested-competitors?user_id=${userId}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
@@ -1178,7 +1178,7 @@ function CompetitorTab({ userId, C }) {
     if (!channelUrl.trim()) return;
     setLoading(true); setCompetitor(null);
     try {
-      const res = await fetch(`https://sociomee.in/api/youtube/competitor?user_id=${userId||"guest"}&channel_url=${encodeURIComponent(channelUrl.trim())}`);
+      const res = await fetch(`https://sociomeeai.com/api/youtube/competitor?user_id=${userId||"guest"}&channel_url=${encodeURIComponent(channelUrl.trim())}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Failed");
       setCompetitor(data);

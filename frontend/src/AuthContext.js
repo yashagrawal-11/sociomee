@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-const BASE = "https://sociomee.in/api";
+const BASE = "https://sociomeeai.com/api";
 const AuthContext = createContext(null);
 // SECURITY MIGRATION: the session now lives in an httpOnly cookie set by the backend,
 // not in localStorage. The cookie is invisible to JavaScript (that's the whole point —
@@ -38,7 +38,7 @@ export function AuthProvider({ children }) {
   }, []);
   const handleCallback = useCallback(async (token) => {
     // Setting the cookie on the OAuth redirect itself is unreliable (it crosses through
-    // Google's domain mid-chain), so instead we call set-session directly from sociomee.in
+    // Google's domain mid-chain), so instead we call set-session directly from sociomeeai.com
     // — a same-origin request — using the token the redirect put in the URL. This actually
     // sets the cookie reliably, then we fetch the user as normal.
     try {

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useState } from "react";
 
-const BASE = "https://sociomee.in/api";
+const BASE = "https://sociomeeai.com/api";
 
 const BLOCKED_KEYWORDS = [
   // English

@@ -11,7 +11,7 @@ import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from "recharts";
 
-const BASE = "https://sociomee.in/api";
+const BASE = "https://sociomeeai.com/api";
 const PINTEREST_RED = "#e60023";
 
 function getC() {
@@ -226,7 +226,7 @@ function Scheduler({ userId, boards, onPublished }) {
   const [imgB64,   setImgB64  ] = useState("");
   const [imgCtype, setImgCtype] = useState("");
   const [imgPreview, setImgPreview] = useState("");
-  const [link,     setLink    ] = useState("https://sociomee.in");
+  const [link,     setLink    ] = useState("https://sociomeeai.com");
   const [boardId,  setBoardId ] = useState(boards[0]?.id || "");
   const [when,     setWhen    ] = useState(null);
   const [dragOver, setDragOver] = useState(false);
@@ -440,7 +440,7 @@ function Publisher({ userId, boards, onPublished }) {
   const [title,    setTitle   ] = useState("");
   const [desc,     setDesc    ] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [link,     setLink    ] = useState("https://sociomee.in");
+  const [link,     setLink    ] = useState("https://sociomeeai.com");
   const [boardId,  setBoardId ] = useState(boards[0]?.id || "");
   const [loading,  setLoad    ] = useState(false);
   const [result,   setResult  ] = useState(null);

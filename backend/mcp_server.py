@@ -97,14 +97,14 @@ mcp = FastMCP(
 )
 
 
-@mcp.tool(title="Get SocioMee credit status", annotations={"readOnlyHint": True})
+@mcp.tool(title="Get SocioMee credit status", annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False})
 def get_credit_status() -> dict:
     """Returns the authenticated SocioMee user's current plan, remaining
     credits, and upload allowance. Read-only — makes no changes."""
     return credits_manager.get_credit_status(_current_user_id())
 
 
-@mcp.tool(title="Search SocioMee creator news", annotations={"readOnlyHint": True})
+@mcp.tool(title="Search SocioMee creator news", annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False})
 def search_news(category: str = "all", limit: int = 10) -> list:
     """Returns recent AI-curated creator news and trending platform updates
     from SocioMee News. category: 'all' or a specific category. limit: max
@@ -113,14 +113,14 @@ def search_news(category: str = "all", limit: int = 10) -> list:
     return news_store.get_news(category=category, limit=limit)
 
 
-@mcp.tool(title="List upcoming Indian festivals", annotations={"readOnlyHint": True})
+@mcp.tool(title="List upcoming Indian festivals", annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False})
 def list_upcoming_festivals() -> list:
     """Returns the next upcoming Indian festivals and events from the SocioMee
     Calendar, each with days-until, useful for content planning. Read-only."""
     return festival_routes.get_upcoming_festivals()
 
 
-@mcp.tool(title="Get SocioMee generation history", annotations={"readOnlyHint": True})
+@mcp.tool(title="Get SocioMee generation history", annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False})
 def get_generation_history(limit: int = 20) -> list:
     """Returns the authenticated user's most recent SocioMee content
     generations (topic, platform, title, hashtags, word count). Read-only."""
@@ -128,7 +128,7 @@ def get_generation_history(limit: int = 20) -> list:
     return history_routes._get_history_internal(_current_user_id())[:limit]
 
 
-@mcp.tool(title="Create a SocioMee share link", annotations={"readOnlyHint": False, "destructiveHint": False})
+@mcp.tool(title="Create a SocioMee share link", annotations={"readOnlyHint": False, "openWorldHint": True, "destructiveHint": False})
 def create_share_link(text: str, expires_minutes: int = 30) -> dict:
     """Creates a short-lived 6-digit code and link for sharing a piece of text
     (e.g. a script, caption, or note) across devices via SocioMee Share. Does
@@ -147,7 +147,7 @@ def create_share_link(text: str, expires_minutes: int = 30) -> dict:
     return {"code": code, "expires_in_minutes": expires_minutes}
 
 
-@mcp.tool(title="Generate a content script", annotations={"readOnlyHint": False, "destructiveHint": False})
+@mcp.tool(title="Generate a content script", annotations={"readOnlyHint": False, "openWorldHint": True, "destructiveHint": False})
 def generate_content(topic: str, persona: str = "dhruvrathee", language: str = "hinglish",
                       country: str = "in", platform: str = "youtube") -> dict:
     """Generates a full video/content script on a topic using SocioMee's AI pipeline.
@@ -189,7 +189,7 @@ def generate_content(topic: str, persona: str = "dhruvrathee", language: str = "
     return result
 
 
-@mcp.tool(title="Generate hashtags", annotations={"readOnlyHint": True})
+@mcp.tool(title="Generate hashtags", annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False})
 def generate_hashtags(keyword: str, platform: str = "instagram") -> dict:
     """Generates relevant trending hashtags for a keyword and platform
     (instagram, youtube, twitter, or linkedin). Free, no credits used."""
@@ -202,7 +202,7 @@ def generate_hashtags(keyword: str, platform: str = "instagram") -> dict:
         return {"error": f"Could not generate hashtags. ({e})"}
 
 
-@mcp.tool(title="Generate hook lines", annotations={"readOnlyHint": True})
+@mcp.tool(title="Generate hook lines", annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False})
 def generate_hooks(topic: str, platform: str = "youtube", tone: str = "curiosity",
                     language: str = "hinglish") -> dict:
     """Generates attention-grabbing opening hook lines for a video on a topic.
@@ -217,7 +217,7 @@ def generate_hooks(topic: str, platform: str = "youtube", tone: str = "curiosity
         return {"error": f"Could not generate hooks. ({e})"}
 
 
-@mcp.tool(title="Get YouTube analytics", annotations={"readOnlyHint": True})
+@mcp.tool(title="Get YouTube analytics", annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False})
 def get_youtube_analytics(days: int = 30) -> dict:
     """Returns the authenticated user's connected YouTube channel analytics:
     daily views and subscriber counts for the last N days (7 to 90, default 30)."""

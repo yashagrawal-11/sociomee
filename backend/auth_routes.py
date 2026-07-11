@@ -168,7 +168,7 @@ async def google_callback(request: Request, code: str, state: str = None):
             _rc2 = _redis_mod2.Redis(host="localhost", port=6379, db=0, decode_responses=True)
             _pending_tok = _secrets_mod2.token_urlsafe(24)
             _rc2.setex(f"age_pending:{_pending_tok}", 600, _json_mod2.dumps(user_payload))
-            return RedirectResponse(url=f"https://sociomee.in/app/confirm-age?pending={_pending_tok}", status_code=302)
+            return RedirectResponse(url=f"https://sociomeeai.com/app/confirm-age?pending={_pending_tok}", status_code=302)
 
         token = create_jwt_token(user_payload)
 
@@ -363,7 +363,7 @@ async def github_callback(request: Request, code: str):
             _rc2 = _redis_mod2.Redis(host="localhost", port=6379, db=0, decode_responses=True)
             _pending_tok = _secrets_mod2.token_urlsafe(24)
             _rc2.setex(f"age_pending:{_pending_tok}", 600, _json_mod2.dumps(user_payload))
-            return RedirectResponse(url=f"https://sociomee.in/app/confirm-age?pending={_pending_tok}", status_code=302)
+            return RedirectResponse(url=f"https://sociomeeai.com/app/confirm-age?pending={_pending_tok}", status_code=302)
         token = create_jwt_token(user_payload)
         try:
             from push_routes import notify_welcome
@@ -504,7 +504,7 @@ def register(body: RegisterBody, request: Request, response: Response):
         _rc_verify = _redis_verify.Redis(host="localhost", port=6379, db=0, decode_responses=True)
         _verify_token = _secrets_verify.token_urlsafe(32)
         _rc_verify.setex(f"verify_email:{_verify_token}", 24*60*60, email)
-        _verify_url = f"https://sociomee.in/app/verify-email?token={_verify_token}"
+        _verify_url = f"https://sociomeeai.com/app/verify-email?token={_verify_token}"
         send_verification_email(email, users[email].get("name", email.split("@")[0]), _verify_url)
     except Exception as _verify_e:
         log.warning(f"Failed to send verification email to {email}: {_verify_e}")
@@ -573,7 +573,7 @@ def resend_verification(body: ForgotBody, request: Request):
             _rc_rv = _redis_rv.Redis(host="localhost", port=6379, db=0, decode_responses=True)
             _verify_token = _secrets_rv.token_urlsafe(32)
             _rc_rv.setex(f"verify_email:{_verify_token}", 24*60*60, email)
-            _verify_url = f"https://sociomee.in/app/verify-email?token={_verify_token}"
+            _verify_url = f"https://sociomeeai.com/app/verify-email?token={_verify_token}"
             send_verification_email(email, user.get("name", email.split("@")[0]), _verify_url)
         except Exception as _rv_e:
             log.warning(f"Failed to resend verification email to {email}: {_rv_e}")
@@ -652,6 +652,68 @@ def reset_password(body: ResetBody):
     _save_users(users)
     return {"message": "Password reset successful. Please login."}
 
+
+@router.post("/downgrade-plan")
+def downgrade_plan(request: Request, user: dict = Depends(get_current_user)):
+    """
+    Schedule a downgrade/cancellation to take effect at plan_expires.
+    - Cancel (any paid -> free): target_plan = "free"
+    - Downgrade (premium -> pro, same cadence): target_plan = "pro_monthly" or "pro_annual"
+    Credits and plan stay active until the current billing period ends.
+    """
+    import json as _json
+    body = {}
+    try:
+        import asyncio
+        loop = asyncio.new_event_loop()
+        body = loop.run_until_complete(request.json())
+        loop.close()
+    except Exception:
+        pass
+
+    target_plan = body.get("target_plan", "")
+    user_id = user["user_id"]
+
+    from credits_manager import get_credit_status, schedule_downgrade, PLAN_LIMITS
+
+    status = get_credit_status(user_id)
+    current_plan = status.get("plan", "free")
+
+    # Validate not already free
+    if current_plan == "free":
+        raise HTTPException(400, detail="You are already on the Free plan.")
+
+    # Validate target makes sense
+    valid_targets = {
+        "pro_monthly":      ["free"],
+        "pro_annual":       ["free"],
+        "premium_monthly":  ["free", "pro_monthly"],
+        "premium_annual":   ["free", "pro_annual"],
+    }
+    allowed = valid_targets.get(current_plan, [])
+    if target_plan not in allowed:
+        raise HTTPException(400, detail=f"Cannot downgrade from {current_plan} to {target_plan}.")
+
+    # Check not already scheduled for same target
+    from credits_manager import _load
+    data = _load()
+    record = data.get(user_id, {})
+    if record.get("scheduled_downgrade_plan") == target_plan:
+        raise HTTPException(400, detail="This downgrade is already scheduled.")
+
+    result = schedule_downgrade(user_id, target_plan)
+
+    label_map = {
+        "free": "Free",
+        "pro_monthly": "Pro Monthly",
+        "pro_annual": "Pro Annual",
+    }
+    return {
+        "success": True,
+        "message": f"Your plan will change to {label_map.get(target_plan, target_plan)} at the end of your billing period.",
+        "effective_at": result.get("effective_at"),
+        "scheduled_plan": target_plan,
+    }
 
 @router.delete("/delete-account")
 def delete_account(user: dict = Depends(get_current_user)):

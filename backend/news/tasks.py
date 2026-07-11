@@ -29,6 +29,10 @@ celery_app.conf.update(
             "task": "news.tasks.check_due_reminders",
             "schedule": crontab(minute="*"),
         },
+        "check-scheduled-downgrades-hourly": {
+            "task": "news.tasks.check_scheduled_downgrades",
+            "schedule": crontab(minute=0),
+        },
         "idle-nudge-morning": {
             "task": "news.tasks.send_idle_nudges",
             "schedule": crontab(hour=9, minute=15),
@@ -79,7 +83,7 @@ def check_due_reminders(self):
                 r["user_id"],
                 title="SocioMee Reminder",
                 body=r["task"],
-                url="https://sociomee.in/app",
+                url="https://sociomeeai.com/app",
                 tag=f"reminder-{r['id']}",
             )
             rm.update_status(r["user_id"], r["id"], "sent")
@@ -154,4 +158,49 @@ def fetch_and_store_news(self):
         loop.run_until_complete(_run())
     except Exception as exc:
         print(f"Task failed: {exc}")
+        raise self.retry(exc=exc, countdown=60)
+
+@celery_app.task(name="news.tasks.check_scheduled_downgrades", bind=True, max_retries=2)
+def check_scheduled_downgrades(self):
+    """Every hour: apply any scheduled downgrades whose effective_at has passed."""
+    try:
+        sys.path.insert(0, '/var/www/sociomee/backend')
+        from credits_manager import _load, _save, set_user_plan, _lock
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        with _lock:
+            data = _load()
+            changed = 0
+            for user_id, record in data.items():
+                target = record.get("scheduled_downgrade_plan")
+                at_str = record.get("scheduled_downgrade_at")
+                if not target:
+                    continue
+                # If no expiry date set, apply immediately
+                if at_str is None:
+                    apply = True
+                else:
+                    try:
+                        at_dt = datetime.fromisoformat(at_str)
+                        if at_dt.tzinfo is None:
+                            at_dt = at_dt.replace(tzinfo=timezone.utc)
+                        apply = now >= at_dt
+                    except Exception:
+                        apply = True
+                if apply:
+                    record["plan"] = target
+                    from credits_manager import PLAN_LIMITS
+                    record["credits_remaining"] = PLAN_LIMITS.get(target, 20)
+                    record["last_reset"] = now.isoformat()
+                    record["plan_expires"] = None
+                    record.pop("scheduled_downgrade_plan", None)
+                    record.pop("scheduled_downgrade_at", None)
+                    data[user_id] = record
+                    changed += 1
+                    print(f"Downgrade applied: {user_id} -> {target}")
+            if changed:
+                _save(data)
+        print(f"check_scheduled_downgrades: {changed} downgrades applied")
+    except Exception as exc:
+        print(f"check_scheduled_downgrades failed: {exc}")
         raise self.retry(exc=exc, countdown=60)

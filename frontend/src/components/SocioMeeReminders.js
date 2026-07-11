@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const BASE = "https://sociomee.in/api";
+const BASE = "https://sociomeeai.com/api";
 
 // ── Line icons ─────────────────────────────────────────────
 function IconBell({ size=22, color="#a78bfa" }) {

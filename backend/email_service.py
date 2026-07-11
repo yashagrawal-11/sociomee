@@ -11,8 +11,8 @@ log = logging.getLogger("email_service")
 
 resend.api_key = os.getenv("RESEND_API_KEY", "")
 
-FROM_EMAIL = "SocioMee <hello@sociomee.in>"
-SUPPORT_EMAIL = "hello@sociomee.in"
+FROM_EMAIL = "SocioMee <hello@sociomeeai.com>"
+SUPPORT_EMAIL = "hello@sociomeeai.com"
 BRAND_PURPLE = "#7c3aed"
 BRAND_ROSE   = "#ff3d8f"
 
@@ -63,7 +63,7 @@ def _base_template(content: str, preview_text: str = "") -> str:
     </div>
     <div class="footer">
       <p>SocioMee · AI Content Studio for Indian Creators</p>
-      <p><a href="https://sociomee.in">sociomee.in</a> · <a href="mailto:{SUPPORT_EMAIL}">Support</a></p>
+      <p><a href="https://sociomeeai.com">sociomeeai.com</a> · <a href="mailto:{SUPPORT_EMAIL}">Support</a></p>
       <p style="margin-top:8px;font-size:10px;color:rgba(157,134,200,0.4)">You're receiving this because you have a SocioMee account.</p>
     </div>
   </div>
@@ -106,7 +106,7 @@ def _welcome_html(name: str) -> str:
       </div>
 
       <div style="text-align:center;margin:24px 0">
-        <a href="https://sociomee.in" class="btn">✦ Start Creating Now</a>
+        <a href="https://sociomeeai.com" class="btn">✦ Start Creating Now</a>
       </div>
 
       <div class="tip">
@@ -146,7 +146,7 @@ def _payment_html(name: str, plan_label: str, credits: int, amount: int, payment
       </div>
 
       <div style="text-align:center;margin:24px 0">
-        <a href="https://sociomee.in" class="btn">✦ Start Creating</a>
+        <a href="https://sociomeeai.com" class="btn">✦ Start Creating</a>
       </div>
 
       <div class="tip">
@@ -172,7 +172,7 @@ def _low_credits_html(name: str, credits_left: int, plan: str) -> str:
       {'<p class="p">Upgrade to <strong style="color:#a78bfa">Pro</strong> for just ₹499/month and get 200 credits every month — 10x more content!</p>' if is_free else '<p class="p">Top up instantly with our credit packs — ₹99 for 50 credits or ₹199 for 120 credits.</p>'}
 
       <div style="text-align:center;margin:24px 0">
-        <a href="https://sociomee.in" class="btn">{'✦ Upgrade to Pro' if is_free else '⚡ Top Up Credits'}</a>
+        <a href="https://sociomeeai.com" class="btn">{'✦ Upgrade to Pro' if is_free else '⚡ Top Up Credits'}</a>
       </div>
 
       <div class="tip">
@@ -226,7 +226,7 @@ def _plan_expiry_html(name: str, plan_label: str, days_left: int) -> str:
       <p class="p">Hey {first}, just a heads up — your {plan_label} plan will auto-renew in <strong style="color:#fbbf24">{days_left} days</strong>. Make sure your payment method is up to date.</p>
 
       <div style="text-align:center;margin:24px 0">
-        <a href="https://sociomee.in" class="btn">✦ Manage Plan</a>
+        <a href="https://sociomeeai.com" class="btn">✦ Manage Plan</a>
       </div>
 
       <div class="tip">
@@ -237,6 +237,57 @@ def _plan_expiry_html(name: str, plan_label: str, days_left: int) -> str:
 
 
 # ─── Send Functions ───────────────────────────────────────────────────────────
+
+def send_invoice_email(to_email: str, name: str, plan_label: str,
+                       amount: int, payment_id: str, order_id: str = "") -> bool:
+    """Generate GST invoice PDF and email it to the customer."""
+    if not resend.api_key or not to_email:
+        return False
+    try:
+        from invoice_generator import generate_invoice
+        import base64
+        pdf_bytes, invoice_no = generate_invoice(
+            customer_email=to_email,
+            customer_name=name,
+            plan_label=plan_label,
+            amount_with_gst=amount,
+            payment_id=payment_id,
+            order_id=order_id,
+        )
+        pdf_b64 = base64.b64encode(pdf_bytes).decode()
+        resend.Emails.send({
+            "from":    FROM_EMAIL,
+            "to":      [to_email],
+            "subject": f"Your SocioMee Invoice {invoice_no} — {plan_label}",
+            "html":    f"""
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#fff">
+  <div style="text-align:center;margin-bottom:24px">
+    <img src="https://sociomeeai.com/s_logo.png" width="48" style="border-radius:12px"/>
+    <h2 style="margin:12px 0 4px;color:#0a0a0a">Your GST Invoice</h2>
+    <p style="color:#666;font-size:14px;margin:0">Invoice No: <b>{invoice_no}</b></p>
+  </div>
+  <p style="color:#333;font-size:15px">Hi {name or to_email.split('@')[0].title()},</p>
+  <p style="color:#333;font-size:15px">Thank you for subscribing to <b>{plan_label}</b>. Please find your GST invoice attached.</p>
+  <div style="background:#f9f5ff;border:1px solid #e9d5ff;border-radius:12px;padding:20px;margin:24px 0">
+    <p style="margin:0 0 8px;color:#7c3aed;font-weight:700">Invoice Summary</p>
+    <p style="margin:4px 0;color:#333;font-size:14px">Plan: {plan_label}</p>
+    <p style="margin:4px 0;color:#333;font-size:14px">Amount Paid: ₹{amount}</p>
+    <p style="margin:4px 0;color:#333;font-size:14px">Payment ID: {payment_id}</p>
+    <p style="margin:4px 0;color:#333;font-size:14px">GSTIN: 27IPNPP2774C1ZF</p>
+  </div>
+  <p style="color:#666;font-size:13px">For support, reply to this email or visit <a href="https://sociomeeai.com/help" style="color:#7c3aed">sociomeeai.com/help</a></p>
+  <p style="color:#999;font-size:11px;margin-top:32px;border-top:1px solid #eee;padding-top:16px">Mee Group | GSTIN: 27IPNPP2774C1ZF | Kalyan, Maharashtra</p>
+</div>""",
+            "attachments": [{
+                "filename": f"SocioMee_Invoice_{invoice_no.replace('/','_')}.pdf",
+                "content":  pdf_b64,
+            }],
+        })
+        log.info("Invoice %s sent to %s", invoice_no, to_email)
+        return True
+    except Exception as e:
+        log.error("send_invoice_email failed: %s", e)
+        return False
 
 def send_welcome_email(to_email: str, name: str) -> bool:
     """Send welcome email after signup."""

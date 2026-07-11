@@ -10,7 +10,7 @@ const LANGUAGES = [
   { code:"gu", label:"ગુજરાતી",  name:"Gujarati" },
   { code:"te", label:"తెలుగు",   name:"Telugu"   },
 ];
-const BASE = "https://sociomee.in/api";
+const BASE = "https://sociomeeai.com/api";
 
 const BLOCKED = [
   // English

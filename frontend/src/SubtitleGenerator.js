@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useState, useRef, useCallback } from "react";
 
-const BASE = "https://sociomee.in/api";
+const BASE = "https://sociomeeai.com/api";
 const UI_LANG = () => localStorage.getItem("sociomee_lang") || "en";
 const st = (hi, mr, ta, bn, en) => {
   const l = UI_LANG();

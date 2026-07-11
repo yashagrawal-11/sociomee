@@ -6,7 +6,7 @@ const C = {
   muted:"rgba(255,255,255,0.4)", success:"#34d399", danger:"#f87171",
 };
 
-const AI = "https://sociomee.in/api/ai/generate";
+const AI = "https://sociomeeai.com/api/ai/generate";
 
 const FALLBACK_DESCS = {
   general: ["📌 {topic} — save this pin before you forget! Everything you need in one place. Perfect for planning! ✨ #{tag} #PinterestInspiration #SaveForLater #PinItForLater #Ideas","✨ The {topic} guide you've been looking for! Packed with tips and ideas. Don't let this scroll by! 💡 #{tag} #Inspiration #PinterestFinds #SaveThis #PinWorthy","🌟 {topic} ideas that will inspire you! Curated just for you. Pin this to your board! 📌 #{tag} #Inspo #Ideas #PinItNow #SavedForLater #PinterestBoard"],

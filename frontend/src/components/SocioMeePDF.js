@@ -186,7 +186,7 @@ export default function SocioMeePDF({ onSendToGenerator }) {
         : `You are reviewing a brand deal contract for a content creator. Find payment terms, deliverables, deadlines, exclusivity and red flags. Return ONLY valid JSON: {"summary":"overview paragraph","keyPoints":["finding1","finding2","finding3","finding4","finding5"]}. Contract: ${docSnippet}`;
 
       const token = localStorage.getItem("sociomee_token");
-      const res = await fetch("https://sociomee.in/api/ai/generate", {
+      const res = await fetch("https://sociomeeai.com/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),

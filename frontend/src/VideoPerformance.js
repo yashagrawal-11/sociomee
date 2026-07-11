@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Pie, Cell, PieChart as RechartsPie } from "recharts";
-const BASE = "https://sociomee.in/api";
+const BASE = "https://sociomeeai.com/api";
 const C = {purple:"#7c3aed",muted:"rgba(255,255,255,0.4)",glass:"rgba(255,255,255,0.03)"};
 const PURPLE = ["#7c3aed","#9333ea","#a78bfa","#6d28d9","#c4b5fd"];
 function fmt(n){if(!n)return"0";if(n>=1000000)return(n/1000000).toFixed(1)+"M";if(n>=1000)return(n/1000).toFixed(1)+"K";return String(n);}

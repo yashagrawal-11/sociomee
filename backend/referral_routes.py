@@ -44,7 +44,7 @@ def get_referral_link(request: Request):
     data = _load()
     record = data.get(user_id, {"referred_users": [], "reward_claimed": False})
     return {
-        "referral_link": f"https://sociomee.in/app?ref={user_id}",
+        "referral_link": f"https://sociomeeai.com/app?ref={user_id}",
         "referred_count": len(record.get("referred_users", [])),
         "reward_claimed": record.get("reward_claimed", False),
     }
@@ -113,7 +113,7 @@ def referral_status(request: Request):
     referred = record.get("referred_users", [])
     completed = [r for r in referred if r.get("used_app")]
     return {
-        "referral_link": f"https://sociomee.in/app?ref={user_id}",
+        "referral_link": f"https://sociomeeai.com/app?ref={user_id}",
         "total_referred": len(referred),
         "completed": len(completed),
         "reward_claimed": record.get("reward_claimed", False),

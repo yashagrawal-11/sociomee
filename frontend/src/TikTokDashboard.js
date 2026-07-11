@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from "react";
 
-const BASE = "https://sociomee.in/api";
+const BASE = "https://sociomeeai.com/api";
 
 function getC() {
   const dark = true;

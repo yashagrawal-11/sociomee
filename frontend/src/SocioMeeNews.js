@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 
-const API = 'https://sociomee.in/api/news'
+const API = 'https://sociomeeai.com/api/news'
 
 const CATS = [
   {id:'all',    label:'All'},

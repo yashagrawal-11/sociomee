@@ -45,7 +45,7 @@ function Router() {
   );
 
   // YouTube OAuth callback — must be before login check
-  if (path === "/youtube/callback") return <YouTubeCallback />;
+  if (path === "/youtube/callback" || path === "/youtube/callback/") return <YouTubeCallback />;
 
   // Google login callback
   if (path.includes("/auth/callback")) return <AuthCallback />;

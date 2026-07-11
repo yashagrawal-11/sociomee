@@ -17,7 +17,7 @@ router = APIRouter(prefix="/threads", tags=["threads"])
 
 THREADS_APP_ID       = os.getenv("THREADS_APP_ID")
 THREADS_APP_SECRET   = os.getenv("THREADS_APP_SECRET")
-THREADS_REDIRECT_URI = os.getenv("THREADS_REDIRECT_URI", "https://sociomee.in/threads/callback")
+THREADS_REDIRECT_URI = os.getenv("THREADS_REDIRECT_URI", "https://sociomeeai.com/threads/callback")
 THREADS_SCOPE        = "threads_basic,threads_content_publish,threads_manage_insights,threads_read_replies"
 
 # ── Storage helpers ────────────────────────────────────────────────────
@@ -103,6 +103,9 @@ async def threads_callback(code: str, state: str = ""):
                 "access_token":  short_token,
             },
         )
+    if lr.status_code != 200:
+        import logging
+        logging.getLogger("sociomee").warning(f"Long token exchange failed: {lr.status_code} {lr.text}")
     long_token = lr.json().get("access_token", short_token)
 
     profile = await _fetch_profile(threads_uid, long_token)
@@ -114,7 +117,7 @@ async def threads_callback(code: str, state: str = ""):
     })
 
     from fastapi.responses import RedirectResponse
-    return RedirectResponse("https://sociomee.in?threads=connected")
+    return RedirectResponse("https://sociomeeai.com/app/threads")
 
 
 async def _fetch_profile(threads_uid: str, token: str) -> dict:
@@ -123,7 +126,7 @@ async def _fetch_profile(threads_uid: str, token: str) -> dict:
             r = await client.get(
                 f"https://graph.threads.net/v1.0/{threads_uid}",
                 params={
-                    "fields":       "id,username,name,threads_profile_picture_url,threads_biography,follower_count,following_count",
+                    "fields":       "id,username,name,threads_profile_picture_url,threads_biography",
                     "access_token": token,
                 },
             )
@@ -133,7 +136,7 @@ async def _fetch_profile(threads_uid: str, token: str) -> dict:
             "display_name": d.get("name", ""),
             "bio":          d.get("threads_biography", ""),
             "profile_pic":  d.get("threads_profile_picture_url", ""),
-            "followers":    d.get("follower_count", 0),
+            "followers":    d.get("followers_count", 0),
             "following":    d.get("following_count", 0),
             "profile_url":  f"https://www.threads.net/@{d.get('username', '')}",
         }
@@ -273,7 +276,7 @@ async def get_posts(user_id: str, limit: int = 10):
         async with httpx.AsyncClient() as client:
             r = await client.get(
                 f"https://graph.threads.net/v1.0/{threads_uid}/threads",
-                params={"fields": "id,text,timestamp,like_count,replies_count,repost_count,permalink", "limit": limit, "access_token": token},
+                params={"fields": "id,text,timestamp,like_count,reply_count,repost_count,permalink", "limit": limit, "access_token": token},
             )
         if r.status_code == 200:
             posts = [{"id": p.get("id"), "text": p.get("text", ""), "timestamp": p.get("timestamp", "")[:10],

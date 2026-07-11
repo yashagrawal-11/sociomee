@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-const BASE = "https://sociomee.in/api";
+const BASE = "https://sociomeeai.com/api";
 
 const DiscordIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">

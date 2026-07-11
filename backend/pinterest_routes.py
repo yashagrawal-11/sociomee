@@ -18,7 +18,7 @@ router = APIRouter(prefix="/pinterest", tags=["pinterest"])
 
 PINTEREST_APP_ID       = os.getenv("PINTEREST_APP_ID", "")
 PINTEREST_APP_SECRET   = os.getenv("PINTEREST_APP_SECRET", "")
-PINTEREST_REDIRECT_URI = os.getenv("PINTEREST_REDIRECT_URI", "https://sociomee.in/pinterest/callback")
+PINTEREST_REDIRECT_URI = os.getenv("PINTEREST_REDIRECT_URI", "https://sociomeeai.com/pinterest/callback")
 PINTEREST_SCOPE        = "boards:read,boards:write,pins:read,pins:write,user_accounts:read,ads:read"
 
 # ── Storage helpers ────────────────────────────────────────────────
@@ -85,6 +85,22 @@ def _del_account(user_id: str):
 # AUTH
 # ══════════════════════════════════════════════════════════════════════
 
+@router.get("/connect")
+async def connect_redirect(user_id: str):
+    """Direct redirect to Pinterest OAuth — used by frontend <a href> link."""
+    from fastapi.responses import RedirectResponse
+    if not PINTEREST_APP_ID:
+        raise HTTPException(500, "PINTEREST_APP_ID not configured")
+    url = (
+        f"https://www.pinterest.com/oauth/"
+        f"?client_id={PINTEREST_APP_ID}"
+        f"&redirect_uri={PINTEREST_REDIRECT_URI}"
+        f"&response_type=code"
+        f"&scope={PINTEREST_SCOPE}"
+        f"&state={user_id}"
+    )
+    return RedirectResponse(url)
+
 @router.get("/auth-url")
 async def get_auth_url(user_id: str):
     if not PINTEREST_APP_ID:
@@ -133,7 +149,7 @@ async def pinterest_callback(code: str, state: str = ""):
         **profile,
     })
 
-    return RedirectResponse("https://sociomee.in?pinterest=connected")
+    return RedirectResponse("https://sociomeeai.com?pinterest=connected")
 
 
 async def _fetch_profile(token: str) -> dict:
@@ -343,7 +359,7 @@ def _mock_pins(acc: dict, limit: int) -> list:
             "title":       title,
             "description": f"Everything you need to know about {title.split()[0].lower()} for creators",
             "thumbnail":   "",
-            "link":        "https://sociomee.in",
+            "link":        "https://sociomeeai.com",
             "saves":       saves,
             "clicks":      clicks,
             "created_at":  created,
@@ -731,12 +747,12 @@ def restore_pinterest_scheduled_jobs():
                 threading.Thread(target=_pin_job_worker, daemon=True, kwargs=dict(
                     jid=jid, user_id=job["user_id"], title=job.get("title",""),
                     description=job.get("description",""), media_source=job.get("media_source",{}),
-                    board_id=job.get("board_id",""), link=job.get("link","https://sociomee.in")
+                    board_id=job.get("board_id",""), link=job.get("link","https://sociomeeai.com")
                 )).start()
             else:
                 _schedule_pin(jid, run_at, job["user_id"], job.get("title",""),
                               job.get("description",""), job.get("media_source",{}),
-                              job.get("board_id",""), job.get("link","https://sociomee.in"))
+                              job.get("board_id",""), job.get("link","https://sociomeeai.com"))
             restored += 1
     except Exception:
         pass
@@ -768,7 +784,7 @@ async def publish(user_id: str, payload: dict):
     image_b64   = payload.get("image_base64", "").strip()
     image_ctype = payload.get("image_content_type", "image/jpeg").strip()
     board_id    = payload.get("board_id", "").strip()
-    link        = payload.get("link", "https://sociomee.in").strip()
+    link        = payload.get("link", "https://sociomeeai.com").strip()
     scheduled_at = payload.get("scheduled_at", "").strip()
     if not title:
         raise HTTPException(400, "title is required")

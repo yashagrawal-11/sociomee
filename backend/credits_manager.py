@@ -151,7 +151,7 @@ def _check_and_reset(record: Dict[str, Any]) -> Dict[str, Any]:
                       <h1 style="font-size:22px;font-weight:800;color:#ede8ff;margin:0 0 8px">{new_credits} fresh credits just dropped, {_first}.</h1>
                       <p style="font-size:14px;color:#c4b5fd;line-height:1.8;margin:0 0 16px">Your monthly credits have been reset. Time to create.</p>
                       <div style="text-align:center;margin:24px 0">
-                        <a href="https://sociomee.in/app" style="display:inline-block;padding:13px 28px;border-radius:99px;background:linear-gradient(135deg,{BRAND_PURPLE},#ff3d8f);color:#fff;font-weight:800;font-size:14px;text-decoration:none">Start Creating</a>
+                        <a href="https://sociomeeai.com/app" style="display:inline-block;padding:13px 28px;border-radius:99px;background:linear-gradient(135deg,{BRAND_PURPLE},#ff3d8f);color:#fff;font-weight:800;font-size:14px;text-decoration:none">Start Creating</a>
                       </div>
                     """
                     _E.send({{"from": FROM_EMAIL, "to": [_email], "subject": f"credits just dropped — {{new_credits}} ready to use", "html": _base_template(_content)}})
@@ -186,13 +186,15 @@ def get_credit_status(user_id: str) -> Dict[str, Any]:
         next_reset = ""
 
     return {
-        "plan":              plan,
-        "plan_label":        plan.replace("_", " ").title(),
-        "credits_remaining": credits,
-        "credits":           credits,
-        "monthly_limit":     limit,
-        "next_reset":        next_reset,
-        "email":             record.get("email", ""),
+        "plan":                     plan,
+        "plan_label":               plan.replace("_", " ").title(),
+        "credits_remaining":        credits,
+        "credits":                  credits,
+        "monthly_limit":            limit,
+        "next_reset":               next_reset,
+        "email":                    record.get("email", ""),
+        "scheduled_downgrade_plan": record.get("scheduled_downgrade_plan"),
+        "scheduled_downgrade_at":   record.get("scheduled_downgrade_at"),
     }
 
 
@@ -217,7 +219,7 @@ def use_credit(user_id: str, cost: int = 1) -> bool:
                 _plan = record.get("plan", "free")
                 if _plan == "free":
                     from push_routes import send_push
-                    send_push(user_id, "upgrade to pro.", "200 credits/month for ₹499. your free credits are gone.", "https://sociomee.in/app", "upgrade-nudge", True)
+                    send_push(user_id, "upgrade to pro.", "200 credits/month for ₹499. your free credits are gone.", "https://sociomeeai.com/app", "upgrade-nudge", True)
                 if _email:
                     from email_service import send_low_credits_warning
                     send_low_credits_warning(_email, _name, 0, _plan)
@@ -236,7 +238,7 @@ def use_credit(user_id: str, cost: int = 1) -> bool:
                 _email = record.get("email", "")
                 _name = record.get("name", "")
                 _plan = record.get("plan", "free")
-                send_push(user_id, "running low on credits", f"only {new_credits} left this month. top up before you run out.", "https://sociomee.in/app", "low-credits", False)
+                send_push(user_id, "running low on credits", f"only {new_credits} left this month. top up before you run out.", "https://sociomeeai.com/app", "low-credits", False)
                 if _email:
                     send_low_credits_warning(_email, _name, new_credits, _plan)
             except Exception: pass
@@ -272,6 +274,30 @@ def set_user_plan(user_id: str, plan: str, email: str = "") -> None:
         data[user_id] = record
         _save(data)
 
+
+def schedule_downgrade(user_id: str, target_plan: str) -> dict:
+    """Schedule a downgrade to take effect at plan_expires. Does not change plan or credits now."""
+    if target_plan not in PLAN_LIMITS:
+        raise ValueError(f"Unknown plan: {target_plan}")
+    with _lock:
+        data   = _load()
+        record = _get_or_init(data, user_id)
+        expires = record.get("plan_expires")
+        record["scheduled_downgrade_plan"] = target_plan
+        record["scheduled_downgrade_at"]   = expires  # None = immediate if no expiry set
+        data[user_id] = record
+        _save(data)
+    return {"scheduled_plan": target_plan, "effective_at": expires}
+
+def cancel_scheduled_downgrade(user_id: str) -> None:
+    """Cancel a pending scheduled downgrade (e.g. user re-upgrades)."""
+    with _lock:
+        data   = _load()
+        record = _get_or_init(data, user_id)
+        record.pop("scheduled_downgrade_plan", None)
+        record.pop("scheduled_downgrade_at", None)
+        data[user_id] = record
+        _save(data)
 
 def add_credits(user_id: str, amount: int, email: str = "") -> int:
     """Add credits (top-up). Does not change plan. Returns new total."""

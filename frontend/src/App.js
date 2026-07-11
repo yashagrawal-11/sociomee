@@ -1248,6 +1248,12 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
   const userId = localStorage.getItem("sociomee_user_id") || user?.user_id || "";
   const [ytChannels, setYtChannels] = useState([]);
   const [pinterestStatus, setPinterestStatus] = useState(null);
+  const [threadsStatus, setThreadsStatus] = useState(null);
+  const [bugModal, setBugModal] = useState(false);
+  const [bugText, setBugText] = useState("");
+  const [bugImage, setBugImage] = useState(null);
+  const [bugSending, setBugSending] = useState(false);
+  const [bugDone, setBugDone] = useState(false);
   const [tgStatus, setTgStatus] = useState(null);
   const [dcStatus, setDcStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1259,6 +1265,7 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
     ]).then(([yt,tg,dc]) => {
       const chs = yt.value?.channels || []; setYtChannels(chs.map(ch => ({title: ch.channel_title, thumbnail: ch.thumbnail_url, subscribers: ch.subscribers, channel_id: ch.channel_id})));
       fetch(BASE+"/pinterest/status?user_id="+userId).then(r=>r.json()).then(setPinterestStatus).catch(()=>setPinterestStatus(null));
+      fetch(BASE+"/threads/status?user_id="+userId).then(r=>r.json()).then(setThreadsStatus).catch(()=>setThreadsStatus(null));
       if (tg.value) setTgStatus(tg.value);
       if (dc.value) setDcStatus(dc.value);
       setLoading(false);
@@ -1292,6 +1299,7 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
     </div>
   );
   return (
+    <>
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
       <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"460px",background:"rgba(10,8,20,0.98)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"20px",padding:"24px",maxHeight:"82vh",overflowY:"auto",scrollbarWidth:"none",msOverflowStyle:"none",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 60px rgba(124,58,237,0.12)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"4px"}}>
@@ -1330,16 +1338,62 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
           </Sec>
           <div style={{height:"1px",background:"rgba(255,255,255,0.07)",marginBottom:"16px"}}/>
           <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.2)",marginBottom:"12px"}}>Other Accounts</div>
-          {[{name:"Threads",icon:"/icons/threads.png"},{name:"Instagram",icon:"/icons/instagram.png"}].map(a=>(
-            <div key={a.name} style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
-              <img src={a.icon} style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt={a.name}/>
-              <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>{a.name}</span>
+          {threadsStatus?.connected ? (
+            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",marginBottom:"8px"}}>
+              <img src="/icons/threads.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="Threads"/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>@{threadsStatus.username||"sociomeeai.offical"}</div>
+                <div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{threadsStatus.display_name||""}</div>
+              </div>
+              <DisconnectBtn onClick={()=>{
+                fetch(BASE+"/threads/disconnect?user_id="+userId,{method:"POST"}).catch(()=>{});
+                setThreadsStatus(null);
+              }}/>
+            </div>
+          ) : (
+            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
+              <img src="/icons/threads.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="Threads"/>
+              <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Threads</span>
               <span style={{fontSize:"10px",color:"rgba(255,255,255,0.2)",fontWeight:"600",background:"rgba(255,255,255,0.05)",padding:"3px 8px",borderRadius:"99px"}}>Coming Soon</span>
             </div>
-          ))}
+          )}
+          <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
+            <img src="/icons/instagram.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="Instagram"/>
+            <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Instagram</span>
+            <span style={{fontSize:"10px",color:"rgba(255,255,255,0.2)",fontWeight:"600",background:"rgba(255,255,255,0.05)",padding:"3px 8px",borderRadius:"99px"}}>Coming Soon</span>
+          </div>
         </>)}
       </div>
     </div>
+    {bugModal && (
+      <div onClick={(e)=>{if(e.target===e.currentTarget){setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(12px)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
+        <div style={{background:"#0f0a1a",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"20px",padding:"28px",width:"100%",maxWidth:"460px",position:"relative"}}>
+          <button onClick={()=>{setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}} style={{position:"absolute",top:"16px",right:"16px",background:"none",border:"none",color:"rgba(255,255,255,0.4)",fontSize:"20px",cursor:"pointer",lineHeight:1}}>✕</button>
+          {bugDone ? (
+            <div style={{textAlign:"center",padding:"24px 0"}}>
+              <div style={{fontSize:"40px",marginBottom:"12px"}}>✅</div>
+              <div style={{fontSize:"16px",fontWeight:"700",color:"#fff",marginBottom:"8px"}}>Bug reported!</div>
+              <div style={{fontSize:"13px",color:"rgba(255,255,255,0.45)"}}>We will look into it. Thanks for helping improve SocioMee.</div>
+              <button onClick={()=>{setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}} style={{marginTop:"20px",padding:"10px 28px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",border:"none",color:"#fff",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit"}}>Done</button>
+            </div>
+          ) : (
+            <>
+              <div style={{fontSize:"16px",fontWeight:"800",color:"#fff",marginBottom:"4px"}}>🐛 Report a Bug</div>
+              <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)",marginBottom:"20px"}}>Tell us what went wrong. Include as many details as possible.</div>
+              <textarea value={bugText} onChange={e=>setBugText(e.target.value)} placeholder="Please include as many details as possible..." rows={5} style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"12px",padding:"14px",color:"#fff",fontSize:"13px",fontFamily:"inherit",resize:"vertical",outline:"none",lineHeight:1.6}}/>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:"12px"}}>
+                <label style={{display:"flex",alignItems:"center",gap:"6px",cursor:"pointer",color:"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600"}}>
+                  <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>setBugImage(ev.target.result);reader.readAsDataURL(file);}}/>
+                  📎 {bugImage ? "Screenshot attached ✓" : "Attach screenshot"}
+                </label>
+                <button disabled={bugSending||!bugText.trim()} onClick={async()=>{setBugSending(true);try{await fetch("/api/bug/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({description:bugText,user_email:user?.email||"unknown",user_id:user?.user_id||user?.id||"unknown",screenshot:bugImage||null})});setBugDone(true);}catch(e){setBugDone(true);}setBugSending(false);}} style={{padding:"10px 22px",borderRadius:"99px",background:bugText.trim()?"linear-gradient(135deg,#7c3aed,#ff3d8f)":"rgba(255,255,255,0.08)",border:"none",color:bugText.trim()?"#fff":"rgba(255,255,255,0.3)",fontWeight:"700",fontSize:"13px",cursor:bugText.trim()?"pointer":"default",fontFamily:"inherit"}}>{bugSending?"Sending...":"Submit"}</button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 
@@ -1431,6 +1485,11 @@ export default function App() {
   const [error,        setError      ] = useState("");
   const [creditStatus, setCreditStatus] = useState(null);
   const [showPricing,  setShowPricing] = useState(false);
+  const [bugModal, setBugModal] = useState(false);
+  const [bugText, setBugText] = useState("");
+  const [bugImage, setBugImage] = useState(null);
+  const [bugSending, setBugSending] = useState(false);
+  const [bugDone, setBugDone] = useState(false);
   const [pricingMode,  setPricingMode] = useState("upgrade");
   const [activeTab,    setActiveTab  ] = useState("generate");
   const [sidebarOpen,  setSidebarOpen] = useState(false);
@@ -1441,6 +1500,10 @@ export default function App() {
   const [showPlansPopup, setShowPlansPopup] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [downgradeConfirm, setDowngradeConfirm] = useState(null);
+  const [downgradeLoading, setDowngradeLoading] = useState(false);
+  const [downgradeError, setDowngradeError] = useState("");
+  const [downgradeSuccess, setDowngradeSuccess] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [notifSettings, setNotifSettings] = useState({newFeatures:true,weeklyTips:true,usageAlerts:true,proOffers:false});
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -2050,7 +2113,7 @@ export default function App() {
       {profilePanelOpen && <div onClick={()=>setProfilePanelOpen(false)} style={{position:"fixed",inset:0,zIndex:9998}}/>}
       <div style={{position:"fixed",bottom:"60px",left:0,width:"220px",zIndex:9999,background:"rgba(10,8,20,0.98)",backdropFilter:"blur(24px)",border:"1px solid rgba(124,58,237,0.25)",borderRadius:"16px 16px 0 0",padding:"16px 14px 20px",transform:profilePanelOpen?"translateY(0)":"translateY(120%)",visibility:profilePanelOpen?"visible":"hidden",pointerEvents:profilePanelOpen?"all":"none",transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
         <div style={{width:"32px",height:"3px",borderRadius:"99px",background:"rgba(255,255,255,0.12)",margin:"0 auto 14px"}}/>
-        <button onClick={()=>{setShowPlansPopup(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+        <button onClick={()=>{setShowPlansPopup(true);setProfilePanelOpen(false);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");fetch(`${BASE}/credits/${user?.user_id}`).then(r=>r.ok?r.json():null).then(d=>{if(d)setCreditStatus(d);}).catch(()=>{});}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           <span style={{flex:1}}>{t("plans")}</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -2069,6 +2132,11 @@ export default function App() {
         <button onClick={()=>{setShowNotificationsModal(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span style={{flex:1}}>Notifications</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button onClick={()=>setBugModal(true)} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span style={{flex:1}}>Report a Bug</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
         <button onClick={()=>{setShowDeleteModal(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(239,68,68,0.8)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(239,68,68,0.08)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
@@ -2118,16 +2186,16 @@ export default function App() {
         <div onClick={()=>{setShowDeleteModal(false);setDeleteConfirm('');}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
           <div onClick={e=>e.stopPropagation()} style={{background:"rgba(13,13,20,0.98)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:"16px",padding:"24px",width:"100%",maxWidth:"360px"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"16px"}}>
-              <div style={{fontSize:"16px",fontWeight:"800",color:"#ef4444",fontFamily:"Poppins,sans-serif"}}>🗑️ Delete Account</div>
-              <button onClick={()=>{setShowDeleteModal(false);setDeleteConfirm('');}} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              <div style={{fontSize:"16px",fontWeight:"800",color:"#ef4444",fontFamily:"Poppins,sans-serif"}}>Delete Account</div>
+              <button onClick={()=>{setShowDeleteModal(false);setDeleteConfirm('');setDeleteError('');}} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
             <div style={{background:"rgba(239,68,68,0.06)",border:"1px solid rgba(239,68,68,0.15)",borderRadius:"10px",padding:"12px",marginBottom:"16px"}}>
-              <div style={{fontSize:"12px",color:"rgba(239,68,68,0.9)",fontFamily:"Poppins,sans-serif",lineHeight:"1.6"}}>⚠️ This will permanently delete your account, all your generated content, saved history, and credits. This action cannot be undone.</div>
+              <div style={{fontSize:"12px",color:"rgba(239,68,68,0.9)",fontFamily:"Poppins,sans-serif",lineHeight:"1.6"}}>This will permanently delete your account, all your generated content, saved history, and credits. This action cannot be undone.</div>
             </div>
             <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)",fontFamily:"Poppins,sans-serif",marginBottom:"8px"}}>Type <span style={{color:"#ef4444",fontWeight:"700"}}>DELETE</span> to confirm</div>
             <input value={deleteConfirm} onChange={e=>setDeleteConfirm(e.target.value)} placeholder="Type DELETE here" style={{width:"100%",padding:"10px 12px",borderRadius:"8px",border:"1px solid rgba(239,68,68,0.2)",background:"rgba(255,255,255,0.03)",color:"#fff",fontSize:"13px",fontFamily:"Poppins,sans-serif",outline:"none",boxSizing:"border-box",marginBottom:"12px"}}/>
             <button disabled={deleteConfirm!=="DELETE"} onClick={()=>{if(deleteConfirm==="DELETE"){setDeleteError("");fetch(BASE+"/auth/delete-account",{method:"DELETE",credentials:"include"}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok){setDeleteError(d.detail||"Something went wrong. Please try again.");return;}localStorage.clear();window.location.href="/";}).catch(()=>setDeleteError("Network error. Please try again."));}}} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"none",background:deleteConfirm==="DELETE"?"#ef4444":"rgba(239,68,68,0.2)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:deleteConfirm==="DELETE"?"pointer":"not-allowed",fontFamily:"Poppins,sans-serif",opacity:deleteConfirm==="DELETE"?1:0.5,transition:"all 0.2s"}}>Delete My Account Permanently</button>
-            {deleteError && <div style={{marginTop:"10px",fontSize:"12px",color:"#ef4444",fontFamily:"Poppins,sans-serif",lineHeight:"1.5"}}>⚠️ {deleteError}</div>}
+            {deleteError && <div style={{marginTop:"10px",fontSize:"12px",color:"#ef4444",fontFamily:"Poppins,sans-serif",lineHeight:"1.5"}}>{deleteError}</div>}
           </div>
         </div>
       )}
@@ -2151,7 +2219,7 @@ export default function App() {
                     </div>
                     <div style={{fontSize:"11.5px",color:"rgba(255,255,255,0.4)",lineHeight:1.5,flex:1}}>{app.desc}</div>
                     {isFreeUser ? (
-                      <button onClick={()=>{setShowAppStore(false);setShowPlansPopup(true);}} style={{padding:"8px",borderRadius:"8px",border:"none",background:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.6)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>🔒 Upgrade to Pro</button>
+                      <button onClick={()=>{setShowAppStore(false);setShowPlansPopup(true);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");}} style={{padding:"8px",borderRadius:"8px",border:"none",background:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.6)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>🔒 Upgrade to Pro</button>
                     ) : added ? (
                       <button onClick={()=>handleRemoveApp(app.id)} style={{padding:"8px",borderRadius:"8px",border:"1px solid rgba(239,68,68,0.3)",background:"rgba(239,68,68,0.08)",color:"#ef4444",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>Remove</button>
                     ) : (
@@ -2165,36 +2233,89 @@ export default function App() {
         </div>
       )}
       {/* USAGE POPUP */}
-      {showPlansPopup && (
-        <div onClick={()=>setShowPlansPopup(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+      {showPlansPopup && (()=>{
+        const isPro = plan==="pro_monthly"||plan==="pro_annual";
+        const isPremium = plan==="premium_monthly"||plan==="premium_annual";
+        const isAnnual = plan==="pro_annual"||plan==="premium_annual";
+        const downgradePro = isAnnual ? "pro_annual" : "pro_monthly";
+        const handleDowngrade = (targetPlan, label) => {
+          setDowngradeConfirm({targetPlan, label});
+        };
+        const executeDowngrade = async () => {
+          setDowngradeLoading(true);
+          setDowngradeError("");
+          try {
+            const r = await fetch(BASE+"/auth/downgrade-plan", {method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({target_plan:downgradeConfirm.targetPlan})});
+            const d = await r.json();
+            if(!r.ok) throw new Error(d.detail||"Something went wrong.");
+            setDowngradeSuccess(d.message||"Change scheduled.");
+            setDowngradeConfirm(null);
+            fetch(`${BASE}/credits/${user?.user_id}`).then(r=>r.ok?r.json():null).then(d=>{if(d)setCreditStatus(d);}).catch(()=>{});
+          } catch(e) {
+            setDowngradeError(e.message);
+          } finally {
+            setDowngradeLoading(false);
+          }
+        };
+        return (
+        <div onClick={()=>{setShowPlansPopup(false);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
           <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"400px",background:"rgba(10,8,20,0.98)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"20px",padding:"24px",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 60px rgba(124,58,237,0.12)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"20px"}}>
               <div><h2 style={{fontSize:"16px",fontWeight:"800",color:"#fff",margin:0}}>Your Plan</h2><p style={{fontSize:"11px",color:"rgba(255,255,255,0.3)",marginTop:"3px"}}>Manage your subscription</p></div>
-              <button onClick={()=>setShowPlansPopup(false)} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              <button onClick={()=>{setShowPlansPopup(false);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");}} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
             <div style={{background:"linear-gradient(135deg,rgba(124,58,237,0.15),rgba(255,61,143,0.08))",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"16px",padding:"20px",marginBottom:"16px"}}>
               <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"}}>Current Plan</div>
               <div style={{fontSize:"24px",fontWeight:"900",color:"#fff",marginBottom:"4px"}}>✦ {creditStatus?.plan_label||"Free"}</div>
               <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>{creditStatus?.credits_remaining||0} of {creditStatus?.monthly_limit||20} credits remaining</div>
+              {creditStatus?.scheduled_downgrade_plan && (
+                <div style={{marginTop:"10px",fontSize:"11px",color:"rgba(251,191,36,0.9)",fontWeight:"600",background:"rgba(251,191,36,0.08)",border:"1px solid rgba(251,191,36,0.2)",borderRadius:"8px",padding:"6px 10px"}}>
+                  ⏳ Downgrade to {creditStatus.scheduled_downgrade_plan.replace(/_/g," ").replace(/\w/g,c=>c.toUpperCase())} scheduled
+                </div>
+              )}
             </div>
-            {plan==="free" && (
-              <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-                <a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"800",fontSize:"14px",textDecoration:"none",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>✦ Upgrade to Pro — ₹499/mo</a>
-                <a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.6)",fontWeight:"700",fontSize:"14px",textDecoration:"none"}}>View All Plans</a>
-              </div>
+            {downgradeSuccess && (
+              <div style={{background:"rgba(34,197,94,0.08)",border:"1px solid rgba(34,197,94,0.25)",borderRadius:"12px",padding:"14px",marginBottom:"14px",fontSize:"13px",color:"#4ade80",fontWeight:"600",lineHeight:1.5}}>✓ {downgradeSuccess}</div>
             )}
-            {plan==="pro" && (
-              <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-                <a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"800",fontSize:"14px",textDecoration:"none",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>⬆ Upgrade to Premium — ₹1,999/mo</a>
-                <button style={{padding:"13px",borderRadius:"99px",background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.3)",color:"#a78bfa",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit"}}>Cancel Subscription</button>
+            {!downgradeConfirm && !downgradeSuccess && (<>
+              {plan==="free" && (
+                <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+                  <button onClick={()=>{setShowPlansPopup(false);setTimeout(()=>openPricing("upgrade"),50);}} style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"800",fontSize:"14px",border:"none",cursor:"pointer",fontFamily:"inherit",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>✦ Upgrade to Pro — ₹499/mo</button>
+                  <a href="/pricing" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.6)",fontWeight:"700",fontSize:"14px",textDecoration:"none"}}>View All Plans</a>
+                </div>
+              )}
+              {isPro && !creditStatus?.scheduled_downgrade_plan && (
+                <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+                  <button onClick={()=>{setShowPlansPopup(false);setTimeout(()=>openPricing("premium"),50);}} style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"rgba(124,58,237,0.15)",border:"1px solid rgba(124,58,237,0.4)",color:"#a78bfa",fontWeight:"800",fontSize:"14px",cursor:"pointer",fontFamily:"inherit"}}>Upgrade to Premium ₹1,999/mo</button>
+                  <button onClick={()=>handleDowngrade("free","Free")} style={{padding:"13px",borderRadius:"99px",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.25)",color:"rgba(167,139,250,0.8)",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.15)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(124,58,237,0.08)"}>Cancel Subscription</button>
+                </div>
+              )}
+              {isPremium && !creditStatus?.scheduled_downgrade_plan && (
+                <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+                  <button onClick={()=>handleDowngrade(downgradePro,"Pro")} style={{padding:"13px",borderRadius:"99px",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.25)",color:"#a78bfa",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.15)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(124,58,237,0.08)"}>Downgrade to Pro</button>
+                  <button onClick={()=>handleDowngrade("free","Free")} style={{padding:"13px",borderRadius:"99px",background:"rgba(239,68,68,0.06)",border:"1px solid rgba(239,68,68,0.2)",color:"rgba(239,68,68,0.75)",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(239,68,68,0.12)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(239,68,68,0.06)"}>Cancel Subscription</button>
+                </div>
+              )}
+            </>)}
+            {downgradeConfirm && !downgradeSuccess && (
+              <div style={{background:"rgba(124,58,237,0.06)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"14px",padding:"18px"}}>
+                <div style={{fontSize:"14px",fontWeight:"800",color:"#fff",marginBottom:"8px"}}>Confirm {downgradeConfirm.targetPlan==="free"?"Cancellation":"Downgrade"}</div>
+                <div style={{fontSize:"12px",color:"rgba(255,255,255,0.45)",lineHeight:1.6,marginBottom:"16px"}}>
+                  {downgradeConfirm.targetPlan==="free"
+                    ? "Your plan will be cancelled at the end of your current billing period. You'll keep your credits until then."
+                    : `You'll be downgraded to Pro at the end of your current billing period. Your credits stay active until then.`}
+                </div>
+                {downgradeError && <div style={{fontSize:"12px",color:"#ef4444",marginBottom:"12px"}}>⚠ {downgradeError}</div>}
+                <div style={{display:"flex",gap:"8px"}}>
+                  <button onClick={()=>{setDowngradeConfirm(null);setDowngradeError("");}} style={{flex:1,padding:"11px",borderRadius:"10px",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.5)",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>Keep Plan</button>
+                  <button onClick={executeDowngrade} disabled={downgradeLoading} style={{flex:1,padding:"11px",borderRadius:"10px",border:"none",background:downgradeConfirm.targetPlan==="free"?"rgba(239,68,68,0.15)":"rgba(124,58,237,0.2)",color:downgradeConfirm.targetPlan==="free"?"#ef4444":"#a78bfa",fontSize:"13px",fontWeight:"700",cursor:downgradeLoading?"not-allowed":"pointer",fontFamily:"inherit",opacity:downgradeLoading?0.6:1}}>{downgradeLoading?"Processing...":downgradeConfirm.targetPlan==="free"?"Yes, Cancel":"Yes, Downgrade"}</button>
+                </div>
               </div>
-            )}
-            {(plan==="premium"||plan==="premium_annual") && (
-              <button style={{width:"100%",padding:"13px",borderRadius:"99px",background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.3)",color:"#a78bfa",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit"}}>Cancel Subscription</button>
             )}
           </div>
         </div>
-      )}
+        );
+      })()}
       {showUsagePopup && (
         <div onClick={()=>setShowUsagePopup(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
           <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"400px",background:"rgba(10,8,20,0.98)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"20px",padding:"24px",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 60px rgba(124,58,237,0.12)"}}>
@@ -2472,7 +2593,7 @@ export default function App() {
           )}
 
           {activeTab==="youtube"    && isLoggedIn && <YouTubeDashboard user={user} initialTab={youtubeInitialTab}/>}
-          {activeTab==="threads"    && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Threads" icon="/icons/threads.png" color="#ffffff" message="Threads integration coming soon! Schedule posts, analyze engagement and grow your audience."/></div>}
+          {activeTab==="threads"    && isLoggedIn && <ThreadsDashboard user={user}/>}
           {activeTab==="instagram"  && isLoggedIn && <InstagramDashboard />}
           {activeTab==="pinterest"  && isLoggedIn && <PinterestDashboard user={user}/>}
           {activeTab==="reddit"     && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Reddit" icon="/icons/reddit.png" color="#ff4500" message="Reddit integration coming soon. Post to subreddits and track upvotes."/></div>}
@@ -2535,6 +2656,34 @@ export default function App() {
         </div>
       </div>
 
+      {bugModal && (
+        <div onClick={(e)=>{if(e.target===e.currentTarget){setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(16px)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
+          <div style={{background:"rgba(10,8,20,0.85)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"28px",width:"100%",maxWidth:"460px",position:"relative",boxShadow:"0 24px 60px rgba(0,0,0,0.6)"}}>
+            <button onClick={()=>{setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}} style={{position:"absolute",top:"16px",right:"16px",background:"none",border:"none",color:"rgba(255,255,255,0.35)",fontSize:"18px",cursor:"pointer",lineHeight:1}}>✕</button>
+            {bugDone ? (
+              <div style={{textAlign:"center",padding:"24px 0"}}>
+                <div style={{fontSize:"16px",fontWeight:"700",color:"#fff",marginBottom:"8px"}}>Bug reported</div>
+                <div style={{fontSize:"13px",color:"rgba(255,255,255,0.45)"}}>We will look into it. Thanks for helping improve SocioMee.</div>
+                <button onClick={()=>{setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}} style={{marginTop:"20px",padding:"10px 28px",borderRadius:"99px",background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",color:"#fff",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit"}}>Done</button>
+              </div>
+            ) : (
+              <>
+                <div style={{fontSize:"15px",fontWeight:"800",color:"#fff",marginBottom:"4px"}}>Report a Bug</div>
+                <div style={{fontSize:"12px",color:"rgba(255,255,255,0.35)",marginBottom:"6px"}}>Tell us what went wrong. Include as many details as possible.</div>
+                <div style={{fontSize:"11px",color:"rgba(255,255,255,0.25)",marginBottom:"16px"}}>Your report will be sent to bug@sociomeeai.com</div>
+                <textarea value={bugText} onChange={e=>setBugText(e.target.value)} placeholder="Please include as many details as possible..." rows={5} style={{width:"100%",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"12px",padding:"14px",color:"#fff",fontSize:"13px",fontFamily:"inherit",resize:"vertical",outline:"none",lineHeight:1.6}}/>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:"12px"}}>
+                  <label style={{display:"flex",alignItems:"center",gap:"6px",cursor:"pointer",color:"rgba(255,255,255,0.35)",fontSize:"12px",fontWeight:"600"}}>
+                    <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>setBugImage(ev.target.result);reader.readAsDataURL(file);}}/>
+                    {bugImage ? "Screenshot attached" : "Attach screenshot"}
+                  </label>
+                  <button disabled={bugSending||!bugText.trim()} onClick={async()=>{setBugSending(true);try{await fetch("/api/bug/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({description:bugText,user_email:user?.email||"unknown",user_id:user?.user_id||user?.id||"unknown",screenshot:bugImage||null})});setBugDone(true);}catch(e){setBugDone(true);}setBugSending(false);}} style={{padding:"10px 22px",borderRadius:"99px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",color:bugText.trim()?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.25)",fontWeight:"700",fontSize:"13px",cursor:bugText.trim()?"pointer":"default",fontFamily:"inherit",backdropFilter:"blur(8px)"}}>{bugSending?"Sending...":"Submit"}</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       {channelSettingsOpen && (
         <ChannelSettingsModal user={{...user, plan_label: creditStatus?.plan_label||"Free"}} onClose={()=>setChannelSettingsOpen(false)} BASE={BASE}/>
       )}

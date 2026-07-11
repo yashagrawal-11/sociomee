@@ -1,6 +1,6 @@
 import { useState } from "react";
 const C={purple:"#7c3aed",glass:"rgba(255,255,255,0.04)",muted:"rgba(255,255,255,0.4)",success:"#a78bfa",danger:"#a78bfa",yellow:"#7c3aed"};
-const BASE="https://sociomee.in/api";
+const BASE="https://sociomeeai.com/api";
 async function apiFetch(path,body){const r=await fetch(`${BASE}${path}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});return r.json();}
 function GC({children,style={}}){return <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"20px",...style}}>{children}</div>;}
 function GB({onClick,loading,label="✦ Generate",color="#7c3aed"}){return <button onClick={onClick} disabled={loading} style={{width:"100%",padding:"14px",borderRadius:"99px",border:`1.5px solid ${color}99`,background:loading?`${color}0d`:`${color}26`,backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading?"none":`0 0 24px ${color}66`,transition:"all 0.3s",opacity:loading?0.6:1}}>{loading?"Loading…":label}</button>;}

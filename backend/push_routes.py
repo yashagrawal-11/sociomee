@@ -9,7 +9,7 @@ SUBS_FILE = Path("/var/www/sociomee/backend/data/push_subscriptions.json")
 SUBS_FILE.parent.mkdir(parents=True, exist_ok=True)
 VAPID_PUBLIC  = "BEByuC2Mkl9PWIgaiOFEgIcXjn6GSmlBo4tstvA8TS9d-PJtFshfg5KVqGQr75hb3-AWnFTsKZOnc1hF0OjTXLY"
 VAPID_PRIVATE = "A_o6llgrCFdR9xqxHLsc9zxP-WeMJF0RsocqiXPm5SE"
-VAPID_EMAIL   = "mailto:yash@sociomee.in"
+VAPID_EMAIL   = "mailto:support@sociomeeai.com"
 
 def _load():
     try:
@@ -21,12 +21,12 @@ def _save(data):
     try: SUBS_FILE.write_text(json.dumps(data,indent=2))
     except Exception as e: log.error("push save: %s",e)
 
-def send_push(user_id,title,body,url="https://sociomee.in/app",tag="sociomee",require_interaction=False):
+def send_push(user_id,title,body,url="https://sociomeeai.com/app",tag="sociomee",require_interaction=False):
     try:
         from pywebpush import webpush, WebPushException
         subs=_load(); user_subs=subs.get(user_id,[])
         if not user_subs: return False
-        payload=json.dumps({"title":title,"body":body,"url":url,"tag":tag,"requireInteraction":require_interaction,"icon":"https://sociomee.in/s_logo.png","badge":"https://sociomee.in/s_logo.png"})
+        payload=json.dumps({"title":title,"body":body,"url":url,"tag":tag,"requireInteraction":require_interaction,"icon":"https://sociomeeai.com/s_logo.png","badge":"https://sociomeeai.com/s_logo.png"})
         dead=[]
         for sub in user_subs:
             try:
@@ -40,10 +40,10 @@ def send_push(user_id,title,body,url="https://sociomee.in/app",tag="sociomee",re
     except Exception as e: log.error("send_push: %s",e); return False
 
 def notify_out_of_credits(user_id):
-    return send_push(user_id,"⚠️ You're out of credits","Upgrade to Pro or buy a top-up to keep creating on SocioMee.","https://sociomee.in/app","out-of-credits",True)
+    return send_push(user_id,"⚠️ You're out of credits","Upgrade to Pro or buy a top-up to keep creating on SocioMee.","https://sociomeeai.com/app","out-of-credits",True)
 
 def notify_credits_restored(user_id,credits=20):
-    return send_push(user_id,"🎉 Your credits are back!",f"You have {credits} fresh credits this month. Time to create! 🚀","https://sociomee.in/app","credits-restored",False)
+    return send_push(user_id,"🎉 Your credits are back!",f"You have {credits} fresh credits this month. Time to create! 🚀","https://sociomeeai.com/app","credits-restored",False)
 
 @router.post("/subscribe")
 async def subscribe(request: Request):
@@ -95,7 +95,7 @@ def notify_welcome(user_id, name=""):
         user_id,
         f"welcome to socio world, {first}. you're in.",
         "",
-        "https://sociomee.in/app",
+        "https://sociomeeai.com/app",
         "welcome",
         False
     )
@@ -180,7 +180,7 @@ def notify_idle_nudge(user_id):
         user_id,
         "SocioMee",
         message,
-        "https://sociomee.in/app",
+        "https://sociomeeai.com/app",
         "idle-nudge",
         False
     )

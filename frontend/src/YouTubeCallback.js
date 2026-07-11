@@ -5,7 +5,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 
-const BASE = "https://sociomee.in/api";
+const BASE = "https://sociomeeai.com/api";
 
 export default function YouTubeCallback() {
   const [status, setStatus] = useState("connecting");

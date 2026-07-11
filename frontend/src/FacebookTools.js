@@ -1,6 +1,6 @@
 import { useState } from "react";
 const C={blue:"#1877f2",glass:"rgba(255,255,255,0.04)",hairline:"rgba(255,255,255,0.08)",ink:"rgba(255,255,255,0.9)",muted:"rgba(255,255,255,0.4)",success:"#34d399",danger:"#f87171"};
-const AI="https://sociomee.in/api/ai/generate";
+const AI="https://sociomeeai.com/api/ai/generate";
 let lastCall=0;
 const BAD_WORDS=['fuck','shit','bitch','bastard','asshole','nigger','faggot','chutiya','madarchod','bhenchod','randi','harami','gandu','motherfucker','child porn','cocaine','heroin','meth','jihad','massacre','genocide','bomb','suicide','how to kill','terrorist','explosive','drug deal','buy guns','illegal weapons','human trafficking','rape','molest','hack into','ransomware','darkweb','money laundering','assassination'];
 function filterBad(t){let s=t;BAD_WORDS.forEach(w=>{const re=new RegExp('\\b'+w+'\\b','gi');s=s.replace(re,'*'.repeat(w.length));});return s;}

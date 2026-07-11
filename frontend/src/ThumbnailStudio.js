@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 const C={purple:"#7c3aed",glass:"rgba(255,255,255,0.04)",muted:"rgba(255,255,255,0.4)",success:"#34d399",danger:"#f87171",yellow:"#f59e0b"};
-const BASE="https://sociomee.in/api";
+const BASE="https://sociomeeai.com/api";
 function GC({children,style={}}){return <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"20px",...style}}>{children}</div>;}
 function ScoreBar({label,score}){const color=score>=75?"#34d399":score>=50?"#f59e0b":"#f87171";return(<div style={{marginBottom:"10px"}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}><span style={{fontSize:"11px",color:C.muted,fontWeight:"600"}}>{label}</span><span style={{fontSize:"12px",color,fontWeight:"800"}}>{score}</span></div><div style={{height:"6px",borderRadius:"99px",background:"rgba(255,255,255,0.06)"}}><div style={{height:"100%",borderRadius:"99px",background:color,width:`${score}%`,transition:"width 0.8s ease"}}/></div></div>);}
 function UploadBox({label,preview,onChange,letter}){const ref=useRef();return(<div onClick={()=>ref.current.click()} style={{flex:1,minHeight:"160px",border:`2px dashed ${preview?"rgba(124,58,237,0.5)":"rgba(255,255,255,0.1)"}`,borderRadius:"16px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"8px",background:preview?"rgba(124,58,237,0.05)":"rgba(255,255,255,0.02)",transition:"all 0.2s",overflow:"hidden",position:"relative"}}>

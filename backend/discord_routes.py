@@ -15,7 +15,7 @@ load_dotenv()
 DISCORD_CLIENT_ID     = os.getenv("DISCORD_CLIENT_ID", "")
 DISCORD_CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET", "")
 DISCORD_BOT_TOKEN      = os.getenv("DISCORD_BOT_TOKEN", "")
-DISCORD_REDIRECT_URI  = os.getenv("DISCORD_REDIRECT_URI", "https://sociomee.in/api/discord/callback")
+DISCORD_REDIRECT_URI  = os.getenv("DISCORD_REDIRECT_URI", "https://sociomeeai.com/api/discord/callback")
 DISCORD_BOT_PERMISSIONS = "536988672"
 
 log = logging.getLogger("discord_routes")
@@ -100,14 +100,14 @@ async def discord_callback(code: str, guild_id: str = Query(default=""), state: 
         )
 
     if not guild_id:
-        return RedirectResponse("https://sociomee.in?discord=no_guild_selected")
+        return RedirectResponse("https://sociomeeai.com?discord=no_guild_selected")
 
     limit = _get_server_limit(user_id)
     guilds_check = _load_guilds()
     current = len(guilds_check.get(user_id, []))
     already_connected = any(g.get("guild_id") == guild_id for g in guilds_check.get(user_id, []))
     if not already_connected and current >= limit:
-        return RedirectResponse("https://sociomee.in?discord=limit_reached")
+        return RedirectResponse("https://sociomeeai.com?discord=limit_reached")
 
     # Fetch guild info + channels using the BOT token (bot was just added to this guild)
     async with httpx.AsyncClient() as client:
@@ -140,7 +140,7 @@ async def discord_callback(code: str, guild_id: str = Query(default=""), state: 
     guilds[user_id] = user_guilds
     _save_guilds(guilds)
 
-    return RedirectResponse("https://sociomee.in?discord=connected")
+    return RedirectResponse("https://sociomeeai.com?discord=connected")
 
 
 @router.get("/guilds")

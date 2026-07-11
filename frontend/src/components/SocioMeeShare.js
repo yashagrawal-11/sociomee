@@ -12,7 +12,7 @@ const C = {
   font: "Poppins, sans-serif",
 };
 
-const API = "https://sociomee.in/api/share";
+const API = "https://sociomeeai.com/api/share";
 
 function formatBytes(b) {
   if (!b) return "0 B";
@@ -113,7 +113,7 @@ export default function SocioMeeShare() {
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.detail || "Failed");
 
-      const url = `https://sociomee.in/share/${data.code}`;
+      const url = `https://sociomeeai.com/share/${data.code}`;
       setCode(data.code);
       setShareUrl(url);
 

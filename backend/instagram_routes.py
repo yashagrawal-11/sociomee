@@ -19,7 +19,7 @@ router = APIRouter(prefix="/instagram", tags=["instagram"])
 
 IG_APP_ID       = os.getenv("IG_APP_ID", "")
 IG_APP_SECRET   = os.getenv("IG_APP_SECRET", "")
-IG_REDIRECT_URI = os.getenv("IG_REDIRECT_URI", "https://sociomee.in/instagram/callback")
+IG_REDIRECT_URI = os.getenv("IG_REDIRECT_URI", "https://sociomeeai.com/instagram/callback")
 IG_SCOPE        = "instagram_basic,instagram_content_publish,instagram_manage_insights,instagram_manage_comments,pages_show_list,pages_read_engagement,business_management"
 
 # ── Storage helpers ────────────────────────────────────────────────
@@ -174,7 +174,7 @@ async def instagram_callback(code: str, state: str = ""):
             break
 
     if not ig_account:
-        return RedirectResponse("https://sociomee.in?instagram=no_business_account")
+        return RedirectResponse("https://sociomeeai.com?instagram=no_business_account")
 
     profile = await _fetch_profile(ig_account, page_token)
     _set_account(user_id, {
@@ -184,7 +184,7 @@ async def instagram_callback(code: str, state: str = ""):
         **profile,
     })
 
-    return RedirectResponse("https://sociomee.in?instagram=connected")
+    return RedirectResponse("https://sociomeeai.com?instagram=connected")
 
 
 async def _fetch_profile(ig_user_id: str, token: str) -> dict:
@@ -756,7 +756,7 @@ async def delete_data(request: Request):
     log.info(f"Instagram data deletion request for user_id={user_id}")
     confirmation_code = f"sociomee_del_{user_id}"
     return {
-        "url": f"https://sociomee.in/instagram/deletion-status?id={confirmation_code}",
+        "url": f"https://sociomeeai.com/instagram/deletion-status?id={confirmation_code}",
         "confirmation_code": confirmation_code
     }
 
