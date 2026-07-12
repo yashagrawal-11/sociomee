@@ -14,10 +14,10 @@ load_dotenv()
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/facebook", tags=["facebook"])
 
-FB_APP_ID       = os.getenv("FB_PAGES_APP_ID", "")
-FB_APP_SECRET   = os.getenv("FB_PAGES_APP_SECRET", "")
+FB_APP_ID       = os.getenv("IG_APP_ID", "")
+FB_APP_SECRET   = os.getenv("IG_APP_SECRET", "")
 FB_REDIRECT_URI = os.getenv("FB_PAGES_REDIRECT_URI", "https://sociomeeai.com/facebook/callback")
-FB_SCOPE        = "pages_show_list,pages_manage_posts,pages_read_engagement,public_profile,email"
+FB_SCOPE        = "pages_show_list,pages_manage_posts,pages_read_engagement,public_profile,email,business_management"
 FB_API_VERSION  = "v19.0"
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -61,6 +61,7 @@ async def get_auth_url(user_id: str):
         f"&scope={FB_SCOPE}"
         f"&response_type=code"
         f"&state={user_id}"
+        f"&auth_type=rerequest"
     )
     return {"url": url}
 
