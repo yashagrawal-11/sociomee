@@ -1899,7 +1899,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
 
   useEffect(() => { load(); }, [load]);
 
-  if (loading) return (
+  if (loading && connected) return (
     <div style={{ padding:"20px" }}>
       <div style={{ display:"flex", alignItems:"center", gap:"14px", marginBottom:"24px" }}>
         <div style={{ width:52, height:52, borderRadius:"50%", background:"rgba(255,255,255,0.06)", animation:"shimmer 1.4s infinite" }}/>
