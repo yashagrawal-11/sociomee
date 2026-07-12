@@ -1383,9 +1383,21 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
           </Sec>
           <div style={{height:"1px",background:"rgba(255,255,255,0.07)",marginBottom:"16px"}}/>
           <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.2)",marginBottom:"12px"}}>Other Accounts</div>
-          <Sec icon={<img src="/icons/pinterest.png" style={{width:20,height:20,objectFit:"contain"}} alt="pin"/>} label="Pinterest" count={pinterestStatus?.connected?1:0}>
-            {pinterestStatus?.connected ? (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(230,0,35,0.05)",border:"1px solid rgba(230,0,35,0.15)",marginBottom:"8px"}}><div style={{width:"38px",height:"38px",borderRadius:"50%",overflow:"hidden",flexShrink:0,background:"rgba(230,0,35,0.12)",display:"flex",alignItems:"center",justifyContent:"center"}}>{pinterestStatus.profile_pic ? <img src={pinterestStatus.profile_pic} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/> : <img src="/icons/pinterest.png" style={{width:22,height:22,objectFit:"contain"}} alt="pin"/>}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{pinterestStatus.username||pinterestStatus.account_name||"Connected"}</div></div><DisconnectBtn onClick={()=>{fetch(BASE+"/pinterest/disconnect?user_id="+userId,{method:"POST"}).catch(()=>{}); setPinterestStatus(null);}}/></div>) : (<div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 24px",gap:"16px",textAlign:"center"}}><div style={{width:"64px",height:"64px",borderRadius:"50%",background:"rgba(230,0,35,0.12)",border:"2px solid rgba(230,0,35,0.3)",display:"flex",alignItems:"center",justifyContent:"center"}}><img src="/icons/pinterest.png" style={{width:28,height:28,objectFit:"contain"}} alt="pinterest"/></div><h3 style={{fontSize:"16px",fontWeight:"900",color:"#fff",margin:0}}>Connect Pinterest</h3><p style={{fontSize:"12.5px",color:"rgba(255,255,255,0.45)",lineHeight:1.6,maxWidth:"280px",margin:0}}>Schedule pins, manage boards, and grow your Pinterest presence from SocioMee.</p><a href={`${BASE}/pinterest/connect?user_id=${userId}`} style={{display:"flex",alignItems:"center",gap:"8px",padding:"12px 24px",borderRadius:"12px",border:"none",background:"linear-gradient(135deg,#e60023,#ad081b)",color:"white",fontWeight:"800",fontSize:"14px",cursor:"pointer",fontFamily:"inherit",textDecoration:"none"}}><img src="/icons/pinterest.png" style={{width:16,height:16,objectFit:"contain",filter:"brightness(10)"}} alt=""/> Connect Pinterest</a></div>)}
-          </Sec>
+          {pinterestStatus?.connected ? (
+            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(230,0,35,0.05)",border:"1px solid rgba(230,0,35,0.15)",marginBottom:"8px"}}>
+              <img src="/icons/pinterest.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="Pinterest"/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{pinterestStatus.username||pinterestStatus.account_name||"Connected"}</div>
+              </div>
+              <DisconnectBtn onClick={()=>{fetch(BASE+"/pinterest/disconnect?user_id="+userId,{method:"POST"}).catch(()=>{}); setPinterestStatus(null);}}/>
+            </div>
+          ) : (
+            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
+              <img src="/icons/pinterest.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="Pinterest"/>
+              <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Pinterest</span>
+              <a href={BASE+"/pinterest/connect?user_id="+userId} style={{fontSize:"10px",color:"#e60023",fontWeight:"700",background:"rgba(230,0,35,0.1)",padding:"3px 8px",borderRadius:"99px",textDecoration:"none",border:"1px solid rgba(230,0,35,0.3)"}}>Connect</a>
+            </div>
+          )}
           <div style={{height:"1px",background:"rgba(255,255,255,0.07)",marginBottom:"16px"}}/>
           <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.2)",marginBottom:"12px"}}>Other Accounts</div>
           {threadsStatus?.connected ? (
