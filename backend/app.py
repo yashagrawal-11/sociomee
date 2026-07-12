@@ -133,6 +133,7 @@ except Exception as e:
     log.warning("phone_auth_routes failed: %s", e); phone_auth_router = None
 try:
     from facebook_auth_routes import router as fb_auth_router
+    from facebook_pages_routes import router as fb_pages_router
 except Exception as e:
     log.warning("facebook_auth_routes failed: %s", e); fb_auth_router = None
 try:
@@ -319,6 +320,11 @@ if _HAS_THREADS_ROUTES and threads_router is not None:
 if subscription_router: app.include_router(subscription_router)
 if phone_auth_router: app.include_router(phone_auth_router)
 if fb_auth_router: app.include_router(fb_auth_router)
+try:
+    from facebook_pages_routes import router as fb_pages_router
+    app.include_router(fb_pages_router)
+except Exception as e:
+    log.warning("facebook_pages_routes failed: %s", e)
 if bug_router: app.include_router(bug_router)
 # WhatsApp router
 if _HAS_WA_ROUTES and whatsapp_router is not None:
