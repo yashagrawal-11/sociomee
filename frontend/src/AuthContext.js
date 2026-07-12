@@ -61,6 +61,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("sociomee_user_id");
     localStorage.removeItem("sociomee_email");
     setUser(null);
+    window.location.href = "/login";
   }, []);
   const refreshToken = useCallback(async () => {
     try { await fetch(`${BASE}/auth/refresh-token`, { method: "POST", credentials: "include" }); } catch (e) { console.error("Token refresh failed:", e); }
