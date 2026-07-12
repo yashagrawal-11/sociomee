@@ -266,7 +266,10 @@ def refresh_token(request: Request, response: Response):
 # LOGOUT
 @router.post("/logout")
 def logout():
-    return {"message": "Logged out"}
+    from fastapi.responses import JSONResponse
+    response = JSONResponse({"message": "Logged out"})
+    response.delete_cookie("sociomee_session", path="/", samesite="lax")
+    return response
 
 
 # ══════════════════════════════════════════════════════════════════════
