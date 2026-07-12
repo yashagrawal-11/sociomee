@@ -1297,6 +1297,7 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
   const [ytChannels, setYtChannels] = useState([]);
   const [pinterestStatus, setPinterestStatus] = useState(null);
   const [threadsStatus, setThreadsStatus] = useState(null);
+  const [liStatus, setLiStatus] = useState(null);
   const [bugModal, setBugModal] = useState(false);
   const [bugText, setBugText] = useState("");
   const [bugImage, setBugImage] = useState(null);
@@ -1314,6 +1315,7 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
       const chs = yt.value?.channels || []; setYtChannels(chs.map(ch => ({title: ch.channel_title, thumbnail: ch.thumbnail_url, subscribers: ch.subscribers, channel_id: ch.channel_id})));
       fetch(BASE+"/pinterest/status?user_id="+userId).then(r=>r.json()).then(setPinterestStatus).catch(()=>setPinterestStatus(null));
       fetch(BASE+"/threads/status?user_id="+userId).then(r=>r.json()).then(setThreadsStatus).catch(()=>setThreadsStatus(null));
+      fetch(BASE+"/linkedin/status?user_id="+userId).then(r=>r.json()).then(d=>setLiStatus(d.connected?d:null)).catch(()=>setLiStatus(null));
       if (tg.value) setTgStatus(tg.value);
       if (dc.value) setDcStatus(dc.value);
       setLoading(false);
@@ -1415,6 +1417,22 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
             <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Facebook</span>
             <span style={{fontSize:"10px",color:"rgba(255,255,255,0.2)",fontWeight:"600",background:"rgba(255,255,255,0.05)",padding:"3px 8px",borderRadius:"99px"}}>Coming Soon</span>
           </div>
+          {liStatus?.connected ? (
+            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(10,102,194,0.05)",border:"1px solid rgba(10,102,194,0.15)",marginBottom:"8px"}}>
+              <img src="/icons/linkedin.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="LinkedIn"/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{liStatus.name||"Connected"}</div>
+                <div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{liStatus.email||""}</div>
+              </div>
+              <DisconnectBtn onClick={()=>{fetch(BASE+"/linkedin/disconnect",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:userId})}).catch(()=>{}); setLiStatus(null);}}/>
+            </div>
+          ) : (
+            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
+              <img src="/icons/linkedin.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="LinkedIn"/>
+              <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>LinkedIn</span>
+              <a href={BASE+"/linkedin/connect?user_id="+userId} style={{fontSize:"10px",color:"#0a66c2",fontWeight:"700",background:"rgba(10,102,194,0.1)",padding:"3px 8px",borderRadius:"99px",textDecoration:"none",border:"1px solid rgba(10,102,194,0.3)"}}>Connect</a>
+            </div>
+          )}
         </>)}
       </div>
     </div>
