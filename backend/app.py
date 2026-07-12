@@ -137,6 +137,10 @@ try:
 except Exception as e:
     log.warning("facebook_auth_routes failed: %s", e); fb_auth_router = None
 try:
+    from linkedin_routes import router as linkedin_router
+except Exception as e:
+    log.warning("linkedin_routes failed: %s", e); linkedin_router = None
+try:
     from bug_routes import router as bug_router
 except Exception as e:
     log.warning("bug_routes failed: %s", e); bug_router = None
@@ -323,6 +327,7 @@ if fb_auth_router: app.include_router(fb_auth_router)
 try:
     from facebook_pages_routes import router as fb_pages_router
     app.include_router(fb_pages_router)
+    if linkedin_router: app.include_router(linkedin_router)
 except Exception as e:
     log.warning("facebook_pages_routes failed: %s", e)
 if bug_router: app.include_router(bug_router)
