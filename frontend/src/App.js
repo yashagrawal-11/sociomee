@@ -603,22 +603,28 @@ function TitleInlineEdit({ title, isActive, onSelect, onSave, score, scoreCol })
   const [val, setVal] = useState(title||"");
   const [liveScore, setLiveScore] = useState(score);
   useEffect(()=>{ setVal(title||""); setLiveScore(score); }, [title, score]);
-  const save = () => { const ns=scoreTitleSimple(val); setLiveScore(ns); onSave(val); setEditing(false); };
+  const handleChange = (e) => {
+    const v = e.target.value;
+    setVal(v);
+    const ns = scoreTitleSimple(v);
+    setLiveScore(ns);
+    onSave(v); // auto save on every keystroke
+  };
   const col = scoreColor(liveScore);
   return (
     <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",gap:"8px",width:"100%" }}>
       {editing ? (
-        <div style={{ display:"flex",gap:"4px",alignItems:"center",flex:1 }}>
-          <input autoFocus value={val} onChange={e=>{setVal(e.target.value);setLiveScore(scoreTitleSimple(e.target.value));}}
-            onKeyDown={e=>{ if(e.key==="Enter"){e.preventDefault();save();} if(e.key==="Escape"){setEditing(false);} }}
+        <div style={{ display:"flex",gap:"6px",alignItems:"center",flex:1 }}>
+          <input autoFocus value={val} onChange={handleChange}
+            onKeyDown={e=>{ if(e.key==="Enter"||e.key==="Escape") setEditing(false); }}
+            onBlur={()=>setEditing(false)}
             style={{ flex:1,background:"rgba(255,255,255,0.05)",border:`1.5px solid ${C.purple}88`,borderRadius:"8px",padding:"5px 10px",color:C.ink,fontSize:"14px",fontWeight:"600",fontFamily:"inherit",outline:"none",minWidth:0 }}/>
           <span style={{ fontSize:"11px",fontWeight:"800",padding:"2px 9px",borderRadius:"99px",background:col+"20",color:col,border:`1px solid ${col}33`,flexShrink:0 }}>{liveScore}/100</span>
-          <button onClick={save} style={{ padding:"4px 8px",fontSize:"11px",fontWeight:"800",cursor:"pointer",borderRadius:"7px",border:`1px solid ${C.success}55`,background:C.success+"18",color:C.success,fontFamily:"inherit",flexShrink:0 }}>✓</button>
         </div>
       ) : (
         <>
           <span onClick={onSelect} style={{ fontWeight:"600",lineHeight:1.45,flex:1,color:C.ink,fontSize:"14px",cursor:"pointer" }}>
-            {isActive&&<span style={{ color:C.purple,marginRight:"6px" }}>✦</span>}{title}
+            {isActive&&<span style={{ color:C.purple,marginRight:"6px" }}>✦</span>}{val}
           </span>
           <div style={{ display:"flex",gap:"4px",alignItems:"center",flexShrink:0 }}>
             <button onClick={()=>setEditing(true)} style={{ padding:"3px 8px",fontSize:"11px",fontWeight:"700",cursor:"pointer",borderRadius:"7px",border:`1px solid ${C.hairline}`,background:C.glass,color:C.muted,fontFamily:"inherit",display:"flex",alignItems:"center",gap:"3px" }}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
@@ -1115,11 +1121,36 @@ function TelegramSend({ result, platform, user }) {
 // ══════════════════════════════════════════════════════════════════════
 // RESULT PANEL
 // ══════════════════════════════════════════════════════════════════════
-function InlineDescEdit({ value, onChange }) {
+function scoreDesc(text, topic) {
+  if(!text) return 0;
+  const t = text.toLowerCase();
+  const topicWords = (topic||"").toLowerCase().split(/\s+/).filter(w=>w.length>2);
+  let s = 30;
+  if(text.length > 200) s += 15;
+  if(text.length > 500) s += 10;
+  const hashCount = (text.match(/#\w+/g)||[]).length;
+  if(hashCount >= 3) s += 15;
+  if(hashCount >= 6) s += 5;
+  const kwMatches = topicWords.filter(w=>t.includes(w)).length;
+  s += Math.min(20, kwMatches * 5);
+  if(/about this video/i.test(text)) s += 5;
+  if(/subscribe/i.test(text)||/like/i.test(text)) s += 5;
+  if(/timestamp|00:00/i.test(text)) s += 5;
+  return Math.min(100, s);
+}
+
+function InlineDescEdit({ value, onChange, topic }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(value||"");
-  useEffect(()=>{ if(!editing) setVal(value||""); }, [value]);
-  const handleChange = (e) => { setVal(e.target.value); onChange(e.target.value); };
+  const [liveScore, setLiveScore] = useState(()=>scoreDesc(value, topic));
+  useEffect(()=>{ if(!editing){ setVal(value||""); setLiveScore(scoreDesc(value,topic)); } }, [value]);
+  const handleChange = (e) => {
+    const v = e.target.value;
+    setVal(v);
+    setLiveScore(scoreDesc(v, topic));
+    onChange(v);
+  };
+  const col = scoreColor(liveScore);
   return (
     <div>
       <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px" }}>
@@ -1127,7 +1158,7 @@ function InlineDescEdit({ value, onChange }) {
           <span style={{ marginRight:"6px" }}>📋</span>YOUTUBE DESCRIPTION
         </span>
         <div style={{ display:"flex",gap:"6px",alignItems:"center" }}>
-          {editing && <span style={{ fontSize:"11px",color:C.success,fontWeight:"700" }}>● Editing</span>}
+          <span style={{ fontSize:"11px",fontWeight:"800",padding:"2px 9px",borderRadius:"99px",background:col+"20",color:col,border:`1px solid ${col}33` }}>{liveScore}/100</span>
           <button onClick={()=>setEditing(!editing)} style={{ padding:"4px 10px",fontSize:"11px",fontWeight:"700",cursor:"pointer",borderRadius:"7px",border:`1px solid ${editing?C.purple+"88":C.hairline}`,background:editing?C.purple+"18":C.glass,color:editing?C.purple:C.muted,fontFamily:"inherit",display:"flex",alignItems:"center",gap:"3px" }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             {editing?"Done":"Edit"}
@@ -1225,6 +1256,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
           <InlineDescEdit
             value={editedDesc||(result.seo_description||result.youtube_description||"")}
             onChange={(v)=>setEditedDesc(v)}
+            topic={keyword}
           />
         </div>
       )}
