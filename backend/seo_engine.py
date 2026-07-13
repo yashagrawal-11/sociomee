@@ -45,23 +45,23 @@ def _gemini_titles(topic: str, persona: Dict[str, Any] = None, trending_keywords
         return []
     persona_name = (persona or {}).get("name", "default") if persona else "default"
     trending_str = ", ".join((trending_keywords or [])[:5]) or "none"
-    prompt = f"""Generate 8 YouTube video title candidates for this topic: "{topic}"
+    prompt = f"""You are a YouTube title expert. Write 8 DISTINCT title options for this video topic.
 
-Creator persona: {persona_name}
-Trending keywords to consider: {trending_str}
+VIDEO TOPIC: "{topic}"
 
-Rules for titles:
-- Each title must be genuinely specific to THIS exact topic — not a generic template
-- Titles should reflect what the video is actually about, not just wrap the topic in filler words
-- Vary the approach: use curiosity gaps, specific claims, surprising angles, contrast, bold statements
-- Mix formats: some with numbers (use specific relevant numbers, not just 3/5/7), some without
-- 45-70 characters each ideally
-- NO generic filler like "Facts Nobody Talks About" or "Mistakes Everyone Makes" unless truly relevant
-- Make each title feel like it was written specifically for this topic by someone who understands it
-- Titles should make someone who knows the topic say "yes that is exactly what this is about"
+STRICT RULES:
+1. Every title must be UNIQUE in structure and angle — no two titles should use the same formula
+2. Titles must reflect genuine understanding of the topic — not just wrap the keywords in filler
+3. NEVER repeat the topic keyword more than once in a title
+4. NEVER start two titles with the same word
+5. Use specific angles: economic comparison, historical context, policy difference, surprising stat, etc.
+6. Mix formats naturally: question, bold claim, contrast, number (only if genuinely relevant), statement
+7. Each title 45 to 65 characters
+8. NO templates like "X Facts Nobody Talks About", "What You Think", "What Actually Happened" unless the topic genuinely warrants them
+9. Titles should feel like they were written by someone who deeply understands this specific topic
 
-Return ONLY a JSON array of 8 title strings, nothing else. Example format:
-["Title one here", "Title two here", ...]"""
+Return ONLY a JSON array of exactly 8 strings. No explanation, no markdown, no extra text:
+["title 1", "title 2", "title 3", "title 4", "title 5", "title 6", "title 7", "title 8"]"""
 
     try:
         resp = requests.post(

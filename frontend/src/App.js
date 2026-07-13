@@ -610,11 +610,10 @@ function TitleInlineEdit({ title, isActive, onSelect, onSave, score, scoreCol })
       {editing ? (
         <div style={{ display:"flex",gap:"4px",alignItems:"center",flex:1 }}>
           <input autoFocus value={val} onChange={e=>{setVal(e.target.value);setLiveScore(scoreTitleSimple(e.target.value));}}
-            onKeyDown={e=>{ if(e.key==="Enter"){e.preventDefault();save();} if(e.key==="Escape")setEditing(false); }}
-            onBlur={save}
+            onKeyDown={e=>{ if(e.key==="Enter"){e.preventDefault();save();} if(e.key==="Escape"){setEditing(false);} }}
             style={{ flex:1,background:"rgba(255,255,255,0.05)",border:`1.5px solid ${C.purple}88`,borderRadius:"8px",padding:"5px 10px",color:C.ink,fontSize:"14px",fontWeight:"600",fontFamily:"inherit",outline:"none",minWidth:0 }}/>
           <span style={{ fontSize:"11px",fontWeight:"800",padding:"2px 9px",borderRadius:"99px",background:col+"20",color:col,border:`1px solid ${col}33`,flexShrink:0 }}>{liveScore}/100</span>
-          <button onMouseDown={save} style={{ padding:"4px 8px",fontSize:"11px",fontWeight:"800",cursor:"pointer",borderRadius:"7px",border:`1px solid ${C.success}55`,background:C.success+"18",color:C.success,fontFamily:"inherit",flexShrink:0 }}>✓</button>
+          <button onClick={save} style={{ padding:"4px 8px",fontSize:"11px",fontWeight:"800",cursor:"pointer",borderRadius:"7px",border:`1px solid ${C.success}55`,background:C.success+"18",color:C.success,fontFamily:"inherit",flexShrink:0 }}>✓</button>
         </div>
       ) : (
         <>
@@ -687,7 +686,7 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
   const pack = seoPacks[active]||{};
   const content = (
     <div style={{ display:"flex",flexDirection:"column",gap:"12px" }}>
-      {(pack.description||pack.caption||pack.post) && (
+      {(pack.description||pack.caption||pack.post) && active!=="youtube" && (
         <div>
           <SectionHead icon="📝" title={active==="youtube"?"Description":"Caption"} copyText={pack.description||pack.caption||pack.post}/>
           <div className="dark-scroll" style={{ background:C.glass,borderRadius:"12px",padding:"14px 16px",fontSize:"13px",lineHeight:1.7,whiteSpace:"pre-wrap",color:C.ink,border:`1px solid ${C.hairline}`,maxHeight:"200px",overflowY:"auto" }}>{pack.description||pack.caption||pack.post}</div>
@@ -1116,6 +1115,39 @@ function TelegramSend({ result, platform, user }) {
 // ══════════════════════════════════════════════════════════════════════
 // RESULT PANEL
 // ══════════════════════════════════════════════════════════════════════
+function InlineDescEdit({ value, onChange }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(value||"");
+  useEffect(()=>{ if(!editing) setVal(value||""); }, [value]);
+  const handleChange = (e) => { setVal(e.target.value); onChange(e.target.value); };
+  return (
+    <div>
+      <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px" }}>
+        <span style={{ fontSize:"10.5px",fontWeight:"800",letterSpacing:"1.4px",textTransform:"uppercase",color:C.muted }}>
+          <span style={{ marginRight:"6px" }}>📋</span>YOUTUBE DESCRIPTION
+        </span>
+        <div style={{ display:"flex",gap:"6px",alignItems:"center" }}>
+          {editing && <span style={{ fontSize:"11px",color:C.success,fontWeight:"700" }}>● Editing</span>}
+          <button onClick={()=>setEditing(!editing)} style={{ padding:"4px 10px",fontSize:"11px",fontWeight:"700",cursor:"pointer",borderRadius:"7px",border:`1px solid ${editing?C.purple+"88":C.hairline}`,background:editing?C.purple+"18":C.glass,color:editing?C.purple:C.muted,fontFamily:"inherit",display:"flex",alignItems:"center",gap:"3px" }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            {editing?"Done":"Edit"}
+          </button>
+          <CopyBtn text={val}/>
+        </div>
+      </div>
+      {editing ? (
+        <textarea value={val} onChange={handleChange} autoFocus
+          style={{ width:"100%",minHeight:"220px",background:C.glass,border:`1.5px solid ${C.purple}66`,borderRadius:"12px",padding:"16px",fontSize:"13px",lineHeight:1.8,color:C.ink,fontFamily:"inherit",resize:"vertical",outline:"none",boxSizing:"border-box",whiteSpace:"pre-wrap" }}/>
+      ) : (
+        <div className="dark-scroll" onClick={()=>setEditing(true)} title="Click to edit"
+          style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"12px",padding:"16px",fontSize:"13px",lineHeight:1.8,color:C.ink,whiteSpace:"pre-wrap",fontFamily:"inherit",maxHeight:"220px",overflowY:"auto",cursor:"text" }}>
+          {val}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, onTitleSelect, videoFile, selectedTitle }) {
   const [editedScript, setEditedScript] = useState("");
   const [editedDesc, setEditedDesc] = useState("");
@@ -1123,7 +1155,9 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
   const scores   = result.scores||{};
   const sections = result.sections||[];
   const seoPacks = result.seo_packs||{};
-  const titlesWS = result.titles_with_score||[];
+  const titlesWS = (result.titles_with_score&&result.titles_with_score.length>0)
+    ? result.titles_with_score
+    : (result.titles||[]).map(t=>({ title:t, seo_score:scoreTitleSimple(t), score:scoreTitleSimple(t), tips:[] }));
   const rawScript= result.script_text||"";
   let isCapped = false; let displayScript = editedScript || rawScript;
   if (!isPro && rawScript) {
@@ -1188,17 +1222,10 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
 
       {(result.seo_description||result.youtube_description)&&(
         <div style={{ marginBottom:"20px" }}>
-          <SectionHead icon="📋" title="YouTube Description" copyText={editedDesc||result.seo_description||result.youtube_description} editValue={editedDesc||result.seo_description||result.youtube_description||""} onEditSave={(v)=>setEditedDesc(v)} editMultiline={true}/>
-          {editedDesc ? (
-            <div style={{ marginTop:"6px" }}>
-              <textarea value={editedDesc} onChange={e=>setEditedDesc(e.target.value)}
-                style={{ width:"100%",minHeight:"180px",background:C.glass,border:`1.5px solid ${C.purple}66`,borderRadius:"12px",padding:"14px",fontSize:"13px",lineHeight:1.8,color:C.ink,whiteSpace:"pre-wrap",fontFamily:"inherit",resize:"vertical",outline:"none",boxSizing:"border-box" }}/>
-            </div>
-          ) : (
-            <div className="dark-scroll" style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"12px",padding:"16px",fontSize:"13px",lineHeight:1.8,color:C.ink,whiteSpace:"pre-wrap",fontFamily:"inherit",maxHeight:"220px",overflowY:"auto" }}>
-              {result.seo_description||result.youtube_description}
-            </div>
-          )}
+          <InlineDescEdit
+            value={editedDesc||(result.seo_description||result.youtube_description||"")}
+            onChange={(v)=>setEditedDesc(v)}
+          />
         </div>
       )}
 
