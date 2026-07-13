@@ -1,291 +1,245 @@
 import { useState, useEffect } from "react";
-
 const BASE = "https://sociomeeai.com/api";
-
-const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const FONT = "'DM Sans','Syne',sans-serif";
+const FONT_HEAD = "'Poppins',sans-serif";
+const C = { bg:"#080810", border:"rgba(255,255,255,0.07)", muted:"rgba(255,255,255,0.35)", dim:"rgba(255,255,255,0.18)", white:"#fff" };
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-const urgencyColor = (days) => {
-  if (days <= 0) return "#10b981";
-  if (days <= 7) return "#ef4444";
-  if (days <= 30) return "#f59e0b";
-  return "#7c3aed";
+function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
+function firstDay(y,m){ return new Date(y,m,1).getDay(); }
+
+const URGENCY = (daysLeft) => {
+  if (daysLeft <= 7) return { color:"#f87171", label:"This week" };
+  if (daysLeft <= 30) return { color:"#fb923c", label:"This month" };
+  return { color:"rgba(255,255,255,0.35)", label:"Upcoming" };
 };
 
-const urgencyLabel = (days) => {
-  if (days < 0) return "Happening now!";
-  if (days === 0) return "Today!";
-  if (days === 1) return "Tomorrow!";
-  if (days <= 7) return `${days} days left`;
-  return `${days} days away`;
-};
+export default function SocioMeeCalendar({ user }) {
+  const rawPlan = user?.plan || user?.plan_label || "free";
+  const plan = rawPlan.toLowerCase().includes("premium") ? "premium" : rawPlan.toLowerCase().includes("pro") ? "pro" : "free";
+  const isPro = plan === "pro" || plan === "premium";
 
-// ── Line icons ─────────────────────────────────────────────
-function IconCalendar({ size=18, color="currentColor" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
-}
-function IconList({ size=14, color="currentColor" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
-}
-function IconChevronLeft({ size=15, color="rgba(255,255,255,0.6)" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
-}
-function IconChevronRight({ size=15, color="rgba(255,255,255,0.6)" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>;
-}
-function IconSparkle({ size=12, color="currentColor" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v5m0 8v5M4.2 4.2l3.5 3.5m8.6 8.6l3.5 3.5M3 12h5m8 0h5M4.2 19.8l3.5-3.5m8.6-8.6l3.5-3.5"/></svg>;
-}
-function IconVideo({ size=13, color="currentColor" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M17 10l5-3v10l-5-3"/></svg>;
-}
-function IconBolt({ size=13, color="currentColor" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
-}
-function IconLightbulb({ size=13, color="currentColor" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>;
-}
-function IconClose({ size=12, color="currentColor" }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
-}
-
-export default function SocioMeeCalendar() {
   const today = new Date();
-  const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
   const [festivals, setFestivals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
-  const [hoveredDay, setHoveredDay] = useState(null);
-  const [view, setView] = useState("calendar"); // calendar | list
+  const [view, setView] = useState("calendar");
 
   useEffect(() => {
     fetch(`${BASE}/festivals/upcoming`)
       .then(r => r.json())
-      .then(d => { setFestivals(Array.isArray(d) ? d : []); setLoading(false); })
-      .catch(() => { setFestivals([]); setLoading(false); });
+      .then(data => { setFestivals(Array.isArray(data) ? data : data.festivals || []); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
-
-  const festivalMap = {};
+  const festMap = {};
   festivals.forEach(f => {
     const d = new Date(f.date);
-    if (d.getFullYear() === year && d.getMonth() === month) {
-      const day = d.getDate();
-      if (!festivalMap[day]) festivalMap[day] = [];
-      festivalMap[day].push(f);
-    }
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    if (!festMap[key]) festMap[key] = [];
+    festMap[key].push(f);
   });
 
   const upcoming = [...festivals]
-    .filter(f => f.daysUntil >= -1)
-    .sort((a, b) => a.daysUntil - b.daysUntil)
-    .slice(0, 12);
+    .map(f => ({ ...f, daysLeft: Math.ceil((new Date(f.date) - today) / 86400000) }))
+    .filter(f => f.daysLeft >= 0)
+    .sort((a,b) => a.daysLeft - b.daysLeft);
 
-  const selectedFest = selected !== null ? festivals.find((f,i) => i === selected) : null;
+  const prevMonth = () => { if (month===0) { setMonth(11); setYear(y=>y-1); } else setMonth(m=>m-1); };
+  const nextMonth = () => { if (month===11) { setMonth(0); setYear(y=>y+1); } else setMonth(m=>m+1); };
+
+  const totalDays = daysInMonth(year, month);
+  const startDay = firstDay(year, month);
+  const cells = Array(startDay).fill(null).concat(Array.from({length:totalDays},(_,i)=>i+1));
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const selectedFest = selected !== null ? upcoming[selected] : null;
+
+  const skel = (w="100%",h="40px") => ({ width:w, height:h, borderRadius:"8px", background:"rgba(255,255,255,0.04)", animation:"skpulse 1.4s ease-in-out infinite", display:"block" });
 
   return (
-    <div style={{ display:"flex", height:"100vh", background:"#0a0a0a", fontFamily:"Poppins, sans-serif", overflow:"hidden" }}>
+    <div style={{ display:"flex", height:"100vh", background:C.bg, fontFamily:FONT, overflow:"hidden" }}>
       <style>{`
-        @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-        .cal-day:hover { background: rgba(124,58,237,0.12) !important; border-color: rgba(124,58,237,0.3) !important; }
-        .fest-item:hover { background: rgba(124,58,237,0.08) !important; }
-        ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 99px; }
+        @keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}
+        .cal-day:hover{background:rgba(255,255,255,0.06)!important;}
+        .cal-fest:hover{background:rgba(255,255,255,0.07)!important;border-color:rgba(255,255,255,0.15)!important;}
+        .cal-btn:hover{background:rgba(255,255,255,0.08)!important;color:#fff!important;}
+        ::-webkit-scrollbar{width:2px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:99px}
       `}</style>
 
-      {/* Left — Calendar + upcoming list */}
-      <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", borderRight:"1px solid rgba(255,255,255,0.06)" }}>
-
+      {/* Left — Calendar */}
+      <div style={{ flex:"0 0 500px", display:"flex", flexDirection:"column", borderRight:"1px solid rgba(255,255,255,0.06)", overflow:"hidden" }}>
         {/* Header */}
         <div style={{ padding:"16px 20px 12px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-            <div style={{ width:"30px", height:"30px", borderRadius:"9px", background:"rgba(124,58,237,0.15)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}><IconCalendar size={15} color="#a78bfa"/></div>
-            <div>
-              <div style={{ fontSize:"14px", fontWeight:"800", color:"#fff", fontFamily:"Poppins,sans-serif" }}>SocioMee Calendar</div>
-              <p style={{ fontSize:"11px", color:"rgba(255,255,255,0.35)", margin:0, fontFamily:"Poppins,sans-serif" }}>Plan content around Indian festivals</p>
-            </div>
+          <div>
+            <h2 style={{ fontSize:"20px", fontWeight:"700", color:C.white, margin:"0 0 2px", fontFamily:FONT_HEAD }}>{MONTHS[month]} {year}</h2>
+            <p style={{ fontSize:"11px", color:C.muted, margin:0 }}>Indian Festival Calendar</p>
           </div>
-          <div style={{ display:"flex", gap:"4px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", padding:"3px" }}>
-            <button onClick={()=>setView("calendar")}
-              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"6px 14px", borderRadius:"8px", border:"none", background:view==="calendar"?"rgba(124,58,237,0.2)":"transparent", color:view==="calendar"?"#a78bfa":"rgba(255,255,255,0.35)", fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:"Poppins,sans-serif", transition:"all 0.15s" }}>
-              <IconCalendar size={13}/> Calendar
+          <div style={{ display:"flex", alignItems:"center", gap:"6px" }}>
+            <button onClick={prevMonth} className="cal-btn" style={{ width:"30px", height:"30px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", color:C.muted, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <button onClick={()=>setView("list")}
-              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"6px 14px", borderRadius:"8px", border:"none", background:view==="list"?"rgba(124,58,237,0.2)":"transparent", color:view==="list"?"#a78bfa":"rgba(255,255,255,0.35)", fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:"Poppins,sans-serif", transition:"all 0.15s" }}>
-              <IconList size={13}/> List
+            <button onClick={()=>{setMonth(today.getMonth());setYear(today.getFullYear());}} className="cal-btn" style={{ padding:"5px 12px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.15s" }}>Today</button>
+            <button onClick={nextMonth} className="cal-btn" style={{ width:"30px", height:"30px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", color:C.muted, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
         </div>
 
-        {view === "calendar" ? (
-          <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column", alignItems:"center" }}>
-            <div style={{ width:"100%", maxWidth:"480px", display:"flex", flexDirection:"column", flex:1, overflow:"hidden" }}>
-              {/* Month nav */}
-              <div style={{ padding:"16px 20px 12px", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
-                <button onClick={prevMonth} style={{ width:"32px", height:"32px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><IconChevronLeft/></button>
-                <div style={{ textAlign:"center" }}>
-                  <div style={{ fontSize:"16px", fontWeight:"800", color:"#fff", fontFamily:"Orbitron,monospace", letterSpacing:"1px" }}>{MONTHS[month].toUpperCase()}</div>
-                  <div style={{ fontSize:"11px", color:"rgba(255,255,255,0.3)", fontFamily:"Poppins,sans-serif" }}>{year}</div>
-                </div>
-                <button onClick={nextMonth} style={{ width:"32px", height:"32px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><IconChevronRight/></button>
-              </div>
+        {/* Day headers */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", padding:"10px 16px 0", flexShrink:0 }}>
+          {DAYS.map(d => (
+            <div key={d} style={{ textAlign:"center", fontSize:"10px", fontWeight:"700", color:"rgba(255,255,255,0.25)", padding:"4px 0", letterSpacing:"0.5px", textTransform:"uppercase" }}>{d}</div>
+          ))}
+        </div>
 
-              {/* Day headers */}
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:"6px", padding:"0 20px 8px", flexShrink:0 }}>
-                {DAYS.map(d => (
-                  <div key={d} style={{ textAlign:"center", fontSize:"10px", fontWeight:"700", color:"rgba(255,255,255,0.25)", fontFamily:"Poppins,sans-serif", letterSpacing:"0.5px" }}>{d}</div>
-                ))}
-              </div>
-
-              {/* Calendar grid */}
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:"6px", padding:"0 20px", flex:1, alignContent:"start" }}>
-                {Array(firstDay).fill(null).map((_,i) => <div key={`e${i}`}/>)}
-                {Array(daysInMonth).fill(null).map((_,i) => {
-                  const day = i + 1;
-                  const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-                  const fests = festivalMap[day] || [];
-                  const hasFest = fests.length > 0;
-                  const festColor = hasFest ? urgencyColor(fests[0].daysUntil) : null;
-                  return (
-                    <div key={day} className="cal-day"
-                      onClick={() => hasFest && setSelected(festivals.indexOf(fests[0]))}
-                      style={{ aspectRatio:"1", borderRadius:"10px", border:`1px solid ${isToday?"rgba(124,58,237,0.5)":hasFest?`${festColor}40`:"rgba(255,255,255,0.05)"}`, background:isToday?"rgba(124,58,237,0.15)":hasFest?`${festColor}10`:"rgba(255,255,255,0.02)", cursor:hasFest?"pointer":"default", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"3px", transition:"all 0.15s", position:"relative" }}>
-                      <span style={{ fontSize:"12px", fontWeight:isToday?"800":hasFest?"700":"400", color:isToday?"#a78bfa":hasFest?"#fff":"rgba(255,255,255,0.4)", fontFamily:"Poppins,sans-serif" }}>{day}</span>
-                      {hasFest && <div style={{ width:"5px", height:"5px", borderRadius:"50%", background:festColor }}/>}
-                      {isToday && <div style={{ position:"absolute", bottom:"3px", left:"50%", transform:"translateX(-50%)", width:"4px", height:"4px", borderRadius:"50%", background:"#7c3aed" }}/>}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Legend */}
-              <div style={{ padding:"14px 20px", borderTop:"1px solid rgba(255,255,255,0.04)", display:"flex", gap:"14px", flexShrink:0, justifyContent:"center" }}>
-                {[["#ef4444","Within 7 days"],["#f59e0b","This month"],["#7c3aed","Upcoming"]].map(([c,l]) => (
-                  <div key={l} style={{ display:"flex", alignItems:"center", gap:"5px" }}>
-                    <div style={{ width:"8px", height:"8px", borderRadius:"50%", background:c }}/>
-                    <span style={{ fontSize:"10px", color:"rgba(255,255,255,0.3)", fontFamily:"Poppins,sans-serif" }}>{l}</span>
-                  </div>
-                ))}
-              </div>
+        {/* Calendar grid */}
+        <div style={{ flex:1, overflowY:"auto", padding:"4px 16px 16px" }}>
+          {loading ? (
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:"3px", marginTop:"4px" }}>
+              {Array(35).fill(0).map((_,i)=><div key={i} style={{ height:"52px", borderRadius:"10px", background:"rgba(255,255,255,0.03)", animation:"skpulse 1.4s ease-in-out infinite" }}/>)}
             </div>
-          </div>
-        ) : (
-          /* List view */
-          <div style={{ flex:1, overflowY:"auto", padding:"16px", display:"flex", justifyContent:"center" }}>
-            <div style={{ width:"100%", maxWidth:"560px" }}>
-              {loading ? (
-                <div style={{ textAlign:"center", padding:"40px", color:"rgba(255,255,255,0.3)", fontSize:"13px" }}>Loading festivals…</div>
-              ) : upcoming.map((f, i) => {
-                const col = urgencyColor(f.daysUntil);
-                const isSel = selected === festivals.indexOf(f);
+          ) : (
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:"3px", marginTop:"4px" }}>
+              {cells.map((day, i) => {
+                if (!day) return <div key={i}/>;
+                const isToday = day===today.getDate() && month===today.getMonth() && year===today.getFullYear();
+                const key = `${year}-${month}-${day}`;
+                const fests = festMap[key] || [];
+                const hasFest = fests.length > 0;
+                const urgency = hasFest ? URGENCY(Math.ceil((new Date(year,month,day) - today)/86400000)) : null;
                 return (
-                  <div key={i} className="fest-item"
-                    onClick={() => setSelected(isSel ? null : festivals.indexOf(f))}
-                    style={{ padding:"12px 14px", borderRadius:"12px", border:`1px solid ${isSel?col:"rgba(255,255,255,0.06)"}`, background:isSel?`${col}08`:"rgba(255,255,255,0.02)", marginBottom:"6px", cursor:"pointer", transition:"all 0.15s", animation:"fadeIn 0.3s ease" }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-                      <div style={{ width:"36px", height:"36px", borderRadius:"10px", background:`${f.color||col}18`, border:`1px solid ${f.color||col}30`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"18px", flexShrink:0 }}>{f.emoji}</div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:"13px", fontWeight:"700", color:"#fff", fontFamily:"Poppins,sans-serif" }}>{f.name}</div>
-                        <div style={{ fontSize:"10px", color:"rgba(255,255,255,0.35)", fontFamily:"Poppins,sans-serif" }}>{new Date(f.date).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}</div>
-                      </div>
-                      <div style={{ fontSize:"11px", fontWeight:"700", color:col, padding:"3px 8px", background:`${col}15`, borderRadius:"99px", border:`1px solid ${col}30`, flexShrink:0, fontFamily:"Poppins,sans-serif" }}>{urgencyLabel(f.daysUntil)}</div>
-                    </div>
-                    {isSel && f.topics?.length > 0 && (
-                      <div style={{ marginTop:"10px", paddingTop:"10px", borderTop:"1px solid rgba(255,255,255,0.06)", animation:"fadeIn 0.2s ease" }}>
-                        <p style={{ display:"flex", alignItems:"center", gap:"6px", fontSize:"10px", fontWeight:"700", color:"rgba(255,255,255,0.25)", textTransform:"uppercase", letterSpacing:"1px", margin:"0 0 8px", fontFamily:"Poppins,sans-serif" }}><IconSparkle/> Recommended Topics</p>
-                        <div style={{ display:"flex", flexDirection:"column", gap:"5px" }}>
-                          {f.topics.map((t,j) => (
-                            <div key={j} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"rgba(124,58,237,0.06)", border:"1px solid rgba(124,58,237,0.15)", borderRadius:"8px", padding:"6px 10px" }}>
-                              <span style={{ display:"flex", alignItems:"center", gap:"7px", fontSize:"12px", color:"rgba(255,255,255,0.8)", fontFamily:"Poppins,sans-serif" }}><IconVideo color="#a78bfa"/> {t}</span>
-                              <button onClick={e=>{e.stopPropagation();navigator.clipboard.writeText(t)}}
-                                style={{ fontSize:"10px", padding:"2px 8px", borderRadius:"6px", border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(255,255,255,0.35)", cursor:"pointer", fontFamily:"Poppins,sans-serif", flexShrink:0 }}>Copy</button>
-                            </div>
-                          ))}
-                        </div>
-                        {f.daysUntil <= 14 && f.daysUntil > 0 && (
-                          <div style={{ marginTop:"8px", display:"flex", alignItems:"center", gap:"7px", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:"8px", padding:"8px 10px", fontSize:"11px", color:"rgba(255,255,255,0.6)", fontFamily:"Poppins,sans-serif" }}>
-                            <IconBolt color="#ef4444"/> <span><strong>Upload NOW</strong> — {f.daysUntil} days left. Videos need 5-7 days to rank!</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                  <div key={i} className="cal-day" onClick={()=>hasFest&&setSelected(upcoming.findIndex(f=>f.name===fests[0].name))}
+                    style={{ height:"52px", borderRadius:"10px", border:`1px solid ${isToday?"rgba(255,255,255,0.25)":hasFest?"rgba(255,255,255,0.1)":"transparent"}`, background:isToday?"rgba(255,255,255,0.08)":hasFest?"rgba(255,255,255,0.04)":"transparent", cursor:hasFest?"pointer":"default", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"4px", transition:"all 0.15s", position:"relative" }}>
+                    <span style={{ fontSize:"13px", fontWeight:isToday?"800":"500", color:isToday?"#fff":"rgba(255,255,255,0.7)", fontFamily:isToday?FONT_HEAD:FONT }}>{day}</span>
+                    {hasFest && <div style={{ display:"flex", gap:"2px" }}>
+                      {fests.slice(0,3).map((_,j)=><div key={j} style={{ width:"4px", height:"4px", borderRadius:"50%", background:urgency.color }}/>)}
+                    </div>}
                   </div>
                 );
               })}
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Legend */}
+        <div style={{ padding:"10px 20px", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", gap:"16px", flexShrink:0 }}>
+          {[{color:"#f87171",label:"This week"},{color:"#fb923c",label:"This month"},{color:"rgba(255,255,255,0.35)",label:"Upcoming"}].map(l=>(
+            <div key={l.label} style={{ display:"flex", alignItems:"center", gap:"5px" }}>
+              <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:l.color }}/>
+              <span style={{ fontSize:"10px", color:"rgba(255,255,255,0.35)", fontFamily:FONT }}>{l.label}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Right panel — Selected festival detail */}
-      <div style={{ width:"300px", flexShrink:0, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        {selectedFest ? (
-          <div style={{ flex:1, overflowY:"auto", padding:"20px 16px", animation:"fadeIn 0.25s ease" }}>
-            <button onClick={()=>setSelected(null)} style={{ display:"flex", alignItems:"center", gap:"6px", marginBottom:"16px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.5)", fontSize:"11px", padding:"6px 12px", borderRadius:"8px", cursor:"pointer", fontFamily:"Poppins,sans-serif" }}><IconClose/> Close</button>
+      {/* Right — Festival detail */}
+      <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+        <div style={{ padding:"16px 20px 12px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
+          <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:FONT_HEAD }}>Upcoming Festivals</span>
+          <span style={{ fontSize:"11px", color:C.muted }}>{upcoming.length} festivals</span>
+        </div>
 
-            <div style={{ textAlign:"center", marginBottom:"20px" }}>
-              <div style={{ fontSize:"48px", marginBottom:"8px" }}>{selectedFest.emoji}</div>
-              <h2 style={{ fontSize:"18px", fontWeight:"800", color:"#fff", margin:"0 0 4px", fontFamily:"Poppins,sans-serif" }}>{selectedFest.name}</h2>
-              <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.4)", margin:"0 0 10px", fontFamily:"Poppins,sans-serif" }}>{new Date(selectedFest.date).toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</p>
-              <div style={{ display:"inline-flex", padding:"5px 14px", borderRadius:"99px", background:`${urgencyColor(selectedFest.daysUntil)}18`, border:`1px solid ${urgencyColor(selectedFest.daysUntil)}35`, fontSize:"12px", fontWeight:"700", color:urgencyColor(selectedFest.daysUntil), fontFamily:"Poppins,sans-serif" }}>{urgencyLabel(selectedFest.daysUntil)}</div>
-            </div>
+        <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
+          {/* Festival list */}
+          <div style={{ width:"220px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", overflowY:"auto", padding:"10px 8px" }}>
+            {loading ? (
+              [1,2,3,4,5].map(i=><div key={i} style={{ ...skel(),height:"52px",marginBottom:"4px" }}/>)
+            ) : upcoming.slice(0,15).map((f,i) => {
+              const u = URGENCY(f.daysLeft);
+              const isSel = selected===i;
+              return (
+                <div key={i} className="cal-fest" onClick={()=>setSelected(isSel?null:i)}
+                  style={{ padding:"9px 10px", borderRadius:"10px", border:`1px solid ${isSel?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.06)"}`, background:isSel?"rgba(255,255,255,0.07)":"rgba(255,255,255,0.02)", cursor:"pointer", marginBottom:"3px", transition:"all 0.15s" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:"7px" }}>
+                    <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:u.color, flexShrink:0 }}/>
+                    <span style={{ fontSize:"12px", fontWeight:"600", color:C.white, fontFamily:FONT, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{f.name}</span>
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginTop:"4px", paddingLeft:"13px" }}>
+                    <span style={{ fontSize:"10px", color:C.muted, fontFamily:FONT }}>{new Date(f.date).toLocaleDateString("en-IN",{day:"numeric",month:"short"})}</span>
+                    <span style={{ fontSize:"10px", color:u.color, fontFamily:FONT }}>{f.daysLeft===0?"Today":f.daysLeft===1?"Tomorrow":`${f.daysLeft}d`}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-            <div style={{ background:"rgba(124,58,237,0.08)", border:"1px solid rgba(124,58,237,0.2)", borderRadius:"12px", padding:"14px", marginBottom:"14px" }}>
-              <p style={{ display:"flex", alignItems:"center", gap:"6px", fontSize:"10px", fontWeight:"700", color:"rgba(124,58,237,0.8)", textTransform:"uppercase", letterSpacing:"1px", margin:"0 0 8px", fontFamily:"Poppins,sans-serif" }}><IconSparkle color="#a78bfa"/> Optimal Upload Window</p>
-              {selectedFest.daysUntil > 10 ? (
-                <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.6)", margin:0, fontFamily:"Poppins,sans-serif" }}>Upload <strong style={{color:"#a78bfa"}}>{Math.max(1,selectedFest.daysUntil-8)} – {Math.max(1,selectedFest.daysUntil-5)} days before</strong> for maximum views at the peak.</p>
-              ) : selectedFest.daysUntil > 0 ? (
-                <p style={{ display:"flex", alignItems:"center", gap:"6px", fontSize:"12px", color:"#ef4444", margin:0, fontFamily:"Poppins,sans-serif" }}><IconBolt/> Upload <strong>TODAY</strong> — Only {selectedFest.daysUntil} days left and videos need 5-7 days to rank!</p>
-              ) : (
-                <p style={{ fontSize:"12px", color:"#10b981", margin:0, fontFamily:"Poppins,sans-serif" }}>Festival is happening now! Post real-time content for maximum engagement.</p>
-              )}
-            </div>
-
-            {selectedFest.topics?.length > 0 && (
+          {/* Festival detail */}
+          <div style={{ flex:1, overflowY:"auto", padding:"20px" }}>
+            {!selectedFest ? (
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", gap:"14px", opacity:0.4 }}>
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <div style={{ textAlign:"center" }}>
+                  <p style={{ fontSize:"14px", fontWeight:"600", color:C.white, margin:"0 0 6px", fontFamily:FONT_HEAD }}>Select a festival</p>
+                  <p style={{ fontSize:"12px", color:C.muted, margin:0, fontFamily:FONT }}>Click any festival to see content ideas and the optimal upload window.</p>
+                </div>
+              </div>
+            ) : (
               <div>
-                <p style={{ display:"flex", alignItems:"center", gap:"6px", fontSize:"10px", fontWeight:"700", color:"rgba(255,255,255,0.25)", textTransform:"uppercase", letterSpacing:"1px", margin:"0 0 8px", fontFamily:"Poppins,sans-serif" }}><IconSparkle/> Recommended Topics</p>
-                <div style={{ display:"flex", flexDirection:"column", gap:"6px" }}>
-                  {selectedFest.topics.map((t,j) => (
-                    <div key={j} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"10px", padding:"8px 12px" }}>
-                      <span style={{ display:"flex", alignItems:"center", gap:"7px", fontSize:"12px", color:"rgba(255,255,255,0.75)", fontFamily:"Poppins,sans-serif" }}><IconVideo color="#a78bfa"/> {t}</span>
-                      <button onClick={()=>navigator.clipboard.writeText(t)}
-                        style={{ fontSize:"10px", padding:"3px 8px", borderRadius:"6px", border:"1px solid rgba(255,255,255,0.08)", background:"transparent", color:"rgba(255,255,255,0.3)", cursor:"pointer", fontFamily:"Poppins,sans-serif", flexShrink:0 }}>Copy</button>
-                    </div>
-                  ))}
+                <div style={{ marginBottom:"20px" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"6px" }}>
+                    <div style={{ width:"8px", height:"8px", borderRadius:"50%", background:URGENCY(selectedFest.daysLeft).color }}/>
+                    <h2 style={{ fontSize:"22px", fontWeight:"800", color:C.white, margin:0, fontFamily:FONT_HEAD }}>{selectedFest.name}</h2>
+                  </div>
+                  <p style={{ fontSize:"13px", color:C.muted, margin:0, fontFamily:FONT }}>
+                    {new Date(selectedFest.date).toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"})} · {selectedFest.daysLeft===0?"Today":selectedFest.daysLeft===1?"Tomorrow":`${selectedFest.daysLeft} days away`}
+                  </p>
+                </div>
+
+                {selectedFest.daysLeft <= 30 && (
+                  <div style={{ background:"rgba(251,146,60,0.08)", border:"1px solid rgba(251,146,60,0.2)", borderRadius:"12px", padding:"14px 16px", marginBottom:"16px", display:"flex", gap:"10px" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fb923c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0, marginTop:"2px" }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <p style={{ fontSize:"12px", color:"rgba(251,146,60,0.9)", margin:0, fontFamily:FONT, lineHeight:1.6 }}>
+                      Start creating content <strong>{selectedFest.daysLeft <= 7 ? "immediately" : "this week"}</strong>. Festival content performs best when published 3 to 7 days before the event.
+                    </p>
+                  </div>
+                )}
+
+                <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"16px", marginBottom:"14px" }}>
+                  <p style={{ fontSize:"11px", fontWeight:"700", color:C.muted, textTransform:"uppercase", letterSpacing:"1px", margin:"0 0 12px", fontFamily:FONT }}>Content Ideas</p>
+                  <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                    {(selectedFest.topics || [
+                      `Top 5 ways to celebrate ${selectedFest.name} as a creator`,
+                      `${selectedFest.name} special: behind the scenes`,
+                      `My ${selectedFest.name} content creation setup`,
+                      `How to grow your audience during ${selectedFest.name}`,
+                    ]).map((topic, i) => (
+                      <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:"8px", padding:"8px 10px", borderRadius:"9px", background:"rgba(255,255,255,0.03)" }}>
+                        <span style={{ fontSize:"10px", color:C.dim, fontFamily:FONT, marginTop:"2px", flexShrink:0 }}>0{i+1}</span>
+                        <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.7)", margin:0, fontFamily:FONT, lineHeight:1.6 }}>{topic}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"16px", marginBottom:"14px" }}>
+                  <p style={{ fontSize:"11px", fontWeight:"700", color:C.muted, textTransform:"uppercase", letterSpacing:"1px", margin:"0 0 12px", fontFamily:FONT }}>Optimal Upload Window</p>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
+                    {[
+                      { label:"Best time to post", value:"7 to 10 days before" },
+                      { label:"Peak engagement", value:"Day of the festival" },
+                      { label:"Best platforms", value:"YouTube, Instagram, Threads" },
+                      { label:"Content type", value:"Short + Long form both" },
+                    ].map(item=>(
+                      <div key={item.label} style={{ padding:"10px 12px", borderRadius:"10px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)" }}>
+                        <p style={{ fontSize:"9px", color:C.dim, fontFamily:FONT, margin:"0 0 3px", textTransform:"uppercase", letterSpacing:"0.5px" }}>{item.label}</p>
+                        <p style={{ fontSize:"12px", fontWeight:"600", color:C.white, margin:0, fontFamily:FONT }}>{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ background:"rgba(110,231,183,0.06)", border:"1px solid rgba(110,231,183,0.15)", borderRadius:"12px", padding:"12px 14px", display:"flex", gap:"8px" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0, marginTop:"1px" }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <p style={{ fontSize:"11px", color:"rgba(110,231,183,0.8)", margin:0, fontFamily:FONT, lineHeight:1.7 }}>Indian festival videos get <strong>3 to 8x more views</strong> than regular content. Add the festival name in your thumbnail for best CTR.</p>
                 </div>
               </div>
             )}
-
-            <div style={{ marginTop:"14px", display:"flex", gap:"8px", background:"rgba(6,214,160,0.06)", border:"1px solid rgba(6,214,160,0.15)", borderRadius:"10px", padding:"10px 12px", fontSize:"11px", color:"rgba(255,255,255,0.5)", fontFamily:"Poppins,sans-serif", lineHeight:1.7 }}>
-              <IconLightbulb size={14} color="#6ee7b7"/> <span>Indian festival videos get <strong style={{color:"#6ee7b7"}}>3–8x more views</strong> than regular content. Add festival name in your thumbnail for best CTR.</span>
-            </div>
           </div>
-        ) : (
-          <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"24px", textAlign:"center" }}>
-            <div style={{ width:"64px", height:"64px", borderRadius:"16px", background:"rgba(124,58,237,0.1)", border:"1px solid rgba(124,58,237,0.2)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:"16px" }}><IconCalendar size={28} color="rgba(167,139,250,0.6)"/></div>
-            <p style={{ fontSize:"14px", fontWeight:"700", color:"rgba(255,255,255,0.3)", margin:"0 0 8px", fontFamily:"Poppins,sans-serif" }}>Select a festival</p>
-            <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.2)", margin:0, fontFamily:"Poppins,sans-serif", lineHeight:1.6 }}>Click any festival to see recommended topics and the optimal upload window.</p>
-
-            {upcoming.slice(0,3).map((f,i) => (
-              <div key={i} onClick={()=>setSelected(festivals.indexOf(f))}
-                style={{ width:"100%", marginTop:"8px", padding:"10px 12px", borderRadius:"10px", border:"1px solid rgba(255,255,255,0.06)", background:"rgba(255,255,255,0.02)", cursor:"pointer", display:"flex", alignItems:"center", gap:"8px", textAlign:"left" }}
-                onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.08)"}
-                onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.02)"}>
-                <span style={{ fontSize:"20px" }}>{f.emoji}</span>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <p style={{ fontSize:"12px", fontWeight:"700", color:"#fff", margin:0, fontFamily:"Poppins,sans-serif", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{f.name}</p>
-                  <p style={{ fontSize:"10px", color:"rgba(255,255,255,0.3)", margin:0, fontFamily:"Poppins,sans-serif" }}>{urgencyLabel(f.daysUntil)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
