@@ -169,6 +169,24 @@ export default function SocioMeePixel({ user }) {
 
   const panelStyle = { width:"260px", flexShrink:0, borderLeft:"1px solid rgba(255,255,255,0.06)", background:"rgba(255,255,255,0.02)", backdropFilter:"blur(20px)", display:"flex", flexDirection:"column", overflow:"hidden" };
 
+  const [loading, setLoading] = useState(true);
+  useEffect(() => { setTimeout(() => setLoading(false), 600); }, []);
+
+  if (loading) return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"32px 24px", fontFamily:FONT }}>
+      <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"20px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"24px", padding:"52px 44px", maxWidth:"420px", width:"100%" }}>
+        <div style={{ width:"68px", height:"68px", borderRadius:"20px", background:"rgba(255,255,255,0.06)", animation:"skpulse 1.4s ease-in-out infinite" }}/>
+        <div style={{ display:"flex", flexDirection:"column", gap:"10px", width:"100%", alignItems:"center" }}>
+          <div style={{ width:"60%", height:"16px", borderRadius:"8px", background:"rgba(255,255,255,0.06)", animation:"skpulse 1.4s ease-in-out infinite" }}/>
+          <div style={{ width:"80%", height:"12px", borderRadius:"6px", background:"rgba(255,255,255,0.04)", animation:"skpulse 1.4s ease-in-out infinite" }}/>
+          <div style={{ width:"70%", height:"12px", borderRadius:"6px", background:"rgba(255,255,255,0.04)", animation:"skpulse 1.4s ease-in-out infinite" }}/>
+        </div>
+        <div style={{ width:"160px", height:"42px", borderRadius:"12px", background:"rgba(255,255,255,0.06)", animation:"skpulse 1.4s ease-in-out infinite" }}/>
+      </div>
+    </div>
+  );
+
   if (!image) return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"32px 24px", fontFamily:FONT }}>
       <style>{`
@@ -183,7 +201,7 @@ export default function SocioMeePixel({ user }) {
         style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"20px", textAlign:"center", background:dragOver?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.03)", border:`1px solid ${dragOver?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.08)"}`, borderRadius:"24px", padding:"52px 44px", maxWidth:"420px", width:"100%", backdropFilter:"blur(24px)", transition:"all 0.2s", cursor:"pointer" }}
         onClick={()=>fileInputRef.current?.click()}>
         <div style={{ width:"68px", height:"68px", borderRadius:"20px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C12 2 13 8 18 9C18 9 24 10 22 12C22 12 18 13 18 15C18 15 17 21 12 22C12 22 7 21 6 15C6 15 6 13 2 12C2 12 0 10 6 9C6 9 11 8 12 2Z" fill="currentColor" stroke="none"/></svg>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C12 2 11.5 7.5 9 9C9 9 4 10.5 2 12C2 12 7 13.5 9 15C9 15 11.5 20.5 12 22C12 22 12.5 16.5 15 15C15 15 20 13.5 22 12C22 12 17 10.5 15 9C15 9 12.5 3.5 12 2Z" fill="currentColor" stroke="none"/></svg>
         </div>
         <div>
           <h3 style={{ fontSize:"22px", fontWeight:"700", color:"#fff", margin:"0 0 10px", fontFamily:FONT_HEAD }}>Drop your image here</h3>
@@ -221,7 +239,7 @@ export default function SocioMeePixel({ user }) {
       {/* Header */}
       <div style={{ padding:"10px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, background:"rgba(255,255,255,0.01)", backdropFilter:"blur(10px)" }}>
         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C12 2 13 8 18 9C18 9 24 10 22 12C22 12 18 13 18 15C18 15 17 21 12 22C12 22 7 21 6 15C6 15 6 13 2 12C2 12 0 10 6 9C6 9 11 8 12 2Z" fill="currentColor" stroke="none"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C12 2 11.5 7.5 9 9C9 9 4 10.5 2 12C2 12 7 13.5 9 15C9 15 11.5 20.5 12 22C12 22 12.5 16.5 15 15C15 15 20 13.5 22 12C22 12 17 10.5 15 9C15 9 12.5 3.5 12 2Z" fill="currentColor" stroke="none"/></svg>
           <span style={{ fontSize:"13px", fontWeight:"600", color:C.white, fontFamily:FONT }}>SocioMee Pixel</span>
           {fileName && <span style={{ fontSize:"10px", color:C.muted, fontFamily:FONT }}>{fileName} · {tw}×{th}</span>}
         </div>
