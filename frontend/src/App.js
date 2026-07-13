@@ -460,33 +460,38 @@ function EditBtn({ value, onSave, size="sm", multiline=false }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(value||"");
   useEffect(()=>{ if(!editing) setVal(value||""); }, [value]);
-  const sz = size==="sm" ? { padding:"4px 10px",fontSize:"11px" } : { padding:"7px 14px",fontSize:"12px" };
   const save = () => { if(onSave) onSave(val); setEditing(false); };
-  if(editing) return (
-    <div style={{ position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px" }} onClick={(e)=>{ if(e.target===e.currentTarget) setEditing(false); }}>
-      <div style={{ background:"#12101a",border:`1px solid ${C.purple}44`,borderRadius:"16px",padding:"24px",width:"100%",maxWidth:"680px",maxHeight:"80vh",display:"flex",flexDirection:"column",gap:"14px" }}>
-        <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}>
-          <span style={{ fontSize:"13px",fontWeight:"800",color:C.muted,letterSpacing:"1px",textTransform:"uppercase" }}>Edit Content</span>
-          <button onClick={()=>setEditing(false)} style={{ background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:"18px" }}>✕</button>
-        </div>
-        <textarea value={val} onChange={e=>setVal(e.target.value)} style={{ flex:1,minHeight:"300px",background:"rgba(255,255,255,0.04)",border:`1px solid ${C.hairline}`,borderRadius:"10px",padding:"14px",color:C.ink,fontSize:"13px",lineHeight:"1.7",fontFamily:"inherit",resize:"vertical",outline:"none" }}/>
-        <div style={{ display:"flex",gap:"8px",justifyContent:"flex-end" }}>
-          <button onClick={()=>setEditing(false)} style={{ padding:"9px 20px",borderRadius:"99px",border:`1px solid ${C.hairline}`,background:C.glass,color:C.muted,fontWeight:"700",cursor:"pointer",fontFamily:"inherit",fontSize:"13px" }}>Cancel</button>
-          <button onClick={save} style={{ padding:"9px 20px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",fontSize:"13px" }}>✓ Save Changes</button>
-        </div>
+  const onKey = (e) => {
+    if(!multiline && e.key==="Enter") { e.preventDefault(); save(); }
+    if(e.key==="Escape") setEditing(false);
+  };
+  if(editing) return multiline ? (
+    <div style={{ width:"100%",marginTop:"6px" }}>
+      <textarea autoFocus value={val} onChange={e=>setVal(e.target.value)} onKeyDown={onKey}
+        style={{ width:"100%",minHeight:"120px",background:"rgba(255,255,255,0.05)",border:`1.5px solid ${C.purple}66`,borderRadius:"10px",padding:"10px 12px",color:C.ink,fontSize:"13px",lineHeight:"1.7",fontFamily:"inherit",resize:"vertical",outline:"none",boxSizing:"border-box" }}/>
+      <div style={{ display:"flex",gap:"6px",marginTop:"6px",justifyContent:"flex-end" }}>
+        <button onClick={()=>setEditing(false)} style={{ padding:"5px 14px",borderRadius:"99px",border:`1px solid ${C.hairline}`,background:C.glass,color:C.muted,fontWeight:"700",cursor:"pointer",fontFamily:"inherit",fontSize:"12px" }}>Cancel</button>
+        <button onClick={save} style={{ padding:"5px 14px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",fontSize:"12px" }}>✓ Save</button>
       </div>
     </div>
+  ) : (
+    <div style={{ display:"flex",gap:"4px",alignItems:"center",flex:1 }}>
+      <input autoFocus value={val} onChange={e=>setVal(e.target.value)} onKeyDown={onKey} onBlur={save}
+        style={{ flex:1,background:"rgba(255,255,255,0.05)",border:`1.5px solid ${C.purple}66`,borderRadius:"8px",padding:"5px 10px",color:C.ink,fontSize:"14px",fontWeight:"600",fontFamily:"inherit",outline:"none",minWidth:0 }}/>
+      <button onClick={save} style={{ padding:"4px 10px",fontSize:"11px",fontWeight:"800",cursor:"pointer",borderRadius:"8px",border:`1px solid ${C.success}55`,background:C.success+"18",color:C.success,fontFamily:"inherit",flexShrink:0 }}>✓</button>
+      <button onClick={()=>setEditing(false)} style={{ padding:"4px 8px",fontSize:"11px",fontWeight:"800",cursor:"pointer",borderRadius:"8px",border:`1px solid ${C.hairline}`,background:C.glass,color:C.muted,fontFamily:"inherit",flexShrink:0 }}>✕</button>
+    </div>
   );
-  return <button onClick={()=>setEditing(true)} title="Edit" style={{ ...sz,fontWeight:"800",cursor:"pointer",borderRadius:"8px",border:`1px solid ${C.hairline}`,background:C.glass,color:C.muted,fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px" }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>;
+  return <button onClick={()=>setEditing(true)} title="Edit" style={{ padding:"3px 8px",fontSize:"11px",fontWeight:"700",cursor:"pointer",borderRadius:"7px",border:`1px solid ${C.hairline}`,background:C.glass,color:C.muted,fontFamily:"inherit",display:"flex",alignItems:"center",gap:"3px",flexShrink:0 }}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>;
 }
 
-function SectionHead({ icon, title, copyText, editValue, onEditSave, children }) {
+function SectionHead({ icon, title, copyText, editValue, onEditSave, editMultiline, children }) {
   return (
     <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px" }}>
       <span style={{ fontSize:"10.5px",fontWeight:"800",letterSpacing:"1.4px",textTransform:"uppercase",color:C.muted }}>
         {icon&&<span style={{ marginRight:"6px" }}>{icon}</span>}{title}
       </span>
-      <div style={{ display:"flex",gap:"6px",alignItems:"center" }}>{children}{editValue!==undefined&&onEditSave&&<EditBtn value={editValue} onSave={onEditSave}/>}{copyText&&<CopyBtn text={copyText}/>}</div>
+      <div style={{ display:"flex",gap:"6px",alignItems:"center" }}>{children}{editValue!==undefined&&onEditSave&&<EditBtn value={editValue} onSave={onEditSave} multiline={editMultiline||false}/>}{copyText&&<CopyBtn text={copyText}/>}</div>
     </div>
   );
 }
@@ -583,6 +588,49 @@ function CreditBadge({ creditStatus, onUpgradeClick }) {
 // ══════════════════════════════════════════════════════════════════════
 // TITLE PICKER
 // ══════════════════════════════════════════════════════════════════════
+function scoreTitleSimple(title) {
+  const t = title.toLowerCase();
+  let s = 50;
+  if(t.length>=40&&t.length<=70) s+=12;
+  if(/\d/.test(t)) s+=12;
+  if(["secret","truth","nobody","mistake","why","how","best","revealed","exposed","real"].some(w=>t.includes(w))) s+=12;
+  if(t.split(" ").length>=5&&t.split(" ").length<=14) s+=14;
+  return Math.min(100,s);
+}
+
+function TitleInlineEdit({ title, isActive, onSelect, onSave, score, scoreCol }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(title||"");
+  const [liveScore, setLiveScore] = useState(score);
+  useEffect(()=>{ setVal(title||""); setLiveScore(score); }, [title, score]);
+  const save = () => { const ns=scoreTitleSimple(val); setLiveScore(ns); onSave(val); setEditing(false); };
+  const col = scoreColor(liveScore);
+  return (
+    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",gap:"8px",width:"100%" }}>
+      {editing ? (
+        <div style={{ display:"flex",gap:"4px",alignItems:"center",flex:1 }}>
+          <input autoFocus value={val} onChange={e=>{setVal(e.target.value);setLiveScore(scoreTitleSimple(e.target.value));}}
+            onKeyDown={e=>{ if(e.key==="Enter"){e.preventDefault();save();} if(e.key==="Escape")setEditing(false); }}
+            onBlur={save}
+            style={{ flex:1,background:"rgba(255,255,255,0.05)",border:`1.5px solid ${C.purple}88`,borderRadius:"8px",padding:"5px 10px",color:C.ink,fontSize:"14px",fontWeight:"600",fontFamily:"inherit",outline:"none",minWidth:0 }}/>
+          <span style={{ fontSize:"11px",fontWeight:"800",padding:"2px 9px",borderRadius:"99px",background:col+"20",color:col,border:`1px solid ${col}33`,flexShrink:0 }}>{liveScore}/100</span>
+          <button onMouseDown={save} style={{ padding:"4px 8px",fontSize:"11px",fontWeight:"800",cursor:"pointer",borderRadius:"7px",border:`1px solid ${C.success}55`,background:C.success+"18",color:C.success,fontFamily:"inherit",flexShrink:0 }}>✓</button>
+        </div>
+      ) : (
+        <>
+          <span onClick={onSelect} style={{ fontWeight:"600",lineHeight:1.45,flex:1,color:C.ink,fontSize:"14px",cursor:"pointer" }}>
+            {isActive&&<span style={{ color:C.purple,marginRight:"6px" }}>✦</span>}{title}
+          </span>
+          <div style={{ display:"flex",gap:"4px",alignItems:"center",flexShrink:0 }}>
+            <button onClick={()=>setEditing(true)} style={{ padding:"3px 8px",fontSize:"11px",fontWeight:"700",cursor:"pointer",borderRadius:"7px",border:`1px solid ${C.hairline}`,background:C.glass,color:C.muted,fontFamily:"inherit",display:"flex",alignItems:"center",gap:"3px" }}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
+            <span style={{ fontSize:"11px",fontWeight:"800",padding:"2px 9px",borderRadius:"99px",background:col+"20",color:col,border:`1px solid ${col}33` }}>{liveScore}/100</span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function TitlePicker({ titlesWithScore=[], bestTitle="", isPro, onUpgradeClick, onSelect, onTitlesChange }) {
   const [sel, setSel] = useState(0);
   const selTitle = titlesWithScore[sel]?.title || bestTitle;
@@ -596,13 +644,14 @@ function TitlePicker({ titlesWithScore=[], bestTitle="", isPro, onUpgradeClick, 
         return (
           <div key={i} style={{ width:"100%",marginBottom:"8px",background:isA?`${C.purple}10`:C.pillBg,border:`1.5px solid ${isA?C.purple:C.hairline}`,borderRadius:"12px",padding:"12px 16px",transition:"all 0.15s" }}>
             <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:"10px" }}>
-              <span onClick={()=>setSel(i)} style={{ fontWeight:"600",lineHeight:1.45,flex:1,color:C.ink,fontSize:"14px",cursor:"pointer" }}>
-                {isA&&<span style={{ color:C.purple,marginRight:"6px" }}>✦</span>}{item.title}
-              </span>
-              <div style={{ display:"flex",gap:"4px",alignItems:"center",flexShrink:0 }}>
-                <EditBtn value={item.title} onSave={(v)=>{ const updated=[...titlesWithScore]; updated[i]={...updated[i],title:v}; if(onTitlesChange) onTitlesChange(updated); if(i===sel&&onSelect) onSelect(v); }} size="sm"/>
-                <span style={{ fontSize:"11px",fontWeight:"800",padding:"2px 9px",borderRadius:"99px",background:col+"20",color:col,border:`1px solid ${col}33` }}>{score}/100</span>
-              </div>
+              <TitleInlineEdit
+                title={item.title}
+                isActive={isA}
+                onSelect={()=>setSel(i)}
+                onSave={(v)=>{ const updated=[...titlesWithScore]; updated[i]={...updated[i],title:v,seo_score:scoreTitleSimple(v)}; if(onTitlesChange) onTitlesChange(updated); if(i===sel&&onSelect) onSelect(v); }}
+                score={score}
+                scoreCol={col}
+              />
             </div>
             {isA && item.tips?.length > 0 && (
               isPro ? (
@@ -1139,7 +1188,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
 
       {false && (
         <div style={{ marginBottom:"20px" }}>
-          <SectionHead icon="📋" title="YouTube Description" copyText={editedDesc||result.seo_description||result.youtube_description} editValue={editedDesc||result.seo_description||result.youtube_description||""} onEditSave={(v)=>setEditedDesc(v)}/>
+          <SectionHead icon="📋" title="YouTube Description" copyText={editedDesc||result.seo_description||result.youtube_description} editValue={editedDesc||result.seo_description||result.youtube_description||""} onEditSave={(v)=>setEditedDesc(v)} editMultiline={true}/>
           <div className="dark-scroll" style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"12px",padding:"16px",fontSize:"13px",lineHeight:1.8,color:C.ink,whiteSpace:"pre-wrap",fontFamily:"inherit",maxHeight:"220px",overflowY:"auto" }}>
             {result.seo_description||result.youtube_description}
           </div>
@@ -1162,7 +1211,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
 
       {displayScript&&(
         <div style={{ marginBottom:"22px" }}>
-          <SectionHead icon="📜" title={`Recommended Script${isCapped?" (Preview — 500 words)":""}`} copyText={isPro?(editedScript||rawScript):displayScript} editValue={isPro?(editedScript||rawScript):undefined} onEditSave={isPro?(v)=>setEditedScript(v):undefined}/>
+          <SectionHead icon="📜" title={`Recommended Script${isCapped?" (Preview — 500 words)":""}`} copyText={isPro?(editedScript||rawScript):displayScript} editValue={isPro?(editedScript||rawScript):undefined} onEditSave={isPro?(v)=>setEditedScript(v):undefined} editMultiline={true}/>
           <div className="dark-scroll" style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"14px",padding:"20px 24px",maxHeight:isPro?"520px":"none",overflowY:isPro?"auto":"visible" }}>
             <ScriptRenderer text={isPro?(editedScript||displayScript):displayScript} capped={isCapped}/>
           </div>
