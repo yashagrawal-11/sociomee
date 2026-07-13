@@ -1677,7 +1677,9 @@ export default function App() {
   useEffect(() => {
     const handler = (e) => setActiveTab(e.detail);
     window.addEventListener("sociomee_navigate", handler);
-    return () => window.removeEventListener("sociomee_navigate", handler);
+    const genHandler = (e) => { if(e.detail?.content) setKeyword(e.detail.content); setActiveTab("generate"); setSidebarOpen(false); };
+    window.addEventListener("sociomee:generate", genHandler);
+    return () => { window.removeEventListener("sociomee_navigate", handler); window.removeEventListener("sociomee:generate", genHandler); };
   }, []);
 
   useEffect(() => {

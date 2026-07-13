@@ -180,7 +180,7 @@ function GenerateModal({news, onClose}) {
           {news.ai_summary || news.original_summary || ''}
         </p>
         <button onClick={()=>{
-          window.dispatchEvent(new CustomEvent('sociomee:publish',{detail:{content:news.title,platform:'instagram'}}))
+          window.dispatchEvent(new CustomEvent('sociomee:generate',{detail:{content:news.title+'. '+(news.ai_summary||news.original_summary||'')}}))
           onClose()
         }} style={{width:'100%',padding:'11px',borderRadius:'99px',background:'linear-gradient(135deg,#7c3aed,#9b5cf6)',border:'none',color:'#fff',fontSize:'13px',fontWeight:700,fontFamily:'Poppins,sans-serif',cursor:'pointer'}}>
           ✦ Generate Content from this News
