@@ -148,10 +148,13 @@ export default function SocioMeePixel({ user }) {
     setBgRemoving(true);
     try {
       const res = await fetch("https://sociomeeai.com/api/removebg", { method:"POST", headers:{"Content-Type":"application/json"}, credentials:"include", body:JSON.stringify({image}) });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(res.status + ": " + errText);
+      }
       const data = await res.json();
       setImage(data.image);
-    } catch { alert("Background removal requires Premium. Upload a PNG with transparent background as an alternative."); }
+    } catch(err) { alert("Background removal failed: " + (err?.message || "unknown error. Please try again.")); }
     finally { setBgRemoving(false); }
   };
 

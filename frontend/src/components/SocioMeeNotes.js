@@ -1,381 +1,372 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
-const STORAGE_KEY = "sociomee_notes_v2";
+const FONT = "'DM Sans','Syne',sans-serif";
+const FONT_HEAD = "'Poppins',sans-serif";
+const C = {
+  bg: "#080810",
+  border: "rgba(255,255,255,0.07)",
+  card: "rgba(255,255,255,0.04)",
+  cardHover: "rgba(255,255,255,0.07)",
+  muted: "rgba(255,255,255,0.35)",
+  dim: "rgba(255,255,255,0.18)",
+  white: "#fff",
+  sidebar: "rgba(255,255,255,0.02)",
+};
 
-const NOTE_COLORS = [
-  { id: "dark",   card: "rgba(255,255,255,0.04)", border: "rgba(255,255,255,0.08)", accent: "#a78bfa" },
-  { id: "purple", card: "linear-gradient(135deg,#4c1d95,#6d28d9)", border: "rgba(124,58,237,0.4)", accent: "#c4b5fd" },
-  { id: "pink",   card: "linear-gradient(135deg,#9d174d,#ec4899)", border: "rgba(236,72,153,0.4)", accent: "#f9a8d4" },
-  { id: "blue",   card: "linear-gradient(135deg,#1e3a5f,#3b82f6)", border: "rgba(59,130,246,0.4)", accent: "#93c5fd" },
-  { id: "green",  card: "linear-gradient(135deg,#064e3b,#10b981)", border: "rgba(16,185,129,0.4)", accent: "#6ee7b7" },
-  { id: "orange", card: "linear-gradient(135deg,#78350f,#f59e0b)", border: "rgba(245,158,11,0.4)", accent: "#fcd34d" },
-  { id: "rose",   card: "linear-gradient(135deg,#7f1d1d,#ef4444)", border: "rgba(239,68,68,0.4)", accent: "#fca5a5" },
+const CATS = [
+  { id:"all",     label:"All Notes",  icon:"M3 3h18v18H3z M3 9h18 M9 3v18" },
+  { id:"ideas",   label:"Ideas",      icon:"M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7zM9 21h6 M10 17v1 M14 17v1" },
+  { id:"scripts", label:"Scripts",    icon:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M9 13h6 M9 17h6" },
+  { id:"hooks",   label:"Hooks",      icon:"M4 6h16M4 12h8m-8 6h16" },
+  { id:"todo",    label:"To-Do",      icon:"M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
+  { id:"sticky",  label:"Sticky",     icon:"M15 2H6a2 2 0 0 0-2 2v16l4-4h11a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" },
+  { id:"drafts",  label:"Drafts",     icon:"M12 20h9 M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" },
 ];
 
-const CATEGORIES = [
-  { id: "all",     label: "All Notes",
-    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
-  { id: "ideas",   label: "Ideas",
-    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg> },
-  { id: "scripts", label: "Scripts",
-    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> },
-  { id: "hooks",   label: "Hooks",
-    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg> },
-  { id: "tasks",   label: "To-Do",
-    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> },
-  { id: "sticky",  label: "Sticky",
-    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9z"/><polyline points="15 3 15 9 21 9"/></svg> },
-  { id: "drafts",  label: "Drafts",
-    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> },
-];
+const COLORS = ["#fff","#f87171","#fb923c","#fbbf24","#4ade80","#60a5fa","#c084fc","#f472b6"];
 
-function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function CatIcon({ d, size=14, color="currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      {d.split("M").filter(Boolean).map((p,i)=><path key={i} d={"M"+p}/>)}
+    </svg>
+  );
+}
 
 function timeAgo(ts) {
-  const d = Date.now() - ts, m = Math.floor(d/60000), h = Math.floor(d/3600000), dy = Math.floor(d/86400000);
-  if (m < 1) return "just now"; if (m < 60) return `${m}m ago`; if (h < 24) return `${h}h ago`; return `${dy}d ago`;
+  if (!ts) return "";
+  const d = (Date.now()-ts)/1000;
+  if (d<60) return "just now";
+  if (d<3600) return `${Math.floor(d/60)}m ago`;
+  if (d<86400) return `${Math.floor(d/3600)}h ago`;
+  return new Date(ts).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
 }
 
-function shareNote(note) {
-  const text = `${note.title}\n\n${note.body || note.todos?.map(t=>(t.done?"✓ ":"• ")+t.text).join("\n") || ""}`;
-  if (navigator.share) { navigator.share({ title: note.title, text }); }
-  else {
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank");
-  }
-}
+export default function SocioMeeNotes({ user, onSendToGenerator }) {
+  const rawPlan = user?.plan || user?.plan_label || "free";
+  const plan = rawPlan.toLowerCase().includes("premium") ? "premium" : rawPlan.toLowerCase().includes("pro") ? "pro" : "free";
+  const isPro = plan === "pro" || plan === "premium";
+  const isPremium = plan === "premium";
 
-function TodoItem({ item, onChange, onDelete }) {
-  return (
-    <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"6px" }}>
-      <input type="checkbox" checked={item.done} onChange={e => onChange({ ...item, done: e.target.checked })}
-        style={{ width:"14px", height:"14px", accentColor:"#7c3aed", cursor:"pointer", flexShrink:0 }}/>
-      <input value={item.text} onChange={e => onChange({ ...item, text: e.target.value })}
-        style={{ flex:1, background:"transparent", border:"none", outline:"none", color:item.done?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.85)", fontSize:"13px", fontFamily:"Poppins,sans-serif", textDecoration:item.done?"line-through":"none" }}
-        placeholder="Add task..."/>
-      <button onClick={onDelete} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.25)", cursor:"pointer", fontSize:"16px", padding:"0 2px", lineHeight:1 }}>×</button>
-    </div>
-  );
-}
+  const [notes, setNotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("sociomee_notes_v2") || "[]"); } catch { return []; }
+  });
+  const [activeCat, setActiveCat] = useState("all");
+  const [search, setSearch] = useState("");
+  const [activeNote, setActiveNote] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [recording, setRecording] = useState(false);
+  const [recordingText, setRecordingText] = useState("");
+  const mediaRecRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const fileInputRef = useRef(null);
 
-function NoteCard({ note, onClick, onDelete, onPin }) {
-  const [hov, setHov] = useState(false);
-  const col = NOTE_COLORS.find(c => c.id === note.color) || NOTE_COLORS[0];
-  const todos = note.todos || [];
+  useEffect(() => { setTimeout(() => setLoading(false), 500); }, []);
 
-  return (
-    <div onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ background:col.card, borderRadius:"14px", padding:"16px", cursor:"pointer", position:"relative",
-        transform:hov?"translateY(-3px)":"translateY(0)",
-        boxShadow:hov?"0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.2)":"0 4px 16px rgba(0,0,0,0.3)",
-        transition:"all 0.2s ease", minHeight:"150px", display:"flex", flexDirection:"column", gap:"8px",
-        border:`1px solid ${hov?"rgba(124,58,237,0.35)":col.border}`,
-        backdropFilter:note.color==="dark"?"blur(16px)":"none",
-        WebkitBackdropFilter:note.color==="dark"?"blur(16px)":"none",
-      }}>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        {note.category && note.category !== "all" && (
-          <span style={{ fontSize:"9px", fontWeight:"700", padding:"2px 8px", borderRadius:"99px", background:"rgba(255,255,255,0.12)", color:"rgba(255,255,255,0.75)", letterSpacing:"1px", textTransform:"uppercase", fontFamily:"Poppins,sans-serif" }}>
-            {CATEGORIES.find(c => c.id === note.category)?.label}
-          </span>
-        )}
-        <span style={{ fontSize:"9px", color:"rgba(255,255,255,0.35)", marginLeft:"auto", fontFamily:"Poppins,sans-serif" }}>{timeAgo(note.updatedAt)}</span>
-      </div>
+  const save = (updated) => {
+    setNotes(updated);
+    try { localStorage.setItem("sociomee_notes_v2", JSON.stringify(updated)); } catch {}
+  };
 
-      <h3 style={{ fontSize:"14px", fontWeight:"800", color:"#fff", margin:0, lineHeight:1.3, fontFamily:"Poppins,sans-serif" }}>
-        {note.title || "Untitled"}
-        {note.pinned && <span style={{ marginLeft:"6px", fontSize:"10px" }}>📌</span>}
-      </h3>
+  const createNote = (type="note") => {
+    const note = {
+      id: Date.now(),
+      type,
+      title: type==="todo" ? "New To-Do" : type==="sticky" ? "Quick Note" : "Untitled",
+      content: "",
+      category: type==="todo" ? "todo" : type==="sticky" ? "sticky" : "drafts",
+      color: "#fff",
+      pinned: false,
+      starred: false,
+      image: null,
+      todos: type==="todo" ? [{ id:Date.now(), text:"", done:false }] : [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    const updated = [note, ...notes];
+    save(updated);
+    setActiveNote(note.id);
+    setActiveCat(note.category);
+  };
 
-      {note.type === "todo" && todos.length > 0 ? (
-        <div style={{ flex:1 }}>
-          {todos.slice(0, 4).map(t => (
-            <div key={t.id} style={{ display:"flex", alignItems:"center", gap:"6px", marginBottom:"4px" }}>
-              <div style={{ width:"11px", height:"11px", borderRadius:"3px", border:"1px solid rgba(255,255,255,0.35)", background:t.done?"rgba(124,58,237,0.6)":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                {t.done && <svg width="7" height="7" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" strokeWidth="2" fill="none"/></svg>}
-              </div>
-              <span style={{ fontSize:"11px", color:t.done?"rgba(255,255,255,0.35)":"rgba(255,255,255,0.8)", textDecoration:t.done?"line-through":"none", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontFamily:"Poppins,sans-serif" }}>{t.text}</span>
-            </div>
-          ))}
-          {todos.length > 4 && <span style={{ fontSize:"10px", color:"rgba(255,255,255,0.3)", fontFamily:"Poppins,sans-serif" }}>+{todos.length-4} more</span>}
-          <div style={{ marginTop:"6px", fontSize:"10px", color:"rgba(255,255,255,0.4)", fontFamily:"Poppins,sans-serif" }}>{todos.filter(t=>t.done).length}/{todos.length} done</div>
-        </div>
-      ) : (
-        <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.65)", lineHeight:1.65, margin:0, flex:1, display:"-webkit-box", WebkitLineClamp:4, WebkitBoxOrient:"vertical", overflow:"hidden", fontFamily:"Poppins,sans-serif" }}>
-          {note.body || "Empty note..."}
-        </p>
-      )}
+  const updateNote = (id, fields) => {
+    const updated = notes.map(n => n.id===id ? {...n, ...fields, updatedAt:Date.now()} : n);
+    save(updated);
+    if (activeNote === id) setActiveNote(id);
+  };
 
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", paddingTop:"8px", borderTop:"1px solid rgba(255,255,255,0.08)" }}>
-        <span style={{ fontSize:"10px", color:"rgba(255,255,255,0.3)", fontFamily:"Poppins,sans-serif" }}>
-          {note.type === "todo" ? "To-Do" : note.type === "sticky" ? "Sticky" : "Note"}
-        </span>
-        <div style={{ display:"flex", gap:"4px" }}>
-          <button onClick={e=>{e.stopPropagation();shareNote(note);}} title="Share"
-            style={{ background:"rgba(255,255,255,0.07)", border:"none", borderRadius:"6px", padding:"3px 7px", color:"rgba(255,255,255,0.5)", cursor:"pointer" }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          </button>
-          <button onClick={e=>{e.stopPropagation();onPin(note.id);}} title={note.pinned?"Unpin":"Pin"}
-            style={{ background:"rgba(255,255,255,0.07)", border:"none", borderRadius:"6px", padding:"3px 7px", color:"rgba(255,255,255,0.5)", cursor:"pointer" }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          </button>
-          <button onClick={e=>{e.stopPropagation();onDelete(note.id);}} title="Delete"
-            style={{ background:"rgba(239,68,68,0.15)", border:"none", borderRadius:"6px", padding:"3px 7px", color:"rgba(239,68,68,0.7)", cursor:"pointer" }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+  const deleteNote = (id) => {
+    save(notes.filter(n=>n.id!==id));
+    if (activeNote===id) setActiveNote(null);
+  };
 
-function NoteEditor({ note, onSave, onClose }) {
-  const [title, setTitle]       = useState(note?.title    || "");
-  const [body, setBody]         = useState(note?.body     || "");
-  const [color, setColor]       = useState(note?.color    || "dark");
-  const [category, setCategory] = useState(note?.category || "ideas");
-  const [type, setType]         = useState(note?.type     || "note");
-  const [todos, setTodos]       = useState(note?.todos    || []);
-  const [saved, setSaved]       = useState(true);
-  const timer = useRef(null);
-  const col = NOTE_COLORS.find(c => c.id === color) || NOTE_COLORS[0];
+  const addTodo = (noteId) => {
+    const note = notes.find(n=>n.id===noteId);
+    if (!note) return;
+    updateNote(noteId, { todos:[...note.todos, {id:Date.now(),text:"",done:false}] });
+  };
 
-  function autoSave(fields) {
-    setSaved(false);
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => { onSave(fields); setSaved(true); }, 500);
-  }
+  const updateTodo = (noteId, todoId, fields) => {
+    const note = notes.find(n=>n.id===noteId);
+    if (!note) return;
+    updateNote(noteId, { todos:note.todos.map(t=>t.id===todoId?{...t,...fields}:t) });
+  };
 
-  function addTodo() {
-    const n = [...todos, { id:generateId(), text:"", done:false }];
-    setTodos(n); autoSave({ title, body, color, category, type, todos:n });
-  }
+  const deleteTodo = (noteId, todoId) => {
+    const note = notes.find(n=>n.id===noteId);
+    if (!note) return;
+    updateNote(noteId, { todos:note.todos.filter(t=>t.id!==todoId) });
+  };
 
-  function updateTodo(id, upd) {
-    const n = todos.map(t => t.id===id ? upd : t);
-    setTodos(n); autoSave({ title, body, color, category, type, todos:n });
-  }
+  const startVoice = () => {
+    if (!isPro) { alert("Voice to Note is available on Pro and Premium plans."); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert("Speech recognition not supported in this browser. Try Chrome."); return; }
+    const rec = new SR();
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.lang = "en-IN";
+    rec.onresult = (e) => {
+      const transcript = Array.from(e.results).map(r=>r[0].transcript).join(" ");
+      setRecordingText(transcript);
+    };
+    rec.onend = () => {
+      setRecording(false);
+      if (recordingText.trim()) {
+        const note = { id:Date.now(), type:"note", title:"Voice Note", content:recordingText.trim(), category:"drafts", color:"#fff", pinned:false, starred:false, image:null, todos:[], createdAt:Date.now(), updatedAt:Date.now() };
+        const updated = [note, ...notes];
+        save(updated);
+        setActiveNote(note.id);
+        setActiveCat("drafts");
+        setRecordingText("");
+      }
+    };
+    rec.start();
+    recognitionRef.current = rec;
+    setRecording(true);
+  };
 
-  function deleteTodo(id) {
-    const n = todos.filter(t => t.id!==id);
-    setTodos(n); autoSave({ title, body, color, category, type, todos:n });
-  }
+  const stopVoice = () => {
+    recognitionRef.current?.stop();
+    setRecording(false);
+  };
 
-  return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", backdropFilter:"blur(10px)", WebkitBackdropFilter:"blur(10px)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
-      onClick={e => e.target===e.currentTarget && onClose()}>
-      <div style={{ width:"100%", maxWidth:"660px", maxHeight:"88vh", background:col.card, borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)", border:`1px solid ${col.border}`, backdropFilter:color==="dark"?"blur(24px)":"none", WebkitBackdropFilter:color==="dark"?"blur(24px)":"none" }}>
-
-        {/* Toolbar */}
-        <div style={{ padding:"12px 16px", borderBottom:"1px solid rgba(255,255,255,0.08)", display:"flex", alignItems:"center", gap:"8px", flexWrap:"wrap", background:"rgba(0,0,0,0.15)" }}>
-          {/* Type */}
-          {[["Note","note"],["To-Do","todo"],["Sticky","sticky"]].map(([l,t]) => (
-            <button key={t} onClick={() => { setType(t); autoSave({ title, body, color, category, type:t, todos }); }}
-              style={{ padding:"4px 12px", borderRadius:"99px", border:`1px solid ${type===t?"rgba(255,255,255,0.35)":"rgba(255,255,255,0.1)"}`, background:type===t?"rgba(255,255,255,0.15)":"transparent", color:type===t?"#fff":"rgba(255,255,255,0.45)", fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:"Poppins,sans-serif" }}>{l}</button>
-          ))}
-          <div style={{ width:"1px", height:"18px", background:"rgba(255,255,255,0.1)" }}/>
-          {/* Category */}
-          <select value={category} onChange={e => { setCategory(e.target.value); autoSave({ title, body, color, category:e.target.value, type, todos }); }}
-            style={{ padding:"4px 10px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"11px", fontFamily:"Poppins,sans-serif", cursor:"pointer", outline:"none" }}>
-            {CATEGORIES.filter(c=>c.id!=="all").map(c=><option key={c.id} value={c.id} style={{background:"#1a1a2e"}}>{c.label}</option>)}
-          </select>
-          <div style={{ width:"1px", height:"18px", background:"rgba(255,255,255,0.1)" }}/>
-          {/* Colors */}
-          <div style={{ display:"flex", gap:"5px", alignItems:"center" }}>
-            {NOTE_COLORS.map(nc => (
-              <button key={nc.id} onClick={() => { setColor(nc.id); autoSave({ title, body, color:nc.id, category, type, todos }); }}
-                style={{ width:"16px", height:"16px", borderRadius:"50%", border:color===nc.id?"2px solid #fff":"2px solid transparent", background:nc.id==="dark"?"rgba(255,255,255,0.2)":nc.accent, cursor:"pointer", padding:0, outline:color===nc.id?"2px solid rgba(255,255,255,0.25)":"none", transition:"all 0.15s" }}/>
-            ))}
-          </div>
-          <div style={{ marginLeft:"auto", display:"flex", gap:"8px", alignItems:"center" }}>
-            <span style={{ fontSize:"10px", color:saved?"#6ee7b7":"rgba(255,255,255,0.35)", fontFamily:"Poppins,sans-serif" }}>{saved?"✓ Saved":"Saving..."}</span>
-            <button onClick={() => shareNote({ title, body, todos })}
-              style={{ padding:"4px 10px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.7)", fontSize:"11px", cursor:"pointer", fontFamily:"Poppins,sans-serif", display:"flex", alignItems:"center", gap:"4px" }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-              Share
-            </button>
-            <button onClick={onClose} style={{ padding:"4px 12px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.7)", fontSize:"11px", cursor:"pointer", fontFamily:"Poppins,sans-serif" }}>Close</button>
-          </div>
-        </div>
-
-        {/* Title */}
-        <input value={title} onChange={e=>{setTitle(e.target.value);autoSave({title:e.target.value,body,color,category,type,todos});}}
-          placeholder="Note title..." autoFocus
-          style={{ padding:"18px 20px 8px", fontSize:"21px", fontWeight:"800", color:"#fff", background:"transparent", border:"none", outline:"none", fontFamily:"Poppins,sans-serif", width:"100%", boxSizing:"border-box" }}/>
-
-        {/* Body */}
-        <div style={{ flex:1, overflowY:"auto", padding:"4px 20px 16px" }}>
-          {type==="todo" ? (
-            <div>
-              {todos.map(t => <TodoItem key={t.id} item={t} onChange={u=>updateTodo(t.id,u)} onDelete={()=>deleteTodo(t.id)}/>)}
-              <button onClick={addTodo} style={{ display:"flex", alignItems:"center", gap:"6px", background:"rgba(255,255,255,0.05)", border:"1px dashed rgba(255,255,255,0.15)", borderRadius:"8px", padding:"7px 14px", color:"rgba(255,255,255,0.4)", fontSize:"12px", cursor:"pointer", fontFamily:"Poppins,sans-serif", marginTop:"8px", width:"100%" }}>+ Add task</button>
-            </div>
-          ) : (
-            <textarea value={body} onChange={e=>{setBody(e.target.value);autoSave({title,body:e.target.value,color,category,type,todos});}}
-              placeholder={type==="sticky"?"Quick thought...":"Write your idea, script, hook or caption..."}
-              style={{ width:"100%", minHeight:"220px", background:"transparent", border:"none", outline:"none", resize:"none", color:"rgba(255,255,255,0.82)", fontSize:"14px", fontFamily:"Poppins,sans-serif", lineHeight:1.9, boxSizing:"border-box" }}/>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div style={{ padding:"8px 20px", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", gap:"12px", background:"rgba(0,0,0,0.1)" }}>
-          <span style={{ fontSize:"11px", color:"rgba(255,255,255,0.2)", fontFamily:"Poppins,sans-serif" }}>{body.trim().split(/\s+/).filter(Boolean).length} words</span>
-          <span style={{ fontSize:"11px", color:"rgba(255,255,255,0.2)", fontFamily:"Poppins,sans-serif" }}>{body.length} chars</span>
-          {type==="todo" && <span style={{ fontSize:"11px", color:"rgba(255,255,255,0.2)", fontFamily:"Poppins,sans-serif" }}>{todos.filter(t=>t.done).length}/{todos.length} done</span>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function SocioMeeNotes({ onSendToGenerator }) {
-  const [notes, setNotes]           = useState([]);
-  const [activeCat, setActiveCat]   = useState("all");
-  const [search, setSearch]         = useState("");
-  const [editingNote, setEditingNote] = useState(null);
-  const [viewMode, setViewMode]     = useState("grid");
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    document.title = "Notes | SocioMee";
-    try { const s = localStorage.getItem(STORAGE_KEY); if (s) setNotes(JSON.parse(s)); } catch {}
-    return () => { document.title = "SocioMee"; };
-  }, []);
-
-  function persist(updated) { setNotes(updated); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); } catch {} }
-
-  function createNote(type="note") {
-    const n = { id:generateId(), title:"", body:"", color:"dark", category:"ideas", type, todos:[], pinned:false, createdAt:Date.now(), updatedAt:Date.now() };
-    const upd = [n, ...notes]; persist(upd); setEditingNote(n);
-  }
-
-  function saveNote(id, fields) {
-    const upd = notes.map(n => n.id===id ? { ...n, ...fields, updatedAt:Date.now() } : n);
-    persist(upd); setEditingNote(p => p?.id===id ? { ...p, ...fields } : p);
-  }
-
-  function deleteNote(id) { persist(notes.filter(n=>n.id!==id)); if (editingNote?.id===id) setEditingNote(null); }
-  function pinNote(id)    { persist(notes.map(n => n.id===id ? { ...n, pinned:!n.pinned } : n)); }
+  const handleImage = (noteId, file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = e => updateNote(noteId, { image:e.target.result });
+    reader.readAsDataURL(file);
+  };
 
   const filtered = notes.filter(n => {
-    const mc = activeCat==="all" || n.category===activeCat;
-    const ms = !search || n.title.toLowerCase().includes(search.toLowerCase()) || n.body.toLowerCase().includes(search.toLowerCase());
-    return mc && ms;
+    const matchCat = activeCat==="all" || n.category===activeCat;
+    const matchSearch = !search || n.title?.toLowerCase().includes(search.toLowerCase()) || n.content?.toLowerCase().includes(search.toLowerCase());
+    return matchCat && matchSearch;
   }).sort((a,b) => (b.pinned?1:0)-(a.pinned?1:0) || b.updatedAt-a.updatedAt);
 
-  const counts = {};
-  CATEGORIES.forEach(c => { counts[c.id] = c.id==="all" ? notes.length : notes.filter(n=>n.category===c.id).length; });
+  const catCounts = {};
+  notes.forEach(n => { catCounts[n.category]=(catCounts[n.category]||0)+1; });
+
+  const activeNoteObj = notes.find(n=>n.id===activeNote);
+
+  const skel = { height:"60px", borderRadius:"10px", background:"rgba(255,255,255,0.04)", animation:"skpulse 1.4s ease-in-out infinite", marginBottom:"6px" };
+
+  if (loading) return (
+    <div style={{ display:"flex", height:"100vh", background:C.bg, fontFamily:FONT }}>
+      <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
+      <div style={{ width:"200px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", padding:"16px", display:"flex", flexDirection:"column", gap:"8px" }}>
+        {[1,2,3,4,5,6,7].map(i=><div key={i} style={{ height:"32px", borderRadius:"8px", background:"rgba(255,255,255,0.04)", animation:"skpulse 1.4s ease-in-out infinite" }}/>)}
+      </div>
+      <div style={{ width:"260px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", padding:"12px", display:"flex", flexDirection:"column", gap:"6px" }}>
+        <div style={{ height:"36px", borderRadius:"8px", background:"rgba(255,255,255,0.04)", animation:"skpulse 1.4s ease-in-out infinite", marginBottom:"8px" }}/>
+        {[1,2,3,4].map(i=><div key={i} style={skel}/>)}
+      </div>
+      <div style={{ flex:1, padding:"24px", display:"flex", flexDirection:"column", gap:"12px" }}>
+        <div style={{ height:"40px", borderRadius:"8px", background:"rgba(255,255,255,0.04)", animation:"skpulse 1.4s ease-in-out infinite", width:"40%" }}/>
+        <div style={{ height:"200px", borderRadius:"12px", background:"rgba(255,255,255,0.03)", animation:"skpulse 1.4s ease-in-out infinite" }}/>
+      </div>
+    </div>
+  );
 
   return (
-    <div style={{ display:"flex", width:"100%", height:"100vh", background:"#0a0a0a", fontFamily:"Poppins,sans-serif", overflow:"hidden" }}>
+    <div style={{ display:"flex", height:"100vh", background:C.bg, fontFamily:FONT, overflow:"hidden" }}>
+      <style>{`
+        @keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+        .nt-cat:hover{background:rgba(255,255,255,0.06)!important;}
+        .nt-note:hover{background:rgba(255,255,255,0.06)!important;border-color:rgba(255,255,255,0.12)!important;}
+        .nt-btn:hover{background:rgba(255,255,255,0.08)!important;color:#fff!important;}
+        .nt-todo:hover .nt-del{opacity:1!important;}
+        ::-webkit-scrollbar{width:2px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:99px}
+      `}</style>
 
-      {/* Notes Sidebar — flush next to app sidebar */}
-      {mobileSidebarOpen && <div onClick={()=>setMobileSidebarOpen(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:9997,display:"none"}} className="notes-mob-overlay"/>}
-      <div className="notes-mobile-sidebar" style={{ width:"180px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", background:"rgba(6,4,15,0.97)", display:"flex", flexDirection:"column" }}>
+      {/* Sidebar */}
+      <div style={{ width:"200px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", background:C.sidebar, backdropFilter:"blur(20px)", display:"flex", flexDirection:"column", overflow:"hidden" }}>
         <div style={{ padding:"14px 12px 10px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:"6px", marginBottom:"12px" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(167,139,250,0.8)" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            <span style={{ fontSize:"12px", fontWeight:"800", color:"#fff", fontFamily:"Poppins,sans-serif" }}>Notes</span>
-            <span style={{ fontSize:"9px", background:"rgba(124,58,237,0.25)", color:"#a78bfa", padding:"1px 6px", borderRadius:"99px", fontWeight:"700" }}>{notes.length}</span>
-            {typeof window !== "undefined" && window.innerWidth <= 768 && (
-              <button onClick={()=>setMobileSidebarOpen(false)}
-                style={{ marginLeft:"auto", background:"none", border:"none", color:"rgba(255,255,255,0.4)", cursor:"pointer", padding:"2px" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            )}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"10px" }}>
+            <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:FONT_HEAD }}>Notes</span>
+            <div style={{ display:"flex", gap:"3px" }}>
+              {isPro && (
+                <button onClick={recording?stopVoice:startVoice} className="nt-btn"
+                  style={{ width:"26px", height:"26px", borderRadius:"7px", border:"none", background:recording?"rgba(239,68,68,0.15)":"transparent", color:recording?"#f87171":C.muted, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", animation:recording?"pulse 1s ease-in-out infinite":"none" }}
+                  title={recording?"Stop Recording":"Voice to Note"}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+                </button>
+              )}
+            </div>
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:"3px" }}>
-            {[
-              ["note",   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>, "New Note"],
-              ["todo",   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>, "New To-Do"],
-              ["sticky", <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9z"/><polyline points="15 3 15 9 21 9"/></svg>, "New Sticky"],
-            ].map(([type, icon, label]) => (
-              <button key={type} onClick={() => createNote(type)}
-                style={{ display:"flex", alignItems:"center", gap:"7px", padding:"6px 9px", borderRadius:"7px", border:"1px solid rgba(255,255,255,0.06)", background:"rgba(255,255,255,0.03)", color:"rgba(255,255,255,0.5)", fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:"Poppins,sans-serif", textAlign:"left", transition:"all 0.15s" }}
-                onMouseEnter={e=>{e.currentTarget.style.background="rgba(124,58,237,0.1)";e.currentTarget.style.color="rgba(255,255,255,0.8)";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.03)";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}>
-                {icon}{label}
+            {[{label:"New Note",type:"note"},{label:"New To-Do",type:"todo"},{label:"New Sticky",type:"sticky"}].map(item=>(
+              <button key={item.type} onClick={()=>createNote(item.type)} className="nt-btn"
+                style={{ width:"100%", padding:"6px 10px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.07)", background:"rgba(255,255,255,0.03)", color:C.muted, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, textAlign:"left", transition:"all 0.15s", display:"flex", alignItems:"center", gap:"6px" }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                {item.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Categories */}
-        <div style={{ flex:1, overflowY:"auto", padding:"6px 6px" }}>
-          <div style={{ fontSize:"9px", fontWeight:"700", color:"rgba(255,255,255,0.18)", letterSpacing:"1.5px", padding:"8px 6px 4px", textTransform:"uppercase", fontFamily:"Poppins,sans-serif" }}>Categories</div>
-          {CATEGORIES.map(cat => (
-            <button key={cat.id} onClick={() => setActiveCat(cat.id)}
-              style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"6px 9px", borderRadius:"7px", border:"none", borderLeft:activeCat===cat.id?"2px solid #7c3aed":"2px solid transparent", background:activeCat===cat.id?"rgba(124,58,237,0.12)":"transparent", color:activeCat===cat.id?"#c4b5fd":"rgba(255,255,255,0.4)", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:"Poppins,sans-serif", marginBottom:"1px", transition:"all 0.15s" }}>
-              <span style={{ display:"flex", alignItems:"center", gap:"7px" }}>{cat.icon}{cat.label}</span>
-              <span style={{ fontSize:"9px", background:"rgba(255,255,255,0.05)", padding:"1px 5px", borderRadius:"99px", color:"rgba(255,255,255,0.25)" }}>{counts[cat.id]||0}</span>
-            </button>
+        <div style={{ flex:1, overflowY:"auto", padding:"8px 6px" }}>
+          <p style={{ fontSize:"9px", fontWeight:"600", color:"rgba(255,255,255,0.2)", letterSpacing:"1.5px", textTransform:"uppercase", fontFamily:FONT, margin:"0 0 4px 6px" }}>Categories</p>
+          {CATS.map(cat=>{
+            const isActive = activeCat===cat.id;
+            return (
+              <button key={cat.id} className="nt-cat" onClick={()=>setActiveCat(cat.id)}
+                style={{ width:"100%", display:"flex", alignItems:"center", gap:"8px", padding:"6px 8px", borderRadius:"8px", border:`1px solid ${isActive?"rgba(255,255,255,0.1)":"transparent"}`, background:isActive?"rgba(255,255,255,0.06)":"transparent", cursor:"pointer", transition:"all 0.15s", marginBottom:"1px" }}>
+                <span style={{ color:isActive?"rgba(255,255,255,0.8)":"rgba(255,255,255,0.3)" }}><CatIcon d={cat.icon} size={13}/></span>
+                <span style={{ fontSize:"12px", fontWeight:isActive?"600":"400", color:isActive?"rgba(255,255,255,0.9)":C.muted, fontFamily:FONT, flex:1, textAlign:"left" }}>{cat.label}</span>
+                {(cat.id==="all"?notes.length:catCounts[cat.id]||0) > 0 && <span style={{ fontSize:"9px", color:"rgba(255,255,255,0.2)", fontFamily:FONT }}>{cat.id==="all"?notes.length:catCounts[cat.id]}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Notes list */}
+      <div style={{ width:"260px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", background:"rgba(255,255,255,0.01)", display:"flex", flexDirection:"column", overflow:"hidden" }}>
+        <div style={{ padding:"10px 12px", borderBottom:"1px solid rgba(255,255,255,0.06)", flexShrink:0 }}>
+          <div style={{ position:"relative" }}>
+            <svg style={{ position:"absolute", left:"8px", top:"50%", transform:"translateY(-50%)", color:"rgba(255,255,255,0.2)" }} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search notes..." style={{ width:"100%", padding:"7px 8px 7px 26px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.07)", background:"rgba(255,255,255,0.04)", color:C.white, fontSize:"11px", fontFamily:FONT, outline:"none", boxSizing:"border-box" }}/>
+          </div>
+        </div>
+
+        <div style={{ flex:1, overflowY:"auto", padding:"8px" }}>
+          {filtered.length === 0 ? (
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"200px", gap:"10px", opacity:0.4 }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+              <p style={{ fontSize:"12px", color:C.muted, fontFamily:FONT, textAlign:"center", margin:0 }}>No notes yet.<br/>Create one.</p>
+            </div>
+          ) : filtered.map(note=>(
+            <div key={note.id} className="nt-note" onClick={()=>setActiveNote(note.id)}
+              style={{ padding:"10px 12px", borderRadius:"10px", border:`1px solid ${activeNote===note.id?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.06)"}`, background:activeNote===note.id?"rgba(255,255,255,0.07)":"rgba(255,255,255,0.03)", cursor:"pointer", marginBottom:"4px", transition:"all 0.15s" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:"6px", marginBottom:"4px" }}>
+                {note.pinned && <svg width="9" height="9" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>}
+                <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:note.color==="whites"||note.color==="#fff"?"rgba(255,255,255,0.3)":note.color, flexShrink:0 }}/>
+                <span style={{ fontSize:"12px", fontWeight:"600", color:C.white, fontFamily:FONT, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{note.title||"Untitled"}</span>
+              </div>
+              {note.content && <p style={{ fontSize:"10px", color:C.muted, fontFamily:FONT, margin:"0 0 4px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", lineHeight:1.5 }}>{note.content}</p>}
+              {note.type==="todo" && note.todos?.length > 0 && <p style={{ fontSize:"10px", color:C.dim, fontFamily:FONT, margin:"0 0 4px" }}>{note.todos.filter(t=>t.done).length}/{note.todos.length} done</p>}
+              <p style={{ fontSize:"9px", color:"rgba(255,255,255,0.2)", fontFamily:FONT, margin:0 }}>{timeAgo(note.updatedAt)}</p>
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Main */}
+      {/* Editor */}
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        {/* Topbar */}
-        <div style={{ padding:"10px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:"10px" }}>
-          <button onClick={()=>setMobileSidebarOpen(true)} className="notes-menu-btn"
-            style={{ background:"none", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"7px", padding:"6px 8px", color:"rgba(255,255,255,0.5)", cursor:"pointer" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-          <div style={{ flex:1, position:"relative" }}>
-            <svg style={{ position:"absolute", left:"10px", top:"50%", transform:"translateY(-50%)", opacity:0.3 }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search notes..."
-              style={{ width:"100%", padding:"7px 12px 7px 30px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"8px", color:"#fff", fontSize:"12px", fontFamily:"Poppins,sans-serif", outline:"none", boxSizing:"border-box" }}/>
+        {!activeNoteObj ? (
+          <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"14px", opacity:0.4 }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+            <div style={{ textAlign:"center" }}>
+              <p style={{ fontSize:"14px", fontWeight:"600", color:C.white, margin:"0 0 6px", fontFamily:FONT_HEAD }}>Select a note</p>
+              <p style={{ fontSize:"12px", color:C.muted, margin:0, fontFamily:FONT }}>or create a new one from the sidebar</p>
+            </div>
+            <div style={{ display:"flex", gap:"8px" }}>
+              {[{label:"New Note",type:"note"},{label:"To-Do",type:"todo"},{label:"Sticky",type:"sticky"}].map(item=>(
+                <button key={item.type} onClick={()=>createNote(item.type)}
+                  style={{ padding:"8px 16px", borderRadius:"10px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.6)", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>
+                  {item.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <button onClick={() => setViewMode(v=>v==="grid"?"list":"grid")}
-            style={{ padding:"6px 11px", borderRadius:"7px", border:"1px solid rgba(255,255,255,0.07)", background:"rgba(255,255,255,0.03)", color:"rgba(255,255,255,0.45)", fontSize:"11px", cursor:"pointer", fontFamily:"Poppins,sans-serif", fontWeight:"600", display:"flex", alignItems:"center", gap:"5px" }}>
-            {viewMode==="grid"
-              ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-              : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>}
-            {viewMode==="grid"?"List":"Grid"}
-          </button>
-          <span style={{ fontSize:"11px", color:"rgba(255,255,255,0.2)", fontFamily:"Poppins,sans-serif", whiteSpace:"nowrap" }}>{filtered.length} notes</span>
-        </div>
+        ) : (
+          <>
+            <div style={{ padding:"10px 20px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:"8px", flexShrink:0, background:"rgba(255,255,255,0.01)", backdropFilter:"blur(10px)" }}>
+              <input value={activeNoteObj.title} onChange={e=>updateNote(activeNoteObj.id,{title:e.target.value})}
+                placeholder="Title" style={{ flex:1, background:"transparent", border:"none", color:C.white, fontSize:"15px", fontWeight:"700", fontFamily:FONT_HEAD, outline:"none" }}/>
+              <div style={{ display:"flex", gap:"4px", alignItems:"center" }}>
+                {COLORS.map(col=>(
+                  <button key={col} onClick={()=>updateNote(activeNoteObj.id,{color:col})}
+                    style={{ width:"14px", height:"14px", borderRadius:"50%", background:col==="whites"||col==="#fff"?"rgba(255,255,255,0.3)":col, border:activeNoteObj.color===col?"2px solid rgba(255,255,255,0.8)":"2px solid transparent", cursor:"pointer", padding:0, flexShrink:0 }}/>
+                ))}
+                <div style={{ width:"1px", height:"16px", background:"rgba(255,255,255,0.08)", margin:"0 4px" }}/>
+                <button onClick={()=>updateNote(activeNoteObj.id,{pinned:!activeNoteObj.pinned})} className="nt-btn"
+                  style={{ width:"26px", height:"26px", borderRadius:"7px", border:"none", background:"transparent", color:activeNoteObj.pinned?"rgba(255,255,255,0.9)":C.muted, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill={activeNoteObj.pinned?"currentColor":"none"} stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </button>
+                <label className="nt-btn" style={{ width:"26px", height:"26px", borderRadius:"7px", border:"none", background:"transparent", color:C.muted, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  <input type="file" accept="image/*" style={{ display:"none" }} onChange={e=>handleImage(activeNoteObj.id,e.target.files[0])}/>
+                </label>
+                {onSendToGenerator && (
+                  <button onClick={()=>onSendToGenerator(activeNoteObj.content)} className="nt-btn"
+                    style={{ padding:"4px 10px", borderRadius:"7px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:C.muted, fontSize:"10px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.15s" }}>
+                    ✦ Generate
+                  </button>
+                )}
+                <button onClick={()=>deleteNote(activeNoteObj.id)} className="nt-btn"
+                  style={{ width:"26px", height:"26px", borderRadius:"7px", border:"none", background:"transparent", color:"rgba(239,68,68,0.4)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                </button>
+              </div>
+            </div>
 
-        {/* Grid */}
-        <div style={{ flex:1, overflowY:"auto", padding:"16px" }}>
-          {filtered.length===0 ? (
-            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"60%", gap:"14px" }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              <p style={{ fontSize:"13px", color:"rgba(255,255,255,0.25)", margin:0, fontFamily:"Poppins,sans-serif" }}>{notes.length===0?"No notes yet. Create one!":"No matching notes."}</p>
-              {notes.length===0 && (
-                <div style={{ display:"flex", gap:"8px" }}>
-                  {[["Note","note"],["To-Do","todo"],["Sticky","sticky"]].map(([l,t]) => (
-                    <button key={t} onClick={()=>createNote(t)}
-                      style={{ padding:"7px 14px", borderRadius:"99px", border:"1px solid rgba(124,58,237,0.35)", background:"rgba(124,58,237,0.1)", color:"#a78bfa", fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:"Poppins,sans-serif" }}>{l}</button>
-                  ))}
+            <div style={{ flex:1, overflowY:"auto", padding:"20px" }}>
+              {activeNoteObj.image && (
+                <div style={{ position:"relative", marginBottom:"16px", borderRadius:"12px", overflow:"hidden", maxHeight:"200px" }}>
+                  <img src={activeNoteObj.image} alt="" style={{ width:"100%", objectFit:"cover", display:"block", maxHeight:"200px" }}/>
+                  <button onClick={()=>updateNote(activeNoteObj.id,{image:null})}
+                    style={{ position:"absolute", top:"8px", right:"8px", width:"24px", height:"24px", borderRadius:"6px", border:"none", background:"rgba(0,0,0,0.6)", color:"#fff", cursor:"pointer", fontSize:"12px", display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
                 </div>
               )}
+
+              {activeNoteObj.type==="todo" ? (
+                <div style={{ display:"flex", flexDirection:"column", gap:"6px" }}>
+                  {activeNoteObj.todos?.map(todo=>(
+                    <div key={todo.id} className="nt-todo" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"8px 10px", borderRadius:"9px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)" }}>
+                      <input type="checkbox" checked={todo.done} onChange={e=>updateTodo(activeNoteObj.id,todo.id,{done:e.target.checked})}
+                        style={{ accentColor:"rgba(255,255,255,0.8)", cursor:"pointer", flexShrink:0 }}/>
+                      <input value={todo.text} onChange={e=>updateTodo(activeNoteObj.id,todo.id,{text:e.target.value})}
+                        placeholder="Task..." style={{ flex:1, background:"transparent", border:"none", color:todo.done?"rgba(255,255,255,0.3)":C.white, fontSize:"13px", fontFamily:FONT, outline:"none", textDecoration:todo.done?"line-through":"none" }}/>
+                      <button className="nt-del" onClick={()=>deleteTodo(activeNoteObj.id,todo.id)}
+                        style={{ opacity:0, border:"none", background:"transparent", color:"rgba(239,68,68,0.5)", cursor:"pointer", fontSize:"12px", transition:"opacity 0.15s", padding:0 }}>✕</button>
+                    </div>
+                  ))}
+                  <button onClick={()=>addTodo(activeNoteObj.id)}
+                    style={{ padding:"7px 12px", borderRadius:"9px", border:"1px dashed rgba(255,255,255,0.12)", background:"transparent", color:C.muted, fontSize:"12px", fontFamily:FONT, cursor:"pointer", textAlign:"left", display:"flex", alignItems:"center", gap:"6px" }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add task
+                  </button>
+                  <textarea value={activeNoteObj.content} onChange={e=>updateNote(activeNoteObj.id,{content:e.target.value})}
+                    placeholder="Add notes..." rows={4}
+                    style={{ width:"100%", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:"10px", padding:"12px", color:"rgba(255,255,255,0.6)", fontSize:"13px", fontFamily:FONT, resize:"none", outline:"none", boxSizing:"border-box", marginTop:"8px" }}/>
+                </div>
+              ) : (
+                <textarea value={activeNoteObj.content} onChange={e=>updateNote(activeNoteObj.id,{content:e.target.value})}
+                  placeholder="Start writing..." style={{ width:"100%", height:"100%", minHeight:"60vh", background:"transparent", border:"none", color:C.white, fontSize:"14px", fontFamily:FONT, lineHeight:"1.8", resize:"none", outline:"none", boxSizing:"border-box" }}/>
+              )}
             </div>
-          ) : (
-            <div style={{ display:viewMode==="grid"?"grid":"flex", gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))", gap:"12px", flexDirection:"column" }}>
-              {filtered.map(note => <NoteCard key={note.id} note={note} onClick={()=>setEditingNote(note)} onDelete={deleteNote} onPin={pinNote}/>)}
+
+            <div style={{ padding:"8px 20px", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
+              <span style={{ fontSize:"10px", color:"rgba(255,255,255,0.2)", fontFamily:FONT }}>
+                {activeNoteObj.type==="todo" ? `${activeNoteObj.todos?.filter(t=>t.done).length||0}/${activeNoteObj.todos?.length||0} tasks` : `${activeNoteObj.content?.length||0} chars`}
+              </span>
+              <span style={{ fontSize:"10px", color:"rgba(255,255,255,0.2)", fontFamily:FONT }}>Saved {timeAgo(activeNoteObj.updatedAt)}</span>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
-
-      {editingNote && <NoteEditor note={editingNote} onSave={fields=>saveNote(editingNote.id,fields)} onClose={()=>setEditingNote(null)}/>}
-
-      <style>{`
-        @media(max-width:768px){
-          .notes-menu-btn{ display:flex!important; }
-          .notes-mobile-close{ display:flex!important; }
-          .notes-mobile-sidebar{
-            position:fixed!important; left:0!important; top:0!important;
-            height:100vh!important; z-index:9998!important; width:220px!important;
-            transition:transform 0.3s ease!important;
-            box-shadow:4px 0 20px rgba(0,0,0,0.5)!important;
-          }
-        }
-        ::-webkit-scrollbar{width:3px}
-        ::-webkit-scrollbar-track{background:transparent}
-        ::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.25);border-radius:99px}
-      `}</style>
     </div>
   );
 }
