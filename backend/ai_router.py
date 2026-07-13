@@ -348,21 +348,78 @@ Write ONLY the hook text, nothing else."""
     try:
         persona_voice = persona_data.get("voice", persona_data.get("name", "default")) if isinstance(persona_data, dict) else str(persona_data)
         persona_tone = persona_data.get("tone", "") if isinstance(persona_data, dict) else ""
+        persona_style_rules = persona_data.get("style_rules", []) if isinstance(persona_data, dict) else []
+        persona_energy = persona_data.get("energy", "medium") if isinstance(persona_data, dict) else "medium"
+        persona_pacing = persona_data.get("pacing", "natural") if isinstance(persona_data, dict) else "natural"
+        persona_language = persona_data.get("language", language) if isinstance(persona_data, dict) else language
         research_text = research.get("evidence_pack", "") if isinstance(research, dict) else ""
-        hook_text = structure.get("hook", "") if isinstance(structure, dict) else ""
-        key_points = structure.get("key_points", []) if isinstance(structure, dict) else []
-        gemini_prompt = (
-            f"Write a {min_words}-{max_words} word YouTube video script in {language} about: {topic}\n\n"
-            f"Write in the voice and style of: {persona_voice}. Style notes: {persona_tone}\n\n"
-            f"Hook to open with: {hook_text}\n\n"
-            f"Key points to cover:\n" + chr(10).join(f"- {kp}" for kp in key_points) + "\n\n"
-            f"Research and evidence to incorporate:\n{research_text[:2000]}\n\n"
-            "Structure the script in this exact order, with clear section breaks: "
-            "HOOK (grab attention in the first 2-3 sentences), MAIN CONTENT (the bulk of the script, "
-            "covering the key points above), CTA (a brief call to action, e.g. like/subscribe/comment, "
-            "in the creator's own voice, not generic), OUTRO (a short closing line that wraps the video).\n\n"
-            "Write ONLY the script text itself, no preamble or explanation."
-        )
+        style_rules_str = "\n".join(f"- {r}" for r in persona_style_rules) if persona_style_rules else "- Natural creator voice"
+        tone_map = {
+            "bold": "Be direct, confident, powerful. Strong statements. No hedging.",
+            "funny": "Use wit, humor, relatable jokes. Light-hearted but informative.",
+            "emotional": "Connect deeply. Use personal stories, empathy, human moments.",
+            "informative": "Clear, factual, educational. Data-driven. Teach step by step.",
+            "aggressive": "High energy, provocative, challenging. Push boundaries.",
+            "dramatic": "Cinematic storytelling. Build tension. Emotional highs and lows.",
+            "casual": "Chill, conversational, like talking to a friend.",
+            "motivational": "Inspiring, uplifting, action-oriented.",
+            "storytelling": "Narrative arc, characters, tension, resolution.",
+            "educational": "Step-by-step, clear explanations, examples.",
+            "trending": "Current, cultural references, what people are talking about.",
+        }
+        _req_tone = ""
+        try:
+            _req_tone = str(payload.tone or "informative").lower()
+        except Exception:
+            _req_tone = "informative"
+        tone_instruction = tone_map.get(_req_tone, "Natural, engaging, authentic tone.")
+        gemini_prompt = f"""You are writing a YouTube video script. Follow every instruction exactly.
+
+TOPIC: {topic}
+
+CREATOR PERSONA: {persona_voice}
+CREATOR TONE DESCRIPTION: {persona_tone}
+ENERGY LEVEL: {persona_energy}
+PACING: {persona_pacing}
+LANGUAGE: {persona_language}
+LANGUAGE INSTRUCTION: {"Write in natural spoken Hinglish using Roman script only — no Devanagari. Mix Hindi and English exactly as Indians actually speak." if "hinglish" in str(persona_language) else "Write in clear natural English." if str(persona_language) == "english" else "Write in natural spoken Hindi using Roman script only, no Devanagari."}
+
+PERSONA STYLE RULES — follow these strictly:
+{style_rules_str}
+
+TONE INSTRUCTION: {tone_instruction}
+
+SCRIPT LENGTH: {min_words} to {max_words} words
+
+ABSOLUTE RULES:
+1. This script must be ENTIRELY and SPECIFICALLY about: {topic}
+2. Do NOT drift to loosely related topics unless directly explaining THIS topic
+3. Do NOT copy or paraphrase search result titles or article headlines as content
+4. Write as if you genuinely understand this topic and are explaining it to your audience
+5. Every paragraph must add a new insight, angle, comparison, or fact about THIS topic
+6. Use the persona opening signature naturally
+7. Ground every claim in real logic and reasoning
+8. The research below is context only — do NOT copy it verbatim, use it to inform your reasoning
+
+CONTEXT/RESEARCH (use to inform content, do not copy):
+{research_text[:1500]}
+
+STRUCTURE — write in this exact order with these labels:
+
+**HOOK**
+[3 to 5 sentences. Open in the persona signature style. Make the viewer immediately curious about THIS specific topic.]
+
+**MAIN CONTENT**
+[{min_words - 100} to {max_words - 100} words. Explain the topic deeply with multiple angles, real comparisons, historical context, and genuine reasoning. Every paragraph must move the explanation forward. Stay strictly on: {topic}]
+
+**CTA**
+[The creator's natural call to action. Should sound like THIS creator actually saying it, not generic YouTube boilerplate.]
+
+**OUTRO**
+[1 to 2 sentences closing in the persona's natural style.]
+
+Write ONLY the script. No meta-commentary, no preamble, no explanation outside the script itself."""
+
         _resp = requests.post(
             f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}",
             headers={"Content-Type": "application/json"},

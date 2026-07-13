@@ -986,15 +986,43 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
             result = ThreadsEngine().generate(topic=topic, niche=payload.niche, tone=payload.tone, objective=payload.objective, segment_count=payload.segment_count).to_dict()
             result["caption"] = result.get("full_thread") or result.get("opening_line","")
         elif p == "reddit":
+            import requests as _req
+            _gemini_key = __import__('os').getenv('GOOGLE_API_KEY','')
+            _reddit_prompt = f"""Write a Reddit post about: {topic}
+Tone: {getattr(payload,'tone','informative')}
+Language: English (Reddit is English only)
+
+Write a Reddit post that feels genuinely human. NOT like AI generated content.
+
+Rules:
+- Title: compelling, curiosity-driven, 60-100 characters
+- Body: conversational, first-person, like a real person sharing experience
+- Share a genuine perspective or insight, not generic advice
+- Include 2-3 specific points that feel real and lived-in
+- End with a question to spark discussion
+- NO bullet points with numbers like "1. 2. 3." — write in flowing paragraphs
+- NO phrases like "Here is what actually matters" or "Most people approach X wrong"
+- Sound like a real Reddit user, not a content writer
+
+Return ONLY valid JSON:
+{{"post_title": "...", "post_body": "..."}}"""
+            try:
+                _r = _req.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{_gemini_key}}",
+                    headers={{"Content-Type":"application/json"}},
+                    json={{"contents":[{{"parts":[{{"text":_reddit_prompt}}]}}],"generationConfig":{{"maxOutputTokens":600,"temperature":0.9,"thinkingConfig":{{"thinkingBudget":0}}}}}},
+                    timeout=30
+                )
+                _rd = _r.json()
+                _rt = _rd["candidates"][0]["content"]["parts"][0]["text"].strip()
+                _rt = _rt.replace("```json","").replace("```","").strip()
+                _rj = __import__('json').loads(_rt)
+                post_title = _rj.get("post_title", topic)
+                post_body = _rj.get("post_body", "")
+            except Exception as _re:
+                post_title = f"{topic} — sharing what I learned"
+                post_body = f"Been thinking about {topic} a lot lately. Would love to hear what others think about this."
             sep = "\n\n"
-            post_title = f"{topic.title()} what actually works and what does not"
-            parts = [
-                f"I have been looking into {topic} and wanted to share what I found.",
-                f"Most people approach {topic} completely wrong. The common advice misses the point.",
-                "Here is what actually matters:\n1. Start with the fundamentals.\n2. Consistency beats intensity.\n3. Track what works for your situation.",
-                f"Happy to answer questions. What is your experience with {topic}?",
-            ]
-            post_body = sep.join(parts)
             result = {
                 "platform": "reddit",
                 "topic": topic,
@@ -1004,20 +1032,46 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
                 "hashtags": [],
             }
         elif p == "quora":
+            import requests as _req_q
+            _gkey_q = __import__('os').getenv('GOOGLE_API_KEY','')
+            _persona_q = getattr(payload,'personality','default') or 'default'
+            _tone_q = getattr(payload,'tone','informative') or 'informative'
+            _quora_prompt = f"""Write a Quora answer about this topic: {topic}
+Voice/Persona: {_persona_q}
+Tone: {_tone_q}
+
+Write a genuinely helpful, credible Quora answer. Rules:
+- Opening line must be specific and hook the reader immediately, NOT generic
+- Write in flowing paragraphs, not bullet points or numbered lists
+- Share a real insight or angle specific to this exact topic
+- Use concrete reasoning or examples, not vague advice
+- 250 to 350 words total
+- End naturally without a forced CTA
+- Sound like a knowledgeable person who genuinely understands this topic
+- NEVER use these phrases: "Most people overcomplicate", "Here is what actually matters", "The answer becomes clear", "What is the best way to approach"
+- The answer must be specifically about: {topic}
+
+Return ONLY valid JSON with no extra text:
+{{"quora_question": "a specific relevant question about the topic", "quora_answer": "the full answer text"}}"""
+            try:
+                _r_q = _req_q.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{_gkey_q}}",
+                    headers={{"Content-Type":"application/json"}},
+                    json={{"contents":[{{"parts":[{{"text":_quora_prompt}}]}}],"generationConfig":{{"maxOutputTokens":700,"temperature":0.85,"thinkingConfig":{{"thinkingBudget":0}}}}}},
+                    timeout=30
+                )
+                _rd_q = _r_q.json()
+                _rt_q = _rd_q["candidates"][0]["content"]["parts"][0]["text"].strip()
+                _rt_q = _rt_q.replace("```json","").replace("```","").strip()
+                _rj_q = __import__('json').loads(_rt_q)
+                question = _rj_q.get("quora_question", f"What should I know about {topic}?")
+                answer = _rj_q.get("quora_answer","")
+            except Exception as _qe:
+                question = f"What should I know about {topic}?"
+                answer = f"This topic has more depth than most people realize. {topic} is worth understanding properly before forming an opinion."
             sep = "\n\n"
-            question = f"What is the best way to approach {topic} and actually get results?"
-            answer_parts = [
-                f"Most people overcomplicate {topic}. The answer becomes clear once you understand what actually drives results.",
-                f"Here is what actually matters:",
-                f"Start with a clear goal. Before diving into {topic}, define exactly what success looks like for you. Vague goals produce vague results.",
-                f"Be consistent, not intense. Most people go all in on {topic} for a week and then burn out completely. Showing up steadily over a longer period beats any short burst of effort.",
-                f"Measure the right things. Track the one or two numbers that actually reflect real progress with {topic}. Ignore everything else.",
-                f"Learn from what works for you specifically. Generic advice about {topic} will only get you so far. Pay attention to what actually moves the needle in your own situation.",
-                f"The people getting consistent results with {topic} are not doing anything magical. They picked a direction, stayed consistent, and adjusted as they learned. That is the whole answer.",
-            ]
-            answer = sep.join(answer_parts)
-            full_post = f"Question: {question}{sep}{answer}"
-            result = {
+            full_post = f"Question: {{question}}{{sep}}{{answer}}"
+            result = {{
                 "platform": "quora",
                 "topic": topic,
                 "caption": full_post,
@@ -1025,25 +1079,55 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
                 "quora_question": question,
                 "quora_answer": answer,
                 "hashtags": [],
-            }
+            }}
         elif p == "linkedin":
-            lines = [
-                f"After spending time with {topic}, here is what most people miss.",
-                f"The real lesson from {topic} is simpler than you think.",
-                f"Most professionals overcomplicate {topic}. Here is the cleaner way.",
-                f"Three things {topic} taught me that no one talks about:",
-                f"1. Clarity beats complexity every time.",
-                f"2. The basics still work. People just skip them.",
-                f"3. Consistency is the actual differentiator.",
-                f"If you found this useful, follow for more on {topic}.",
-            ]
-            full_post = "\n\n".join(lines)
+            import requests as _req3
+            _gemini_key3 = __import__('os').getenv('GOOGLE_API_KEY','')
+            _persona3 = getattr(payload,'personality','default') or 'default'
+            _tone3 = getattr(payload,'tone','informative') or 'informative'
+            _lang3 = getattr(payload,'language','english') or 'english'
+            _li_prompt = f"""Write a LinkedIn post about: {topic}
+Persona/Voice: {_persona3}
+Tone: {_tone3}
+Language: {_lang3}
+
+Write a LinkedIn post that gets saves and comments from professionals.
+
+Rules:
+- Opening line must stop the scroll — bold claim, surprising stat, or strong opinion
+- Write in short punchy paragraphs (1-3 lines each) with line breaks between them
+- Share a genuine professional insight, not generic motivational fluff
+- Be specific — vague posts get ignored on LinkedIn
+- 150-220 words total
+- End with a genuine question or soft CTA that invites discussion
+- NO phrases like "Most professionals overcomplicate X" or "Here is what most people miss"
+- NO generic "1. Clarity 2. Basics 3. Consistency" structure
+- Sound like a founder or creator who has real skin in the game
+
+Return ONLY valid JSON:
+{{"post": "...", "hashtags": ["tag1","tag2","tag3","tag4","tag5"]}}"""
+            try:
+                _r3 = _req3.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{_gemini_key3}}",
+                    headers={{"Content-Type":"application/json"}},
+                    json={{"contents":[{{"parts":[{{"text":_li_prompt}}]}}],"generationConfig":{{"maxOutputTokens":500,"temperature":0.9,"thinkingConfig":{{"thinkingBudget":0}}}}}},
+                    timeout=30
+                )
+                _rd3 = _r3.json()
+                _rt3 = _rd3["candidates"][0]["content"]["parts"][0]["text"].strip()
+                _rt3 = _rt3.replace("```json","").replace("```","").strip()
+                _rj3 = __import__('json').loads(_rt3)
+                _li_post = _rj3.get("post","")
+                _li_tags = _rj3.get("hashtags",["#linkedin","#professional","#growth","#india","#creator"])
+            except Exception as _le:
+                _li_post = f"Been thinking about {topic} lately. There is more to it than most people share publicly."
+                _li_tags = ["#linkedin","#professional","#growth","#india","#creator","#business"]
             result = {
                 "platform": "linkedin",
                 "topic": topic,
-                "caption": full_post,
-                "post": full_post,
-                "hashtags": ["#linkedin","#professional","#growth","#india","#creator","#business"],
+                "caption": _li_post,
+                "post": _li_post,
+                "hashtags": _li_tags,
             }
         else: raise HTTPException(400, f"Unknown platform: {p}")
     except HTTPException: raise

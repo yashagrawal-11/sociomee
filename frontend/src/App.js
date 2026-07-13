@@ -456,13 +456,37 @@ function CopyBtn({ text, size="sm" }) {
   return <button onClick={copy} style={{ ...sz,fontWeight:"800",cursor:"pointer",borderRadius:"8px",border:`1px solid ${copied?C.success+"55":C.hairline}`,background:copied?C.success+"18":C.glass,color:copied?C.success:C.muted,fontFamily:"inherit",transition:"all 0.18s" }}>{copied?"✓ Copied":"Copy"}</button>;
 }
 
-function SectionHead({ icon, title, copyText, children }) {
+function EditBtn({ value, onSave, size="sm", multiline=false }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(value||"");
+  useEffect(()=>{ if(!editing) setVal(value||""); }, [value]);
+  const sz = size==="sm" ? { padding:"4px 10px",fontSize:"11px" } : { padding:"7px 14px",fontSize:"12px" };
+  const save = () => { if(onSave) onSave(val); setEditing(false); };
+  if(editing) return (
+    <div style={{ position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px" }} onClick={(e)=>{ if(e.target===e.currentTarget) setEditing(false); }}>
+      <div style={{ background:"#12101a",border:`1px solid ${C.purple}44`,borderRadius:"16px",padding:"24px",width:"100%",maxWidth:"680px",maxHeight:"80vh",display:"flex",flexDirection:"column",gap:"14px" }}>
+        <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}>
+          <span style={{ fontSize:"13px",fontWeight:"800",color:C.muted,letterSpacing:"1px",textTransform:"uppercase" }}>Edit Content</span>
+          <button onClick={()=>setEditing(false)} style={{ background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:"18px" }}>✕</button>
+        </div>
+        <textarea value={val} onChange={e=>setVal(e.target.value)} style={{ flex:1,minHeight:"300px",background:"rgba(255,255,255,0.04)",border:`1px solid ${C.hairline}`,borderRadius:"10px",padding:"14px",color:C.ink,fontSize:"13px",lineHeight:"1.7",fontFamily:"inherit",resize:"vertical",outline:"none" }}/>
+        <div style={{ display:"flex",gap:"8px",justifyContent:"flex-end" }}>
+          <button onClick={()=>setEditing(false)} style={{ padding:"9px 20px",borderRadius:"99px",border:`1px solid ${C.hairline}`,background:C.glass,color:C.muted,fontWeight:"700",cursor:"pointer",fontFamily:"inherit",fontSize:"13px" }}>Cancel</button>
+          <button onClick={save} style={{ padding:"9px 20px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:"#fff",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",fontSize:"13px" }}>✓ Save Changes</button>
+        </div>
+      </div>
+    </div>
+  );
+  return <button onClick={()=>setEditing(true)} title="Edit" style={{ ...sz,fontWeight:"800",cursor:"pointer",borderRadius:"8px",border:`1px solid ${C.hairline}`,background:C.glass,color:C.muted,fontFamily:"inherit",display:"flex",alignItems:"center",gap:"4px" }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>;
+}
+
+function SectionHead({ icon, title, copyText, editValue, onEditSave, children }) {
   return (
     <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px" }}>
       <span style={{ fontSize:"10.5px",fontWeight:"800",letterSpacing:"1.4px",textTransform:"uppercase",color:C.muted }}>
         {icon&&<span style={{ marginRight:"6px" }}>{icon}</span>}{title}
       </span>
-      <div style={{ display:"flex",gap:"6px",alignItems:"center" }}>{children}{copyText&&<CopyBtn text={copyText}/>}</div>
+      <div style={{ display:"flex",gap:"6px",alignItems:"center" }}>{children}{editValue!==undefined&&onEditSave&&<EditBtn value={editValue} onSave={onEditSave}/>}{copyText&&<CopyBtn text={copyText}/>}</div>
     </div>
   );
 }
@@ -559,7 +583,7 @@ function CreditBadge({ creditStatus, onUpgradeClick }) {
 // ══════════════════════════════════════════════════════════════════════
 // TITLE PICKER
 // ══════════════════════════════════════════════════════════════════════
-function TitlePicker({ titlesWithScore=[], bestTitle="", isPro, onUpgradeClick, onSelect }) {
+function TitlePicker({ titlesWithScore=[], bestTitle="", isPro, onUpgradeClick, onSelect, onTitlesChange }) {
   const [sel, setSel] = useState(0);
   const selTitle = titlesWithScore[sel]?.title || bestTitle;
   useEffect(() => { if (onSelect) onSelect(selTitle); }, [selTitle]);
@@ -570,12 +594,15 @@ function TitlePicker({ titlesWithScore=[], bestTitle="", isPro, onUpgradeClick, 
       {titlesWithScore.map((item,i) => {
         const score = Number(item.seo_score||0); const col = scoreColor(score); const isA = i===sel;
         return (
-          <button key={i} onClick={()=>setSel(i)} style={{ width:"100%",textAlign:"left",cursor:"pointer",marginBottom:"8px",background:isA?`${C.purple}10`:C.pillBg,border:`1.5px solid ${isA?C.purple:C.hairline}`,borderRadius:"12px",padding:"12px 16px",fontFamily:"inherit",transition:"all 0.15s" }}>
+          <div key={i} style={{ width:"100%",marginBottom:"8px",background:isA?`${C.purple}10`:C.pillBg,border:`1.5px solid ${isA?C.purple:C.hairline}`,borderRadius:"12px",padding:"12px 16px",transition:"all 0.15s" }}>
             <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:"10px" }}>
-              <span style={{ fontWeight:"600",lineHeight:1.45,flex:1,color:C.ink,fontSize:"14px" }}>
+              <span onClick={()=>setSel(i)} style={{ fontWeight:"600",lineHeight:1.45,flex:1,color:C.ink,fontSize:"14px",cursor:"pointer" }}>
                 {isA&&<span style={{ color:C.purple,marginRight:"6px" }}>✦</span>}{item.title}
               </span>
-              <span style={{ fontSize:"11px",fontWeight:"800",padding:"2px 9px",borderRadius:"99px",background:col+"20",color:col,border:`1px solid ${col}33`,flexShrink:0 }}>{score}/100</span>
+              <div style={{ display:"flex",gap:"4px",alignItems:"center",flexShrink:0 }}>
+                <EditBtn value={item.title} onSave={(v)=>{ const updated=[...titlesWithScore]; updated[i]={...updated[i],title:v}; if(onTitlesChange) onTitlesChange(updated); if(i===sel&&onSelect) onSelect(v); }} size="sm"/>
+                <span style={{ fontSize:"11px",fontWeight:"800",padding:"2px 9px",borderRadius:"99px",background:col+"20",color:col,border:`1px solid ${col}33` }}>{score}/100</span>
+              </div>
             </div>
             {isA && item.tips?.length > 0 && (
               isPro ? (
@@ -589,7 +616,7 @@ function TitlePicker({ titlesWithScore=[], bestTitle="", isPro, onUpgradeClick, 
                 </div>
               )
             )}
-          </button>
+          </div>
         );
       })}
       <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:"10px",background:`${C.purple}08`,border:`1.5px solid ${C.purple}33`,borderRadius:"12px",padding:"12px 16px" }}>
@@ -1041,14 +1068,15 @@ function TelegramSend({ result, platform, user }) {
 // RESULT PANEL
 // ══════════════════════════════════════════════════════════════════════
 function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, onTitleSelect, videoFile, selectedTitle }) {
+  const [editedScript, setEditedScript] = useState("");
+  const [editedDesc, setEditedDesc] = useState("");
   if (!result) return null;
   const scores   = result.scores||{};
   const sections = result.sections||[];
   const seoPacks = result.seo_packs||{};
   const titlesWS = result.titles_with_score||[];
   const rawScript= result.script_text||"";
-
-  let isCapped = false; let displayScript = rawScript;
+  let isCapped = false; let displayScript = editedScript || rawScript;
   if (!isPro && rawScript) {
     const allWords = rawScript.split(/\s+/).filter(Boolean);
     if (allWords.length>500) {
@@ -1111,7 +1139,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
 
       {false && (
         <div style={{ marginBottom:"20px" }}>
-          <SectionHead icon="📋" title="YouTube Description" copyText={result.seo_description||result.youtube_description}/>
+          <SectionHead icon="📋" title="YouTube Description" copyText={editedDesc||result.seo_description||result.youtube_description} editValue={editedDesc||result.seo_description||result.youtube_description||""} onEditSave={(v)=>setEditedDesc(v)}/>
           <div className="dark-scroll" style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"12px",padding:"16px",fontSize:"13px",lineHeight:1.8,color:C.ink,whiteSpace:"pre-wrap",fontFamily:"inherit",maxHeight:"220px",overflowY:"auto" }}>
             {result.seo_description||result.youtube_description}
           </div>
@@ -1134,9 +1162,9 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
 
       {displayScript&&(
         <div style={{ marginBottom:"22px" }}>
-          <SectionHead icon="📜" title={`Recommended Script${isCapped?" (Preview — 500 words)":""}`} copyText={isPro?rawScript:displayScript}/>
+          <SectionHead icon="📜" title={`Recommended Script${isCapped?" (Preview — 500 words)":""}`} copyText={isPro?(editedScript||rawScript):displayScript} editValue={isPro?(editedScript||rawScript):undefined} onEditSave={isPro?(v)=>setEditedScript(v):undefined}/>
           <div className="dark-scroll" style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"14px",padding:"20px 24px",maxHeight:isPro?"520px":"none",overflowY:isPro?"auto":"visible" }}>
-            <ScriptRenderer text={displayScript} capped={isCapped}/>
+            <ScriptRenderer text={isPro?(editedScript||displayScript):displayScript} capped={isCapped}/>
           </div>
           {isCapped&&(
             <div style={{ marginTop:"10px",padding:"14px 16px",background:`${C.purple}08`,border:`1.5px solid ${C.purple}33`,borderRadius:"12px",textAlign:"center" }}>
