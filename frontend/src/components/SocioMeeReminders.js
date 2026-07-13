@@ -3,6 +3,7 @@ const BASE = "https://sociomeeai.com/api";
 const F = "'DM Sans','Syne',sans-serif";
 const FH = "'Poppins',sans-serif";
 
+function to12h(t){ if(!t)return ""; const [h,m]=t.split(":"); const hr=parseInt(h); return `${hr%12||12}:${m} ${hr>=12?"PM":"AM"}`; }
 function fmt(ts) {
   return new Date(ts*1000).toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
 }
@@ -96,7 +97,7 @@ export default function SocioMeeReminders({ user }) {
   );
 
   return (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",minHeight:"100vh",background:"#080810",fontFamily:F,padding:"32px 24px",overflowY:"auto"}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#080810",fontFamily:F,padding:"32px 24px",overflowY:"auto"}}>
       <style>{`
         @keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}
         @keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
@@ -106,7 +107,7 @@ export default function SocioMeeReminders({ user }) {
         ::-webkit-scrollbar{width:2px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:99px}
       `}</style>
 
-      <div style={{width:"100%",maxWidth:"560px"}}>
+      <div style={{width:"100%",maxWidth:"440px"}}>
         {/* Header */}
         <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"28px"}}>
           <div style={{width:"36px",height:"36px",borderRadius:"10px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -120,7 +121,7 @@ export default function SocioMeeReminders({ user }) {
         </div>
 
         {/* Add reminder card */}
-        <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"20px",marginBottom:"20px",backdropFilter:"blur(20px)"}}>
+        <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"24px 28px",marginBottom:"16px",backdropFilter:"blur(20px)"}}>
           <input value={task} onChange={e=>setTask(e.target.value)} placeholder="What should we remind you about? e.g. Post this on Instagram"
             onKeyDown={e=>e.key==="Enter"&&addReminder()}
             style={{width:"100%",background:"transparent",border:"none",borderBottom:"1px solid rgba(255,255,255,0.08)",padding:"0 0 12px",color:"#fff",fontSize:"14px",fontFamily:F,outline:"none",boxSizing:"border-box",marginBottom:"16px"}}/>
@@ -132,7 +133,7 @@ export default function SocioMeeReminders({ user }) {
             </div>
             <div>
               <p style={{fontSize:"9px",color:"rgba(255,255,255,0.25)",fontFamily:F,margin:"0 0 5px",textTransform:"uppercase",letterSpacing:"0.8px"}}>Time</p>
-              <input type="time" value={timeVal} onChange={e=>setTimeVal(e.target.value)}
+              <input type="time" value={timeVal} onChange={e=>setTimeVal(e.target.value)} step="60"
                 style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",padding:"9px 12px",color:"#fff",fontSize:"12px",fontFamily:F,outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
             </div>
           </div>

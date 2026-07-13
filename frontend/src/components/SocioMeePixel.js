@@ -201,7 +201,7 @@ export default function SocioMeePixel({ user }) {
         onDragOver={e=>{e.preventDefault();setDragOver(true)}}
         onDragLeave={()=>setDragOver(false)}
         onDrop={e=>{e.preventDefault();setDragOver(false);handleFile(e.dataTransfer.files[0])}}
-        style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"16px", textAlign:"center", background:dragOver?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.03)", border:`1px solid ${dragOver?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.08)"}`, borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%", backdropFilter:"blur(24px)", transition:"all 0.2s", cursor:"pointer" }}
+        style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"16px", textAlign:"center", background:"rgba(255,255,255,0.03)", border:`1px solid ${dragOver?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.08)"}`, borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%", backdropFilter:"blur(24px)", transition:"all 0.2s", cursor:"pointer" }}
         onClick={()=>fileInputRef.current?.click()}>
         <div style={{ width:"68px", height:"68px", borderRadius:"20px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C12 2 11.5 7.5 9 9C9 9 4 10.5 2 12C2 12 7 13.5 9 15C9 15 11.5 20.5 12 22C12 22 12.5 16.5 15 15C15 15 20 13.5 22 12C22 12 17 10.5 15 9C15 9 12.5 3.5 12 2Z" fill="currentColor" stroke="none"/></svg>
@@ -215,11 +215,7 @@ export default function SocioMeePixel({ user }) {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Choose Image
         </button>
-        <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", justifyContent:"center" }}>
-          {["Thumbnails","Posters","Banners","Stories","Posts"].map(t=>(
-            <span key={t} style={{ fontSize:"10px", padding:"3px 10px", borderRadius:"99px", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.25)", fontFamily:FONT }}>{t}</span>
-          ))}
-        </div>
+
       </div>
       <input ref={fileInputRef} type="file" accept="image/*" style={{ display:"none" }} onChange={e=>{handleFile(e.target.files[0]);e.target.value="";}}/>
     </div>

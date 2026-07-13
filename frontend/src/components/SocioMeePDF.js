@@ -5,7 +5,7 @@ const C = {
   sidebar: "rgba(6,4,15,0.97)",
   border: "rgba(255,255,255,0.07)",
   purple: "#7c3aed",
-  purpleLight: "#a78bfa",
+  purpleLight: "rgba(255,255,255,0.7)",
   muted: "rgba(255,255,255,0.35)",
   white: "#fff",
   font: "Poppins, sans-serif",
@@ -29,7 +29,7 @@ function AISummaryPanel({ summary, keyPoints, onClose, onSendToGenerator }) {
         <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
             <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(124,58,237,0.2)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
             </div>
             <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:C.font }}>AI Analysis</span>
           </div>
@@ -75,7 +75,7 @@ function AISummaryPanel({ summary, keyPoints, onClose, onSendToGenerator }) {
   );
 }
 
-export default function SocioMeePDF({ onSendToGenerator }) {
+export default function SocioMeePDF({ onSendToGenerator, user }) {
   const [pdfDoc, setPdfDoc] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -238,8 +238,8 @@ export default function SocioMeePDF({ onSendToGenerator }) {
       {/* Top Header */}
       <div style={{ padding:"10px 20px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, background:"rgba(255,255,255,0.01)" }}>
         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-          <div style={{ width:"30px", height:"30px", borderRadius:"9px", background:"rgba(124,58,237,0.15)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <div style={{ width:"30px", height:"30px", borderRadius:"9px", background:"rgba(255,255,255,0.07)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           </div>
           <div>
             <h2 style={{ fontSize:"13px", fontWeight:"800", color:C.white, margin:0, fontFamily:C.font }}>SocioMee PDF</h2>
@@ -289,21 +289,17 @@ export default function SocioMeePDF({ onSendToGenerator }) {
             style={{ width:"100%", maxWidth:"500px", padding:"64px 40px", border:`2px dashed ${dragOver?"rgba(124,58,237,0.6)":"rgba(255,255,255,0.1)"}`, borderRadius:"24px", background:dragOver?"rgba(124,58,237,0.08)":"rgba(255,255,255,0.02)", cursor:"pointer", textAlign:"center", transition:"all 0.2s ease" }}>
             {loading ? <LoadingSpinner text="Loading PDF..."/> : (
               <>
-                <div style={{ width:"72px", height:"72px", borderRadius:"18px", background:"rgba(124,58,237,0.12)", border:"1px solid rgba(124,58,237,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 24px" }}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <div style={{ width:"72px", height:"72px", borderRadius:"18px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(124,58,237,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 24px" }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 </div>
                 <h3 style={{ fontSize:"22px", fontWeight:"800", color:C.white, margin:"0 0 10px", fontFamily:C.font }}>Drop your PDF here</h3>
                 <p style={{ fontSize:"14px", color:C.muted, margin:"0 0 28px", lineHeight:1.7, fontFamily:C.font }}>Upload brand deals, contracts, media kits or press releases. AI will read it and tell you what matters.</p>
-                <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", padding:"11px 24px", borderRadius:"99px", background:"rgba(124,58,237,0.15)", border:"1px solid rgba(124,58,237,0.35)", color:"#a78bfa", fontSize:"13px", fontWeight:"700", fontFamily:C.font }}>
+                <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", padding:"11px 24px", borderRadius:"99px", background:"rgba(255,255,255,0.07)", border:"1px solid rgba(124,58,237,0.35)", color:"rgba(255,255,255,0.7)", fontSize:"13px", fontWeight:"700", fontFamily:C.font }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   Choose PDF file
                 </div>
                 <p style={{ fontSize:"11px", color:"rgba(255,255,255,0.18)", margin:"20px 0 0", fontFamily:C.font }}>Max 50MB. Your file never leaves your browser.</p>
-                <div style={{ display:"flex", gap:"8px", justifyContent:"center", flexWrap:"wrap", marginTop:"20px" }}>
-                  {["Brand Deals","Media Kits","Contracts","Press Releases","Research"].map(t=>(
-                    <span key={t} style={{ fontSize:"10px", padding:"3px 10px", borderRadius:"99px", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.25)", fontFamily:C.font }}>{t}</span>
-                  ))}
-                </div>
+
               </>
             )}
           </div>
@@ -331,7 +327,7 @@ export default function SocioMeePDF({ onSendToGenerator }) {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                   </div>
                 )}
-                <div style={{ position:"absolute", bottom:"3px", right:"4px", fontSize:"9px", fontWeight:"700", color:currentPage===t.page?"#a78bfa":"rgba(255,255,255,0.35)", fontFamily:C.font, background:"rgba(0,0,0,0.5)", padding:"1px 5px", borderRadius:"4px" }}>{t.page}</div>
+                <div style={{ position:"absolute", bottom:"3px", right:"4px", fontSize:"9px", fontWeight:"700", color:currentPage===t.page?"rgba(255,255,255,0.7)":"rgba(255,255,255,0.35)", fontFamily:C.font, background:"rgba(0,0,0,0.5)", padding:"1px 5px", borderRadius:"4px" }}>{t.page}</div>
                 {currentPage===t.page && <div style={{ position:"absolute", inset:0, border:"2px solid rgba(124,58,237,0.6)", borderRadius:"7px", pointerEvents:"none" }}/>}
               </div>
             ))}
