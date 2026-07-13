@@ -640,7 +640,7 @@ function TitlePicker({ titlesWithScore=[], bestTitle="", isPro, onUpgradeClick, 
     <div style={{ marginBottom:"24px" }}>
       <SectionHead icon="🎯" title="Title Candidates" copyText={titlesWithScore.map(t=>t.title).join("\n")}/>
       {titlesWithScore.map((item,i) => {
-        const score = Number(item.seo_score||0); const col = scoreColor(score); const isA = i===sel;
+        const score = Number(item.seo_score||item.score||scoreTitleSimple(item.title)||75); const col = scoreColor(score); const isA = i===sel;
         return (
           <div key={i} style={{ width:"100%",marginBottom:"8px",background:isA?`${C.purple}10`:C.pillBg,border:`1.5px solid ${isA?C.purple:C.hairline}`,borderRadius:"12px",padding:"12px 16px",transition:"all 0.15s" }}>
             <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:"10px" }}>
@@ -1186,12 +1186,19 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
 
       <TitlePicker titlesWithScore={titlesWS} bestTitle={result.best_title} isPro={isPro} onUpgradeClick={onUpgradeClick} onSelect={onTitleSelect}/>
 
-      {false && (
+      {(result.seo_description||result.youtube_description)&&(
         <div style={{ marginBottom:"20px" }}>
           <SectionHead icon="📋" title="YouTube Description" copyText={editedDesc||result.seo_description||result.youtube_description} editValue={editedDesc||result.seo_description||result.youtube_description||""} onEditSave={(v)=>setEditedDesc(v)} editMultiline={true}/>
-          <div className="dark-scroll" style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"12px",padding:"16px",fontSize:"13px",lineHeight:1.8,color:C.ink,whiteSpace:"pre-wrap",fontFamily:"inherit",maxHeight:"220px",overflowY:"auto" }}>
-            {result.seo_description||result.youtube_description}
-          </div>
+          {editedDesc ? (
+            <div style={{ marginTop:"6px" }}>
+              <textarea value={editedDesc} onChange={e=>setEditedDesc(e.target.value)}
+                style={{ width:"100%",minHeight:"180px",background:C.glass,border:`1.5px solid ${C.purple}66`,borderRadius:"12px",padding:"14px",fontSize:"13px",lineHeight:1.8,color:C.ink,whiteSpace:"pre-wrap",fontFamily:"inherit",resize:"vertical",outline:"none",boxSizing:"border-box" }}/>
+            </div>
+          ) : (
+            <div className="dark-scroll" style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"12px",padding:"16px",fontSize:"13px",lineHeight:1.8,color:C.ink,whiteSpace:"pre-wrap",fontFamily:"inherit",maxHeight:"220px",overflowY:"auto" }}>
+              {result.seo_description||result.youtube_description}
+            </div>
+          )}
         </div>
       )}
 
