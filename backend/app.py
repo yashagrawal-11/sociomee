@@ -1622,7 +1622,7 @@ async def validate_promo(request: Request):
         return {"valid": True, "promo": PROMO_CODES[code], "code": code}
     raise HTTPException(status_code=404, detail="Invalid promo code")
 
-@app.post("/api/removebg")
+@app.post("/removebg")
 @limiter.limit("5/hour")
 async def remove_bg(request: Request, user: dict = Depends(get_current_user)):
     import httpx, base64

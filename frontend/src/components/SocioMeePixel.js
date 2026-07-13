@@ -62,7 +62,7 @@ function Slider({ label, value, min, max, step=1, unit="", onChange }) {
 }
 
 export default function SocioMeePixel({ user }) {
-  const rawPlan = user?.plan || user?.plan_label || "free";
+  const rawPlan = user?.plan || user?.plan_label || user?.subscription || "free";
   const plan = rawPlan.toLowerCase().includes("premium") ? "premium" : rawPlan.toLowerCase().includes("pro") ? "pro" : "free";
   const isPremium = plan === "premium";
   const [image, setImage] = useState(null);
@@ -173,7 +173,7 @@ export default function SocioMeePixel({ user }) {
   useEffect(() => { setTimeout(() => setLoading(false), 600); }, []);
 
   if (loading) return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"32px 24px", fontFamily:FONT }}>
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"100vh", padding:"32px 24px", fontFamily:FONT, background:C.bg }}>
       <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"20px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"24px", padding:"52px 44px", maxWidth:"420px", width:"100%" }}>
         <div style={{ width:"68px", height:"68px", borderRadius:"20px", background:"rgba(255,255,255,0.06)", animation:"skpulse 1.4s ease-in-out infinite" }}/>
@@ -188,7 +188,7 @@ export default function SocioMeePixel({ user }) {
   );
 
   if (!image) return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"32px 24px", fontFamily:FONT }}>
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"100vh", padding:"32px 24px", fontFamily:FONT, background:C.bg }}>
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         input[type=range]{-webkit-appearance:none;appearance:none;background:rgba(255,255,255,0.08);border-radius:99px;height:3px;}
@@ -198,7 +198,7 @@ export default function SocioMeePixel({ user }) {
         onDragOver={e=>{e.preventDefault();setDragOver(true)}}
         onDragLeave={()=>setDragOver(false)}
         onDrop={e=>{e.preventDefault();setDragOver(false);handleFile(e.dataTransfer.files[0])}}
-        style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"20px", textAlign:"center", background:dragOver?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.03)", border:`1px solid ${dragOver?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.08)"}`, borderRadius:"24px", padding:"52px 44px", maxWidth:"420px", width:"100%", backdropFilter:"blur(24px)", transition:"all 0.2s", cursor:"pointer" }}
+        style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"16px", textAlign:"center", background:dragOver?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.03)", border:`1px solid ${dragOver?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.08)"}`, borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%", backdropFilter:"blur(24px)", transition:"all 0.2s", cursor:"pointer" }}
         onClick={()=>fileInputRef.current?.click()}>
         <div style={{ width:"68px", height:"68px", borderRadius:"20px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C12 2 11.5 7.5 9 9C9 9 4 10.5 2 12C2 12 7 13.5 9 15C9 15 11.5 20.5 12 22C12 22 12.5 16.5 15 15C15 15 20 13.5 22 12C22 12 17 10.5 15 9C15 9 12.5 3.5 12 2Z" fill="currentColor" stroke="none"/></svg>
