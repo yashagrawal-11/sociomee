@@ -1868,7 +1868,7 @@ export default function App() {
             if (!appInfo) return null;
             const tab = APP_TAB_MAP[appId] || appId;
             return (
-              <button key={appId} onClick={()=>{toggleTab(tab);setSidebarOpen(false);}}
+              <button key={appId} onClick={()=>{ const rp=user?.plan||user?.plan_label||"free"; const isFree=!rp.toLowerCase().includes("pro")&&!rp.toLowerCase().includes("premium"); if(isFree){setShowPricing(true);return;} toggleTab(tab);setSidebarOpen(false);}}
                 style={{display:"flex",alignItems:"center",gap:"10px",padding:"8px 12px 8px 30px",borderRadius:"8px",border:"none",borderLeft:activeTab===tab?"3px solid rgba(255,255,255,0.6)":"3px solid transparent",background:activeTab===tab?"rgba(255,255,255,0.08)":"transparent",color:activeTab===tab?"#fff":"rgba(255,255,255,0.4)",fontSize:"12.5px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}>
                 {APP_ICONS[appInfo.icon]}{appInfo.label.replace("SocioMee ","")}
               </button>
