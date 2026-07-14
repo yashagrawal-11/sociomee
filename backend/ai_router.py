@@ -204,6 +204,7 @@ def generate_full_content(
     language: str = "hinglish",
     country:  str = "in",
     plan:     str = "free",
+    deep_research: bool = None,
 ) -> Dict[str, Any]:
     """
     Run the full 6-step evidence-first AI pipeline.
@@ -236,9 +237,12 @@ def generate_full_content(
     if "premium" in _plan:
         min_words, max_words, gen_max_tokens, do_research = 6000, 7000, 20000, True
     elif "pro" in _plan:
-        min_words, max_words, gen_max_tokens, do_research = 3000, 5000, 16000, False
+        min_words, max_words, gen_max_tokens, do_research = 3000, 5000, 16000, True
     else:
-        min_words, max_words, gen_max_tokens, do_research = 300, 500, 4000, False
+        min_words, max_words, gen_max_tokens, do_research = 1500, 2500, 8000, False
+    # User can explicitly toggle deep research regardless of plan
+    if deep_research is not None:
+        do_research = deep_research
 
     # ── Step 1: Research + Evidence Pack (Premium only) ────────────────
     research: Dict[str, Any] = {

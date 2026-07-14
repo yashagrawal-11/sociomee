@@ -453,6 +453,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 # ── Models ────────────────────────────────────────────────────────────
 class FullContentRequest(BaseModel):
     topic: str = Field(..., min_length=1, max_length=300); persona: str = "dhruvrathee"
+    deep_research: bool = Field(default=True)
     language: str = Field(default="hinglish", max_length=20)
     country: str = Field(default="in", max_length=10)
     platform: str = Field(default="youtube", max_length=30)
@@ -912,7 +913,8 @@ def gen_full(request: Request, payload: FullContentRequest, user: dict = Depends
     if err: return err
     try:
         raw = _generate_full_content(topic=payload.topic.strip(), persona=payload.persona.strip().lower(),
-                                     language=payload.language.strip().lower(), country=payload.country.strip().lower())
+                                     language=payload.language.strip().lower(), country=payload.country.strip().lower(),
+                                     plan=user.get("plan","free"), deep_research=getattr(payload,"deep_research",None))
     except Exception as e:
         import logging
         logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)

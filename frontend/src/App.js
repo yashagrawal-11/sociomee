@@ -1699,6 +1699,7 @@ export default function App() {
 
   const [keyword,      setKeyword    ] = useState("");
   const [videoFile,    setVideoFile  ] = useState(null);
+  const [deepResearch,  setDeepResearch] = useState(false);
   const [isListening,  setIsListening] = useState(false);
   const [selectedTitle, setSelectedTitle] = useState("");
   const [platform,     setPlatform   ] = useState("youtube");
@@ -2697,12 +2698,20 @@ export default function App() {
                   </label>
                 </div>
                 {videoFile&&(
-                  <div style={{ display:"flex",alignItems:"center",gap:"8px",marginBottom:"20px",padding:"8px 16px",borderRadius:"99px",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.2)" }}>
+                  <div style={{ display:"flex",alignItems:"center",gap:"8px",marginBottom:"12px",padding:"8px 16px",borderRadius:"99px",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.2)" }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2"/><polygon points="10,8 16,12 10,16"/></svg>
                     <span style={{ fontSize:"12px",color:"#a78bfa",fontWeight:"600",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{videoFile.name}</span>
                     <button onClick={()=>setVideoFile(null)} style={{ background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,0.4)",fontSize:"18px",lineHeight:1,padding:"0 2px" }}>x</button>
                   </div>
                 )}
+                <div style={{ display:"flex",alignItems:"center",gap:"10px",marginBottom:"20px" }}>
+                  <button onClick={()=>setDeepResearch(r=>!r)} style={{ display:"flex",alignItems:"center",gap:"8px",padding:"7px 14px",borderRadius:"99px",border:`1.5px solid ${deepResearch?"#a78bfa":"rgba(255,255,255,0.12)"}`,background:deepResearch?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s" }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={deepResearch?"#a78bfa":"rgba(255,255,255,0.4)"} strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                    <span style={{ fontSize:"12px",fontWeight:"700",color:deepResearch?"#a78bfa":"rgba(255,255,255,0.4)",letterSpacing:"0.3px" }}>Deep Research</span>
+                    {deepResearch&&<span style={{ fontSize:"10px",padding:"2px 7px",borderRadius:"99px",background:"rgba(124,58,237,0.3)",color:"#c4b5fd",fontWeight:"800" }}>ON</span>}
+                  </button>
+                  {deepResearch&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.35)" }}>Fetches live news, Wikipedia and trending data before generating</span>}
+                </div>
 
                 {/* Platform Grid */}
                 <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>{t("platformLabel")}</div>
