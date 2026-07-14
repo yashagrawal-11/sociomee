@@ -3,8 +3,18 @@ seo_engine.py - AI-powered title generation and SEO scoring for SocioMee.
 Uses Gemini to generate topic-aware, genuinely varied title candidates.
 Falls back to templates only if Gemini is unavailable.
 """
-import re, os, json, requests
+import re, os, json, requests, warnings
 from typing import Any, Dict, List
+
+# Initialize Vertex AI once at module load
+os.environ.setdefault('GOOGLE_APPLICATION_CREDENTIALS', '/var/www/sociomee/backend/sociomee-auth-key.json')
+try:
+    import vertexai as _VERTEXAI
+    _VERTEXAI.init(project='sociomee-auth', location='us-central1')
+    from vertexai.generative_models import GenerativeModel as _VertexModel, GenerationConfig as _VertexConfig
+    _VERTEX_READY = True
+except Exception as _ve:
+    _VERTEX_READY = False
 
 POWER_WORDS = {
     "secret","shocking","truth","nobody","mistake","never","always","exposed",
@@ -40,8 +50,7 @@ def _score_title(title: str, topic: str, trending_keywords: List[str]) -> Dict[s
 
 
 def _gemini_titles(topic: str, persona: Dict[str, Any] = None, trending_keywords: List[str] = None) -> List[str]:
-    gemini_key = os.getenv("GOOGLE_API_KEY", os.getenv("GOOGLE_AI_API_KEY", ""))
-    if not gemini_key:
+    if not _VERTEX_READY:
         return []
     persona_name = (persona or {}).get("name", "default") if persona else "default"
     trending_str = ", ".join((trending_keywords or [])[:5]) or "none"
@@ -60,30 +69,26 @@ STRICT RULES:
 8. NO templates like "X Facts Nobody Talks About", "What You Think", "What Actually Happened" unless the topic genuinely warrants them
 9. Titles should feel like they were written by someone who deeply understands this specific topic
 
-Return ONLY a JSON array of exactly 8 strings. No explanation, no markdown, no extra text:
+Return ONLY a JSON array of exactly 8 strings. Keep each title under 60 characters. No markdown, no explanation:
 ["title 1", "title 2", "title 3", "title 4", "title 5", "title 6", "title 7", "title 8"]"""
 
     try:
-        resp = requests.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}",
-            headers={"Content-Type": "application/json"},
-            json={
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"maxOutputTokens": 800, "temperature": 0.9, "thinkingConfig": {"thinkingBudget": 0}}
-            },
-            timeout=20
-        )
-        data = resp.json()
-        if "candidates" not in data:
-            return []
-        raw = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-        raw = raw.replace("```json", "").replace("```", "").strip()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            _m = _VertexModel('gemini-2.5-flash')
+            _resp = _m.generate_content(prompt, generation_config=_VertexConfig(max_output_tokens=2000, temperature=0.9))
+            raw = _resp.text.strip()
+        raw = raw.replace("```json","").replace("```","").strip()
+        start = raw.find("[")
+        end = raw.rfind("]") + 1
+        if start >= 0 and end > start:
+            raw = raw[start:end]
         titles = json.loads(raw)
         if isinstance(titles, list):
             return [str(t).strip() for t in titles if t and len(str(t).strip()) > 10][:8]
     except Exception as e:
         import logging
-        logging.getLogger("seo_engine").warning("Gemini title generation failed: %s", e)
+        logging.getLogger("seo_engine").warning("Title generation failed: %s", e, exc_info=True)
     return []
 
 

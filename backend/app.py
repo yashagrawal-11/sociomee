@@ -948,7 +948,19 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
             except TypeError: result = e.generate(topic=topic, niche=payload.niche, personality=payload.personality, format_type=payload.format_type, duration_seconds=payload.duration_seconds, language=payload.language)
         elif p == "instagram":
             if not _HAS_IG: raise HTTPException(503, "InstagramEngine not available.")
-            result = InstagramEngine().build_intelligence_pack(keyword=topic, tone=payload.tone, content_type="reel", niche=payload.niche, language=payload.language)
+            from vertex_engine import generate_instagram
+            _ig = generate_instagram(topic=topic, tone=payload.tone or "casual", persona=payload.persona or "default", language=payload.language or "hinglish", niche=payload.niche or "general")
+            result = {
+                "platform": "instagram",
+                "topic": topic,
+                "reel_hook": _ig.get("reel_hook",""),
+                "caption": _ig.get("caption",""),
+                "post": _ig.get("caption",""),
+                "hashtags": _ig.get("hashtags",[]),
+                "cta": _ig.get("cta",""),
+                "story_ideas": _ig.get("story_ideas",[]),
+                "seo_packs": {"instagram": {"caption": _ig.get("caption",""), "description": _ig.get("caption",""), "hashtags": _ig.get("hashtags",[])}},
+            }
             # normalise: pull best caption from scripts bundle
             if "scripts" in result and isinstance(result["scripts"], dict):
                 selected = result["scripts"].get("selected_script", {})
@@ -963,7 +975,19 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
                 result["caption"] = result.get("description","")
         elif p == "x":
             if not _HAS_X: raise HTTPException(503, "XEngine not available.")
-            result = XEngine().build_x_pack(topic=topic, tone=payload.tone)
+            from vertex_engine import generate_twitter_x
+            _x = generate_twitter_x(topic=topic, tone=payload.tone or "bold", persona=payload.persona or "default", language=payload.language or "english")
+            result = {
+                "platform": "x",
+                "topic": topic,
+                "tweet": _x.get("tweet",""),
+                "post": _x.get("tweet",""),
+                "caption": _x.get("tweet",""),
+                "thread": _x.get("thread",[]),
+                "hashtags": _x.get("hashtags",[]),
+                "reply_bait": _x.get("reply_bait",""),
+                "seo_packs": {"x": {"caption": _x.get("tweet",""), "description": _x.get("tweet",""), "hashtags": _x.get("hashtags",[])}},
+            }
             result["caption"] = result.get("post") or result.get("tweet") or result.get("caption","")
         elif p == "pinterest":
             if not _HAS_PINT: raise HTTPException(503, "PinterestEngine not available.")
@@ -971,7 +995,18 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
             result["caption"] = result.get("description","")
         elif p == "facebook":
             if not _HAS_FB: raise HTTPException(503, "FacebookEngine not available.")
-            result = FacebookEngine().generate(topic=topic, niche=payload.niche, tone=payload.tone, objective=payload.objective).to_dict()
+            from vertex_engine import generate_facebook
+            _fb = generate_facebook(topic=topic, tone=payload.tone or "casual", persona=payload.persona or "default", language=payload.language or "hinglish", objective=payload.objective or "engagement")
+            result = {
+                "platform": "facebook",
+                "topic": topic,
+                "post": _fb.get("post",""),
+                "caption": _fb.get("post",""),
+                "hashtags": _fb.get("hashtags",[]),
+                "hook_line": _fb.get("hook_line",""),
+                "cta": _fb.get("cta",""),
+                "seo_packs": {"facebook": {"caption": _fb.get("post",""), "description": _fb.get("post",""), "hashtags": _fb.get("hashtags",[])}},
+            }
             result["caption"] = result.get("long_copy") or result.get("short_copy") or result.get("title_hook","")
         elif p == "tiktok":
             if not _HAS_TT: raise HTTPException(503, "TikTokEngine not available.")
@@ -979,11 +1014,33 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
             result["caption"] = result.get("caption") or result.get("script","")
         elif p == "telegram":
             if not _HAS_TG: raise HTTPException(503, "TelegramEngine not available.")
-            result = TelegramEngine().generate(topic=topic, niche=payload.niche, tone=payload.tone, objective=payload.objective, destination_type=payload.destination_type).to_dict()
+            from vertex_engine import generate_telegram
+            _tg = generate_telegram(topic=topic, tone=payload.tone or "informative", persona=payload.persona or "default", language=payload.language or "hinglish", destination_type=payload.destination_type or "channel")
+            result = {
+                "platform": "telegram",
+                "topic": topic,
+                "message": _tg.get("message",""),
+                "post": _tg.get("message",""),
+                "caption": _tg.get("message",""),
+                "hashtags": _tg.get("hashtags",[]),
+                "poll_question": _tg.get("poll_question",""),
+                "poll_options": _tg.get("poll_options",[]),
+                "seo_packs": {"telegram": {"caption": _tg.get("message",""), "description": _tg.get("message",""), "hashtags": _tg.get("hashtags",[])}},
+            }
             result["caption"] = result.get("post_body") or result.get("short_version") or result.get("opening_line","")
         elif p == "threads":
             if not _HAS_THR: raise HTTPException(503, "ThreadsEngine not available.")
-            result = ThreadsEngine().generate(topic=topic, niche=payload.niche, tone=payload.tone, objective=payload.objective, segment_count=payload.segment_count).to_dict()
+            from vertex_engine import generate_threads
+            _th = generate_threads(topic=topic, tone=payload.tone or "casual", persona=payload.persona or "default", language=payload.language or "hinglish")
+            result = {
+                "platform": "threads",
+                "topic": topic,
+                "post": _th.get("main_post",""),
+                "caption": _th.get("main_post",""),
+                "thread_replies": _th.get("thread_replies",[]),
+                "hashtags": _th.get("hashtags",[]),
+                "seo_packs": {"threads": {"caption": _th.get("main_post",""), "description": _th.get("main_post",""), "hashtags": _th.get("hashtags",[])}},
+            }
             result["caption"] = result.get("full_thread") or result.get("opening_line","")
         elif p == "reddit":
             import requests as _req

@@ -125,21 +125,36 @@ Answer with only SAFE or UNSAFE, nothing else."""
         logging.getLogger("ai_router").warning("Topic safety check failed: %s — defaulting to ALLOW (fail open)", exc)
         return True
 GEMINI_MODEL = "gemini-2.5-flash"
+# ══════════════════════════════════════════════════════════════════════
+# VERTEX AI HELPER - Uses $300 Google Cloud credits
+# ══════════════════════════════════════════════════════════════════════
+import os as _os
+_VERTEX_INITIALIZED = False
+
+def _init_vertex():
+    global _VERTEX_INITIALIZED
+    if not _VERTEX_INITIALIZED:
+        _os.environ.setdefault('GOOGLE_APPLICATION_CREDENTIALS', '/var/www/sociomee/backend/sociomee-auth-key.json')
+        import vertexai
+        vertexai.init(project='sociomee-auth', location='us-central1')
+        _VERTEX_INITIALIZED = True
+
+def _vertex_generate(prompt: str, max_tokens: int = 8000, temperature: float = 0.85) -> str:
+    """Generate content using Vertex AI Gemini 2.5 Flash — uses $300 GCloud credits."""
+    _init_vertex()
+    from vertexai.generative_models import GenerativeModel, GenerationConfig
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        model = GenerativeModel('gemini-2.5-flash')
+        config = GenerationConfig(max_output_tokens=max_tokens, temperature=temperature)
+        response = model.generate_content(prompt, generation_config=config)
+        return response.text
+
 
 def _gemini_generate(prompt: str, max_tokens: int = 8000) -> str:
-    """Generate content using Gemini 2.5 Flash - FREE."""
-    if not GEMINI_API_KEY:
-        raise RuntimeError("GOOGLE_API_KEY missing")
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-    resp = requests.post(url,
-        headers={"Content-Type":"application/json"},
-        json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":max_tokens,"temperature":0.85,"thinkingConfig":{"thinkingBudget":0}}},
-        timeout=120
-    )
-    data = resp.json()
-    if "error" in data:
-        raise RuntimeError(f"Gemini error: {data['error']['message']}")
-    return data["candidates"][0]["content"]["parts"][0]["text"]
+    """Generate content using Vertex AI Gemini 2.5 Flash - uses $300 GCloud credits."""
+    return _vertex_generate(prompt, max_tokens=max_tokens)
 
 def _deepseek_generate(prompt: str, max_tokens: int = 8000, **kwargs) -> str:
     """Use Gemini 2.5 Flash (DeepSeek credits exhausted)."""
@@ -346,48 +361,23 @@ Write ONLY the hook text, nothing else."""
     # KEY CHANGE v2: pass persona_data (full dict) AND research (evidence pack)
     script: str = ""
     try:
-        persona_voice = persona_data.get("voice", persona_data.get("name", "default")) if isinstance(persona_data, dict) else str(persona_data)
-        persona_tone = persona_data.get("tone", "") if isinstance(persona_data, dict) else ""
-        persona_style_rules = persona_data.get("style_rules", []) if isinstance(persona_data, dict) else []
-        persona_energy = persona_data.get("energy", "medium") if isinstance(persona_data, dict) else "medium"
-        persona_pacing = persona_data.get("pacing", "natural") if isinstance(persona_data, dict) else "natural"
-        persona_language = persona_data.get("language", language) if isinstance(persona_data, dict) else language
-        research_text = research.get("evidence_pack", "") if isinstance(research, dict) else ""
-        style_rules_str = "\n".join(f"- {r}" for r in persona_style_rules) if persona_style_rules else "- Natural creator voice"
-        tone_map = {
-            "bold": "Be direct, confident, powerful. Strong statements. No hedging.",
-            "funny": "Use wit, humor, relatable jokes. Light-hearted but informative.",
-            "emotional": "Connect deeply. Use personal stories, empathy, human moments.",
-            "informative": "Clear, factual, educational. Data-driven. Teach step by step.",
-            "aggressive": "High energy, provocative, challenging. Push boundaries.",
-            "dramatic": "Cinematic storytelling. Build tension. Emotional highs and lows.",
-            "casual": "Chill, conversational, like talking to a friend.",
-            "motivational": "Inspiring, uplifting, action-oriented.",
-            "storytelling": "Narrative arc, characters, tension, resolution.",
-            "educational": "Step-by-step, clear explanations, examples.",
-            "trending": "Current, cultural references, what people are talking about.",
-        }
+        from persona_profiles import build_persona_prompt_block, get_persona
         _req_tone = ""
         try:
             _req_tone = str(payload.tone or "informative").lower()
         except Exception:
             _req_tone = "informative"
-        tone_instruction = tone_map.get(_req_tone, "Natural, engaging, authentic tone.")
+        persona_key = persona_data.get("name", "default") if isinstance(persona_data, dict) else str(persona_data or "default")
+        persona_data_full = get_persona(persona_key)
+        persona_voice = persona_data_full.get("voice", persona_key)
+        persona_language = persona_data_full.get("language", language)
+        research_text = research.get("evidence_pack", "") if isinstance(research, dict) else ""
+        persona_prompt_block = build_persona_prompt_block(persona_key, _req_tone, language)
         gemini_prompt = f"""You are writing a YouTube video script. Follow every instruction exactly.
 
 TOPIC: {topic}
 
-CREATOR PERSONA: {persona_voice}
-CREATOR TONE DESCRIPTION: {persona_tone}
-ENERGY LEVEL: {persona_energy}
-PACING: {persona_pacing}
-LANGUAGE: {persona_language}
-LANGUAGE INSTRUCTION: {"Write in natural spoken Hinglish using Roman script only — no Devanagari. Mix Hindi and English exactly as Indians actually speak." if "hinglish" in str(persona_language) else "Write in clear natural English." if str(persona_language) == "english" else "Write in natural spoken Hindi using Roman script only, no Devanagari."}
-
-PERSONA STYLE RULES — follow these strictly:
-{style_rules_str}
-
-TONE INSTRUCTION: {tone_instruction}
+{persona_prompt_block}
 
 SCRIPT LENGTH: {min_words} to {max_words} words
 
@@ -397,9 +387,21 @@ ABSOLUTE RULES:
 3. Do NOT copy or paraphrase search result titles or article headlines as content
 4. Write as if you genuinely understand this topic and are explaining it to your audience
 5. Every paragraph must add a new insight, angle, comparison, or fact about THIS topic
-6. Use the persona opening signature naturally
+6. Use the persona signature phrases and opening style naturally — make it unmistakably sound like this creator
 7. Ground every claim in real logic and reasoning
 8. The research below is context only — do NOT copy it verbatim, use it to inform your reasoning
+
+HUMANIZER RULES — the script must not feel AI-generated:
+- NO hyphens or em dashes anywhere
+- NO phrases like: "stands as", "serves as", "pivotal moment", "evolving landscape", "underscores", "game-changer", "dive into", "delve into", "leverage", "transformative", "seamlessly", "needless to say"
+- NO rule of three structure (always exactly 3 points)
+- NO hollow significance statements ("This represents a major shift...")
+- NO generic endings ("exciting times ahead", "the future is bright")
+- NO repeated transition starters ("Additionally,", "Furthermore,", "Moreover,")
+- VARY sentence length — mix short punchy lines with longer flowing ones
+- Use contractions naturally (don't, isn't, it's, we're)
+- Sound like the ACTUAL creator, with their specific vocabulary and humor style
+- Write how they ACTUALLY speak, not how a textbook describes their style
 
 CONTEXT/RESEARCH (use to inform content, do not copy):
 {research_text[:1500]}
@@ -407,31 +409,20 @@ CONTEXT/RESEARCH (use to inform content, do not copy):
 STRUCTURE — write in this exact order with these labels:
 
 **HOOK**
-[3 to 5 sentences. Open in the persona signature style. Make the viewer immediately curious about THIS specific topic.]
+[3 to 5 sentences. Open EXACTLY in this creator's signature style. First line must be their characteristic opener.]
 
 **MAIN CONTENT**
-[{min_words - 100} to {max_words - 100} words. Explain the topic deeply with multiple angles, real comparisons, historical context, and genuine reasoning. Every paragraph must move the explanation forward. Stay strictly on: {topic}]
+[{min_words - 100} to {max_words - 100} words. Explain the topic deeply in this creator's unique voice. Every paragraph sounds unmistakably like them. Stay strictly on: {topic}]
 
 **CTA**
-[The creator's natural call to action. Should sound like THIS creator actually saying it, not generic YouTube boilerplate.]
+[Call to action in THIS creator's natural voice — should sound exactly like something they would say.]
 
 **OUTRO**
-[1 to 2 sentences closing in the persona's natural style.]
+[1 to 2 sentences closing in this creator's signature style.]
 
 Write ONLY the script. No meta-commentary, no preamble, no explanation outside the script itself."""
 
-        _resp = requests.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}",
-            headers={"Content-Type": "application/json"},
-            json={"contents": [{"parts": [{"text": gemini_prompt}]}],
-                  "generationConfig": {"maxOutputTokens": gen_max_tokens, "temperature": 0.85,
-                                        "thinkingConfig": {"thinkingBudget": 0}}},
-            timeout=120,
-        )
-        _data = _resp.json()
-        if "error" in _data:
-            raise RuntimeError(f"Gemini: {_data['error']['message']}")
-        script = _data["candidates"][0]["content"]["parts"][0]["text"]
+        script = _vertex_generate(gemini_prompt, max_tokens=gen_max_tokens, temperature=0.85)
     except Exception as exc:
         print(f"[PIPELINE-DEBUG] gemini_script FAILED: {exc}", flush=True); errors.append(f"gemini_script: {exc}")
         script = (
