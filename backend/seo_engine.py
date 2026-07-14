@@ -23,11 +23,11 @@ POWER_WORDS = {
 }
 
 FALLBACK_TEMPLATES = [
-    "{topic}: The Real Story",
-    "Why {topic} Is Not What You Think",
-    "The Truth About {topic}",
-    "What Nobody Tells You About {topic}",
-    "{topic}: What Actually Happened",
+    "{topic}: What Actually Matters",
+    "The Reality Behind {topic}",
+    "Everything You Need to Know About {topic}",
+    "{topic}: A Complete Breakdown",
+    "Understanding {topic} Better",
 ]
 
 def _score_title(title: str, topic: str, trending_keywords: List[str]) -> Dict[str, Any]:
