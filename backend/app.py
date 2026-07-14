@@ -464,11 +464,15 @@ class PlatformContentRequest(BaseModel):
     tone: str = Field(default="default", max_length=30)
     objective: str = Field(default="engagement", max_length=50)
     personality: str = Field(default="default", max_length=50)
+    persona: str = Field(default="default", max_length=50)
     format_type: str = Field(default="long", max_length=20)
     duration_seconds: int = Field(default=180, ge=1, le=3600)
     segment_count: int = Field(default=5, ge=2, le=7)
     destination_type: str = Field(default="channel", max_length=20)
     language: str = Field(default="hinglish", max_length=20)
+
+    def effective_persona(self) -> str:
+        return self.persona or self.personality or "default"
 
 class CreateOrderRequest(BaseModel):
     user_id: str = Field(..., min_length=1)
@@ -949,7 +953,7 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
         elif p == "instagram":
             if not _HAS_IG: raise HTTPException(503, "InstagramEngine not available.")
             from vertex_engine import generate_instagram
-            _ig = generate_instagram(topic=topic, tone=payload.tone or "casual", persona=payload.persona or "default", language=payload.language or "hinglish", niche=payload.niche or "general")
+            _ig = generate_instagram(topic=topic, tone=payload.tone or "casual", persona=payload.effective_persona(), language=payload.language or "hinglish", niche=payload.niche or "general")
             result = {
                 "platform": "instagram",
                 "topic": topic,
@@ -976,7 +980,7 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
         elif p == "x":
             if not _HAS_X: raise HTTPException(503, "XEngine not available.")
             from vertex_engine import generate_twitter_x
-            _x = generate_twitter_x(topic=topic, tone=payload.tone or "bold", persona=payload.persona or "default", language=payload.language or "english")
+            _x = generate_twitter_x(topic=topic, tone=payload.tone or "bold", persona=payload.effective_persona(), language=payload.language or "english")
             result = {
                 "platform": "x",
                 "topic": topic,
@@ -996,7 +1000,7 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
         elif p == "facebook":
             if not _HAS_FB: raise HTTPException(503, "FacebookEngine not available.")
             from vertex_engine import generate_facebook
-            _fb = generate_facebook(topic=topic, tone=payload.tone or "casual", persona=payload.persona or "default", language=payload.language or "hinglish", objective=payload.objective or "engagement")
+            _fb = generate_facebook(topic=topic, tone=payload.tone or "casual", persona=payload.effective_persona(), language=payload.language or "hinglish", objective=payload.objective or "engagement")
             result = {
                 "platform": "facebook",
                 "topic": topic,
@@ -1015,7 +1019,7 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
         elif p == "telegram":
             if not _HAS_TG: raise HTTPException(503, "TelegramEngine not available.")
             from vertex_engine import generate_telegram
-            _tg = generate_telegram(topic=topic, tone=payload.tone or "informative", persona=payload.persona or "default", language=payload.language or "hinglish", destination_type=payload.destination_type or "channel")
+            _tg = generate_telegram(topic=topic, tone=payload.tone or "informative", persona=payload.effective_persona(), language=payload.language or "hinglish", destination_type=payload.destination_type or "channel")
             result = {
                 "platform": "telegram",
                 "topic": topic,
@@ -1031,7 +1035,7 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
         elif p == "threads":
             if not _HAS_THR: raise HTTPException(503, "ThreadsEngine not available.")
             from vertex_engine import generate_threads
-            _th = generate_threads(topic=topic, tone=payload.tone or "casual", persona=payload.persona or "default", language=payload.language or "hinglish")
+            _th = generate_threads(topic=topic, tone=payload.tone or "casual", persona=payload.effective_persona(), language=payload.language or "hinglish")
             result = {
                 "platform": "threads",
                 "topic": topic,

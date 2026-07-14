@@ -232,9 +232,17 @@ def build_persona_prompt_block(persona_key: str, tone: str, language: str = None
 
     lang_instruction = {
         "hinglish": "Write in natural spoken Hinglish using Roman script only — no Devanagari. Mix Hindi and English exactly as Indians actually speak in conversation.",
-        "hindi": "Write in pure Hindi using Roman script — no Devanagari. Natural spoken Hindi, not formal written Hindi.",
-        "english": "Write in natural conversational English. Clear and accessible.",
-    }.get(lang.lower(), "Write in natural Hinglish using Roman script.")
+        "hindi": "Write in pure Hindi using Roman script only — no Devanagari. Natural spoken Hindi, not overly formal.",
+        "english": "Write in natural conversational English. Clear, direct, and accessible.",
+        "tamil": "Write in natural spoken Tamil using Roman script (Tanglish) — mix Tamil and English as Tamil speakers naturally do. No Tamil script.",
+        "telugu": "Write in natural spoken Telugu using Roman script — mix Telugu and English as Telugu speakers naturally do. No Telugu script.",
+        "marathi": "Write in natural spoken Marathi using Roman script — mix Marathi and Hindi/English as Marathis actually speak. No Devanagari.",
+        "bengali": "Write in natural spoken Bengali using Roman script — mix Bengali and English as Bengalis actually speak. No Bengali script.",
+        "gujarati": "Write in natural spoken Gujarati using Roman script — mix Gujarati and English as Gujaratis actually speak. No Gujarati script.",
+        "punjabi": "Write in natural spoken Punjabi using Roman script — mix Punjabi and English as Punjabis actually speak. No Gurmukhi script.",
+        "kannada": "Write in natural spoken Kannada using Roman script — mix Kannada and English as Kannadigas actually speak. No Kannada script.",
+        "malayalam": "Write in natural spoken Malayalam using Roman script (Manglish) — mix Malayalam and English as Malayalis actually speak. No Malayalam script.",
+    }.get(lang.lower(), "Write in natural spoken Hinglish using Roman script only.")
 
     style_rules = "\n".join(f"- {r}" for r in persona.get("style_rules", []))
     signatures = ", ".join(f'"{p}"' for p in persona.get("signature_phrases", []))

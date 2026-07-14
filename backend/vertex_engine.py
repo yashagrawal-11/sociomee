@@ -35,37 +35,55 @@ def generate(prompt: str, max_tokens: int = 2000, temperature: float = 0.85, jso
     if not _init():
         return ""
     try:
-        from vertexai.generative_models import GenerationConfig, Content, Part
-        full_prompt = HUMANIZER_RULES + "\n\n" + prompt
+        from vertexai.generative_models import GenerationConfig
+        full_prompt = prompt if json_mode else (HUMANIZER_RULES + "\n\n" + prompt)
         config = GenerationConfig(max_output_tokens=max_tokens, temperature=temperature)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             response = _model.generate_content(full_prompt, generation_config=config)
-        text = response.text.strip()
-        if json_mode:
-            # Extract JSON from response
-            start = text.find('{') if '{' in text else text.find('[')
-            if start == -1:
-                return text
-            end = text.rfind('}') + 1 if '{' in text else text.rfind(']') + 1
-            return text[start:end]
-        return text
+        # Always return raw text — let caller handle JSON extraction
+        return response.text.strip() if response.text else ""
     except Exception as e:
+        err = str(e)
+        if "429" in err or "exhausted" in err.lower():
+            import time
+            logger.warning("Rate limited, retrying in 15s...")
+            time.sleep(15)
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    r2 = _model.generate_content(full_prompt, generation_config=config)
+                return r2.text.strip() if r2.text else ""
+            except Exception as e2:
+                logger.error(f"Retry failed: {e2}")
+                return ""
         logger.error(f"Vertex AI generate failed: {e}")
         return ""
 
-def generate_json(prompt: str, max_tokens: int = 2000, temperature: float = 0.85) -> Optional[dict]:
+def generate_json(prompt: str, max_tokens: int = 3000, temperature: float = 0.85) -> Optional[dict]:
     """Generate and parse JSON response."""
     raw = generate(prompt, max_tokens=max_tokens, temperature=temperature, json_mode=True)
     if not raw:
         return None
     try:
+        # Clean markdown fences
+        raw = raw.replace("```json", "").replace("```", "").strip()
         return json.loads(raw)
     except Exception:
         try:
-            # Try to fix common JSON issues
-            raw = raw.replace("```json", "").replace("```", "").strip()
-            return json.loads(raw)
+            # Extract JSON object even from truncated response
+            start = raw.find("{")
+            if start == -1:
+                start = raw.find("[")
+            if start == -1:
+                return None
+            # Try to find valid JSON by progressively trimming from end
+            for end in range(len(raw), start, -1):
+                try:
+                    return json.loads(raw[start:end])
+                except Exception:
+                    continue
+            return None
         except Exception as e:
             logger.error(f"JSON parse failed: {e} | raw: {raw[:200]}")
             return None
@@ -128,7 +146,7 @@ Return ONLY valid JSON:
   "bio_link_text": "Text to say 'link in bio' naturally in the persona voice"
 }}"""
 
-    result = generate_json(prompt, max_tokens=1500)
+    result = generate_json(prompt, max_tokens=3000)
     if not result:
         return {
             "reel_hook": f"You need to know this about {topic}",
@@ -161,7 +179,7 @@ Return ONLY valid JSON:
   "engagement_question": "The closing question to drive comments"
 }}"""
 
-    result = generate_json(prompt, max_tokens=1000)
+    result = generate_json(prompt, max_tokens=2000)
     if not result:
         return {
             "post": f"Here's something important about {topic} that most professionals miss.\n\nThis insight changed how I think about it.\n\nWhat's your take?",
@@ -192,7 +210,7 @@ Return ONLY valid JSON:
   "reply_bait": "A question or statement designed to get replies"
 }}"""
 
-    result = generate_json(prompt, max_tokens=1000)
+    result = generate_json(prompt, max_tokens=2000)
     if not result:
         return {
             "tweet": f"Hot take on {topic}: most people are thinking about this completely wrong.",
@@ -223,7 +241,7 @@ Return ONLY valid JSON:
   "cta": "What action should readers take"
 }}"""
 
-    result = generate_json(prompt, max_tokens=1200)
+    result = generate_json(prompt, max_tokens=2500)
     if not result:
         return {
             "post": f"Something important I want to share about {topic}...\n\nThis has been on my mind lately and I think you'll find it useful.\n\nWhat do you think?",
@@ -252,7 +270,7 @@ Return ONLY valid JSON:
   "hashtags": ["3", "to", "5", "hashtags"]
 }}"""
 
-    result = generate_json(prompt, max_tokens=800)
+    result = generate_json(prompt, max_tokens=2000)
     if not result:
         return {
             "main_post": f"Real talk about {topic} — here's what nobody tells you.",
@@ -278,7 +296,7 @@ Return ONLY valid JSON:
   "seo_keywords": ["5 search keywords people would use to find this"]
 }}"""
 
-    result = generate_json(prompt, max_tokens=1000)
+    result = generate_json(prompt, max_tokens=2000)
     if not result:
         return {
             "pin_title": f"Everything You Need to Know About {topic}",
@@ -309,7 +327,7 @@ Return ONLY valid JSON:
   "poll_options": ["Option 1", "Option 2", "Option 3", "Option 4"]
 }}"""
 
-    result = generate_json(prompt, max_tokens=1200)
+    result = generate_json(prompt, max_tokens=2500)
     if not result:
         return {
             "message": f"**{topic}**\n\nHere's what you need to know about this topic...\n\n📌 Key Point 1\n📌 Key Point 2\n📌 Key Point 3",
@@ -334,7 +352,7 @@ Return ONLY valid JSON:
   "flair_suggestion": "Suggested post flair"
 }}"""
 
-    result = generate_json(prompt, max_tokens=1000)
+    result = generate_json(prompt, max_tokens=2000)
     if not result:
         return {
             "post_title": f"My thoughts on {topic} — what does everyone else think?",
@@ -358,7 +376,7 @@ Return ONLY valid JSON:
   "credentials_line": "First line establishing why you're qualified to answer this"
 }}"""
 
-    result = generate_json(prompt, max_tokens=1500)
+    result = generate_json(prompt, max_tokens=3000)
     if not result:
         return {
             "question": f"What should I know about {topic}?",
