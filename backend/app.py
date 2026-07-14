@@ -912,9 +912,15 @@ def gen_full(request: Request, payload: FullContentRequest, user: dict = Depends
     err = _check_credits(user["user_id"])
     if err: return err
     try:
+        _deep = getattr(payload, "deep_research", False) or False
+        _credit_cost = 15 if _deep else 10
+        # Gate Deep Research to Pro/Premium only
+        if _deep and user.get("plan","free") == "free":
+            _deep = False
+            _credit_cost = 10
         raw = _generate_full_content(topic=payload.topic.strip(), persona=payload.persona.strip().lower(),
                                      language=payload.language.strip().lower(), country=payload.country.strip().lower(),
-                                     plan=user.get("plan","free"), deep_research=getattr(payload,"deep_research",None))
+                                     plan=user.get("plan","free"), deep_research=_deep)
     except Exception as e:
         import logging
         logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)

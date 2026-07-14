@@ -2705,12 +2705,14 @@ export default function App() {
                   </div>
                 )}
                 <div style={{ display:"flex",alignItems:"center",gap:"10px",marginBottom:"20px" }}>
-                  <button onClick={()=>setDeepResearch(r=>!r)} style={{ display:"flex",alignItems:"center",gap:"8px",padding:"7px 14px",borderRadius:"99px",border:`1.5px solid ${deepResearch?"#a78bfa":"rgba(255,255,255,0.12)"}`,background:deepResearch?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s" }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={deepResearch?"#a78bfa":"rgba(255,255,255,0.4)"} strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-                    <span style={{ fontSize:"12px",fontWeight:"700",color:deepResearch?"#a78bfa":"rgba(255,255,255,0.4)",letterSpacing:"0.3px" }}>Deep Research</span>
-                    {deepResearch&&<span style={{ fontSize:"10px",padding:"2px 7px",borderRadius:"99px",background:"rgba(124,58,237,0.3)",color:"#c4b5fd",fontWeight:"800" }}>ON</span>}
+                  <button onClick={()=>{ if(!isPro){ onUpgradeClick("upgrade"); return; } setDeepResearch(r=>!r); }} style={{ display:"flex",alignItems:"center",gap:"8px",padding:"7px 14px",borderRadius:"99px",border:`1.5px solid ${deepResearch&&isPro?"#a78bfa":"rgba(255,255,255,0.12)"}`,background:deepResearch&&isPro?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s",opacity:isPro?1:0.6 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={deepResearch&&isPro?"#a78bfa":"rgba(255,255,255,0.4)"} strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                    <span style={{ fontSize:"12px",fontWeight:"700",color:deepResearch&&isPro?"#a78bfa":"rgba(255,255,255,0.4)",letterSpacing:"0.3px" }}>Deep Research</span>
+                    {!isPro&&<span style={{ fontSize:"10px",padding:"2px 7px",borderRadius:"99px",background:"rgba(251,191,36,0.2)",color:"#fbbf24",fontWeight:"800" }}>PRO</span>}
+                    {deepResearch&&isPro&&<span style={{ fontSize:"10px",padding:"2px 7px",borderRadius:"99px",background:"rgba(124,58,237,0.3)",color:"#c4b5fd",fontWeight:"800" }}>ON</span>}
                   </button>
-                  {deepResearch&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.35)" }}>Fetches live news, Wikipedia and trending data before generating</span>}
+                  {!isPro&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.3)" }}>Pro and Premium only — fetches live news, Wikipedia and trending data</span>}
+                  {deepResearch&&isPro&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.35)" }}>Costs 15 credits — fetches live news, Wikipedia and trending data</span>}
                 </div>
 
                 {/* Platform Grid */}
