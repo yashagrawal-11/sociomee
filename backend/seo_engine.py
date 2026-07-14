@@ -3,8 +3,12 @@ seo_engine.py - AI-powered title generation and SEO scoring for SocioMee.
 Uses Gemini to generate topic-aware, genuinely varied title candidates.
 Falls back to templates only if Gemini is unavailable.
 """
-import re, os, json, requests, warnings
+import re, os, json, requests, warnings, hashlib
 from typing import Any, Dict, List
+from functools import lru_cache
+
+# Simple title cache to avoid repeated API calls for same topic
+_title_cache = {}
 
 # Initialize Vertex AI once at module load
 os.environ.setdefault('GOOGLE_APPLICATION_CREDENTIALS', '/var/www/sociomee/backend/sociomee-auth-key.json')
@@ -52,6 +56,10 @@ def _score_title(title: str, topic: str, trending_keywords: List[str]) -> Dict[s
 def _gemini_titles(topic: str, persona: Dict[str, Any] = None, trending_keywords: List[str] = None) -> List[str]:
     if not _VERTEX_READY:
         return []
+    # Check cache first
+    _cache_key = hashlib.md5(f"{topic}".encode()).hexdigest()
+    if _cache_key in _title_cache:
+        return _title_cache[_cache_key]
     persona_name = (persona or {}).get("name", "default") if persona else "default"
     trending_str = ", ".join((trending_keywords or [])[:5]) or "none"
     prompt = f"""You are a YouTube title expert. Write 8 DISTINCT title options for this video topic.
@@ -69,14 +77,14 @@ STRICT RULES:
 8. NO templates like "X Facts Nobody Talks About", "What You Think", "What Actually Happened" unless the topic genuinely warrants them
 9. Titles should feel like they were written by someone who deeply understands this specific topic
 
-Return ONLY a JSON array of exactly 8 strings. Keep each title under 60 characters. No markdown, no explanation:
+Return ONLY a valid JSON array of 8 short strings. Max 55 characters per title. No markdown, no backticks, no explanation. Start your response with [ and end with ]:
 ["title 1", "title 2", "title 3", "title 4", "title 5", "title 6", "title 7", "title 8"]"""
 
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             _m = _VertexModel('gemini-2.5-flash')
-            _resp = _m.generate_content(prompt, generation_config=_VertexConfig(max_output_tokens=2000, temperature=0.9))
+            _resp = _m.generate_content(prompt, generation_config=_VertexConfig(max_output_tokens=4000, temperature=0.9))
             raw = _resp.text.strip()
         raw = raw.replace("```json","").replace("```","").strip()
         start = raw.find("[")
@@ -85,7 +93,10 @@ Return ONLY a JSON array of exactly 8 strings. Keep each title under 60 characte
             raw = raw[start:end]
         titles = json.loads(raw)
         if isinstance(titles, list):
-            return [str(t).strip() for t in titles if t and len(str(t).strip()) > 10][:8]
+            result = [str(t).strip() for t in titles if t and len(str(t).strip()) > 10][:8]
+            if result:
+                _title_cache[_cache_key] = result
+            return result
     except Exception as e:
         import logging
         logging.getLogger("seo_engine").warning("Title generation failed: %s", e, exc_info=True)
