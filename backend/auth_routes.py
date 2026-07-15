@@ -21,6 +21,35 @@ load_dotenv(ENV_PATH, override=True)  # override=True forces it to overwrite any
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+def get_or_create_social_user(provider: str, provider_id: str, email: str, name: str, picture: str = "") -> dict:
+    """Create or retrieve a user from social OAuth login."""
+    import uuid, time
+    try:
+        from db import get_db
+        db = get_db()
+        users = db.get("users", {})
+        if email in users:
+            return users[email]
+        for u in users.values():
+            if u.get("provider") == provider and u.get("provider_id") == provider_id:
+                return u
+        user_id = str(uuid.uuid4())
+        new_user = {
+            "user_id": user_id, "email": email, "name": name,
+            "picture": picture, "provider": provider, "provider_id": provider_id,
+            "plan": "free", "credits": 20, "created_at": int(time.time()),
+            "email_verified": True,
+        }
+        db["users"][email] = new_user
+        return new_user
+    except Exception as e:
+        import logging
+        logging.getLogger("auth").error(f"get_or_create_social_user failed: {e}")
+        return {"user_id": str(uuid.uuid4()), "email": email, "name": name,
+                "picture": picture, "provider": provider, "plan": "free", "credits": 20}
+
+
+
 # ENV VARIABLES
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")

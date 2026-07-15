@@ -44,6 +44,25 @@ log = logging.getLogger("research_engine")
 # ══════════════════════════════════════════════════════════════════════
 
 GNEWS_API_KEY   = os.getenv("GNEWS_API_KEY", "")
+
+# GNews rate limit tracker — 100 requests/day free tier
+import threading as _threading
+_gnews_lock = _threading.Lock()
+_gnews_calls = {"count": 0, "reset_time": 0}
+
+def _gnews_rate_check() -> bool:
+    """Returns True if GNews call is allowed."""
+    import time
+    with _gnews_lock:
+        now = time.time()
+        if now > _gnews_calls["reset_time"]:
+            _gnews_calls["count"] = 0
+            _gnews_calls["reset_time"] = now + 86400  # reset daily
+        if _gnews_calls["count"] >= 80:  # leave 20 buffer
+            log.warning("GNews daily limit approaching — skipping")
+            return False
+        _gnews_calls["count"] += 1
+        return True
 NVIDIA_API_KEY  = os.getenv("NVIDIA_API_KEY", "")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 
@@ -152,6 +171,9 @@ def fetch_news(
     """
     if not GNEWS_API_KEY:
         log.warning("GNEWS_API_KEY not set — skipping news fetch")
+        return []
+    if not _gnews_rate_check():
+        return []
         return []
 
     if _requests is None:

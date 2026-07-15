@@ -1903,3 +1903,166 @@ async def share_report(request: Request):
     logging.warning(f"[ABUSE REPORT] code={code} reason={reason} ip={reporter_ip}")
     _rc_report.delete(f"share:{code}")
     return {"status": "reported", "message": "Thank you. The file has been removed and will be reviewed."}
+
+# ══════════════════════════════════════════════════════════════════════
+# LINKEDIN OAUTH
+# ══════════════════════════════════════════════════════════════════════
+@app.get("/auth/linkedin")
+async def linkedin_auth():
+    from fastapi.responses import RedirectResponse
+    client_id = os.getenv("LINKEDIN_CLIENT_ID", "")
+    redirect_uri = os.getenv("LINKEDIN_REDIRECT_URI", "https://sociomeeai.com/auth/linkedin/callback")
+    scope = "openid profile email"
+    url = f"https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}&state=sociomee"
+    return RedirectResponse(url)
+
+@app.get("/auth/linkedin/callback")
+async def linkedin_callback(code: str = None, error: str = None):
+    from fastapi.responses import RedirectResponse
+    import requests as _req
+    if error or not code:
+        return RedirectResponse("https://sociomeeai.com/login?error=linkedin_cancelled")
+    client_id = os.getenv("LINKEDIN_CLIENT_ID", "")
+    client_secret = os.getenv("LINKEDIN_CLIENT_SECRET", "")
+    redirect_uri = os.getenv("LINKEDIN_REDIRECT_URI", "https://sociomeeai.com/auth/linkedin/callback")
+    try:
+        token_resp = _req.post("https://www.linkedin.com/oauth/v2/accessToken", data={
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": redirect_uri,
+            "client_id": client_id,
+            "client_secret": client_secret,
+        }, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=15)
+        token_data = token_resp.json()
+        access_token = token_data.get("access_token", "")
+        if not access_token:
+            return RedirectResponse("https://sociomeeai.com/login?error=linkedin_token_failed")
+        user_resp = _req.get("https://api.linkedin.com/v2/userinfo",
+            headers={"Authorization": f"Bearer {access_token}"}, timeout=15)
+        user_data = user_resp.json()
+        email = user_data.get("email", "")
+        name = user_data.get("name", "")
+        sub = user_data.get("sub", "")
+        picture = user_data.get("picture", "")
+        if not email:
+            return RedirectResponse("https://sociomeeai.com/login?error=linkedin_no_email")
+        from auth_routes import get_or_create_social_user
+        user = get_or_create_social_user(
+            provider="linkedin", provider_id=sub,
+            email=email, name=name, picture=picture
+        )
+        jwt_token = create_access_token({"sub": user["user_id"], "email": email})
+        return RedirectResponse(f"https://sociomeeai.com/auth/social-callback?token={jwt_token}&provider=linkedin")
+    except Exception as e:
+        import logging
+        logging.getLogger("sociomee").error(f"LinkedIn OAuth error: {e}")
+        return RedirectResponse("https://sociomeeai.com/login?error=linkedin_failed")
+
+# ══════════════════════════════════════════════════════════════════════
+# MICROSOFT OAUTH
+# ══════════════════════════════════════════════════════════════════════
+@app.get("/auth/microsoft")
+async def microsoft_auth():
+    from fastapi.responses import RedirectResponse
+    client_id = os.getenv("MICROSOFT_CLIENT_ID", "")
+    tenant_id = os.getenv("MICROSOFT_TENANT_ID", "common")
+    redirect_uri = os.getenv("MICROSOFT_REDIRECT_URI", "https://sociomeeai.com/auth/microsoft/callback")
+    scope = "openid profile email User.Read"
+    url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/authorize?client_id={client_id}&response_type=code&redirect_uri={redirect_uri}&scope={scope}&state=sociomee"
+    return RedirectResponse(url)
+
+@app.get("/auth/microsoft/callback")
+async def microsoft_callback(code: str = None, error: str = None):
+    from fastapi.responses import RedirectResponse
+    import requests as _req
+    if error or not code:
+        return RedirectResponse("https://sociomeeai.com/login?error=microsoft_cancelled")
+    client_id = os.getenv("MICROSOFT_CLIENT_ID", "")
+    client_secret = os.getenv("MICROSOFT_CLIENT_SECRET", "")
+    tenant_id = os.getenv("MICROSOFT_TENANT_ID", "common")
+    redirect_uri = os.getenv("MICROSOFT_REDIRECT_URI", "https://sociomeeai.com/auth/microsoft/callback")
+    try:
+        token_resp = _req.post(
+            f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
+            data={
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": redirect_uri,
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "scope": "openid profile email User.Read",
+            }, timeout=15)
+        token_data = token_resp.json()
+        access_token = token_data.get("access_token", "")
+        if not access_token:
+            return RedirectResponse("https://sociomeeai.com/login?error=microsoft_token_failed")
+        user_resp = _req.get("https://graph.microsoft.com/v1.0/me",
+            headers={"Authorization": f"Bearer {access_token}"}, timeout=15)
+        user_data = user_resp.json()
+        email = user_data.get("mail") or user_data.get("userPrincipalName", "")
+        name = user_data.get("displayName", "")
+        sub = user_data.get("id", "")
+        if not email:
+            return RedirectResponse("https://sociomeeai.com/login?error=microsoft_no_email")
+        from auth_routes import get_or_create_social_user
+        user = get_or_create_social_user(
+            provider="microsoft", provider_id=sub,
+            email=email, name=name, picture=""
+        )
+        jwt_token = create_access_token({"sub": user["user_id"], "email": email})
+        return RedirectResponse(f"https://sociomeeai.com/auth/social-callback?token={jwt_token}&provider=microsoft")
+    except Exception as e:
+        import logging
+        logging.getLogger("sociomee").error(f"Microsoft OAuth error: {e}")
+        return RedirectResponse("https://sociomeeai.com/login?error=microsoft_failed")
+
+# ══════════════════════════════════════════════════════════════════════
+# PINTEREST OAUTH LOGIN
+# ══════════════════════════════════════════════════════════════════════
+@app.get("/auth/pinterest/login")
+async def pinterest_login():
+    from fastapi.responses import RedirectResponse
+    app_id = os.getenv("PINTEREST_LOGIN_APP_ID", "")
+    redirect_uri = os.getenv("PINTEREST_LOGIN_REDIRECT_URI", "https://sociomeeai.com/auth/pinterest/callback")
+    scope = "user_accounts:read"
+    url = f"https://www.pinterest.com/oauth/?client_id={app_id}&redirect_uri={redirect_uri}&response_type=code&scope={scope}&state=sociomee_login"
+    return RedirectResponse(url)
+
+@app.get("/auth/pinterest/callback")
+async def pinterest_callback(code: str = None, error: str = None, state: str = None):
+    from fastapi.responses import RedirectResponse
+    import requests as _req
+    if error or not code:
+        return RedirectResponse("https://sociomeeai.com/login?error=pinterest_cancelled")
+    app_id = os.getenv("PINTEREST_LOGIN_APP_ID", "")
+    app_secret = os.getenv("PINTEREST_LOGIN_APP_SECRET", "")
+    redirect_uri = os.getenv("PINTEREST_LOGIN_REDIRECT_URI", "https://sociomeeai.com/auth/pinterest/callback")
+    try:
+        import base64
+        credentials = base64.b64encode(f"{app_id}:{app_secret}".encode()).decode()
+        token_resp = _req.post("https://api.pinterest.com/v5/oauth/token",
+            data={"grant_type": "authorization_code", "code": code, "redirect_uri": redirect_uri},
+            headers={"Authorization": f"Basic {credentials}", "Content-Type": "application/x-www-form-urlencoded"},
+            timeout=15)
+        token_data = token_resp.json()
+        access_token = token_data.get("access_token", "")
+        if not access_token:
+            return RedirectResponse("https://sociomeeai.com/login?error=pinterest_token_failed")
+        user_resp = _req.get("https://api.pinterest.com/v5/user_account",
+            headers={"Authorization": f"Bearer {access_token}"}, timeout=15)
+        user_data = user_resp.json()
+        username = user_data.get("username", "")
+        name = user_data.get("business_name") or username
+        email = f"{username}@pinterest.sociomee"
+        picture = user_data.get("profile_image", "")
+        from auth_routes import get_or_create_social_user
+        user = get_or_create_social_user(
+            provider="pinterest", provider_id=username,
+            email=email, name=name, picture=picture
+        )
+        jwt_token = create_access_token({"sub": user["user_id"], "email": email})
+        return RedirectResponse(f"https://sociomeeai.com/auth/social-callback?token={jwt_token}&provider=pinterest")
+    except Exception as e:
+        import logging
+        logging.getLogger("sociomee").error(f"Pinterest OAuth error: {e}")
+        return RedirectResponse("https://sociomeeai.com/login?error=pinterest_failed")

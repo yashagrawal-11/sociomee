@@ -156,6 +156,27 @@ def _gemini_generate(prompt: str, max_tokens: int = 8000) -> str:
     """Generate content using Vertex AI Gemini 2.5 Flash - uses $300 GCloud credits."""
     return _vertex_generate(prompt, max_tokens=max_tokens)
 
+# DeepSeek rate limit tracker
+import threading as _ds_lock_mod
+_ds_lock = _ds_lock_mod.Lock()
+_ds_calls = {"minute": [], "day": 0, "day_reset": 0}
+
+def _deepseek_rate_check() -> bool:
+    import time
+    with _ds_lock:
+        now = time.time()
+        _ds_calls["minute"] = [t for t in _ds_calls["minute"] if now - t < 60]
+        if len(_ds_calls["minute"]) >= 10:
+            return False
+        if now > _ds_calls.get("day_reset", 0):
+            _ds_calls["day"] = 0
+            _ds_calls["day_reset"] = now + 86400
+        if _ds_calls["day"] >= 200:
+            return False
+        _ds_calls["minute"].append(now)
+        _ds_calls["day"] += 1
+        return True
+
 def _deepseek_generate(prompt: str, max_tokens: int = 8000, **kwargs) -> str:
     """Use Gemini 2.5 Flash (DeepSeek credits exhausted)."""
     return _gemini_generate(prompt, max_tokens)
