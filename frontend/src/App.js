@@ -819,19 +819,21 @@ function ThumbnailStudio({ keyword, title, isPro, onUpgradeClick, onThumbnailSel
           }
           <input id={`thumb-input-${slot}`} type="file" accept="image/*" style={{ display:"none" }} onChange={e=>handleFile(e.target.files[0],slot)}/>
         </div>
-        {result && (
-          <div style={{ padding:"10px 12px",background:"rgba(0,0,0,0.2)" }}>
+        <div style={{ padding:"10px 12px",background:"rgba(0,0,0,0.2)" }}>
+          {result ? (<>
             <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px" }}>
               <span style={{ fontSize:"11px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px" }}>Score</span>
-              <span style={{ fontWeight:"900",fontSize:"18px",color:result.overall_score>=80?"#22c55e":result.overall_score>=60?"#f59e0b":"#ef4444" }}>{result.overall_score}/100</span>
+              <span style={{ fontWeight:"900",fontSize:"20px",color:result.overall_score>=80?"#22c55e":result.overall_score>=60?"#f59e0b":"#ef4444" }}>{result.overall_score}<span style={{fontSize:"12px",color:"rgba(255,255,255,0.3)"}}>/100</span></span>
             </div>
-            {result.metrics && Object.entries(result.metrics).slice(0,3).map(([k,v])=><ScoreBar key={k} label={k} value={v}/>)}
-            {result.suggestions?.length>0 && <p style={{ fontSize:"11px",color:"rgba(255,255,255,0.4)",marginTop:"6px",lineHeight:1.4 }}>{result.suggestions[0]}</p>}
-            <button onClick={()=>selectThumbnail(slot)} style={{ width:"100%",marginTop:"8px",padding:"8px",borderRadius:"8px",border:`1px solid ${isSelected?"#a78bfa":"rgba(255,255,255,0.15)"}`,background:isSelected?"rgba(124,58,237,0.3)":"rgba(255,255,255,0.05)",color:"#fff",fontWeight:"700",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>
-              {isSelected ? "✓ Selected for Upload" : `Use Thumbnail ${slot}`}
-            </button>
-          </div>
-        )}
+            {result.metrics && Object.entries(result.metrics).slice(0,4).map(([k,v])=><ScoreBar key={k} label={k} value={v}/>)}
+            {result.suggestions?.length>0 && <p style={{ fontSize:"11px",color:"rgba(255,255,255,0.4)",marginTop:"6px",lineHeight:1.4 }}>💡 {result.suggestions[0]}</p>}
+          </>) : (
+            <p style={{ fontSize:"11px",color:"rgba(255,255,255,0.25)",margin:0,textAlign:"center" }}>Click analyze to get AI score</p>
+          )}
+          <button onClick={()=>selectThumbnail(slot)} style={{ width:"100%",marginTop:"8px",padding:"8px",borderRadius:"8px",border:`1px solid ${isSelected?"#a78bfa":"rgba(255,255,255,0.15)"}`,background:isSelected?"rgba(124,58,237,0.3)":"rgba(255,255,255,0.05)",color:"#fff",fontWeight:"700",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>
+            {isSelected ? "✓ Selected for Upload" : `Use Thumbnail ${slot}`}
+          </button>
+        </div>
       </div>
     );
   };

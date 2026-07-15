@@ -164,7 +164,9 @@ def check_content(text: str) -> tuple:
         return True, "", ""
 
     text_lower = text.lower().strip()
-    text_clean = re.sub(r'[^\w\s]', ' ', text_lower)
+    # Normalize symbol substitutions (@ -> a, 0 -> o, 3 -> e, 1 -> i, $ -> s)
+    text_normalized = text_lower.replace('@','a').replace('0','o').replace('3','e').replace('1','i').replace('$','s').replace('!','i').replace('+','t')
+    text_clean = re.sub(r'[^\w\s]', ' ', text_normalized)
 
     # 1. Hard block — always blocked
     for phrase in HARD_BLOCK:
@@ -192,6 +194,26 @@ def check_content(text: str) -> tuple:
 
     return True, "", ""
 
+
+def clean_output(text: str) -> str:
+    """Remove profanity from AI generated output."""
+    if not text:
+        return text
+    import re
+    # Replace common profanity patterns in output
+    replacements = [
+        (r'm[a@]d[e3]rch[o0]d', '***'),
+        (r'bh[e3]nch[o0]d', '***'),
+        (r'ch[u0][t+]iy[a@]', '***'),
+        (r'f+u+c+k+', '***'),
+        (r's+h+i+t+', '***'),
+        (r'b+i+t+c+h+', '***'),
+        (r'c+h+o+d+', '***'),
+        (r'g+a+n+d+u+', '***'),
+    ]
+    for pattern, replacement in replacements:
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    return text
 
 def get_error_ui_message(reason: str, severity: str) -> dict:
     if severity == "hard":
