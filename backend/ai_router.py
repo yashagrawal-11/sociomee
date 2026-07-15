@@ -342,17 +342,10 @@ The hook must:
 - Be 40-60 words max
 Write ONLY the hook text, nothing else."""
             
-            hook_resp = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}",
-                headers={"Content-Type":"application/json"},
-                json={"contents":[{"parts":[{"text":hook_prompt}]}],"generationConfig":{"maxOutputTokens":150,"temperature":0.9,"thinkingConfig":{"thinkingBudget":0}}},
-                timeout=15
-            )
-            hook_data = hook_resp.json()
-            if "candidates" in hook_data:
-                generated_hook = hook_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                if len(generated_hook) > 20:
-                    base_hook = generated_hook
+            generated_hook = _vertex_generate(hook_prompt, max_tokens=150, temperature=0.9)
+            if generated_hook and len(generated_hook.strip()) > 20:
+                from content_filter import clean_output
+                base_hook = clean_output(generated_hook.strip())
         except Exception:
             pass
         
@@ -448,6 +441,9 @@ STRUCTURE — write in this exact order with these labels:
 Write ONLY the script. No meta-commentary, no preamble, no explanation outside the script itself."""
 
         script = _vertex_generate(gemini_prompt, max_tokens=gen_max_tokens, temperature=0.85)
+        if script:
+            from content_filter import clean_output
+            script = clean_output(script)
     except Exception as exc:
         print(f"[PIPELINE-DEBUG] gemini_script FAILED: {exc}", flush=True); errors.append(f"gemini_script: {exc}")
         script = (
