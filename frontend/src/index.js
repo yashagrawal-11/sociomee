@@ -71,6 +71,17 @@ function Router() {
   // Always handle these before auth check
   if (path === "/youtube/callback" || path === "/youtube/callback/") return <YouTubeCallback/>;
   if (path.includes("/auth/callback")) return <AuthCallback/>;
+  if (path.includes("/auth/social-callback")) {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      localStorage.setItem("sociomee_token", token);
+      window.location.replace("/app");
+    } else {
+      window.location.replace("/login?error=social_login_failed");
+    }
+    return null;
+  }
 
   // Wait for auth to resolve
   if (loading) return <SkeletonLoader/>;
