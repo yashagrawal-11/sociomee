@@ -40,10 +40,22 @@ def generate(prompt: str, max_tokens: int = 2000, temperature: float = 0.85, jso
             full_prompt = prompt + "\n\nIMPORTANT: Return ONLY valid JSON. No markdown, no backticks, no explanation. Start with { or [ directly."
         else:
             full_prompt = HUMANIZER_RULES + "\n\n" + prompt
-        config = GenerationConfig(max_output_tokens=max_tokens, temperature=temperature)
+        config = GenerationConfig(
+            max_output_tokens=max_tokens,
+            temperature=temperature,
+        )
+        # Disable thinking tokens to prevent them consuming output budget
+        gen_config_dict = {
+            "max_output_tokens": max_tokens,
+            "temperature": temperature,
+            "thinking_config": {"thinking_budget": 0}
+        }
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            response = _model.generate_content(full_prompt, generation_config=config)
+            try:
+                response = _model.generate_content(full_prompt, generation_config=gen_config_dict)
+            except Exception:
+                response = _model.generate_content(full_prompt, generation_config=config)
         try:
             text = response.text.strip() if response.text else ""
             return text

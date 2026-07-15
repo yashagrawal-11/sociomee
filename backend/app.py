@@ -1155,6 +1155,7 @@ Return ONLY valid JSON with no extra text:
             _tone3 = getattr(payload,'tone','informative') or 'informative'
             _lang3 = getattr(payload,'language','english') or 'english'
             _li = generate_linkedin(topic=topic, tone=_tone3, persona=_persona3, language=_lang3)
+            import logging; logging.getLogger("sociomee").warning(f"LinkedIn post result: {repr(_li_post[:100])}")
             _li_post = _li.get("post","")
             _li_tags = _li.get("hashtags",["#linkedin","#professional","#growth","#india","#creator","#business"])
             _variants = [_li_post] if _li_post else []
