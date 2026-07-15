@@ -60,8 +60,8 @@ def generate(prompt: str, max_tokens: int = 2000, temperature: float = 0.85, jso
         err = str(e)
         if "429" in err or "exhausted" in err.lower() or "RESOURCE_EXHAUSTED" in err:
             import time
-            logger.warning("Rate limited, retrying in 30s...")
-            time.sleep(30)
+            logger.warning("Rate limited, retrying in 8s...")
+            time.sleep(8)
             try:
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
@@ -69,8 +69,8 @@ def generate(prompt: str, max_tokens: int = 2000, temperature: float = 0.85, jso
                 return r2.text.strip() if r2.text else ""
             except Exception as e2:
                 if "429" in str(e2) or "exhausted" in str(e2).lower():
-                    logger.warning("Still rate limited, retrying in 60s...")
-                    time.sleep(60)
+                    logger.warning("Still rate limited, retrying in 12s...")
+                    time.sleep(12)
                     try:
                         with warnings.catch_warnings():
                             warnings.simplefilter("ignore")
@@ -150,15 +150,15 @@ ALWAYS DO:
 def generate_instagram(topic: str, tone: str = "casual", persona: str = "default",
                        language: str = "hinglish", niche: str = "general") -> dict:
     """Generate Instagram-optimized content: caption, hashtags, reel hook, CTA."""
-    from persona_profiles import build_persona_prompt_block
-    persona_block = build_persona_prompt_block(persona, tone, language)
+    from persona_profiles import get_tone_modifier
+    tone_hint = get_tone_modifier(tone)
 
     prompt = f"""Generate Instagram content for this topic: "{topic}"
 Niche: {niche}
+Tone: {tone_hint}
+Language: {language}
 
-{persona_block}
-
-Generate the following for Instagram. Instagram is a VISUAL platform — no titles or long descriptions.
+Instagram is a VISUAL platform. No titles or long descriptions.
 
 Return ONLY valid JSON:
 {{
@@ -185,32 +185,18 @@ Return ONLY valid JSON:
 def generate_linkedin(topic: str, tone: str = "informative", persona: str = "default",
                       language: str = "english") -> dict:
     """Generate LinkedIn-optimized professional content."""
-    from persona_profiles import build_persona_prompt_block
-    persona_block = build_persona_prompt_block(persona, tone, "english")
-
-    prompt = f"""Generate LinkedIn content for this topic: "{topic}"
-
-{persona_block}
-
-LinkedIn is a PROFESSIONAL network. Content must feel authentic, insightful, and professional — not salesy or generic.
-
-Return ONLY valid JSON:
-{{
-  "post": "Full LinkedIn post. Start with a bold first line that stops scrolling. Use line breaks between short paragraphs (1-3 lines each). Include a specific insight or story. End with a genuine question. 150-250 words total.",
-  "hashtags": ["5", "relevant", "professional", "hashtags"],
-  "hook_line": "Just the first line of the post — must be scroll-stopping",
-  "post_type": "story|insight|list|question",
-  "engagement_question": "The closing question to drive comments"
-}}"""
-
-    result = generate_json(prompt, max_tokens=2000)
-    if not result:
+    from persona_profiles import get_tone_modifier
+    tone_hint = get_tone_modifier(tone)
+    prompt = f"""Write a LinkedIn post about: "{topic}"
+Tone: {tone_hint}
+Language: {language}
+Rules: First line stops the scroll. Short paragraphs 1-3 lines. 150-220 words. End with a question. Real person voice not marketer.
+Return ONLY valid JSON: {{"post": "full post", "hashtags": ["#tag1","#tag2","#tag3","#tag4","#tag5"]}}"""
+    result = generate_json(prompt, max_tokens=800)
+    if not result or not result.get("post"):
         return {
             "post": f"Here's something important about {topic} that most professionals miss.\n\nThis insight changed how I think about it.\n\nWhat's your take?",
-            "hashtags": ["#linkedin", "#professional", "#growth", "#india", "#business"],
-            "hook_line": f"Here's something important about {topic}",
-            "post_type": "insight",
-            "engagement_question": "What's your experience with this?"
+            "hashtags": ["#linkedin","#professional","#growth","#india","#business"],
         }
     return result
 
