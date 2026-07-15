@@ -36,25 +36,49 @@ def generate(prompt: str, max_tokens: int = 2000, temperature: float = 0.85, jso
         return ""
     try:
         from vertexai.generative_models import GenerationConfig
-        full_prompt = prompt if json_mode else (HUMANIZER_RULES + "\n\n" + prompt)
+        if json_mode:
+            full_prompt = prompt + "\n\nIMPORTANT: Return ONLY valid JSON. No markdown, no backticks, no explanation. Start with { or [ directly."
+        else:
+            full_prompt = HUMANIZER_RULES + "\n\n" + prompt
         config = GenerationConfig(max_output_tokens=max_tokens, temperature=temperature)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             response = _model.generate_content(full_prompt, generation_config=config)
-        # Always return raw text — let caller handle JSON extraction
-        return response.text.strip() if response.text else ""
+        try:
+            text = response.text.strip() if response.text else ""
+            return text
+        except ValueError:
+            try:
+                for candidate in response.candidates:
+                    for part in candidate.content.parts:
+                        if hasattr(part, 'text') and part.text:
+                            return part.text.strip()
+            except Exception:
+                pass
+            return ""
     except Exception as e:
         err = str(e)
-        if "429" in err or "exhausted" in err.lower():
+        if "429" in err or "exhausted" in err.lower() or "RESOURCE_EXHAUSTED" in err:
             import time
-            logger.warning("Rate limited, retrying in 15s...")
-            time.sleep(15)
+            logger.warning("Rate limited, retrying in 30s...")
+            time.sleep(30)
             try:
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
                     r2 = _model.generate_content(full_prompt, generation_config=config)
                 return r2.text.strip() if r2.text else ""
             except Exception as e2:
+                if "429" in str(e2) or "exhausted" in str(e2).lower():
+                    logger.warning("Still rate limited, retrying in 60s...")
+                    time.sleep(60)
+                    try:
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore")
+                            r3 = _model.generate_content(full_prompt, generation_config=config)
+                        return r3.text.strip() if r3.text else ""
+                    except Exception as e3:
+                        logger.error(f"All retries failed: {e3}")
+                        return ""
                 logger.error(f"Retry failed: {e2}")
                 return ""
         logger.error(f"Vertex AI generate failed: {e}")
