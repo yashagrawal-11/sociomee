@@ -147,9 +147,24 @@ def _vertex_generate(prompt: str, max_tokens: int = 8000, temperature: float = 0
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         model = GenerativeModel('gemini-2.5-flash')
-        config = GenerationConfig(max_output_tokens=max_tokens, temperature=temperature)
-        response = model.generate_content(prompt, generation_config=config)
-        return response.text
+        gen_config_dict = {
+            "max_output_tokens": max_tokens,
+            "temperature": temperature,
+            "thinking_config": {"thinking_budget": 0}
+        }
+        try:
+            response = model.generate_content(prompt, generation_config=gen_config_dict)
+        except Exception:
+            config = GenerationConfig(max_output_tokens=max_tokens, temperature=temperature)
+            response = model.generate_content(prompt, generation_config=config)
+        try:
+            return response.text if response.text else ""
+        except ValueError:
+            for candidate in response.candidates:
+                for part in candidate.content.parts:
+                    if hasattr(part, 'text') and part.text:
+                        return part.text.strip()
+            return ""
 
 
 def _gemini_generate(prompt: str, max_tokens: int = 8000) -> str:
