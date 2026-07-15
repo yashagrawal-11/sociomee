@@ -730,68 +730,133 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// THUMBNAIL STUDIO
+// THUMBNAIL STUDIO WITH A/B TESTING
 // ══════════════════════════════════════════════════════════════════════
-function ThumbnailStudio({ keyword, title, isPro, onUpgradeClick }) {
-  const [file,    setFile   ] = useState(null);
-  const [preview, setPreview] = useState("");
-  const [drag,    setDrag   ] = useState(false);
+function ThumbnailStudio({ keyword, title, isPro, onUpgradeClick, onThumbnailSelect }) {
+  const [fileA, setFileA] = useState(null);
+  const [fileB, setFileB] = useState(null);
+  const [previewA, setPreviewA] = useState(null);
+  const [previewB, setPreviewB] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [result,  setResult ] = useState(null);
-  const [err,     setErr    ] = useState("");
+  const [resultA, setResultA] = useState(null);
+  const [resultB, setResultB] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [error, setError] = useState("");
+  const [mode, setMode] = useState("single");
 
-  const handleFile = f => { if(!f||!f.type.startsWith("image/")) return; setFile(f); setPreview(URL.createObjectURL(f)); setResult(null); setErr(""); };
-  const analyze = async () => {
-    if(!file){ setErr("Upload a thumbnail first."); return; }
-    setLoading(true); setErr(""); setResult(null);
-    try {
-      const form = new FormData();
-      form.append("file",file); form.append("keyword",keyword||"general"); form.append("niche",keyword||"general"); form.append("title",title||"");
-      const res = await fetch(`${BASE}/thumbnail/analyze`,{ method:"POST",body:form });
-      if(!res.ok) throw new Error(`Server error ${res.status}`);
-      setResult(await res.json());
-    } catch(e){ setErr(e.message||"Analysis failed."); }
-    finally{ setLoading(false); }
+  const handleFile = (f, slot) => {
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      if (slot === "A") { setFileA(f); setPreviewA(e.target.result); setResultA(null); }
+      else { setFileB(f); setPreviewB(e.target.result); setResultB(null); }
+    };
+    reader.readAsDataURL(f);
+    setSelected(null); setError("");
   };
 
-  if(!isPro) return (
-    <div style={{ marginTop:"24px",borderTop:`1px solid ${C.hairline}`,paddingTop:"24px" }}>
-      <SectionHead icon="🖼️" title="Thumbnail Studio"/>
-      <ProLock label="Thumbnail Studio — Pro feature" onUpgradeClick={onUpgradeClick}>
-        <div style={{ padding:"20px",background:C.glass,borderRadius:"12px",fontSize:"13px",color:C.muted,textAlign:"center" }}>Upload · Analyze · Score your thumbnail</div>
-      </ProLock>
+  const analyzeOne = async (file) => {
+    const token = localStorage.getItem("sociomee_token");
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("title", title || keyword || "");
+    const res = await fetch(`${BASE}/thumbnail/analyze`, { method:"POST", headers:{"Authorization":`Bearer ${token}`}, body:fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Analysis failed");
+    return data;
+  };
+
+  const analyze = async () => {
+    if (mode === "single" && !fileA) return;
+    if (mode === "ab" && (!fileA || !fileB)) return;
+    setLoading(true); setError(""); setResultA(null); setResultB(null);
+    try {
+      if (mode === "single") {
+        const r = await analyzeOne(fileA);
+        setResultA(r);
+      } else {
+        const [rA, rB] = await Promise.all([analyzeOne(fileA), analyzeOne(fileB)]);
+        setResultA(rA); setResultB(rB);
+      }
+    } catch(e) { setError(e.message); }
+    finally { setLoading(false); }
+  };
+
+  const selectThumbnail = (slot) => {
+    setSelected(slot);
+    if (onThumbnailSelect) onThumbnailSelect(slot === "A" ? fileA : fileB);
+  };
+
+  const ScoreBar = ({ label, value }) => (
+    <div style={{ marginBottom:"6px" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", fontSize:"11px", marginBottom:"2px" }}>
+        <span style={{ color:"rgba(255,255,255,0.5)", textTransform:"capitalize" }}>{label.replace(/_/g," ")}</span>
+        <span style={{ color:"#fff", fontWeight:"700" }}>{value}/100</span>
+      </div>
+      <div style={{ height:"3px", background:"rgba(255,255,255,0.08)", borderRadius:"99px" }}>
+        <div style={{ height:"100%", width:`${value}%`, background:value>=80?"#22c55e":value>=60?"#f59e0b":"#ef4444", borderRadius:"99px" }}/>
+      </div>
     </div>
   );
-  const sc = v => v>=75?C.success:v>=50?C.warn:C.danger;
-  return (
-    <div style={{ marginTop:"24px",borderTop:`1px solid ${C.hairline}`,paddingTop:"24px" }}>
-      <SectionHead icon="🖼️" title="Thumbnail Studio"/>
-      <div onDragOver={e=>{e.preventDefault();setDrag(true);}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);handleFile(e.dataTransfer.files[0]);}} style={{ border:`2px dashed ${drag?C.purple:file?C.success:"rgba(124,58,237,0.3)"}`,borderRadius:"14px",padding:"20px",textAlign:"center",background:drag?`${C.purple}14`:C.glass,cursor:"pointer",position:"relative" }}>
-        <input type="file" accept="image/*" style={{ position:"absolute",inset:0,opacity:0,cursor:"pointer",width:"100%",height:"100%" }} onChange={e=>handleFile(e.target.files[0])}/>
-        {file ? <span style={{ color:C.success,fontWeight:"700",fontSize:"13px" }}>✅ {file.name}</span> : <><span style={{ fontSize:"22px" }}>🖼️</span><br/><span style={{ color:C.purple,fontWeight:"700",fontSize:"13px" }}>{drag?"Drop it!":"Click or drag thumbnail"}</span><br/><span style={{ fontSize:"11px",color:C.muted }}>PNG, JPG, WEBP · 16:9</span></>}
-      </div>
-      {preview && <div style={{ background:"#0f0f10",borderRadius:"12px",padding:"10px",marginTop:"10px" }}><img src={preview} alt="preview" style={{ width:"100%",borderRadius:"8px",aspectRatio:"16/9",objectFit:"cover",display:"block" }}/></div>}
-      {err && <div style={{ marginTop:"8px",padding:"8px 12px",background:C.danger+"14",borderRadius:"8px",fontSize:"12.5px",color:C.danger,fontWeight:"600" }}>⚠ {err}</div>}
-      <button onClick={analyze} disabled={loading||!file} style={{ width:"100%",marginTop:"10px",padding:"12px",borderRadius:"12px",border:"none",border:"1.5px solid rgba(124,58,237,0.6)",background:loading||!file?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.15)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading||!file?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading||!file?"none":"0 0 24px rgba(124,58,237,0.5)" }}>{loading?"Analyzing…":"✦ Analyze Thumbnail"}</button>
-      {result && (
-        <div style={{ marginTop:"14px" }}>
-          {result.fit_score!==undefined && (
-            <div style={{ marginBottom:"10px" }}>
-              <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"4px" }}>
-                <span style={{ fontSize:"11px",fontWeight:"800",textTransform:"uppercase",color:C.muted }}>Fit Score</span>
-                <span style={{ fontSize:"12px",fontWeight:"800",padding:"2px 9px",borderRadius:"99px",background:sc(result.fit_score)+"20",color:sc(result.fit_score),border:`1px solid ${sc(result.fit_score)}33` }}>{result.fit_score}/100</span>
+
+  const ThumbCard = ({ slot, preview, result, file }) => {
+    const isSelected = selected === slot;
+    const isWinner = result && resultA && resultB && (
+      slot === "A" ? resultA.overall_score >= resultB.overall_score : resultB.overall_score > resultA.overall_score
+    );
+    return (
+      <div style={{ flex:1, border:`2px solid ${isSelected?"#a78bfa":isWinner&&mode==="ab"?"#22c55e":"rgba(255,255,255,0.08)"}`, borderRadius:"14px", overflow:"hidden", transition:"all 0.2s", position:"relative" }}>
+        {isWinner && mode==="ab" && !isSelected && <div style={{ position:"absolute",top:"8px",left:"8px",zIndex:2,background:"#22c55e",color:"#fff",fontSize:"10px",fontWeight:"900",padding:"3px 8px",borderRadius:"99px" }}>AI PICK</div>}
+        {isSelected && <div style={{ position:"absolute",top:"8px",left:"8px",zIndex:2,background:"#a78bfa",color:"#fff",fontSize:"10px",fontWeight:"900",padding:"3px 8px",borderRadius:"99px" }}>SELECTED</div>}
+        <div style={{ background:"rgba(255,255,255,0.02)",padding:"12px",minHeight:"120px",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer" }}
+          onClick={()=>document.getElementById(`thumb-input-${slot}`).click()}>
+          {preview
+            ? <img src={preview} alt={`Thumbnail ${slot}`} style={{ width:"100%",maxHeight:"140px",objectFit:"cover",borderRadius:"6px" }}/>
+            : <div style={{ textAlign:"center" }}>
+                <div style={{ fontSize:"24px",marginBottom:"4px" }}>🖼️</div>
+                <p style={{ color:"rgba(255,255,255,0.3)",fontSize:"11px",margin:0 }}>Thumbnail {slot}</p>
               </div>
-              <div style={{ height:"6px",borderRadius:"99px",background:"rgba(200,160,220,0.3)",overflow:"hidden" }}><div style={{ height:"100%",width:`${result.fit_score}%`,borderRadius:"99px",background:`linear-gradient(90deg,${sc(result.fit_score)}88,${sc(result.fit_score)})` }}/></div>
-            </div>
-          )}
-          {result.verdict && <div style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:"10px",padding:"10px 14px",fontSize:"13px",fontWeight:"700",color:C.ink,marginBottom:"8px" }}>{/good|great|excellent|strong/i.test(result.verdict)?"✅":"⚠️"} {result.verdict}</div>}
-          {result.suggestions?.map((s,i)=><div key={i} style={{ display:"flex",gap:"8px",fontSize:"12px",color:C.slate,marginBottom:"4px" }}><span style={{ color:C.rose }}>→</span><span>{s}</span></div>)}
+          }
+          <input id={`thumb-input-${slot}`} type="file" accept="image/*" style={{ display:"none" }} onChange={e=>handleFile(e.target.files[0],slot)}/>
         </div>
-      )}
+        {result && (
+          <div style={{ padding:"10px 12px",background:"rgba(0,0,0,0.2)" }}>
+            <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px" }}>
+              <span style={{ fontSize:"11px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px" }}>Score</span>
+              <span style={{ fontWeight:"900",fontSize:"18px",color:result.overall_score>=80?"#22c55e":result.overall_score>=60?"#f59e0b":"#ef4444" }}>{result.overall_score}/100</span>
+            </div>
+            {result.metrics && Object.entries(result.metrics).slice(0,3).map(([k,v])=><ScoreBar key={k} label={k} value={v}/>)}
+            {result.suggestions?.length>0 && <p style={{ fontSize:"11px",color:"rgba(255,255,255,0.4)",marginTop:"6px",lineHeight:1.4 }}>{result.suggestions[0]}</p>}
+            <button onClick={()=>selectThumbnail(slot)} style={{ width:"100%",marginTop:"8px",padding:"8px",borderRadius:"8px",border:`1px solid ${isSelected?"#a78bfa":"rgba(255,255,255,0.15)"}`,background:isSelected?"rgba(124,58,237,0.3)":"rgba(255,255,255,0.05)",color:"#fff",fontWeight:"700",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>
+              {isSelected ? "✓ Selected for Upload" : `Use Thumbnail ${slot}`}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ marginBottom:"24px" }}>
+      <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px" }}>
+        <SectionHead icon="🖼️" title="Thumbnail Studio" copyText={null}/>
+        <div style={{ display:"flex",gap:"6px" }}>
+          <button onClick={()=>{setMode("single");setFileB(null);setPreviewB(null);setResultB(null);}} style={{ padding:"4px 12px",fontSize:"11px",fontWeight:"700",borderRadius:"99px",border:`1px solid ${mode==="single"?"#a78bfa":"rgba(255,255,255,0.1)"}`,background:mode==="single"?"rgba(124,58,237,0.2)":"transparent",color:mode==="single"?"#a78bfa":"rgba(255,255,255,0.4)",cursor:"pointer",fontFamily:"inherit" }}>Single</button>
+          <button onClick={()=>setMode("ab")} style={{ padding:"4px 12px",fontSize:"11px",fontWeight:"700",borderRadius:"99px",border:`1px solid ${mode==="ab"?"#a78bfa":"rgba(255,255,255,0.1)"}`,background:mode==="ab"?"rgba(124,58,237,0.2)":"transparent",color:mode==="ab"?"#a78bfa":"rgba(255,255,255,0.4)",cursor:"pointer",fontFamily:"inherit" }}>A/B Test</button>
+        </div>
+      </div>
+      <div style={{ display:"flex",gap:"12px",marginBottom:"10px" }}>
+        <ThumbCard slot="A" preview={previewA} result={resultA} file={fileA}/>
+        {mode==="ab" && <ThumbCard slot="B" preview={previewB} result={resultB} file={fileB}/>}
+      </div>
+      <button onClick={analyze} disabled={loading||(mode==="single"?!fileA:(!fileA||!fileB))} style={{ width:"100%",padding:"12px",borderRadius:"12px",border:"1.5px solid rgba(124,58,237,0.6)",background:loading?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.15)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:"pointer",fontFamily:"inherit",boxShadow:"0 0 24px rgba(124,58,237,0.3)" }}>
+        {loading ? "Analyzing…" : mode==="ab" ? "✦ Compare A/B Thumbnails" : "✦ Analyze Thumbnail"}
+      </button>
+      {error && <p style={{ color:"rgba(239,68,68,0.8)",fontSize:"13px",marginTop:"8px" }}>{error}</p>}
+      {selected && <p style={{ color:"#22c55e",fontSize:"13px",marginTop:"8px",fontWeight:"700",textAlign:"center" }}>✓ Thumbnail {selected} selected for YouTube upload</p>}
     </div>
   );
 }
-
 // ══════════════════════════════════════════════════════════════════════
 // SCRIPT RENDERER
 // ══════════════════════════════════════════════════════════════════════
