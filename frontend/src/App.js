@@ -770,6 +770,20 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
       )}
     </div>
   );
+  return (
+    <div style={{ marginBottom:"24px" }}>
+      <div style={{ display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"14px" }}>
+        {all.map(p=>{ const pm=meta[p]||{icon:"",color:C.purple}; const isA=active===p; return (
+          <button key={p} onClick={()=>{setActive(p);setSelectedVariant(0);setEditedCaption("");setEditingCaption(false);}} style={{ display:"flex",alignItems:"center",gap:"6px",padding:"5px 13px",borderRadius:"99px",border:`1.5px solid ${isA?pm.color:C.hairline}`,background:isA?pm.color+"18":C.pillBg,color:isA?pm.color:C.muted,fontWeight:"700",fontSize:"11.5px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.14s" }}>
+            {pm.icon && <img src={pm.icon} alt="" style={{width:"14px",height:"14px",objectFit:"contain"}} onError={e=>e.target.style.display="none"}/>}
+            {p.charAt(0).toUpperCase()+p.slice(1)}
+          </button>
+        ); })}
+      </div>
+      {isPro ? content : <ProLock label="Full platform SEO packs — Pro feature" onUpgradeClick={onUpgradeClick}>{content}</ProLock>}
+    </div>
+  );
+}
 
 // ══════════════════════════════════════════════════════════════════════
 // THUMBNAIL STUDIO WITH A/B TESTING
