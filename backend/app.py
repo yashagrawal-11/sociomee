@@ -2040,3 +2040,32 @@ async def pinterest_callback(code: str = None, error: str = None, state: str = N
         import logging
         logging.getLogger("sociomee").error(f"Pinterest OAuth error: {e}")
         return RedirectResponse("https://sociomeeai.com/login?error=pinterest_failed")
+
+# ══════════════════════════════════════════════════════════════════════
+# DEVICE FINGERPRINT ENDPOINT
+# ══════════════════════════════════════════════════════════════════════
+@app.post("/auth/fingerprint")
+async def register_fingerprint(request: Request, user=Depends(get_current_user)):
+    try:
+        from device_fingerprint import make_fingerprint, check_fingerprint, reduce_credits_for_suspicious
+        from credits_manager import get_credit_status
+        body = await request.json()
+        uid = user.get("user_id","") if isinstance(user,dict) else str(user)
+        email = user.get("email","") if isinstance(user,dict) else ""
+        client_ip = request.headers.get("CF-Connecting-IP") or request.headers.get("X-Forwarded-For","").split(",")[0] or request.client.host
+        fp = make_fingerprint(
+            ip=client_ip,
+            user_agent=body.get("ua",""),
+            screen=body.get("screen",""),
+            timezone=body.get("timezone",""),
+            language=body.get("language",""),
+            canvas=body.get("canvas",""),
+            platform=body.get("platform",""),
+        )
+        result = check_fingerprint(fp, uid, email)
+        if not result["allowed"]:
+            import logging
+            logging.getLogger("sociomee").warning(f"Blocked device: user={uid} fp={fp} score={result['abuse_score']}")
+        return {"fingerprint": fp[:8]+"...", "abuse_score": result["abuse_score"], "allowed": result["allowed"]}
+    except Exception as e:
+        return {"ok": True}
