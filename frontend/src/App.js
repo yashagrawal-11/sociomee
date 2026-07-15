@@ -684,20 +684,76 @@ function TitlePicker({ titlesWithScore=[], bestTitle="", isPro, onUpgradeClick, 
 // ══════════════════════════════════════════════════════════════════════
 // PLATFORM SEO TABS
 // ══════════════════════════════════════════════════════════════════════
-function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgradeClick }) {
+function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgradeClick, result }) {
   const all = Object.keys(seoPacks).filter(k=>seoPacks[k]&&Object.keys(seoPacks[k]).length>0);
   const [active, setActive] = useState(all.includes(defaultPlatform)?defaultPlatform:all[0]||"youtube");
+  const [selectedVariant, setSelectedVariant] = useState(0);
+  const [editedCaption, setEditedCaption] = useState("");
+  const [editingCaption, setEditingCaption] = useState(false);
   if (!all.length) return null;
   const meta = { youtube:{icon:"/icons/youtube.png",color:"#ff0000"},instagram:{icon:"/icons/instagram.png",color:"#e1306c"},tiktok:{icon:"/icons/tiktok.png",color:"#010101"},x:{icon:"/icons/x.png",color:"#ffffff"},facebook:{icon:"/icons/facebook.png",color:"#1877f2"},threads:{icon:"/icons/threads.png",color:"#ffffff"},pinterest:{icon:"/icons/pinterest.png",color:"#e60023"},telegram:{icon:"/icons/telegram.png",color:"#2aabee"},linkedin:{icon:"/icons/linkedin.png",color:"#0077b5"},reddit:{icon:"/icons/reddit.png",color:"#ff4500"},quora:{icon:"/icons/quora.png",color:"#b92b27"} };
   const pack = seoPacks[active]||{};
+  const variants = (active==="linkedin" && result?.post_variants?.length>1) ? result.post_variants : null;
+  const baseCaption = variants ? variants[selectedVariant] : (pack.description||pack.caption||pack.post||"");
+  const displayCaption = editedCaption || baseCaption;
   const content = (
     <div style={{ display:"flex",flexDirection:"column",gap:"12px" }}>
-      {(pack.description||pack.caption||pack.post) && active!=="youtube" && (
-        <div>
-          <SectionHead icon="📝" title={active==="youtube"?"Description":"Caption"} copyText={pack.description||pack.caption||pack.post}/>
-          <div className="dark-scroll" style={{ background:C.glass,borderRadius:"12px",padding:"14px 16px",fontSize:"13px",lineHeight:1.7,whiteSpace:"pre-wrap",color:C.ink,border:`1px solid ${C.hairline}`,maxHeight:"200px",overflowY:"auto" }}>{pack.description||pack.caption||pack.post}</div>
+      {variants && (
+        <div style={{ display:"flex",gap:"6px",marginBottom:"4px" }}>
+          {variants.map((v,i)=>(
+            <button key={i} onClick={()=>{setSelectedVariant(i);setEditedCaption("");}} style={{ padding:"4px 12px",fontSize:"11px",fontWeight:"700",borderRadius:"99px",border:`1px solid ${selectedVariant===i?"#a78bfa":"rgba(255,255,255,0.1)"}`,background:selectedVariant===i?"rgba(124,58,237,0.2)":"transparent",color:selectedVariant===i?"#a78bfa":"rgba(255,255,255,0.4)",cursor:"pointer",fontFamily:"inherit" }}>
+              Version {i+1}
+            </button>
+          ))}
         </div>
       )}
+      {(pack.description||pack.caption||pack.post) && active!=="youtube" && (
+        <div>
+          <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px" }}>
+            <SectionHead icon="📝" title={active==="youtube"?"Description":"Caption"} copyText={displayCaption}/>
+            <button onClick={()=>setEditingCaption(!editingCaption)} style={{ padding:"3px 9px",fontSize:"11px",fontWeight:"700",borderRadius:"7px",border:`1px solid ${editingCaption?"#a78bfa":C.hairline}`,background:editingCaption?"rgba(124,58,237,0.2)":C.glass,color:editingCaption?"#a78bfa":C.muted,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"3px",flexShrink:0 }}>
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              {editingCaption?"Done":"Edit"}
+            </button>
+          </div>
+          {editingCaption ? (
+            <textarea value={editedCaption||baseCaption} onChange={e=>setEditedCaption(e.target.value)} autoFocus
+              style={{ width:"100%",minHeight:"160px",background:C.glass,border:`1.5px solid rgba(124,58,237,0.5)`,borderRadius:"12px",padding:"12px 14px",fontSize:"13px",lineHeight:1.7,color:C.ink,fontFamily:"inherit",resize:"vertical",outline:"none",boxSizing:"border-box" }}/>
+          ) : (
+            <div className="dark-scroll" style={{ background:C.glass,borderRadius:"12px",padding:"14px 16px",fontSize:"13px",lineHeight:1.7,whiteSpace:"pre-wrap",color:C.ink,border:`1px solid ${C.hairline}`,maxHeight:"200px",overflowY:"auto" }}>{displayCaption}</div>
+          )}
+        </div>
+      )}
+      {active==="youtube"&&pack.timestamps?.length>0 && (
+        <div>
+          <SectionHead icon="⏱️" title="Timestamps" copyText={pack.timestamps.join("\n")}/>
+          <div style={{ background:C.glass,borderRadius:"10px",padding:"10px 14px",border:`1px solid ${C.hairline}` }}>
+            {pack.timestamps.map((t,i)=><div key={i} style={{ fontSize:"13px",color:C.ink,padding:"2px 0",borderBottom:i<pack.timestamps.length-1?`1px solid ${C.hairline}`:"none" }}>{t}</div>)}
+          </div>
+        </div>
+      )}
+      {pack.hashtags?.length>0 && (
+        <div>
+          <SectionHead icon="🏷️" title="Hashtags" copyText={pack.hashtags.join(" ")}/>
+          <div style={{ display:"flex",flexWrap:"wrap" }}>{pack.hashtags.map((h,i)=><Pill key={i} color={C.rose}>{h}</Pill>)}</div>
+        </div>
+      )}
+    </div>
+  );
+  return (
+    <div style={{ marginBottom:"24px" }}>
+      <div style={{ display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"14px" }}>
+        {all.map(p=>{ const pm=meta[p]||{icon:"",color:C.purple}; const isA=active===p; return (
+          <button key={p} onClick={()=>{setActive(p);setSelectedVariant(0);setEditedCaption("");setEditingCaption(false);}} style={{ display:"flex",alignItems:"center",gap:"6px",padding:"5px 13px",borderRadius:"99px",border:`1.5px solid ${isA?pm.color:C.hairline}`,background:isA?pm.color+"18":C.pillBg,color:isA?pm.color:C.muted,fontWeight:"700",fontSize:"11.5px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.14s" }}>
+            {pm.icon && <img src={pm.icon} alt="" style={{width:"14px",height:"14px",objectFit:"contain"}} onError={e=>e.target.style.display="none"}/>}
+            {p.charAt(0).toUpperCase()+p.slice(1)}
+          </button>
+        ); })}
+      </div>
+      {isPro ? content : <ProLock label="Full platform SEO packs — Pro feature" onUpgradeClick={onUpgradeClick}>{content}</ProLock>}
+    </div>
+  );
+}
       {active==="youtube"&&pack.timestamps?.length>0 && (
         <div>
           <SectionHead icon="⏱️" title="Timestamps" copyText={pack.timestamps.join("\n")}/>
@@ -1373,7 +1429,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
         </div>
       )}
 
-      {Object.keys(seoPacks).length>0&&<><PlatformSEOTabs seoPacks={seoPacks} defaultPlatform={platform} isPro={isPro} onUpgradeClick={onUpgradeClick}/><Divider/></>}
+      {Object.keys(seoPacks).length>0&&<><PlatformSEOTabs seoPacks={seoPacks} defaultPlatform={platform} isPro={isPro} onUpgradeClick={onUpgradeClick} result={result}/><Divider/></>}
 
       {sections.length>0&&(
         <div style={{ marginBottom:"22px" }}>

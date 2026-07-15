@@ -1150,53 +1150,26 @@ Return ONLY valid JSON with no extra text:
                 "hashtags": [],
             }}
         elif p == "linkedin":
-            import requests as _req3
-            _gemini_key3 = __import__('os').getenv('GOOGLE_API_KEY','')
-            _persona3 = getattr(payload,'personality','default') or 'default'
+            from vertex_engine import generate_linkedin, generate_json as _gj
+            _persona3 = payload.effective_persona()
             _tone3 = getattr(payload,'tone','informative') or 'informative'
             _lang3 = getattr(payload,'language','english') or 'english'
-            _li_prompt = f"""Write a LinkedIn post about: {topic}
-Persona/Voice: {_persona3}
-Tone: {_tone3}
-Language: {_lang3}
-
-Write a LinkedIn post that gets saves and comments from professionals.
-
-Rules:
-- Opening line must stop the scroll — bold claim, surprising stat, or strong opinion
-- Write in short punchy paragraphs (1-3 lines each) with line breaks between them
-- Share a genuine professional insight, not generic motivational fluff
-- Be specific — vague posts get ignored on LinkedIn
-- 150-220 words total
-- End with a genuine question or soft CTA that invites discussion
-- NO phrases like "Most professionals overcomplicate X" or "Here is what most people miss"
-- NO generic "1. Clarity 2. Basics 3. Consistency" structure
-- Sound like a founder or creator who has real skin in the game
-
-Return ONLY valid JSON:
-{{"post": "...", "hashtags": ["tag1","tag2","tag3","tag4","tag5"]}}"""
+            _li = generate_linkedin(topic=topic, tone=_tone3, persona=_persona3, language=_lang3)
+            _li_post = _li.get("post","")
+            _li_tags = _li.get("hashtags",["#linkedin","#professional","#growth","#india","#creator","#business"])
+            _variants = [_li_post] if _li_post else []
             try:
-                _r3 = _req3.post(
-                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{_gemini_key3}}",
-                    headers={{"Content-Type":"application/json"}},
-                    json={{"contents":[{{"parts":[{{"text":_li_prompt}}]}}],"generationConfig":{{"maxOutputTokens":500,"temperature":0.9,"thinkingConfig":{{"thinkingBudget":0}}}}}},
-                    timeout=30
-                )
-                _rd3 = _r3.json()
-                _rt3 = _rd3["candidates"][0]["content"]["parts"][0]["text"].strip()
-                _rt3 = _rt3.replace("```json","").replace("```","").strip()
-                _rj3 = __import__('json').loads(_rt3)
-                _li_post = _rj3.get("post","")
-                _li_tags = _rj3.get("hashtags",["#linkedin","#professional","#growth","#india","#creator"])
-            except Exception as _le:
-                _li_post = f"Been thinking about {topic} lately. There is more to it than most people share publicly."
-                _li_tags = ["#linkedin","#professional","#growth","#india","#creator","#business"]
+                _v2 = _gj(f"Write a different angle LinkedIn post about: {topic}. Tone: {_tone3}. Return ONLY JSON: {{\"post\": \"150-220 word post\"}}", max_tokens=600)
+                if _v2 and _v2.get("post"): _variants.append(_v2["post"])
+                _v3 = _gj(f"Write a third format LinkedIn post about: {topic}. Use a list or story format. Return ONLY JSON: {{\"post\": \"150-220 word post\"}}", max_tokens=600)
+                if _v3 and _v3.get("post"): _variants.append(_v3["post"])
+            except Exception: pass
             result = {
-                "platform": "linkedin",
-                "topic": topic,
-                "caption": _li_post,
-                "post": _li_post,
+                "platform": "linkedin", "topic": topic,
+                "caption": _li_post, "post": _li_post,
+                "post_variants": _variants,
                 "hashtags": _li_tags,
+                "seo_packs": {"linkedin": {"caption": _li_post, "description": _li_post, "hashtags": _li_tags}},
             }
         else: raise HTTPException(400, f"Unknown platform: {p}")
     except HTTPException: raise
