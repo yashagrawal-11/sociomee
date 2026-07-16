@@ -602,6 +602,7 @@ from datetime import datetime, timezone
 from pathlib import Path as _Path
 import json as _json
 from pydantic import BaseModel as _BaseModel
+from limiter_shared import limiter
 
 log = logging.getLogger("threads_schedule")
 _SCHED_FILE = _Path(__file__).parent / "data" / "threads_scheduled.json"
@@ -693,7 +694,8 @@ class ThreadsSchedulePayload(_BaseModel):
     scheduled_at: str
 
 @router.post("/schedule")
-def threads_schedule_post(payload: ThreadsSchedulePayload):
+@limiter.limit("10/minute")
+def threads_schedule_post(request: Request, payload: ThreadsSchedulePayload):
     if not payload.text.strip():
         raise HTTPException(400, "text required")
     if len(payload.text) > 500:

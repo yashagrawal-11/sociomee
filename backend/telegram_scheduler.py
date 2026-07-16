@@ -9,7 +9,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import requests
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile, Request
+from limiter_shared import limiter
 from fastapi.responses import JSONResponse
 
 log = logging.getLogger("telegram_scheduler")
@@ -256,7 +257,9 @@ async def cancel_job(job_id: str, user_id: str):
     return {"success": True}
 
 @router.post("/send")
+@limiter.limit("10/minute")
 async def schedule_send(
+    request: Request,
     user_id:       str          = Form(...),
     text:          str          = Form(default=""),
     caption:       str          = Form(default=""),

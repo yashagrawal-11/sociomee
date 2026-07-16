@@ -5,9 +5,10 @@ from __future__ import annotations
 import json, logging, os, requests, threading, httpx
 from datetime import datetime, timezone
 from pathlib import Path
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
+from limiter_shared import limiter
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -334,7 +335,8 @@ class BotSchedulePayload(BaseModel):
 
 
 @router.post("/bot-schedule")
-def discord_bot_schedule(payload: BotSchedulePayload):
+@limiter.limit("10/minute")
+def discord_bot_schedule(request: Request, payload: BotSchedulePayload):
     if not payload.content.strip() and not payload.image_url.strip():
         raise HTTPException(400, "content or image_url required")
     try:

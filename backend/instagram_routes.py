@@ -775,6 +775,7 @@ from datetime import datetime, timezone
 from pathlib import Path as _Path
 import json as _json
 from pydantic import BaseModel as _BaseModel
+from limiter_shared import limiter
 
 log = logging.getLogger("instagram_schedule")
 _SCHED_FILE = _Path(__file__).parent / "data" / "instagram_scheduled.json"
@@ -867,7 +868,8 @@ class InstagramSchedulePayload(_BaseModel):
     scheduled_at: str
 
 @router.post("/schedule")
-def instagram_schedule_post(payload: InstagramSchedulePayload):
+@limiter.limit("10/minute")
+def instagram_schedule_post(request: Request, payload: InstagramSchedulePayload):
     if not payload.caption.strip():
         raise HTTPException(400, "caption required")
     if not payload.image_url.strip():
