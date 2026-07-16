@@ -646,8 +646,7 @@ function ThreadsScheduleTab({ userId }) {
   const C = getC();
   const BASE = "https://sociomeeai.com/api";
   const [text, setText] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [when, setWhen] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
@@ -662,9 +661,9 @@ function ThreadsScheduleTab({ userId }) {
   useEffect(() => { loadJobs(); const iv = setInterval(loadJobs, 15000); return () => clearInterval(iv); }, [userId]);
 
   const schedule = () => {
-    if (!text.trim() || !date || !time) return;
+    if (!text.trim() || !when) return;
     setLoading(true);
-    const scheduled_at = new Date(`${date}T${time}`).toISOString();
+    const scheduled_at = when.toISOString();
     fetch(`${BASE}/threads/schedule`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_id: userId, text, scheduled_at }),
@@ -672,7 +671,7 @@ function ThreadsScheduleTab({ userId }) {
       .then(r => r.json())
       .then(d => {
         setLoading(false);
-        if (d.ok) { setMsg("Scheduled!"); setText(""); setDate(""); setTime(""); loadJobs(); setTimeout(() => setMsg(""), 3000); }
+        if (d.ok) { setMsg("Scheduled!"); setText(""); setWhen(null); loadJobs(); setTimeout(() => setMsg(""), 3000); }
         else setMsg("Error: " + (d.detail || "unknown"));
       })
       .catch(() => { setLoading(false); setMsg("Network error"); });
@@ -685,13 +684,14 @@ function ThreadsScheduleTab({ userId }) {
       <div style={{ background: C.glass, border: `1.5px solid ${C.hairline}`, borderRadius: 14, padding: 16, marginBottom: 16 }}>
         <textarea value={text} onChange={e => setText(e.target.value)} placeholder="Write your Threads post... (max 500 chars)" maxLength={500}
           style={{ width: "100%", minHeight: 100, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${C.hairline}`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 13, fontFamily: "inherit", outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10 }} />
-        <div style={{ display: "flex", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="sociomee-dt-input" style={{ flex: 1, minWidth: 140, padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${C.hairline}`, background: "rgba(20,20,24,0.9)", color: C.ink, fontSize: 13, fontFamily: "inherit", colorScheme: "dark" }} />
-          <input type="time" value={time} onChange={e => setTime(e.target.value)} className="sociomee-dt-input" style={{ flex: 1, minWidth: 120, padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${C.hairline}`, background: "rgba(20,20,24,0.9)", color: C.ink, fontSize: 13, fontFamily: "inherit", colorScheme: "dark" }} />
-          <style>{`.sociomee-dt-input::-webkit-calendar-picker-indicator{filter:invert(1) brightness(1.5);cursor:pointer;opacity:0.8}.sociomee-dt-input::-webkit-calendar-picker-indicator:hover{opacity:1}`}</style>
+        <div style={{ marginBottom: 12 }}>
+          <ThreadsMiniCalendar value={when} onChange={setWhen} />
         </div>
-        <button onClick={schedule} disabled={loading || !text.trim() || !date || !time}
-          style={{ width: "100%", padding: 12, borderRadius: 99, border: "none", background: (loading || !text.trim() || !date || !time) ? "rgba(255,255,255,0.08)" : C.purple, color: "#fff", fontWeight: 800, fontSize: 13, cursor: (loading || !text.trim() || !date || !time) ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+        <div style={{ marginBottom: 12 }}>
+          <ThreadsTimePicker value={when} onChange={setWhen} />
+        </div>
+        <button onClick={schedule} disabled={loading || !text.trim() || !when}
+          style={{ width: "100%", padding: 12, borderRadius: 99, border: "none", background: (loading || !text.trim() || !when) ? "rgba(255,255,255,0.08)" : C.purple, color: "#fff", fontWeight: 800, fontSize: 13, cursor: (loading || !text.trim() || !when) ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
           {loading ? "Scheduling…" : "Schedule Post"}
         </button>
         {msg && <div style={{ marginTop: 8, fontSize: 12, color: msg.startsWith("Error") ? C.rose : C.success, fontWeight: 600 }}>{msg}</div>}
@@ -714,5 +714,84 @@ function ThreadsScheduleTab({ userId }) {
         </div>
       )}
     </Section>
+  );
+}
+
+function ThreadsMiniCalendar({ value, onChange }) {
+  const C = getC();
+  const today = new Date();
+  const [viewDate, setViewDate] = useState(value || today);
+  const year  = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay   = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthName  = viewDate.toLocaleString("default", { month: "long" });
+  const isPast = (d) => {
+    const cmp = new Date(year, month, d); cmp.setHours(23,59,59,999);
+    return cmp < new Date();
+  };
+  const isSelected = (d) => value && value.getFullYear()===year && value.getMonth()===month && value.getDate()===d;
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  return (
+    <div style={{ background:C.glass, border:`1.5px solid ${C.hairline}`, borderRadius:14, padding:16 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+        <button type="button" onClick={() => setViewDate(new Date(year, month - 1, 1))}
+          style={{ background:"transparent", border:"none", color:C.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>‹</button>
+        <span style={{ fontSize:13, fontWeight:700, color:C.ink }}>{monthName} {year}</span>
+        <button type="button" onClick={() => setViewDate(new Date(year, month + 1, 1))}
+          style={{ background:"transparent", border:"none", color:C.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>›</button>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginBottom:6 }}>
+        {["S","M","T","W","T","F","S"].map((d,i) => (
+          <div key={i} style={{ textAlign:"center", fontSize:10, fontWeight:700, color:C.muted, padding:"4px 0" }}>{d}</div>
+        ))}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4 }}>
+        {cells.map((d, i) => d === null ? <div key={i} /> : (
+          <button key={i} type="button" disabled={isPast(d)}
+            onClick={() => onChange(new Date(year, month, d, value?.getHours()??12, value?.getMinutes()??0))}
+            style={{
+              aspectRatio:"1", borderRadius:8, border:"none", fontSize:12, fontFamily:"inherit",
+              cursor:isPast(d) ? "not-allowed" : "pointer",
+              background:isSelected(d) ? C.purple : "transparent",
+              color:isPast(d) ? C.muted : (isSelected(d) ? "#fff" : C.ink),
+              fontWeight:isSelected(d) ? 700 : 500,
+              opacity:isPast(d) ? 0.35 : 1,
+            }}>{d}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ThreadsTimePicker({ value, onChange }) {
+  const C = getC();
+  const h24 = value ? value.getHours() : 12;
+  const m   = value ? value.getMinutes() : 0;
+  const h12 = ((h24 % 12) || 12);
+  const ampm = h24 >= 12 ? "PM" : "AM";
+  const setTime = (newH12, newM, newAmpm) => {
+    let h = newH12 % 12;
+    if (newAmpm === "PM") h += 12;
+    const base = value || new Date();
+    onChange(new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, newM));
+  };
+  const selStyle = { padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none" };
+  return (
+    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+      <select value={h12} onChange={e => setTime(Number(e.target.value), m, ampm)} style={selStyle}>
+        {[...Array(12)].map((_,i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+      </select>
+      <span style={{ color:C.muted }}>:</span>
+      <select value={m} onChange={e => setTime(h12, Number(e.target.value), ampm)} style={selStyle}>
+        {[0,15,30,45].map(mm => <option key={mm} value={mm}>{String(mm).padStart(2,"0")}</option>)}
+      </select>
+      <select value={ampm} onChange={e => setTime(h12, m, e.target.value)} style={selStyle}>
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+    </div>
   );
 }
