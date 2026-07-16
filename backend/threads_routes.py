@@ -7,7 +7,7 @@ Storage: JSON files (same pattern as youtube_routes.py)
 import os, json, random, math, httpx
 from datetime import datetime, timedelta
 from pathlib import Path
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Query
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 
@@ -594,3 +594,127 @@ async def delete_data():
 @router.get("/delete")
 async def delete_data_get():
     return {"success": True}
+
+
+# ── SCHEDULING ──────────────────────────────────────────────────────
+import threading, logging
+from datetime import datetime, timezone
+from pathlib import Path as _Path
+import json as _json
+from pydantic import BaseModel as _BaseModel
+
+log = logging.getLogger("threads_schedule")
+_SCHED_FILE = _Path(__file__).parent / "data" / "threads_scheduled.json"
+_SCHED_FILE.parent.mkdir(exist_ok=True)
+
+def _load_sched():
+    if _SCHED_FILE.exists():
+        try: return _json.loads(_SCHED_FILE.read_text())
+        except: return {}
+    return {}
+
+def _save_sched(d):
+    _SCHED_FILE.write_text(_json.dumps(d, indent=2))
+
+def _new_sched_job(job):
+    import secrets
+    jid = secrets.token_hex(8)
+    jobs = _load_sched()
+    jobs[jid] = job
+    _save_sched(jobs)
+    return jid
+
+def _update_sched_job(jid, **kw):
+    jobs = _load_sched()
+    if jid in jobs:
+        jobs[jid].update(kw)
+        _save_sched(jobs)
+
+def _threads_job_worker(jid, user_id, text):
+    try:
+        _update_sched_job(jid, status="sending")
+        acc = _get_account(user_id)
+        if not acc:
+            raise Exception("Threads not connected")
+        token = acc["access_token"]
+        threads_uid = acc["threads_uid"]
+        with httpx.Client(timeout=30.0) as client:
+            cr = client.post(
+                f"https://graph.threads.net/v1.0/{threads_uid}/threads",
+                params={"media_type": "TEXT", "text": text, "access_token": token},
+            )
+            if cr.status_code != 200:
+                raise Exception(f"Create failed: {cr.text}")
+            creation_id = cr.json().get("id")
+            pr = client.post(
+                f"https://graph.threads.net/v1.0/{threads_uid}/threads_publish",
+                params={"creation_id": creation_id, "access_token": token},
+            )
+            if pr.status_code != 200:
+                raise Exception(f"Publish failed: {pr.text}")
+        _update_sched_job(jid, status="done", sent_at=datetime.now(timezone.utc).isoformat())
+    except Exception as e:
+        _update_sched_job(jid, status="error", error=str(e))
+
+def _schedule_threads_post(jid, run_at, user_id, text):
+    from telegram_scheduler import _get_scheduler
+    def job():
+        _threads_job_worker(jid, user_id, text)
+        try: _get_scheduler().remove_job(jid)
+        except: pass
+    _update_sched_job(jid, status="scheduled", scheduled_at=run_at.isoformat())
+    _get_scheduler().add_job(job, "date", run_date=run_at, id=jid, replace_existing=True)
+    log.info("Scheduled Threads job=%s at %s", jid, run_at.isoformat())
+
+def restore_threads_scheduled_jobs():
+    try:
+        jobs = _load_sched()
+        now = datetime.now(timezone.utc)
+        restored = 0
+        for jid, job in jobs.items():
+            if job.get("status") != "scheduled": continue
+            scheduled_at = job.get("scheduled_at")
+            if not scheduled_at: continue
+            run_at = datetime.fromisoformat(scheduled_at)
+            if run_at <= now:
+                threading.Thread(target=_threads_job_worker, daemon=True, kwargs=dict(
+                    jid=jid, user_id=job["user_id"], text=job.get("text","")
+                )).start()
+            else:
+                _schedule_threads_post(jid, run_at, job["user_id"], job.get("text",""))
+            restored += 1
+        if restored: log.info("Restored %d scheduled Threads jobs", restored)
+    except Exception as e:
+        log.warning("restore_threads_scheduled_jobs failed: %s", e)
+
+class ThreadsSchedulePayload(_BaseModel):
+    user_id: str
+    text: str
+    scheduled_at: str
+
+@router.post("/schedule")
+def threads_schedule_post(payload: ThreadsSchedulePayload):
+    if not payload.text.strip():
+        raise HTTPException(400, "text required")
+    if len(payload.text) > 500:
+        raise HTTPException(400, "Max 500 characters")
+    try:
+        sched_dt = datetime.fromisoformat(payload.scheduled_at.replace("Z", "+00:00"))
+        if sched_dt.tzinfo is None:
+            sched_dt = sched_dt.replace(tzinfo=timezone.utc)
+    except Exception:
+        raise HTTPException(400, "Invalid scheduled_at timestamp")
+    if sched_dt <= datetime.now(timezone.utc):
+        raise HTTPException(400, "scheduled_at must be in the future")
+    jid = _new_sched_job({
+        "user_id": payload.user_id, "text": payload.text, "status": "pending",
+    })
+    _schedule_threads_post(jid, sched_dt, payload.user_id, payload.text)
+    return {"ok": True, "status": "scheduled", "job_id": jid, "scheduled_at": sched_dt.isoformat()}
+
+@router.get("/scheduled")
+def threads_list_scheduled(user_id: str = Query(...)):
+    jobs = _load_sched()
+    user_jobs = [{"job_id": jid, **job} for jid, job in jobs.items() if job.get("user_id") == user_id]
+    user_jobs.sort(key=lambda j: j.get("scheduled_at",""), reverse=True)
+    return {"jobs": user_jobs}

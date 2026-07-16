@@ -360,7 +360,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
 
       {/* Tabs */}
       <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16, overflowX:"auto" }}>
-        {[["analytics","📊 Analytics"],["viral","🔥 Viral Predictor"],["audience","👥 Audience"],["besttime","🕐 Best Time"],["benchmark","📈 Benchmark"],["publish","✍️ Publish"]].map(([key, label]) => (
+        {[["analytics","Analytics"],["viral","Viral Predictor"],["audience","Audience"],["besttime","Best Time"],["benchmark","Benchmark"],["publish","Publish"],["schedule","Schedule"]].map(([key, label]) => (
           <Tab key={key} label={label} active={tab === key} onClick={() => setTab(key)} />
         ))}
       </div>
@@ -634,7 +634,85 @@ export default function ThreadsDashboard({ user, topic = "" }) {
         </Section>
       )}
 
+      {/* ── Schedule Tab ── */}
+      {tab === "schedule" && (
+        <ThreadsScheduleTab userId={userId} />
+      )}
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
+  );
+}
+function ThreadsScheduleTab({ userId }) {
+  const C = getC();
+  const BASE = "https://sociomeeai.com/api";
+  const [text, setText] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const loadJobs = () => {
+    fetch(`${BASE}/threads/scheduled?user_id=${userId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.jobs) setJobs(d.jobs); })
+      .catch(() => {});
+  };
+
+  useEffect(() => { loadJobs(); const iv = setInterval(loadJobs, 15000); return () => clearInterval(iv); }, [userId]);
+
+  const schedule = () => {
+    if (!text.trim() || !date || !time) return;
+    setLoading(true);
+    const scheduled_at = new Date(`${date}T${time}`).toISOString();
+    fetch(`${BASE}/threads/schedule`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, text, scheduled_at }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        setLoading(false);
+        if (d.ok) { setMsg("Scheduled!"); setText(""); setDate(""); setTime(""); loadJobs(); setTimeout(() => setMsg(""), 3000); }
+        else setMsg("Error: " + (d.detail || "unknown"));
+      })
+      .catch(() => { setLoading(false); setMsg("Network error"); });
+  };
+
+  const statusColor = (s) => s === "done" ? C.success : s === "error" ? C.rose : s === "sending" ? C.purple : C.muted;
+
+  return (
+    <Section title="⏰ Schedule a Thread">
+      <div style={{ background: C.glass, border: `1.5px solid ${C.hairline}`, borderRadius: 14, padding: 16, marginBottom: 16 }}>
+        <textarea value={text} onChange={e => setText(e.target.value)} placeholder="Write your Threads post... (max 500 chars)" maxLength={500}
+          style={{ width: "100%", minHeight: 100, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${C.hairline}`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 13, fontFamily: "inherit", outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10 }} />
+        <div style={{ display: "flex", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="sociomee-dt-input" style={{ flex: 1, minWidth: 140, padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${C.hairline}`, background: "rgba(20,20,24,0.9)", color: C.ink, fontSize: 13, fontFamily: "inherit", colorScheme: "dark" }} />
+          <input type="time" value={time} onChange={e => setTime(e.target.value)} className="sociomee-dt-input" style={{ flex: 1, minWidth: 120, padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${C.hairline}`, background: "rgba(20,20,24,0.9)", color: C.ink, fontSize: 13, fontFamily: "inherit", colorScheme: "dark" }} />
+          <style>{`.sociomee-dt-input::-webkit-calendar-picker-indicator{filter:invert(1) brightness(1.5);cursor:pointer;opacity:0.8}.sociomee-dt-input::-webkit-calendar-picker-indicator:hover{opacity:1}`}</style>
+        </div>
+        <button onClick={schedule} disabled={loading || !text.trim() || !date || !time}
+          style={{ width: "100%", padding: 12, borderRadius: 99, border: "none", background: (loading || !text.trim() || !date || !time) ? "rgba(255,255,255,0.08)" : C.purple, color: "#fff", fontWeight: 800, fontSize: 13, cursor: (loading || !text.trim() || !date || !time) ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+          {loading ? "Scheduling…" : "Schedule Post"}
+        </button>
+        {msg && <div style={{ marginTop: 8, fontSize: 12, color: msg.startsWith("Error") ? C.rose : C.success, fontWeight: 600 }}>{msg}</div>}
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Scheduled Posts ({jobs.length})</div>
+      {jobs.length === 0 ? (
+        <div style={{ fontSize: 12, color: C.muted }}>No scheduled posts yet.</div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {jobs.map(j => (
+            <div key={j.job_id} style={{ background: C.glass, border: `1.5px solid ${statusColor(j.status)}44`, borderRadius: 12, padding: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: statusColor(j.status), textTransform: "uppercase" }}>{j.status}</span>
+                <span style={{ fontSize: 10, color: C.muted }}>{j.scheduled_at ? new Date(j.scheduled_at).toLocaleString() : ""}</span>
+              </div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>{j.text?.slice(0, 150)}{j.text?.length > 150 ? "..." : ""}</div>
+              {j.error && <div style={{ fontSize: 11, color: C.rose, marginTop: 4 }}>{j.error}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </Section>
   );
 }
