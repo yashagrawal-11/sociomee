@@ -366,9 +366,11 @@ if _HAS_TG_SCHED:
 try:
     from discord_routes import restore_discord_scheduled_jobs, restore_discord_bot_scheduled_jobs
     from threads_routes import restore_threads_scheduled_jobs
+    from instagram_routes import restore_instagram_scheduled_jobs
     restore_discord_scheduled_jobs()
     restore_discord_bot_scheduled_jobs()
     restore_threads_scheduled_jobs()
+    restore_instagram_scheduled_jobs()
 except Exception as e:
     log.warning("restore_discord_scheduled_jobs failed: %s", e)
 try:

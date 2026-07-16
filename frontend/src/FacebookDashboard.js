@@ -149,7 +149,7 @@ export default function FacebookDashboard({ user }) {
       )}
       {/* Tabs */}
       <div style={{ display:"flex", gap:6, marginBottom:16 }}>
-        {[["post","Post"],["posts","Recent Posts"]].map(([v,l]) => (
+        {[["post","Post"],["posts","Recent Posts"],["schedule","Schedule"]].map(([v,l]) => (
           <button key={v} onClick={() => setTab(v)} style={{ padding:"8px 18px", borderRadius:99, border:`1.5px solid ${tab===v?"rgba(24,119,242,0.5)":C.hairline}`, background:tab===v?"rgba(24,119,242,0.1)":C.glass, color:tab===v?FB:C.muted, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
         ))}
       </div>
@@ -199,6 +199,138 @@ export default function FacebookDashboard({ user }) {
           )}
         </div>
       )}
+      {tab==="schedule" && (
+        <FacebookScheduleTab userId={userId} BASE={BASE} pageName={page?.name} />
+      )}
+    </div>
+  );
+}
+
+function FBMiniCalendar({ value, onChange }) {
+  const C_ = { glass:"rgba(255,255,255,0.03)", hairline:"rgba(255,255,255,0.08)", ink:"#f5f5f7", muted:"#8a8a94" };
+  const today = new Date();
+  const [viewDate, setViewDate] = useState(value || today);
+  const year  = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay   = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthName  = viewDate.toLocaleString("default", { month: "long" });
+  const isPast = (d) => {
+    const cmp = new Date(year, month, d); cmp.setHours(23,59,59,999);
+    return cmp < new Date();
+  };
+  const isSelected = (d) => value && value.getFullYear()===year && value.getMonth()===month && value.getDate()===d;
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  return (
+    <div style={{ background:C_.glass, border:`1.5px solid ${C_.hairline}`, borderRadius:14, padding:16, maxWidth:320 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+        <button type="button" onClick={() => setViewDate(new Date(year, month - 1, 1))}
+          style={{ background:"transparent", border:"none", color:C_.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>‹</button>
+        <span style={{ fontSize:13, fontWeight:700, color:C_.ink }}>{monthName} {year}</span>
+        <button type="button" onClick={() => setViewDate(new Date(year, month + 1, 1))}
+          style={{ background:"transparent", border:"none", color:C_.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>›</button>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginBottom:6 }}>
+        {["S","M","T","W","T","F","S"].map((d,i) => (
+          <div key={i} style={{ textAlign:"center", fontSize:10, fontWeight:700, color:C_.muted, padding:"4px 0" }}>{d}</div>
+        ))}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4 }}>
+        {cells.map((d, i) => d === null ? <div key={i} /> : (
+          <button key={i} type="button" disabled={isPast(d)}
+            onClick={() => onChange(new Date(year, month, d, value?.getHours()??12, value?.getMinutes()??0))}
+            style={{
+              aspectRatio:"1", borderRadius:8, border:"none", fontSize:12, fontFamily:"inherit",
+              cursor:isPast(d) ? "not-allowed" : "pointer",
+              background:isSelected(d) ? "#1877f2" : "transparent",
+              color:isPast(d) ? C_.muted : (isSelected(d) ? "#fff" : C_.ink),
+              fontWeight:isSelected(d) ? 700 : 500,
+              opacity:isPast(d) ? 0.35 : 1,
+            }}>{d}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FBTimePicker({ value, onChange }) {
+  const C_ = { glass:"rgba(255,255,255,0.03)", hairline:"rgba(255,255,255,0.08)", ink:"#f5f5f7", muted:"#8a8a94" };
+  const h24 = value ? value.getHours() : 12;
+  const m   = value ? value.getMinutes() : 0;
+  const h12 = ((h24 % 12) || 12);
+  const ampm = h24 >= 12 ? "PM" : "AM";
+  const setTime = (newH12, newM, newAmpm) => {
+    let h = newH12 % 12;
+    if (newAmpm === "PM") h += 12;
+    const base = value || new Date();
+    onChange(new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, newM));
+  };
+  const selStyle = { padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C_.hairline}`, background:C_.glass, color:C_.ink, fontSize:13, fontFamily:"inherit", outline:"none" };
+  return (
+    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+      <select value={h12} onChange={e => setTime(Number(e.target.value), m, ampm)} style={selStyle}>
+        {[...Array(12)].map((_,i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+      </select>
+      <span style={{ color:C_.muted }}>:</span>
+      <select value={m} onChange={e => setTime(h12, Number(e.target.value), ampm)} style={selStyle}>
+        {[0,15,30,45].map(mm => <option key={mm} value={mm}>{String(mm).padStart(2,"0")}</option>)}
+      </select>
+      <select value={ampm} onChange={e => setTime(h12, m, e.target.value)} style={selStyle}>
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+    </div>
+  );
+}
+
+function FacebookScheduleTab({ userId, BASE, pageName }) {
+  const C_ = { glass:"rgba(255,255,255,0.03)", hairline:"rgba(255,255,255,0.08)", ink:"#f5f5f7", muted:"#8a8a94", success:"#34d399", danger:"#f87171" };
+  const [text, setText] = useState("");
+  const [imgUrl, setImgUrl] = useState("");
+  const [when, setWhen] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const schedule = () => {
+    if (!text.trim() || !when) return;
+    const nowPlus10 = new Date(Date.now() + 10 * 60000);
+    if (when < nowPlus10) { setMsg("Error: Facebook requires scheduling at least 10 minutes in advance."); return; }
+    setLoading(true);
+    const scheduled_time = Math.floor(when.getTime() / 1000);
+    fetch(`${BASE}/facebook/post`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, message: text, image_url: imgUrl, scheduled_time }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        setLoading(false);
+        if (d.ok) { setMsg("Scheduled on Facebook!"); setText(""); setImgUrl(""); setWhen(null); setTimeout(() => setMsg(""), 4000); }
+        else setMsg("Error: " + (d.detail || "unknown"));
+      })
+      .catch(() => { setLoading(false); setMsg("Network error"); });
+  };
+
+  return (
+    <div style={{ background: C_.glass, border: `1.5px solid ${C_.hairline}`, borderRadius: 14, padding: 16 }}>
+      <div style={{ fontSize:13, fontWeight:700, color:C_.ink, marginBottom:12 }}>Schedule Post {pageName ? `to ${pageName}` : ""}</div>
+      <textarea value={text} onChange={e => setText(e.target.value)} placeholder="Write something for your Page…" rows={5}
+        style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${C_.hairline}`, background: "rgba(255,255,255,0.04)", color: C_.ink, fontSize: 13, fontFamily: "inherit", outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10, lineHeight:1.6 }} />
+      <input value={imgUrl} onChange={e => setImgUrl(e.target.value)} placeholder="Image URL (optional)"
+        style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${C_.hairline}`, background: "rgba(255,255,255,0.04)", color: C_.ink, fontSize: 12.5, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
+      <div style={{ marginBottom: 12 }}>
+        <FBMiniCalendar value={when} onChange={setWhen} />
+      </div>
+      <div style={{ marginBottom: 12 }}>
+        <FBTimePicker value={when} onChange={setWhen} />
+      </div>
+      <button onClick={schedule} disabled={loading || !text.trim() || !when}
+        style={{ width: "100%", padding: 12, borderRadius: 99, border: "none", background: (loading || !text.trim() || !when) ? "rgba(255,255,255,0.08)" : "#1877f2", color: "#fff", fontWeight: 800, fontSize: 13, cursor: (loading || !text.trim() || !when) ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+        {loading ? "Scheduling…" : "Schedule Post"}
+      </button>
+      {msg && <div style={{ marginTop: 10, fontSize: 12, color: msg.startsWith("Error") ? C_.danger : C_.success, fontWeight: 600 }}>{msg}</div>}
+      <div style={{ marginTop: 12, fontSize: 11, color: C_.muted, lineHeight:1.5 }}>Facebook schedules this natively — no need to keep this tab open. Minimum 10 minutes, maximum 75 days in advance.</div>
     </div>
   );
 }

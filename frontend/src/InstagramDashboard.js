@@ -369,14 +369,15 @@ export default function InstagramDashboard({ user, topic = "" }) {
       {/* Tabs */}
       <div style={{ display:"flex", gap:7, flexWrap:"wrap", marginBottom:16, overflowX:"auto" }}>
         {[
-          ["analytics","📊 Analytics"],
-          ["reels","🎬 Reels"],
-          ["stories","📱 Stories"],
-          ["viral","🔥 Viral AI"],
-          ["audience","👥 Audience"],
-          ["besttime","🕐 Best Time"],
-          ["benchmark","📈 Benchmark"],
-          ["publish","✍️ Publish"],
+          ["analytics","Analytics"],
+          ["reels","Reels"],
+          ["stories","Stories"],
+          ["viral","Viral AI"],
+          ["audience","Audience"],
+          ["besttime","Best Time"],
+          ["benchmark","Benchmark"],
+          ["publish","Publish"],
+          ["schedule","Schedule"],
         ].map(([key, label]) => (
           <Tab key={key} label={label} active={tab === key} onClick={() => setTab(key)} />
         ))}
@@ -763,7 +764,167 @@ export default function InstagramDashboard({ user, topic = "" }) {
         </Section>
       )}
 
+      {/* ── Schedule Tab ── */}
+      {tab === "schedule" && (
+        <InstagramScheduleTab userId={userId} />
+      )}
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
+  );
+}
+function InstagramMiniCalendar({ value, onChange }) {
+  const C = getC();
+  const today = new Date();
+  const [viewDate, setViewDate] = useState(value || today);
+  const year  = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay   = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthName  = viewDate.toLocaleString("default", { month: "long" });
+  const isPast = (d) => {
+    const cmp = new Date(year, month, d); cmp.setHours(23,59,59,999);
+    return cmp < new Date();
+  };
+  const isSelected = (d) => value && value.getFullYear()===year && value.getMonth()===month && value.getDate()===d;
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  return (
+    <div style={{ background:C.glass, border:`1.5px solid ${C.hairline}`, borderRadius:14, padding:16, maxWidth:320 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+        <button type="button" onClick={() => setViewDate(new Date(year, month - 1, 1))}
+          style={{ background:"transparent", border:"none", color:C.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>‹</button>
+        <span style={{ fontSize:13, fontWeight:700, color:C.ink }}>{monthName} {year}</span>
+        <button type="button" onClick={() => setViewDate(new Date(year, month + 1, 1))}
+          style={{ background:"transparent", border:"none", color:C.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>›</button>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginBottom:6 }}>
+        {["S","M","T","W","T","F","S"].map((d,i) => (
+          <div key={i} style={{ textAlign:"center", fontSize:10, fontWeight:700, color:C.muted, padding:"4px 0" }}>{d}</div>
+        ))}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4 }}>
+        {cells.map((d, i) => d === null ? <div key={i} /> : (
+          <button key={i} type="button" disabled={isPast(d)}
+            onClick={() => onChange(new Date(year, month, d, value?.getHours()??12, value?.getMinutes()??0))}
+            style={{
+              aspectRatio:"1", borderRadius:8, border:"none", fontSize:12, fontFamily:"inherit",
+              cursor:isPast(d) ? "not-allowed" : "pointer",
+              background:isSelected(d) ? C.purple : "transparent",
+              color:isPast(d) ? C.muted : (isSelected(d) ? "#fff" : C.ink),
+              fontWeight:isSelected(d) ? 700 : 500,
+              opacity:isPast(d) ? 0.35 : 1,
+            }}>{d}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function InstagramTimePicker({ value, onChange }) {
+  const C = getC();
+  const h24 = value ? value.getHours() : 12;
+  const m   = value ? value.getMinutes() : 0;
+  const h12 = ((h24 % 12) || 12);
+  const ampm = h24 >= 12 ? "PM" : "AM";
+  const setTime = (newH12, newM, newAmpm) => {
+    let h = newH12 % 12;
+    if (newAmpm === "PM") h += 12;
+    const base = value || new Date();
+    onChange(new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, newM));
+  };
+  const selStyle = { padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none" };
+  return (
+    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+      <select value={h12} onChange={e => setTime(Number(e.target.value), m, ampm)} style={selStyle}>
+        {[...Array(12)].map((_,i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+      </select>
+      <span style={{ color:C.muted }}>:</span>
+      <select value={m} onChange={e => setTime(h12, Number(e.target.value), ampm)} style={selStyle}>
+        {[0,15,30,45].map(mm => <option key={mm} value={mm}>{String(mm).padStart(2,"0")}</option>)}
+      </select>
+      <select value={ampm} onChange={e => setTime(h12, m, e.target.value)} style={selStyle}>
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+    </div>
+  );
+}
+
+function InstagramScheduleTab({ userId }) {
+  const C = getC();
+  const BASE = "https://sociomeeai.com/api";
+  const [caption, setCaption] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [when, setWhen] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const loadJobs = () => {
+    fetch(`${BASE}/instagram/scheduled?user_id=${userId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.jobs) setJobs(d.jobs); })
+      .catch(() => {});
+  };
+
+  useEffect(() => { loadJobs(); const iv = setInterval(loadJobs, 15000); return () => clearInterval(iv); }, [userId]);
+
+  const schedule = () => {
+    if (!caption.trim() || !imageUrl.trim() || !when) return;
+    setLoading(true);
+    const scheduled_at = when.toISOString();
+    fetch(`${BASE}/instagram/schedule`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, caption, image_url: imageUrl, scheduled_at }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        setLoading(false);
+        if (d.ok) { setMsg("Scheduled!"); setCaption(""); setImageUrl(""); setWhen(null); loadJobs(); setTimeout(() => setMsg(""), 3000); }
+        else setMsg("Error: " + (d.detail || "unknown"));
+      })
+      .catch(() => { setLoading(false); setMsg("Network error"); });
+  };
+
+  const statusColor = (s) => s === "done" ? C.success : s === "error" ? C.rose : s === "sending" ? C.purple : C.muted;
+
+  return (
+    <Section title="⏰ Schedule an Instagram Post">
+      <div style={{ background: C.glass, border: `1.5px solid ${C.hairline}`, borderRadius: 14, padding: 16, marginBottom: 16 }}>
+        <textarea value={caption} onChange={e => setCaption(e.target.value)} placeholder="Write your caption... (max 2200 chars)" maxLength={2200}
+          style={{ width: "100%", minHeight: 100, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${C.hairline}`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 13, fontFamily: "inherit", outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10 }} />
+        <input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="Public image URL"
+          style={{ width: "100%", padding: "10px 14px", borderRadius: 12, border: `1.5px solid ${C.hairline}`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
+        <div style={{ marginBottom: 12 }}>
+          <InstagramMiniCalendar value={when} onChange={setWhen} />
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <InstagramTimePicker value={when} onChange={setWhen} />
+        </div>
+        <button onClick={schedule} disabled={loading || !caption.trim() || !imageUrl.trim() || !when}
+          style={{ width: "100%", padding: 12, borderRadius: 99, border: "none", background: (loading || !caption.trim() || !imageUrl.trim() || !when) ? "rgba(255,255,255,0.08)" : C.purple, color: "#fff", fontWeight: 800, fontSize: 13, cursor: (loading || !caption.trim() || !imageUrl.trim() || !when) ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+          {loading ? "Scheduling…" : "Schedule Post"}
+        </button>
+        {msg && <div style={{ marginTop: 8, fontSize: 12, color: msg.startsWith("Error") ? C.rose : C.success, fontWeight: 600 }}>{msg}</div>}
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Scheduled Posts ({jobs.length})</div>
+      {jobs.length === 0 ? (
+        <div style={{ fontSize: 12, color: C.muted }}>No scheduled posts yet.</div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {jobs.map(j => (
+            <div key={j.job_id} style={{ background: C.glass, border: `1.5px solid ${statusColor(j.status)}44`, borderRadius: 12, padding: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: statusColor(j.status), textTransform: "uppercase" }}>{j.status}</span>
+                <span style={{ fontSize: 10, color: C.muted }}>{j.scheduled_at ? new Date(j.scheduled_at).toLocaleString() : ""}</span>
+              </div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>{j.caption?.slice(0, 150)}{j.caption?.length > 150 ? "..." : ""}</div>
+              {j.error && <div style={{ fontSize: 11, color: C.rose, marginTop: 4 }}>{j.error}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </Section>
   );
 }

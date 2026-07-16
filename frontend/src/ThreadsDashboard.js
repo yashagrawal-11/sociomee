@@ -684,7 +684,7 @@ function ThreadsScheduleTab({ userId }) {
       <div style={{ background: C.glass, border: `1.5px solid ${C.hairline}`, borderRadius: 14, padding: 16, marginBottom: 16 }}>
         <textarea value={text} onChange={e => setText(e.target.value)} placeholder="Write your Threads post... (max 500 chars)" maxLength={500}
           style={{ width: "100%", minHeight: 100, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${C.hairline}`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 13, fontFamily: "inherit", outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10 }} />
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 12, maxWidth: 320 }}>
           <ThreadsMiniCalendar value={when} onChange={setWhen} />
         </div>
         <div style={{ marginBottom: 12 }}>
