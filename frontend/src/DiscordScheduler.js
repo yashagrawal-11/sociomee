@@ -283,8 +283,12 @@ export default function DiscordScheduler({ user }) {
             </div>
 
             {schedType === "custom" && (
-              <input type="datetime-local" value={schedAt} onChange={e => setSchedAt(e.target.value)}
-                style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: `1px solid ${DC}44`, background: "rgba(255,255,255,0.05)", color: C.ink, fontSize: 12, fontFamily: "inherit", outline: "none", marginBottom: 10, boxSizing: "border-box" }} />
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ marginBottom:8 }}>
+                  <DCMiniCalendar value={schedAt?new Date(schedAt):null} onChange={(d)=>setSchedAt(d.toISOString().slice(0,16))} />
+                </div>
+                <DCTimePicker value={schedAt?new Date(schedAt):null} onChange={(d)=>setSchedAt(d.toISOString().slice(0,16))} />
+              </div>
             )}
 
             {sendResult === "sent" && (
@@ -314,6 +318,85 @@ export default function DiscordScheduler({ user }) {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function DCMiniCalendar({ value, onChange }) {
+  const C_ = { glass:"rgba(255,255,255,0.03)", hairline:"rgba(255,255,255,0.08)", ink:"#f5f5f7", muted:"#8a8a94" };
+  const today = new Date();
+  const [viewDate, setViewDate] = useState(value || today);
+  const year  = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay   = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthName  = viewDate.toLocaleString("default", { month: "long" });
+  const isPast = (d) => {
+    const cmp = new Date(year, month, d); cmp.setHours(23,59,59,999);
+    return cmp < new Date();
+  };
+  const isSelected = (d) => value && value.getFullYear()===year && value.getMonth()===month && value.getDate()===d;
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  return (
+    <div style={{ background:C_.glass, border:`1.5px solid ${C_.hairline}`, borderRadius:14, padding:16, maxWidth:320 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+        <button type="button" onClick={() => setViewDate(new Date(year, month - 1, 1))}
+          style={{ background:"transparent", border:"none", color:C_.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>‹</button>
+        <span style={{ fontSize:13, fontWeight:700, color:C_.ink }}>{monthName} {year}</span>
+        <button type="button" onClick={() => setViewDate(new Date(year, month + 1, 1))}
+          style={{ background:"transparent", border:"none", color:C_.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>›</button>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginBottom:6 }}>
+        {["S","M","T","W","T","F","S"].map((d,i) => (
+          <div key={i} style={{ textAlign:"center", fontSize:10, fontWeight:700, color:C_.muted, padding:"4px 0" }}>{d}</div>
+        ))}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4 }}>
+        {cells.map((d, i) => d === null ? <div key={i} /> : (
+          <button key={i} type="button" disabled={isPast(d)}
+            onClick={() => onChange(new Date(year, month, d, value?.getHours()??12, value?.getMinutes()??0))}
+            style={{
+              aspectRatio:"1", borderRadius:8, border:"none", fontSize:12, fontFamily:"inherit",
+              cursor:isPast(d) ? "not-allowed" : "pointer",
+              background:isSelected(d) ? "#5865F2" : "transparent",
+              color:isPast(d) ? C_.muted : (isSelected(d) ? "#fff" : C_.ink),
+              fontWeight:isSelected(d) ? 700 : 500,
+              opacity:isPast(d) ? 0.35 : 1,
+            }}>{d}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DCTimePicker({ value, onChange }) {
+  const C_ = { glass:"rgba(255,255,255,0.03)", hairline:"rgba(255,255,255,0.08)", ink:"#f5f5f7", muted:"#8a8a94" };
+  const h24 = value ? value.getHours() : 12;
+  const m   = value ? value.getMinutes() : 0;
+  const h12 = ((h24 % 12) || 12);
+  const ampm = h24 >= 12 ? "PM" : "AM";
+  const setTime = (newH12, newM, newAmpm) => {
+    let h = newH12 % 12;
+    if (newAmpm === "PM") h += 12;
+    const base = value || new Date();
+    onChange(new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, newM));
+  };
+  const selStyle = { padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C_.hairline}`, background:C_.glass, color:C_.ink, fontSize:13, fontFamily:"inherit", outline:"none" };
+  return (
+    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+      <select value={h12} onChange={e => setTime(Number(e.target.value), m, ampm)} style={selStyle}>
+        {[...Array(12)].map((_,i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+      </select>
+      <span style={{ color:C_.muted }}>:</span>
+      <select value={m} onChange={e => setTime(h12, Number(e.target.value), ampm)} style={selStyle}>
+        {[0,15,30,45].map(mm => <option key={mm} value={mm}>{String(mm).padStart(2,"0")}</option>)}
+      </select>
+      <select value={ampm} onChange={e => setTime(h12, m, e.target.value)} style={selStyle}>
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
     </div>
   );
 }

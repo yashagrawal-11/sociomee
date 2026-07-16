@@ -157,8 +157,12 @@ function ComposePost({ userId, onSent, prefillText }) {
           ))}
         </div>
         {scheduleType==="custom" && (
-          <input type="datetime-local" value={scheduledAt} onChange={e=>setScheduledAt(e.target.value)}
-            style={{ marginTop:"8px", width:"100%", padding:"9px 12px", borderRadius:"10px", border:`1.5px solid ${C.tg}44`, background:C.inputBg, color:C.ink, fontSize:"13px", fontFamily:"inherit" }} />
+          <div style={{ marginTop:"8px" }}>
+            <div style={{ marginBottom:8 }}>
+              <TGMiniCalendar value={scheduledAt?new Date(scheduledAt):null} onChange={(d)=>setScheduledAt(d.toISOString().slice(0,16))} />
+            </div>
+            <TGTimePicker value={scheduledAt?new Date(scheduledAt):null} onChange={(d)=>setScheduledAt(d.toISOString().slice(0,16))} />
+          </div>
         )}
       </div>
 
@@ -277,8 +281,12 @@ function BulkPost({ userId, onSent }) {
               ))}
             </div>
             {globalSched==="custom" && (
-              <input type="datetime-local" value={globalTime} onChange={e=>setGlobalTime(e.target.value)}
-                style={{ marginTop:"8px", width:"100%", padding:"8px 12px", borderRadius:"9px", border:`1.5px solid ${C.tg}44`, background:C.inputBg, color:C.ink, fontSize:"12px", fontFamily:"inherit" }} />
+              <div style={{ marginTop:"8px" }}>
+                <div style={{ marginBottom:8 }}>
+                  <TGMiniCalendar value={globalTime?new Date(globalTime):null} onChange={(d)=>setGlobalTime(d.toISOString().slice(0,16))} />
+                </div>
+                <TGTimePicker value={globalTime?new Date(globalTime):null} onChange={(d)=>setGlobalTime(d.toISOString().slice(0,16))} />
+              </div>
             )}
           </div>
 
@@ -721,6 +729,84 @@ export default function TelegramScheduler({ user }) {
         textarea:focus, input:focus, select:focus { outline: none; border-color: #2aabee !important; }
         textarea { font-family: inherit; }
       `}</style>
+    </div>
+  );
+}
+function TGMiniCalendar({ value, onChange }) {
+  const C = getC();
+  const today = new Date();
+  const [viewDate, setViewDate] = useState(value || today);
+  const year  = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay   = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthName  = viewDate.toLocaleString("default", { month: "long" });
+  const isPast = (d) => {
+    const cmp = new Date(year, month, d); cmp.setHours(23,59,59,999);
+    return cmp < new Date();
+  };
+  const isSelected = (d) => value && value.getFullYear()===year && value.getMonth()===month && value.getDate()===d;
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  return (
+    <div style={{ background:C.glass, border:`1.5px solid ${C.hairline}`, borderRadius:14, padding:16, maxWidth:320 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+        <button type="button" onClick={() => setViewDate(new Date(year, month - 1, 1))}
+          style={{ background:"transparent", border:"none", color:C.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>‹</button>
+        <span style={{ fontSize:13, fontWeight:700, color:C.ink }}>{monthName} {year}</span>
+        <button type="button" onClick={() => setViewDate(new Date(year, month + 1, 1))}
+          style={{ background:"transparent", border:"none", color:C.ink, fontSize:16, cursor:"pointer", padding:"4px 10px" }}>›</button>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginBottom:6 }}>
+        {["S","M","T","W","T","F","S"].map((d,i) => (
+          <div key={i} style={{ textAlign:"center", fontSize:10, fontWeight:700, color:C.muted, padding:"4px 0" }}>{d}</div>
+        ))}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4 }}>
+        {cells.map((d, i) => d === null ? <div key={i} /> : (
+          <button key={i} type="button" disabled={isPast(d)}
+            onClick={() => onChange(new Date(year, month, d, value?.getHours()??12, value?.getMinutes()??0))}
+            style={{
+              aspectRatio:"1", borderRadius:8, border:"none", fontSize:12, fontFamily:"inherit",
+              cursor:isPast(d) ? "not-allowed" : "pointer",
+              background:isSelected(d) ? C.tg : "transparent",
+              color:isPast(d) ? C.muted : (isSelected(d) ? "#fff" : C.ink),
+              fontWeight:isSelected(d) ? 700 : 500,
+              opacity:isPast(d) ? 0.35 : 1,
+            }}>{d}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TGTimePicker({ value, onChange }) {
+  const C = getC();
+  const h24 = value ? value.getHours() : 12;
+  const m   = value ? value.getMinutes() : 0;
+  const h12 = ((h24 % 12) || 12);
+  const ampm = h24 >= 12 ? "PM" : "AM";
+  const setTime = (newH12, newM, newAmpm) => {
+    let h = newH12 % 12;
+    if (newAmpm === "PM") h += 12;
+    const base = value || new Date();
+    onChange(new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, newM));
+  };
+  const selStyle = { padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none" };
+  return (
+    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+      <select value={h12} onChange={e => setTime(Number(e.target.value), m, ampm)} style={selStyle}>
+        {[...Array(12)].map((_,i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+      </select>
+      <span style={{ color:C.muted }}>:</span>
+      <select value={m} onChange={e => setTime(h12, Number(e.target.value), ampm)} style={selStyle}>
+        {[0,15,30,45].map(mm => <option key={mm} value={mm}>{String(mm).padStart(2,"0")}</option>)}
+      </select>
+      <select value={ampm} onChange={e => setTime(h12, m, e.target.value)} style={selStyle}>
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
     </div>
   );
 }
