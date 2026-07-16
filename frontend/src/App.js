@@ -30,7 +30,6 @@ import SocioMeePixel from "./components/SocioMeePixel";
 import SocioMeeShare from "./components/SocioMeeShare";
 import SocioMeeCloud from "./components/SocioMeeCloud";
 import SocioMeeCalendar from "./components/SocioMeeCalendar";
-import SocioMeeReminders from "./components/SocioMeeReminders";
 import { TikTokHook, TikTokCaption, TikTokVideoIdeas, TikTokHashtags, TikTokBestTime } from "./TikTokTools";
 import { WhatsAppBroadcast, WhatsAppReplyTemplates, WhatsAppChannelPost } from "./WhatsAppTools";
 import { XTweetGenerator, XThreadGenerator, XHookGenerator, XBestTime } from "./XTools";
@@ -1931,7 +1930,7 @@ export default function App() {
     news:     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>,
     recorder: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,
   };
-  const APP_TAB_MAP = { notes:"notes", vault:"cloud", share:"share", pixel:"pixel", pdf:"pdf", calendar:"calendar", reminders:"reminders", news:"news", screenrecorder:"screenrecorder" };
+  const APP_TAB_MAP = { notes:"notes", vault:"cloud", share:"share", pixel:"pixel", pdf:"pdf", calendar:"calendar", news:"news", screenrecorder:"screenrecorder" };
 
   // Handle ?get_app= deep link from the Store page
   useEffect(() => {
@@ -2775,11 +2774,6 @@ export default function App() {
           <SocioMeeCalendar user={user}/>
         </div>
       )}
-      {activeTab==="reminders" && isLoggedIn && (
-        <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
-          <SocioMeeReminders user={user}/>
-        </div>
-      )}
       {activeTab==="share" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Share" onUpgrade={()=>setShowPricing(true)}>
@@ -2801,7 +2795,7 @@ export default function App() {
           </PlanGate>
         </div>
       )}
-      <div id="main-content" style={{ marginLeft:"220px", flex:1, padding:"48px 32px 80px", minHeight:"100vh", overflowX:"hidden", display:(activeTab==="notes"||activeTab==="pdf"||activeTab==="pixel"||activeTab==="share"||activeTab==="cloud"||activeTab==="calendar"||activeTab==="reminders")?"none":"block" }}>
+      <div id="main-content" style={{ marginLeft:"220px", flex:1, padding:"48px 32px 80px", minHeight:"100vh", overflowX:"hidden", display:(activeTab==="notes"||activeTab==="pdf"||activeTab==="pixel"||activeTab==="share"||activeTab==="cloud"||activeTab==="calendar")?"none":"block" }}>
         <div style={{ maxWidth:"860px", margin:"0 auto" }}>
 
           <div style={{ marginBottom:"28px" }}>
