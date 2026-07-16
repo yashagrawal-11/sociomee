@@ -21,8 +21,8 @@ from typing import Any, Dict, Optional
 # ── Plan config ───────────────────────────────────────────────────────
 PLAN_LIMITS: Dict[str, int] = {
     "free":             20,
-    "pro_monthly":      150,
-    "pro_annual":       150,
+    "pro_monthly":      170,
+    "pro_annual":       170,
     "premium_monthly":  300,
     "premium_annual":   300,
 }
@@ -46,7 +46,7 @@ PLAN_PRICES: Dict[str, Dict[str, Any]] = {
     },
     "premium_monthly": {
         "amount":    299900,
-        "label":     "SocioMee Premium Monthly",
+        "label":     "SocioMee Pro+ Monthly",
         "credits":   500,
         "uploads":   15,
         "type":      "plan",
@@ -54,7 +54,7 @@ PLAN_PRICES: Dict[str, Dict[str, Any]] = {
     },
     "premium_annual": {
         "amount":    2399900,
-        "label":     "SocioMee Premium Annual",
+        "label":     "SocioMee Pro+ Annual",
         "credits":   500,
         "uploads":   15,
         "type":      "plan",

@@ -18,11 +18,11 @@ function getC() {
   const dark = true;
   return dark ? {
     red:"#ff4060", redLight:"#ff6080", purple:"#a78bfa",
-    orange:"#fb923c", teal:"#22d3ee", ink:"#ede8ff", slate:"#c4b5fd",
-    muted:"#9d86c8", hairline:"rgba(230,0,35,0.15)",
-    glass:"rgba(22,14,42,0.82)", white:"#ede8ff",
+    orange:"#fb923c", teal:"#22d3ee", ink:"#f5f5f7", slate:"#b8b8c0",
+    muted:"#8a8a94", hairline:"rgba(255,255,255,0.08)",
+    glass:"rgba(255,255,255,0.03)", white:"#f5f5f7",
     success:"#34d399", warn:"#fbbf24", danger:"#f87171",
-    card:"rgba(30,18,55,0.9)",
+    card:"rgba(255,255,255,0.04)",
   } : {
     red:"#e60023", redLight:"#ff4060", purple:"#7c3aed",
     orange:"#f97316", teal:"#0891b2", ink:"#0d0015", slate:"#3b1f4e",

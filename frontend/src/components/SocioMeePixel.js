@@ -144,7 +144,7 @@ export default function SocioMeePixel({ user }) {
 
   const removeBg = async () => {
     if (!image) return;
-    if (!isPremium) { alert("Remove Background is a Premium feature. Upgrade to Premium to use it."); return; }
+    if (!isPremium) { alert("Remove Background is a Pro+ feature. Upgrade to Pro+ to use it."); return; }
     setBgRemoving(true);
     try {
       const res = await fetch("https://sociomeeai.com/api/removebg", { method:"POST", headers:{"Content-Type":"application/json"}, credentials:"include", body:JSON.stringify({image}) });

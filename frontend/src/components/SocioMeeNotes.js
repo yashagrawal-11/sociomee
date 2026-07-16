@@ -119,7 +119,7 @@ export default function SocioMeeNotes({ user, onSendToGenerator }) {
   };
 
   const startVoice = () => {
-    if (!isPro) { alert("Voice to Note is available on Pro and Premium plans."); return; }
+    if (!isPro) { alert("Voice to Note is available on Pro and Pro+ plans."); return; }
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Speech recognition not supported in this browser. Try Chrome."); return; }
     const rec = new SR();

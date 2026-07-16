@@ -131,7 +131,7 @@ export default function SocioMeeCloud({ user }) {
         </div>
         <div>
           <h3 style={{ fontSize:"22px", fontWeight:"700", color:"#fff", margin:"0 0 10px", fontFamily:FONT_HEAD }}>SocioMee Cloud</h3>
-          <p style={{ fontSize:"13px", color:"rgba(255,255,255,0.4)", lineHeight:1.8, margin:0 }}>Store your scripts, images, videos and audio files securely. Available on Pro and Premium plans.</p>
+          <p style={{ fontSize:"13px", color:"rgba(255,255,255,0.4)", lineHeight:1.8, margin:0 }}>Store your scripts, images, videos and audio files securely. Available on Pro and Pro+ plans.</p>
         </div>
         <div style={{ width:"100%", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"18px 20px", display:"flex", flexDirection:"column", gap:"12px" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
@@ -140,7 +140,7 @@ export default function SocioMeeCloud({ user }) {
           </div>
           <div style={{ height:"1px", background:"rgba(255,255,255,0.06)" }}/>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-            <span style={{ fontSize:"13px", color:"rgba(255,255,255,0.5)", fontFamily:FONT }}>Premium</span>
+            <span style={{ fontSize:"13px", color:"rgba(255,255,255,0.5)", fontFamily:FONT }}>Pro+</span>
             <span style={{ fontSize:"13px", color:"rgba(255,255,255,0.85)", fontWeight:"600", fontFamily:FONT }}>8 GB Storage</span>
           </div>
         </div>

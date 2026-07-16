@@ -59,6 +59,7 @@ def connect_status(user_id: str = Query(...)):
             "connected":         True,
             "telegram_username": conn.get("telegram_username", ""),
             "full_name":         conn.get("full_name", ""),
+            "photo_url":         conn.get("photo_url", ""),
             "connected_at":      conn.get("connected_at", ""),
         }
     return {"connected": False}

@@ -490,8 +490,8 @@ class BonusRequest(BaseModel):
     user_id: str = Field(..., min_length=1); amount: int = Field(..., ge=1, le=500)
 
 # ── Helpers ───────────────────────────────────────────────────────────
-def _check_credits(user_id: str):
-    ok = use_credit(user_id, cost=10)
+def _check_credits(user_id: str, cost: int = 10):
+    ok = use_credit(user_id, cost=cost)
     if not ok:
         status = get_credit_status(user_id)
         return {"error": f"No credits remaining on your {status.get('plan','free').replace('_',' ').title()} plan.", "credits": 0, "credit_status": status}
@@ -841,15 +841,12 @@ def use_credit_route(user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=402, detail={"error": "No credits remaining", "credit_status": status})
     return get_credit_status(user.get("user_id",""))
 
-@app.post("/api/ai/generate")
+@app.post("/ai/generate")
 @limiter.limit("10/minute")
 async def ai_generate_proxy(request: Request, user: dict = Depends(get_current_user)):
-    import httpx, re
+    import re
+    import vertex_engine
     body = await request.json()
-    api_key = os.environ.get("GOOGLE_API_KEY","")
-    if not api_key:
-        raise HTTPException(503, "AI service unavailable.")
-    model = "gemini-2.5-flash"
     messages = body.get("messages",[])
     if not messages:
         raise HTTPException(400, "No messages provided.")
@@ -870,22 +867,24 @@ async def ai_generate_proxy(request: Request, user: dict = Depends(get_current_u
     for pattern in injection_patterns:
         if re.search(pattern, prompt, re.IGNORECASE):
             raise HTTPException(400, "Invalid prompt content.")
-    # Check credits
-    err = _check_credits(user.get("user_id",""))
+    # Check credits — tool calls can request a lower cost (e.g. 2) via body.cost, capped at 10
+    requested_cost = body.get("cost", 10)
+    try:
+        requested_cost = int(requested_cost)
+    except (TypeError, ValueError):
+        requested_cost = 10
+    cost = max(1, min(requested_cost, 10))
+    err = _check_credits(user.get("user_id",""), cost=cost)
     if err:
         return err
-    async with httpx.AsyncClient(timeout=60) as client:
-        r = await client.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}",
-            headers={"Content-Type":"application/json"},
-            json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":1000}}
-        )
-        if r.status_code != 200:
-            raise HTTPException(502, "AI service error. Please try again.")
-        data = r.json()
-        text = data.get("candidates",[{}])[0].get("content",{}).get("parts",[{}])[0].get("text","")
-        # Return in Anthropic-compatible format
-        return {"content":[{"type":"text","text":text}]}
+    try:
+        text = vertex_engine.generate(prompt, max_tokens=1000, temperature=0.85)
+    except Exception as e:
+        raise HTTPException(502, f"AI service error. Please try again.")
+    if not text:
+        raise HTTPException(502, "AI service error. Please try again.")
+    # Return in Anthropic-compatible format
+    return _attach_credits({"content":[{"type":"text","text":text}]}, user.get("user_id",""))
 
 def _check_email_verified(user: dict) -> Optional[dict]:
     """Returns an error response if the user's account isn't email-verified yet

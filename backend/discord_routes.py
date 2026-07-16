@@ -120,7 +120,10 @@ async def discord_callback(code: str, guild_id: str = Query(default=""), state: 
             headers={"Authorization": f"Bot {DISCORD_BOT_TOKEN}"},
         )
 
-    guild_name = g.json().get("name", "Discord Server") if g.status_code == 200 else "Discord Server"
+    guild_json = g.json() if g.status_code == 200 else {}
+    guild_name = guild_json.get("name", "Discord Server")
+    guild_icon_hash = guild_json.get("icon")
+    guild_icon_url = f"https://cdn.discordapp.com/icons/{guild_id}/{guild_icon_hash}.png" if guild_icon_hash else None
     text_channels = []
     if chans.status_code == 200:
         for c in chans.json():
@@ -134,6 +137,7 @@ async def discord_callback(code: str, guild_id: str = Query(default=""), state: 
     user_guilds.append({
         "guild_id":     guild_id,
         "guild_name":   guild_name,
+        "guild_icon":   guild_icon_url,
         "channels":     text_channels,
         "connected_at": datetime.now(timezone.utc).isoformat(),
     })

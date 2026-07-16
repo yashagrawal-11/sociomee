@@ -18,6 +18,7 @@ import HookGenerator from "./HookGenerator";
 import BioWriter from "./BioWriter";
 import LinkedInDashboard from "./LinkedInDashboard";
 import { LinkedInPost, LinkedInHeadline, LinkedInAbout, LinkedInCarousel, LinkedInHashtags, LinkedInBestTime } from "./LinkedInTools";
+import { QuoraAnswer, QuoraQuestionFinder, QuoraHook } from "./QuoraTools";
 import { FacebookPost, FacebookGroupPost, FacebookAdCopy, FacebookBestTime } from "./FacebookTools";
 import ThumbnailStudioNew from "./ThumbnailStudio";
 import ScreenRecorder from './components/ScreenRecorder';
@@ -235,9 +236,9 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
     { id_m:"pro_monthly", id_a:"pro_annual", label:"Pro", monthly:499, annual:3999, credits:200, uploads:4, popular:true,
       features:["150 credits/month","3000–5000 word scripts","Full SEO — 8 platforms","4 YouTube uploads/month","Thumbnail analyzer","Priority support"],
       cta:"Upgrade to Pro" },
-    { id_m:"premium_monthly", id_a:"premium_annual", label:"Premium", monthly:1999, annual:15999, credits:500, uploads:15,
+    { id_m:"premium_monthly", id_a:"premium_annual", label:"Pro+", monthly:1999, annual:15999, credits:500, uploads:15,
       features:["300 credits/month","Unlimited word scripts","Full SEO — all platforms","15 YouTube uploads/month","Advanced AI analytics","Dedicated support","Early access"],
-      cta:"Go Premium" },
+      cta:"Go Pro+" },
   ];
 
   const topups = [
@@ -308,25 +309,25 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
   };
 
   const S = {
-    overlay: { position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,0.95)",backdropFilter:"blur(32px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"16px",overflowY:"auto" },
-    modal: { width:"100%",maxWidth:"680px",background:"#0a0a0f",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"24px",boxShadow:"0 32px 80px rgba(0,0,0,0.9),0 0 0 1px rgba(255,255,255,0.04)",overflow:"hidden",animation:"smPop 0.2s ease",fontFamily:"Poppins,sans-serif" },
-    header: { background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",padding:"24px 28px 20px",position:"relative" },
+    overlay: { position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,0.95)",backdropFilter:"blur(32px)",display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"0",overflowY:"auto" },
+    modal: { width:"100%",maxWidth:"520px",background:"#0a0a0f",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"24px 24px 0 0",boxShadow:"0 32px 80px rgba(0,0,0,0.9),0 0 0 1px rgba(255,255,255,0.04)",overflow:"hidden",animation:"smPop 0.2s ease",fontFamily:"Poppins,sans-serif" },
+    header: { background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",padding:"20px 20px 16px",position:"relative" },
     headerTitle: { fontSize:"22px",fontWeight:"900",color:"#fff",margin:"0 0 4px",fontFamily:"Orbitron,sans-serif",letterSpacing:"1px" },
     headerSub: { fontSize:"12px",color:"rgba(255,255,255,0.8)",margin:0 },
     closeBtn: { position:"absolute",top:"16px",right:"16px",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",width:"28px",height:"28px",borderRadius:"50%",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center" },
     toggle: { display:"flex",gap:"4px",background:"rgba(0,0,0,0.3)",borderRadius:"99px",padding:"3px",marginTop:"14px",width:"fit-content" },
     toggleBtn: (active) => ({ padding:"5px 16px",borderRadius:"99px",border:"none",background:active?"#fff":"transparent",color:active?"#7c3aed":"rgba(255,255,255,0.7)",fontWeight:"800",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif",transition:"all 0.15s" }),
-    body: { padding:"20px 24px" },
+    body: { padding:"16px" },
     sectionLabel: { fontSize:"10px",fontWeight:"700",letterSpacing:"2px",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",marginBottom:"10px" },
     topupGrid: { display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginBottom:"16px" },
     topupCard: { background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"14px",position:"relative" },
-    plansGrid: { display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px",marginBottom:"16px" },
-    planCard: (highlight) => ({ background:highlight?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.02)",border:`1px solid ${highlight?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.05)"}`,borderRadius:"16px",padding:"16px",display:"flex",flexDirection:"column",gap:"6px",position:"relative",boxShadow:highlight?"0 8px 32px rgba(0,0,0,0.4)":"none" }),
-    planName: { fontSize:"13px",fontWeight:"800",color:"#ede8ff" },
-    planPrice: { fontSize:"22px",fontWeight:"900",color:"#fff",letterSpacing:"-0.5px" },
+    plansGrid: { display:"grid",gridTemplateColumns:"1fr",gap:"10px",marginBottom:"16px" },
+    planCard: (highlight) => ({ background:highlight?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.02)",border:`1px solid ${highlight?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.05)"}`,borderRadius:"16px",padding:"16px",display:"flex",flexDirection:"column",gap:"8px",position:"relative",boxShadow:highlight?"0 8px 32px rgba(0,0,0,0.4)":"none" }),
+    planName: { fontSize:"12px",fontWeight:"800",color:"#ede8ff" },
+    planPrice: { fontSize:"20px",fontWeight:"900",color:"#fff",letterSpacing:"-0.5px" },
     planSub: { fontSize:"10px",color:"rgba(167,139,250,0.8)",fontWeight:"600" },
-    feature: { fontSize:"10px",color:"rgba(196,181,253,0.75)",display:"flex",gap:"5px",alignItems:"flex-start" },
-    pillBtn: (primary) => ({ width:"100%",padding:"9px 0",borderRadius:"99px",border:"none",background:primary?"linear-gradient(135deg,#7c3aed,#9b5cf6)":"rgba(124,58,237,0.15)",color:primary?"#fff":"rgba(167,139,250,0.9)",fontWeight:"800",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif",marginTop:"auto",transition:"all 0.15s",border:primary?"none":"1px solid rgba(124,58,237,0.25)" }),
+    feature: { fontSize:"9.5px",color:"rgba(196,181,253,0.75)",display:"flex",gap:"5px",alignItems:"flex-start" },
+    pillBtn: (primary) => ({ width:"100%",padding:"9px 0",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.18)",background:"rgba(255,255,255,0.07)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",color:"#fff",fontWeight:"700",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif",marginTop:"auto",transition:"all 0.35s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:"inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 16px rgba(0,0,0,0.3)" }),
     couponWrap: { background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"12px",padding:"12px 14px",marginBottom:"12px" },
     couponInput: { flex:1,padding:"8px 12px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",color:"#fff",fontSize:"12px",fontFamily:"Poppins,sans-serif",outline:"none",letterSpacing:"1px",fontWeight:"700" },
     couponBtn: { padding:"8px 16px",borderRadius:"99px",border:"none",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontWeight:"800",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif" },
@@ -398,7 +399,10 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
                       </div>
                     ))}
                   </div>
-                  <button onClick={() => pay(planId, base)} disabled={!!paying} style={{ ...S.pillBtn(plan.popular||!isFree),marginTop:"10px",opacity:paying&&paying!==planId?0.5:1 }}>
+                  <button onClick={() => pay(planId, base)} disabled={!!paying}
+                    onMouseEnter={e=>{ e.currentTarget.style.background="radial-gradient(ellipse at 30% 30%,#9b5cf6,#7c3aed 50%,#4c1d95)"; e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.boxShadow="0 0 20px rgba(124,58,237,0.8),0 0 40px rgba(124,58,237,0.4),0 8px 32px rgba(124,58,237,0.3),inset 0 1px 0 rgba(255,255,255,0.2)"; e.currentTarget.style.transform="translateY(-2px) scale(1.04)"; }}
+                    onMouseLeave={e=>{ e.currentTarget.style.background="rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.18)"; e.currentTarget.style.boxShadow="inset 0 1px 0 rgba(255,255,255,0.15),0 4px 16px rgba(0,0,0,0.3)"; e.currentTarget.style.transform="none"; }}
+                    style={{ ...S.pillBtn(plan.popular||!isFree),marginTop:"10px",opacity:paying&&paying!==planId?0.5:1 }}>
                     {paying===planId?"processing…":plan.cta}
                   </button>
                 </div>
@@ -1574,8 +1578,9 @@ function CustomSelect({ value, onChange, options, label, grid=false, centered=fa
   );
 }
 
-function ChannelSettingsModal({ user, onClose, BASE }) {
+function ChannelSettingsModal({ user, onClose, BASE, onUpgrade }) {
   const userId = localStorage.getItem("sociomee_user_id") || user?.user_id || "";
+  const isPro = (user?.plan||user?.plan_label||"free").toLowerCase() !== "free";
   const [ytChannels, setYtChannels] = useState([]);
   const [pinterestStatus, setPinterestStatus] = useState(null);
   const [threadsStatus, setThreadsStatus] = useState(null);
@@ -1644,30 +1649,28 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
         <div style={{height:"1px",background:"rgba(255,255,255,0.07)",margin:"16px 0"}}/>
         {loading ? <div style={{textAlign:"center",padding:"40px",color:"rgba(255,255,255,0.3)",fontSize:"13px"}}>Loading...</div> : (<>
           <Sec icon={<img src="/icons/youtube.png" style={{width:20,height:20,objectFit:"contain"}} alt="yt"/>} label="YouTube Channels" count={ytChannels.length}>
-            {ytChannels.length ? ytChannels.map(ch => (<div key={ch.channel_id||ch.title} style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,0,0,0.05)",border:"1px solid rgba(255,0,0,0.15)",marginBottom:"8px"}}>{ch.thumbnail?<img src={ch.thumbnail} style={{width:38,height:38,borderRadius:"50%",objectFit:"cover",flexShrink:0}} alt=""/>:<YTIcon/>}<div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ch.title||"Channel"}</div><div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{ch.subscribers?Number(ch.subscribers).toLocaleString()+" subs":""}</div></div><DisconnectBtn onClick={()=>disconnectYT(ch.channel_id)}/></div>)) : (<div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 24px",gap:"16px",textAlign:"center"}}><div style={{width:"64px",height:"64px",borderRadius:"50%",background:"rgba(255,0,0,0.12)",border:"2px solid rgba(255,0,0,0.3)",display:"flex",alignItems:"center",justifyContent:"center"}}><YTIcon size={28}/></div><h3 style={{fontSize:"16px",fontWeight:"900",color:"#fff",margin:0}}>Connect YouTube</h3><p style={{fontSize:"12.5px",color:"rgba(255,255,255,0.45)",lineHeight:1.6,maxWidth:"280px",margin:0}}>Publish videos, track analytics, and manage your YouTube channel from SocioMee.</p><a href={`${BASE}/youtube/connect?user_id=${userId}`} style={{display:"flex",alignItems:"center",gap:"8px",padding:"12px 24px",borderRadius:"12px",border:"none",background:"linear-gradient(135deg,#ff0000,#cc0000)",color:"white",fontWeight:"800",fontSize:"14px",cursor:"pointer",fontFamily:"inherit",textDecoration:"none"}}><YTIcon size={16} color="#fff"/> Connect YouTube</a></div>)}
+            {ytChannels.length ? ytChannels.map(ch => (<div key={ch.channel_id||ch.title} style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,0,0,0.05)",border:"1px solid rgba(255,0,0,0.15)",marginBottom:"8px"}}>{ch.thumbnail?<img src={ch.thumbnail} style={{width:38,height:38,borderRadius:"50%",objectFit:"cover",flexShrink:0}} alt=""/>:<YTIcon/>}<div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ch.title||"Channel"}</div><div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{ch.subscribers?Number(ch.subscribers).toLocaleString()+" subs":""}</div></div><DisconnectBtn onClick={()=>disconnectYT(ch.channel_id)}/></div>)) : (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}><img src="/icons/youtube.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="YouTube"/><span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>YouTube</span>{isPro ? <button onClick={()=>{fetch(`${BASE}/youtube/auth-url?redirect_uri=${encodeURIComponent(window.location.origin + "/youtube/callback")}`).then(r=>r.json()).then(d=>{if(d.url)window.location.href=d.url;}).catch(()=>{});}} style={{fontSize:"10px",color:"#ff0000",fontWeight:"700",background:"rgba(255,0,0,0.1)",padding:"3px 8px",borderRadius:"99px",border:"1px solid rgba(255,0,0,0.3)",cursor:"pointer",fontFamily:"inherit"}}>Connect</button> : <button onClick={()=>onUpgrade()} style={{fontSize:"10px",color:"#a78bfa",fontWeight:"700",background:"rgba(124,58,237,0.1)",padding:"3px 8px",borderRadius:"99px",border:"1px solid rgba(124,58,237,0.3)",cursor:"pointer",fontFamily:"inherit"}}>Upgrade</button>}</div>)}
           </Sec>
           <Sec icon={<img src="/icons/telegram.png" style={{width:20,height:20,objectFit:"contain"}} alt="tg"/>} label="Telegram" count={tgStatus?.connected?1:0}>
-            {tgStatus?.connected ? (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(42,171,238,0.05)",border:"1px solid rgba(42,171,238,0.15)",marginBottom:"8px"}}><div style={{width:"38px",height:"38px",borderRadius:"50%",background:"rgba(42,171,238,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><img src="/icons/telegram.png" style={{width:22,height:22,objectFit:"contain"}} alt="tg"/></div><div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff"}}>{"@"+(tgStatus.telegram_username||tgStatus.full_name||"Connected")}</div>{tgStatus.channel&&<div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{tgStatus.channel}</div>}</div><DisconnectBtn onClick={disconnectTG}/></div>) : <div style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",padding:"8px 0"}}>No Telegram connected</div>}
+            {tgStatus?.connected ? (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(42,171,238,0.05)",border:"1px solid rgba(42,171,238,0.15)",marginBottom:"8px"}}><div style={{width:"38px",height:"38px",borderRadius:"50%",background:"rgba(42,171,238,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,overflow:"hidden"}}>{tgStatus.photo_url ? <img src={tgStatus.photo_url} style={{width:"100%",height:"100%",objectFit:"cover"}} alt="tg"/> : <img src="/icons/telegram.png" style={{width:22,height:22,objectFit:"contain"}} alt="tg"/>}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff"}}>{"@"+(tgStatus.telegram_username||tgStatus.full_name||"Connected")}</div>{tgStatus.channel&&<div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{tgStatus.channel}</div>}</div><DisconnectBtn onClick={disconnectTG}/></div>) : (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}><img src="/icons/telegram.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="Telegram"/><span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Telegram</span>{isPro ? <button onClick={()=>{fetch(BASE+"/telegram/connect-link?user_id="+userId).then(r=>r.json()).then(d=>{const link=d.url||d.link||d.connect_link;if(link)window.location.href=link;}).catch(()=>{});}} style={{fontSize:"10px",color:"#2aabee",fontWeight:"700",background:"rgba(42,171,238,0.1)",padding:"3px 8px",borderRadius:"99px",border:"1px solid rgba(42,171,238,0.3)",cursor:"pointer",fontFamily:"inherit"}}>Connect</button> : <button onClick={()=>onUpgrade()} style={{fontSize:"10px",color:"#a78bfa",fontWeight:"700",background:"rgba(124,58,237,0.1)",padding:"3px 8px",borderRadius:"99px",border:"1px solid rgba(124,58,237,0.3)",cursor:"pointer",fontFamily:"inherit"}}>Upgrade</button>}</div>)}
           </Sec>
-          <Sec icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>} label="Discord" count={dcStatus?.guilds?.length||0}>
+          <Sec icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>} label="Discord" count={dcStatus?.guilds?.length||0}>
             {(dcStatus?.guilds && dcStatus.guilds.length > 0) ? dcStatus.guilds.map(g => (
-              <div key={g.guild_id} style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(88,101,242,0.05)",border:"1px solid rgba(88,101,242,0.15)",marginBottom:"8px"}}>
-                <div style={{width:"38px",height:"38px",borderRadius:"50%",background:"rgba(88,101,242,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-                </div>
+              <div key={g.guild_id} style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
+                {g.guild_icon ? <img src={g.guild_icon} style={{width:24,height:24,borderRadius:"50%",objectFit:"cover",flexShrink:0}} alt="Discord"/> : <svg width="24" height="24" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>}
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.guild_name||"Discord Server"}</div>
                   <div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{g.channels?.length||0} channel{g.channels?.length===1?"":"s"}</div>
                 </div>
                 <DisconnectBtn onClick={()=>{fetch(BASE+"/discord/remove-guild?user_id="+userId+"&guild_id="+g.guild_id,{method:"POST"}).catch(()=>{}); setDcStatus(prev=>({guilds:(prev?.guilds||[]).filter(x=>x.guild_id!==g.guild_id)})); window.dispatchEvent(new Event("sociomee-discord-updated"));}}/>
               </div>
-            )) : <div style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",padding:"8px 0"}}>No Discord connected</div>}
+            )) : (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}><svg width="24" height="24" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg><span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1,marginLeft:"4px"}}>Discord</span>{isPro ? <button onClick={()=>{fetch(BASE+"/discord/oauth-url?user_id="+userId).then(r=>r.json()).then(d=>{if(d.url)window.location.href=d.url;}).catch(()=>{});}} style={{fontSize:"10px",color:"rgba(255,255,255,0.6)",fontWeight:"700",background:"rgba(255,255,255,0.06)",padding:"3px 8px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.15)",cursor:"pointer",fontFamily:"inherit"}}>Connect</button> : <button onClick={()=>onUpgrade()} style={{fontSize:"10px",color:"#a78bfa",fontWeight:"700",background:"rgba(124,58,237,0.1)",padding:"3px 8px",borderRadius:"99px",border:"1px solid rgba(124,58,237,0.3)",cursor:"pointer",fontFamily:"inherit"}}>Upgrade</button>}</div>)}
           </Sec>
           <div style={{height:"1px",background:"rgba(255,255,255,0.07)",marginBottom:"16px"}}/>
-          <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.2)",marginBottom:"12px"}}>Other Accounts</div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"12px"}}><div style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/pinterest.png" style={{width:16,height:16,objectFit:"contain"}} alt="pt"/><span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.4)"}}>Pinterest</span></div><span style={{fontSize:"11px",fontWeight:"700",color:"rgba(167,139,250,0.8)"}}>{pinterestStatus?.connected?1:0}/5</span></div>
           {pinterestStatus?.connected ? (
             <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(230,0,35,0.05)",border:"1px solid rgba(230,0,35,0.15)",marginBottom:"8px"}}>
-              <img src="/icons/pinterest.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="Pinterest"/>
+              {pinterestStatus.profile_pic ? <img src={pinterestStatus.profile_pic} style={{width:24,height:24,borderRadius:"50%",objectFit:"cover",flexShrink:0}} alt="Pinterest"/> : <img src="/icons/pinterest.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="Pinterest"/>}
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{pinterestStatus.username||pinterestStatus.account_name||"Connected"}</div>
               </div>
@@ -1675,16 +1678,34 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
             </div>
           ) : (
             <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
-              <img src="/icons/pinterest.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="Pinterest"/>
+              <img src="/icons/pinterest.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="Pinterest"/>
               <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Pinterest</span>
-              <a href={BASE+"/pinterest/connect?user_id="+userId} style={{fontSize:"10px",color:"#e60023",fontWeight:"700",background:"rgba(230,0,35,0.1)",padding:"3px 8px",borderRadius:"99px",textDecoration:"none",border:"1px solid rgba(230,0,35,0.3)"}}>Connect</a>
+              {isPro ? <a href={BASE+"/pinterest/connect?user_id="+userId} style={{fontSize:"10px",color:"#e60023",fontWeight:"700",background:"rgba(230,0,35,0.1)",padding:"3px 8px",borderRadius:"99px",textDecoration:"none",border:"1px solid rgba(230,0,35,0.3)"}}>Connect</a> : <button onClick={()=>onUpgrade()} style={{fontSize:"10px",color:"#a78bfa",fontWeight:"700",background:"rgba(124,58,237,0.1)",padding:"3px 8px",borderRadius:"99px",border:"1px solid rgba(124,58,237,0.3)",cursor:"pointer",fontFamily:"inherit"}}>Upgrade</button>}
             </div>
           )}
           <div style={{height:"1px",background:"rgba(255,255,255,0.07)",marginBottom:"16px"}}/>
-          <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.2)",marginBottom:"12px"}}>Other Accounts</div>
+          <div style={{height:"1px",background:"rgba(255,255,255,0.07)",margin:"16px 0"}}/>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"12px"}}><div style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/linkedin.png" style={{width:16,height:16,objectFit:"contain"}} alt="li"/><span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.4)"}}>LinkedIn</span></div><span style={{fontSize:"11px",fontWeight:"700",color:"rgba(167,139,250,0.8)"}}>{liStatus?.connected?1:0}/5</span></div>
+          {liStatus?.connected ? (
+            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(10,102,194,0.05)",border:"1px solid rgba(10,102,194,0.15)",marginBottom:"8px"}}>
+              {liStatus.picture ? <img src={liStatus.picture} style={{width:24,height:24,borderRadius:"50%",objectFit:"cover",flexShrink:0}} alt="LinkedIn"/> : <img src="/icons/linkedin.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="LinkedIn"/>}
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{liStatus.name||"Connected"}</div>
+                <div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{liStatus.email||""}</div>
+              </div>
+              <DisconnectBtn onClick={()=>{fetch(BASE+"/linkedin/disconnect",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:userId})}).catch(()=>{}); setLiStatus(null);}}/>
+            </div>
+          ) : (
+            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
+              <img src="/icons/linkedin.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="LinkedIn"/>
+              <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>LinkedIn</span>
+              {isPro ? <a href={BASE+"/linkedin/connect?user_id="+userId} style={{fontSize:"10px",color:"#0a66c2",fontWeight:"700",background:"rgba(10,102,194,0.1)",padding:"3px 8px",borderRadius:"99px",textDecoration:"none",border:"1px solid rgba(10,102,194,0.3)"}}>Connect</a> : <button onClick={()=>onUpgrade()} style={{fontSize:"10px",color:"#a78bfa",fontWeight:"700",background:"rgba(124,58,237,0.1)",padding:"3px 8px",borderRadius:"99px",border:"1px solid rgba(124,58,237,0.3)",cursor:"pointer",fontFamily:"inherit"}}>Upgrade</button>}
+            </div>
+          )}
+          <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.2)",margin:"12px 0 8px"}}>Coming Soon</div>
           {threadsStatus?.connected ? (
             <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",marginBottom:"8px"}}>
-              <img src="/icons/threads.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="Threads"/>
+              <img src="/icons/threads.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="Threads"/>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>@{threadsStatus.username||"sociomeeai.offical"}</div>
                 <div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{threadsStatus.display_name||""}</div>
@@ -1696,37 +1717,21 @@ function ChannelSettingsModal({ user, onClose, BASE }) {
             </div>
           ) : (
             <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
-              <img src="/icons/threads.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="Threads"/>
+              <img src="/icons/threads.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="Threads"/>
               <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Threads</span>
               <span style={{fontSize:"10px",color:"rgba(255,255,255,0.2)",fontWeight:"600",background:"rgba(255,255,255,0.05)",padding:"3px 8px",borderRadius:"99px"}}>Coming Soon</span>
             </div>
           )}
           <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
-            <img src="/icons/instagram.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="Instagram"/>
+            <img src="/icons/instagram.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="Instagram"/>
             <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Instagram</span>
             <span style={{fontSize:"10px",color:"rgba(255,255,255,0.2)",fontWeight:"600",background:"rgba(255,255,255,0.05)",padding:"3px 8px",borderRadius:"99px"}}>Coming Soon</span>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
-            <img src="/icons/facebook.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="Facebook"/>
+            <img src="/icons/facebook.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="Facebook"/>
             <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Facebook</span>
             <span style={{fontSize:"10px",color:"rgba(255,255,255,0.2)",fontWeight:"600",background:"rgba(255,255,255,0.05)",padding:"3px 8px",borderRadius:"99px"}}>Coming Soon</span>
           </div>
-          {liStatus?.connected ? (
-            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(10,102,194,0.05)",border:"1px solid rgba(10,102,194,0.15)",marginBottom:"8px"}}>
-              <img src="/icons/linkedin.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="LinkedIn"/>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{liStatus.name||"Connected"}</div>
-                <div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{liStatus.email||""}</div>
-              </div>
-              <DisconnectBtn onClick={()=>{fetch(BASE+"/linkedin/disconnect",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:userId})}).catch(()=>{}); setLiStatus(null);}}/>
-            </div>
-          ) : (
-            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
-              <img src="/icons/linkedin.png" style={{width:32,height:32,objectFit:"contain",flexShrink:0}} alt="LinkedIn"/>
-              <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>LinkedIn</span>
-              <a href={BASE+"/linkedin/connect?user_id="+userId} style={{fontSize:"10px",color:"#0a66c2",fontWeight:"700",background:"rgba(10,102,194,0.1)",padding:"3px 8px",borderRadius:"99px",textDecoration:"none",border:"1px solid rgba(10,102,194,0.3)"}}>Connect</a>
-            </div>
-          )}
         </>)}
       </div>
     </div>
@@ -1850,6 +1855,11 @@ export default function App() {
   const [loading,      setLoading    ] = useState(false);
   const [error,        setError      ] = useState("");
   const [creditStatus, setCreditStatus] = useState(null);
+  useEffect(() => {
+    const handler = (e) => { if (e.detail) setCreditStatus(prev => ({ ...prev, ...e.detail })); };
+    window.addEventListener("sociomee-credits-updated", handler);
+    return () => window.removeEventListener("sociomee-credits-updated", handler);
+  }, []);
   const [showPricing,  setShowPricing] = useState(false);
   const [bugModal, setBugModal] = useState(false);
   const [bugText, setBugText] = useState("");
@@ -2164,7 +2174,7 @@ export default function App() {
           <div style={{fontSize:"9px",fontWeight:"700",color:"rgba(255,255,255,0.18)",letterSpacing:"1.5px",padding:"12px 12px 4px",textTransform:"uppercase"}}>Connect</div>
 
           {CHANNELS.map(ch=>(
-            <button key={ch.id} onClick={()=>{toggleTab(ch.id);setSidebarOpen(false);}}
+            <button key={ch.id} onClick={()=>{ if(!isPro){setShowPricing(true);return;} toggleTab(ch.id);setSidebarOpen(false);}}
               style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 12px",borderRadius:"8px",border:"none",borderLeft:activeTab===ch.id?`3px solid ${ch.color}`:"3px solid transparent",background:activeTab===ch.id?`${ch.color}14`:"transparent",color:activeTab===ch.id?ch.color:"rgba(255,255,255,0.4)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}>
               <span style={{display:"flex",alignItems:"center",gap:"8px"}}>{ch.icon}{ch.label}</span>
             </button>
@@ -2174,7 +2184,7 @@ export default function App() {
           <div style={{fontSize:"9px",fontWeight:"700",color:"rgba(255,255,255,0.18)",letterSpacing:"1.5px",padding:"12px 12px 4px",textTransform:"uppercase"}}>{t("tools")}</div>
 
           {/* YouTube Tools */}
-          <button onClick={()=>toggleGroup("youtube")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.youtube?"rgba(255,0,0,0.06)":"transparent",color:openGroups.youtube?"#ff6b6b":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s"}}>
+          <button onClick={()=>{ if(!isPro){setShowPricing(true);return;} toggleGroup("youtube");}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.youtube?"rgba(255,0,0,0.06)":"transparent",color:openGroups.youtube?"#ff6b6b":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s"}}>
             <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/youtube.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>YouTube {t("tools")}</span>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.youtube?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
@@ -2197,6 +2207,53 @@ export default function App() {
                   style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #7c3aed":"2px solid transparent",background:activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent",color:activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
                   onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* LinkedIn Tools */}
+          <button onClick={()=>{ if(!isPro){setShowPricing(true);return;} toggleGroup("linkedin_tools");}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.linkedin_tools?"rgba(10,102,194,0.06)":"transparent",color:openGroups.linkedin_tools?"#60a5fa":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/linkedin.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>LinkedIn Tools</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.linkedin_tools?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.linkedin_tools && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(10,102,194,0.15)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"li-post",label:"Post Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>},
+                {tab:"li-headline",label:"Headlines",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>},
+                {tab:"li-about",label:"About Section",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>},
+                {tab:"li-carousel",label:"Carousel Ideas",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>},
+                {tab:"li-hashtags",label:"Hashtags",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>},
+                {tab:"li-besttime",label:"Best Time to Post",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
+              ].map(item=>(
+                <button key={item.tab} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #0a66c2":"2px solid transparent",background:activeTab===item.tab?"rgba(10,102,194,0.12)":"transparent",color:activeTab===item.tab?"#60a5fa":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#60a5fa":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(10,102,194,0.12)":"transparent";}}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Quora Tools */}
+          <button onClick={()=>{ if(!isPro){setShowPricing(true);return;} toggleGroup("quora_tools");}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.quora_tools?"rgba(185,43,39,0.06)":"transparent",color:openGroups.quora_tools?"#e07875":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/quora.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>Quora Tools</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.quora_tools?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openGroups.quora_tools && (
+            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(185,43,39,0.15)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
+              {[
+                {tab:"quora-answer",label:"Answer Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>},
+                {tab:"quora-finder",label:"Question Finder",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>},
+                {tab:"quora-hook",label:"Hook Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
+              ].map(item=>(
+                <button key={item.tab} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #b92b27":"2px solid transparent",background:activeTab===item.tab?"rgba(185,43,39,0.12)":"transparent",color:activeTab===item.tab?"#e07875":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#e07875":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(185,43,39,0.12)":"transparent";}}>
                   {item.icon}{item.label}
                 </button>
               ))}
@@ -2327,33 +2384,6 @@ export default function App() {
           )}
 
           
-          {/* LinkedIn Tools */}
-          <button onClick={()=>toggleGroup("linkedin")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.linkedin?"rgba(0,119,181,0.06)":"transparent",color:openGroups.linkedin?"#60a5fa":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
-            <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/linkedin.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>LinkedIn {t("tools")}</span>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.linkedin?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          {openGroups.linkedin && (
-            <div style={{paddingLeft:"10px",borderLeft:"2px solid rgba(0,119,181,0.2)",marginLeft:"14px",display:"flex",flexDirection:"column",gap:"1px",marginBottom:"4px"}}>
-              {[
-                {tab:"li-post",label:t("postGenerator"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>},
-                {tab:"li-headline",label:"Headline Writer",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
-                {tab:"li-about",label:"About Section",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>},
-                {tab:"li-carousel",label:"Carousel Ideas",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M17 7V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2"/></svg>},
-                {tab:"li-hashtag",label:t("hashtagGenerator"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg>},
-                {tab:"li-besttime",label:t("bestTimeToPost"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
-                {tab:"translator",label:t("translator"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
-                {tab:"texttaudio",label:t("textToAudio"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>},
-              ].map(item=>(
-                <button key={item.tab+"-li"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
-                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #0077b5":"2px solid transparent",background:activeTab===item.tab?"rgba(0,119,181,0.1)":"transparent",color:activeTab===item.tab?"#60a5fa":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
-                  onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#60a5fa":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(0,119,181,0.1)":"transparent";}}>
-                  {item.icon}{item.label}
-                </button>
-              ))}
-            </div>
-          )}
-
           {/* Facebook Tools */}
           <button onClick={()=>toggleGroup("facebook")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.facebook?"rgba(24,119,242,0.06)":"transparent",color:openGroups.facebook?"#93c5fd":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
             <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/facebook.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>Facebook {t("tools")}</span>
@@ -2473,7 +2503,7 @@ export default function App() {
 
         {/* Bottom */}
         <div style={{flexShrink:0,borderTop:"1px solid rgba(255,255,255,0.05)",padding:"12px 8px"}}>
-          {!isPro&&<a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"10px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontSize:"13px",fontWeight:"700",textDecoration:"none",boxShadow:"0 0 20px rgba(124,58,237,0.35)",marginBottom:"8px"}}>✦ Upgrade to Pro</a>}
+          {!isPro&&<button onClick={()=>setShowPricing(true)} style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"10px",borderRadius:"99px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.15)",backdropFilter:"blur(16px)",color:"rgba(255,255,255,0.8)",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",marginBottom:"8px",width:"100%"}}>✦ Upgrade to Pro</button>}
           <button onClick={logout} style={{width:"100%",padding:"9px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>{t("signout")}</button>
         </div>
 
@@ -2589,11 +2619,11 @@ export default function App() {
                     </div>
                     <div style={{fontSize:"11.5px",color:"rgba(255,255,255,0.4)",lineHeight:1.5,flex:1}}>{app.desc}</div>
                     {isFreeUser ? (
-                      <button onClick={()=>{setShowAppStore(false);setShowPlansPopup(true);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");}} style={{padding:"8px",borderRadius:"8px",border:"none",background:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.6)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>🔒 Upgrade to Pro</button>
+                      <button onClick={()=>{setShowAppStore(false);setShowPlansPopup(true);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");}} style={{padding:"8px",borderRadius:"8px",border:"1px solid rgba(124,58,237,0.3)",background:"rgba(124,58,237,0.1)",color:"#a78bfa",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>🔒 Upgrade to Pro</button>
                     ) : added ? (
                       <button onClick={()=>handleRemoveApp(app.id)} style={{padding:"8px",borderRadius:"8px",border:"1px solid rgba(239,68,68,0.3)",background:"rgba(239,68,68,0.08)",color:"#ef4444",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>Remove</button>
                     ) : (
-                      <button onClick={()=>handleAddApp(app.id)} style={{padding:"8px",borderRadius:"8px",border:"none",background:"rgba(255,255,255,0.9)",color:"#0a0a0a",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>+ Add</button>
+                      <button onClick={()=>handleAddApp(app.id)} style={{padding:"8px",borderRadius:"8px",border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.85)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>+ Add</button>
                     )}
                   </div>
                 );
@@ -2650,13 +2680,16 @@ export default function App() {
             {!downgradeConfirm && !downgradeSuccess && (<>
               {plan==="free" && (
                 <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-                  <button onClick={()=>{setShowPlansPopup(false);setTimeout(()=>openPricing("upgrade"),50);}} style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontWeight:"800",fontSize:"14px",border:"none",cursor:"pointer",fontFamily:"inherit",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>✦ Upgrade to Pro — ₹499/mo</button>
+                  <button onClick={()=>{setShowPlansPopup(false);setTimeout(()=>openPricing("upgrade"),50);}}
+  onMouseEnter={e=>{ e.currentTarget.style.background="radial-gradient(ellipse at 30% 30%,#9b5cf6,#7c3aed 50%,#4c1d95)"; e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.boxShadow="0 0 20px rgba(124,58,237,0.8),0 0 40px rgba(124,58,237,0.4),0 8px 32px rgba(124,58,237,0.3),inset 0 1px 0 rgba(255,255,255,0.2)"; e.currentTarget.style.transform="translateY(-2px) scale(1.04)"; }}
+  onMouseLeave={e=>{ e.currentTarget.style.background="rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.18)"; e.currentTarget.style.boxShadow="inset 0 1px 0 rgba(255,255,255,0.15),0 4px 16px rgba(0,0,0,0.3)"; e.currentTarget.style.transform="none"; }}
+  style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.18)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:"pointer",fontFamily:"inherit",boxShadow:"inset 0 1px 0 rgba(255,255,255,0.15),0 4px 16px rgba(0,0,0,0.3)",transition:"all 0.35s cubic-bezier(0.34,1.56,0.64,1)"}}>✦ Upgrade to Pro ₹499/mo</button>
                   <a href="/pricing" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.6)",fontWeight:"700",fontSize:"14px",textDecoration:"none"}}>View All Plans</a>
                 </div>
               )}
               {isPro && !creditStatus?.scheduled_downgrade_plan && (
                 <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-                  <button onClick={()=>{setShowPlansPopup(false);setTimeout(()=>openPricing("premium"),50);}} style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"rgba(124,58,237,0.15)",border:"1px solid rgba(124,58,237,0.4)",color:"#a78bfa",fontWeight:"800",fontSize:"14px",cursor:"pointer",fontFamily:"inherit"}}>Upgrade to Premium ₹1,999/mo</button>
+                  <button onClick={()=>{setShowPlansPopup(false);setTimeout(()=>openPricing("premium"),50);}} style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px",borderRadius:"99px",background:"rgba(124,58,237,0.15)",border:"1px solid rgba(124,58,237,0.4)",color:"#a78bfa",fontWeight:"800",fontSize:"14px",cursor:"pointer",fontFamily:"inherit"}}>Upgrade to Pro+ ₹1,999/mo</button>
                   <button onClick={()=>handleDowngrade("free","Free")} style={{padding:"13px",borderRadius:"99px",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.25)",color:"rgba(167,139,250,0.8)",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.15)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(124,58,237,0.08)"}>Cancel Subscription</button>
                 </div>
               )}
@@ -2850,7 +2883,7 @@ export default function App() {
                     {!isPro&&<span style={{ fontSize:"10px",padding:"2px 7px",borderRadius:"99px",background:"rgba(251,191,36,0.2)",color:"#fbbf24",fontWeight:"800" }}>PRO</span>}
                     {deepResearch&&isPro&&<span style={{ fontSize:"10px",padding:"2px 7px",borderRadius:"99px",background:"rgba(124,58,237,0.3)",color:"#c4b5fd",fontWeight:"800" }}>ON</span>}
                   </button>
-                  {!isPro&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.3)" }}>Pro and Premium only — fetches live news, Wikipedia and trending data</span>}
+                  {!isPro&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.3)" }}>Pro and Pro+ only — fetches live news, Wikipedia and trending data</span>}
                   {deepResearch&&isPro&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.35)" }}>Costs 15 credits — fetches live news, Wikipedia and trending data</span>}
                 </div>
 
@@ -2977,6 +3010,15 @@ export default function App() {
           {activeTab==="instagram"  && isLoggedIn && <InstagramDashboard />}
           {activeTab==="facebook" && isLoggedIn && <FacebookDashboard user={user}/>}
           {activeTab==="linkedin" && isLoggedIn && <LinkedInDashboard user={user}/>}
+          {activeTab==="li-post" && isLoggedIn && <LinkedInPost/>}
+          {activeTab==="li-headline" && isLoggedIn && <LinkedInHeadline/>}
+          {activeTab==="li-about" && isLoggedIn && <LinkedInAbout/>}
+          {activeTab==="li-carousel" && isLoggedIn && <LinkedInCarousel/>}
+          {activeTab==="li-hashtags" && isLoggedIn && <LinkedInHashtags/>}
+          {activeTab==="li-besttime" && isLoggedIn && <LinkedInBestTime/>}
+          {activeTab==="quora-answer" && isLoggedIn && <QuoraAnswer/>}
+          {activeTab==="quora-finder" && isLoggedIn && <QuoraQuestionFinder/>}
+          {activeTab==="quora-hook" && isLoggedIn && <QuoraHook/>}
           {activeTab==="pinterest"  && isLoggedIn && <PinterestDashboard user={user}/>}
           {activeTab==="reddit"     && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Reddit" icon="/icons/reddit.png" color="#ff4500" message="Reddit integration coming soon. Post to subreddits and track upvotes."/></div>}
           {activeTab==="telegram" && isLoggedIn && <TelegramScheduler user={user}/>}
@@ -3001,12 +3043,6 @@ export default function App() {
       {activeTab==="rd-title"     && isLoggedIn && <RedditTitle/>}
       {activeTab==="rd-subreddit" && isLoggedIn && <RedditSubfinder/>}
       {activeTab==="rd-besttime"  && isLoggedIn && <RedditBestTime/>}
-      {activeTab==="li-post"      && isLoggedIn && <LinkedInPost/>}
-      {activeTab==="li-headline"  && isLoggedIn && <LinkedInHeadline/>}
-      {activeTab==="li-about"     && isLoggedIn && <LinkedInAbout/>}
-      {activeTab==="li-carousel"  && isLoggedIn && <LinkedInCarousel/>}
-      {activeTab==="li-hashtag"   && isLoggedIn && <LinkedInHashtags/>}
-      {activeTab==="li-besttime"  && isLoggedIn && <LinkedInBestTime/>}
       {activeTab==="fb-post"      && isLoggedIn && <FacebookPost/>}
       {activeTab==="fb-group"     && isLoggedIn && <FacebookGroupPost/>}
       {activeTab==="fb-ad"        && isLoggedIn && <FacebookAdCopy/>}
@@ -3067,7 +3103,7 @@ export default function App() {
         </div>
       )}
       {channelSettingsOpen && (
-        <ChannelSettingsModal user={{...user, plan_label: creditStatus?.plan_label||"Free"}} onClose={()=>setChannelSettingsOpen(false)} BASE={BASE}/>
+        <ChannelSettingsModal user={{...user, plan_label: creditStatus?.plan_label||"Free"}} onClose={()=>setChannelSettingsOpen(false)} BASE={BASE} onUpgrade={()=>setShowPricing(true)}/>
       )}
       {showPricing && (
         <PricingPopup

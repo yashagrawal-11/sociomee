@@ -53,14 +53,16 @@ const FALLBACK_TIMES = {
 
 async function askGemini(prompt) {
   try {
-    const r = await fetch(AI, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ messages:[{ role:"user", content:prompt }] }) });
+    const r = await fetch(AI, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ messages:[{ role:"user", content:prompt }], cost:2 }) });
     if (!r.ok) return "";
     const d = await r.json();
+    if(d.credit_status)window.dispatchEvent(new CustomEvent("sociomee-credits-updated",{detail:d.credit_status}));
     return d.content?.[0]?.text || "";
   } catch { return ""; }
 }
 
 function parseJSON(text) {
+function stripDashes(s){return typeof s==="string"?s.replace(/[\u2013\u2014-]/g," "):s;}
   try {
     const clean = text.replace(/```json|```/g,"").trim();
     const match = clean.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
@@ -86,7 +88,7 @@ function GlassCard({ children, style={} }) {
 
 function GenButton({ onClick, loading, label="✦ Generate" }) {
   return (
-    <button onClick={onClick} disabled={loading} style={{width:"100%",padding:"14px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.6)",background:loading?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.15)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading?"none":"0 0 24px rgba(124,58,237,0.4)",transition:"all 0.3s",opacity:loading?0.6:1}}>
+    <button onClick={onClick} disabled={loading} style={{width:"100%",padding:"14px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.6)",background:loading?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.15)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:"none",transition:"all 0.3s",opacity:loading?0.6:1}}>
       {loading?"Generating…":label}
     </button>
   );

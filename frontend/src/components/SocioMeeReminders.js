@@ -44,7 +44,7 @@ export default function SocioMeeReminders({ user }) {
     if(!task.trim()||!dateVal||!timeVal){setErr("Please fill in all fields.");return;}
     const ts = Math.floor(new Date(`${dateVal}T${timeVal}`).getTime()/1000);
     if(ts<=Date.now()/1000){setErr("Please choose a future date and time.");return;}
-    if(!isPremium&&reminders.length>=20){setErr("Pro plan allows up to 20 reminders. Upgrade to Premium for unlimited.");return;}
+    if(!isPremium&&reminders.length>=20){setErr("Pro plan allows up to 20 reminders. Upgrade to Pro+ for unlimited.");return;}
     setBusy(true);setErr("");
     try{
       const r = await fetch(`${BASE}/reminders`,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify({user_id:userId,task:task.trim(),scheduled_ts:ts})});
@@ -89,7 +89,7 @@ export default function SocioMeeReminders({ user }) {
         <div style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px 20px",display:"flex",flexDirection:"column",gap:"10px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:"12px",color:"rgba(255,255,255,0.4)",fontFamily:F}}>Pro</span><span style={{fontSize:"12px",color:"rgba(255,255,255,0.8)",fontWeight:"600",fontFamily:F}}>Up to 20 reminders + push notifications</span></div>
           <div style={{height:"1px",background:"rgba(255,255,255,0.06)"}}/>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:"12px",color:"rgba(255,255,255,0.4)",fontFamily:F}}>Premium</span><span style={{fontSize:"12px",color:"rgba(255,255,255,0.8)",fontWeight:"600",fontFamily:F}}>Unlimited + festival auto-reminders</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:"12px",color:"rgba(255,255,255,0.4)",fontFamily:F}}>Pro+</span><span style={{fontSize:"12px",color:"rgba(255,255,255,0.8)",fontWeight:"600",fontFamily:F}}>Unlimited + festival auto-reminders</span></div>
         </div>
         <a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px 0",borderRadius:"12px",background:"#fff",color:"#080810",fontWeight:"700",fontSize:"14px",textDecoration:"none",width:"100%",fontFamily:F}}>Upgrade to Pro</a>
       </div>

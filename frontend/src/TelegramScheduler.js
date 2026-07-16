@@ -10,10 +10,10 @@ const BASE = "https://sociomeeai.com/api";
 function getC() {
   const dark = true;
   return dark ? {
-    rose:"#ff6eb5", purple:"#a78bfa", teal:"#22d3ee", ink:"#ede8ff",
-    muted:"#9d86c8", hairline:"rgba(167,139,250,0.15)", glass:"rgba(22,14,42,0.82)",
+    rose:"#ff6eb5", purple:"#a78bfa", teal:"#22d3ee", ink:"#f5f5f7",
+    muted:"#8a8a94", hairline:"rgba(255,255,255,0.08)", glass:"rgba(255,255,255,0.03)",
     success:"#34d399", warn:"#fbbf24", danger:"#f87171",
-    tg:"#2aabee", slate:"#c4b5fd", inputBg:"rgba(15,8,30,0.9)",
+    tg:"#2aabee", slate:"#b8b8c0", inputBg:"rgba(255,255,255,0.04)",
   } : {
     rose:"#ff3d8f", purple:"#7c3aed", teal:"#0891b2", ink:"#0d0015",
     muted:"#8b6b9a", hairline:"rgba(124,58,237,0.12)", glass:"rgba(255,255,255,0.92)",
@@ -700,10 +700,10 @@ export default function TelegramScheduler({ user }) {
       </div>
 
       {/* Tabs */}
-      <div style={{ display:"flex", gap:"6px", marginBottom:"16px", background:`${C.tg}0d`, borderRadius:"999px", padding:"5px" }}>
+      <div style={{ display:"flex", gap:7, flexWrap:"nowrap", marginBottom:16, overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
         {[["compose","Compose"],["bulk","Bulk"],["ai","AI Caption"],["posts","Posts"]].map(([id,label]) => (
           <button key={id} onClick={()=>setActiveTab(id)}
-            style={{ flex:1, padding:"9px 4px", borderRadius:"999px", border:"none", background:activeTab===id?`linear-gradient(135deg,${C.tg},#1a8ac0)`:"transparent", color:activeTab===id?"#ffffff":C.muted, fontWeight:activeTab===id?"800":"600", fontSize:"11.5px", cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s", boxShadow:activeTab===id?`0 2px 10px ${C.tg}55`:"none" }}>
+            style={{ padding:"7px 14px", borderRadius:99, border:`1.5px solid ${activeTab===id?C.tg:C.hairline}`, background:activeTab===id?`${C.tg}18`:"transparent", color:activeTab===id?C.tg:C.muted, fontWeight:700, fontSize:11.5, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}>
             {label}
           </button>
         ))}

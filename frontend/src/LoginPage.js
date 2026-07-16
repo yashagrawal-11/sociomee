@@ -54,6 +54,29 @@ export function AuthCallback() {
 }
 
 export default function LoginPage() {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pending = params.get("pending");
+    if (!pending) return;
+    setBusy(true);
+    fetch("https://sociomeeai.com/api/auth/confirm-age", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ pending })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.token) {
+          localStorage.setItem("sociomee_token", data.token);
+          window.location.href = "/app";
+        } else {
+          setErr("Age confirmation failed. Please log in again.");
+          setBusy(false);
+        }
+      })
+      .catch(() => { setErr("Something went wrong. Please log in again."); setBusy(false); });
+  }, []);
   useEffect(() => { document.title = "Login | SocioMee"; return () => { document.title = "SocioMee"; }; }, []);
 
   const { loginWithGoogle, loginWithGithub, handleCallback, loading } = useAuth();
