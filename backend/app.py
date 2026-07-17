@@ -1254,8 +1254,8 @@ def payment_plans():
     return {
         "plans": [
             {"id":"free","label":"Free","price_inr":0,"price_paise":0,"credits":20,"period":"month","features":["20 credits/month","Short scripts ≤500 words","Basic SEO"],"highlighted":False,"cta":"Current Plan"},
-            {"id":"pro_monthly","label":"Pro Monthly","price_inr":499,"price_paise":49900,"credits":150,"period":"month","features":["150 credits/month","3000-5000 word scripts","Full SEO — 8 platforms","Thumbnail analyzer"],"highlighted":False,"cta":"Upgrade to Pro"},
-            {"id":"pro_annual","label":"Pro Annual","price_inr":3999,"original_inr":5999,"price_paise":399900,"credits":150,"period":"year","features":["150 credits/month","All Pro features","Save ₹2000 vs monthly","Priority support"],"highlighted":True,"badge":"Best Value","cta":"Get Annual Plan"},
+            {"id":"pro_monthly","label":"Pro Monthly","price_inr":499,"price_paise":49900,"credits":180,"period":"month","features":["180 credits/month","3000-5000 word scripts","Full SEO — 8 platforms","Thumbnail analyzer"],"highlighted":False,"cta":"Upgrade to Pro"},
+            {"id":"pro_annual","label":"Pro Annual","price_inr":3999,"original_inr":5999,"price_paise":399900,"credits":180,"period":"year","features":["180 credits/month","All Pro features","Save ₹2000 vs monthly","Priority support"],"highlighted":True,"badge":"Best Value","cta":"Get Annual Plan"},
         ],
         "topups": [
             {"id":"topup_99","label":"Starter Pack","price_inr":99,"price_paise":9900,"credits":50,"cta":"Buy 50 Credits"},
@@ -1780,6 +1780,42 @@ async def remove_bg(request: Request, user: dict = Depends(get_current_user)):
             raise HTTPException(502, "BG removal failed.")
         result_b64 = base64.b64encode(r.content).decode()
         return {"image": f"data:image/png;base64,{result_b64}"}
+
+# ── SocioMee PDF Compress ───────────────────────────────────────────────────
+@app.post("/pdf/compress")
+@limiter.limit("20/hour")
+async def pdf_compress(request: Request, file: UploadFile = File(...), user: dict = Depends(get_current_user)):
+    import fitz
+    from fastapi.responses import Response
+    err = _check_credits(user.get("user_id",""))
+    if err: return err
+    pdf_bytes = await file.read()
+    if len(pdf_bytes) > 50 * 1024 * 1024:
+        raise HTTPException(400, "File too large. Max 50MB.")
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        for page in doc:
+            for img in page.get_images(full=True):
+                xref = img[0]
+                try:
+                    base_img = doc.extract_image(xref)
+                    img_bytes = base_img["image"]
+                    from PIL import Image
+                    import io as _io
+                    pil_img = Image.open(_io.BytesIO(img_bytes))
+                    max_dim = 1600
+                    if pil_img.width > max_dim or pil_img.height > max_dim:
+                        pil_img.thumbnail((max_dim, max_dim))
+                    out_buf = _io.BytesIO()
+                    pil_img.convert("RGB").save(out_buf, format="JPEG", quality=70, optimize=True)
+                    doc.update_stream(xref, out_buf.getvalue())
+                except Exception:
+                    continue
+        out_bytes = doc.tobytes(garbage=4, deflate=True, clean=True)
+        doc.close()
+        return Response(content=out_bytes, media_type="application/pdf")
+    except Exception as e:
+        raise HTTPException(500, f"Compression failed: {str(e)}")
 
 # ── SocioMee Share ─────────────────────────────────────────────────────────
 import secrets, base64, time

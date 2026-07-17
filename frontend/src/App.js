@@ -232,10 +232,10 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
     { id:"free", label:"Free", monthly:0, annual:0, credits:20, uploads:0,
       features:["20 credits/month","Short scripts ≤500 words","Basic SEO — 2 platforms","Community support"],
       cta:"Get Started Free" },
-    { id_m:"pro_monthly", id_a:"pro_annual", label:"Pro", monthly:499, annual:3999, credits:200, uploads:4, popular:true,
-      features:["150 credits/month","3000–5000 word scripts","Full SEO — 8 platforms","4 YouTube uploads/month","Thumbnail analyzer","Priority support"],
+    { id_m:"pro_monthly", id_a:"pro_annual", label:"Pro", monthly:499, annual:3999, credits:180, uploads:4, popular:true,
+      features:["180 credits/month","3000–5000 word scripts","Full SEO — 8 platforms","4 YouTube uploads/month","Thumbnail analyzer","Priority support"],
       cta:"Upgrade to Pro" },
-    { id_m:"premium_monthly", id_a:"premium_annual", label:"Pro+", monthly:1999, annual:15999, credits:500, uploads:15,
+    { id_m:"premium_monthly", id_a:"premium_annual", label:"Pro+", monthly:1999, annual:15999, credits:300, uploads:15,
       features:["300 credits/month","Unlimited word scripts","Full SEO — all platforms","15 YouTube uploads/month","Advanced AI analytics","Dedicated support","Early access"],
       cta:"Go Pro+" },
   ];

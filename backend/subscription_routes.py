@@ -22,10 +22,10 @@ PLAN_MAP = {
 }
 
 PLAN_INFO = {
-    "pro_monthly":     {"label": "Pro Monthly",     "credits": 200, "plan": "pro_monthly"},
-    "pro_annual":      {"label": "Pro Annual",      "credits": 200, "plan": "pro_annual"},
-    "premium_monthly": {"label": "Premium Monthly", "credits": 500, "plan": "premium_monthly"},
-    "premium_annual":  {"label": "Premium Annual",  "credits": 500, "plan": "premium_annual"},
+    "pro_monthly":     {"label": "Pro Monthly",     "credits": 180, "plan": "pro_monthly"},
+    "pro_annual":      {"label": "Pro Annual",      "credits": 180, "plan": "pro_annual"},
+    "premium_monthly": {"label": "Premium Monthly", "credits": 300, "plan": "premium_monthly"},
+    "premium_annual":  {"label": "Premium Annual",  "credits": 300, "plan": "premium_annual"},
 }
 
 class CreateSubRequest(BaseModel):

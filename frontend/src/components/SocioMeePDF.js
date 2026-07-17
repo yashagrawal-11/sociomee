@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { PDFDocument, degrees } from "pdf-lib";
 
 const C = {
   bg: "#0a0a0a",
@@ -25,10 +26,10 @@ function AISummaryPanel({ summary, keyPoints, onClose, onSendToGenerator }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
       onClick={e => e.target===e.currentTarget && onClose()}>
-      <div style={{ width:"100%", maxWidth:"600px", maxHeight:"85vh", background:"rgba(10,8,20,0.98)", border:"1px solid rgba(124,58,237,0.25)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
+      <div style={{ width:"100%", maxWidth:"600px", maxHeight:"85vh", background:"rgba(8,8,8,0.97)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
         <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-            <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(124,58,237,0.2)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
             </div>
             <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:C.font }}>AI Analysis</span>
@@ -65,7 +66,7 @@ function AISummaryPanel({ summary, keyPoints, onClose, onSendToGenerator }) {
           </button>
           {onSendToGenerator && (
             <button onClick={() => { onSendToGenerator(summary); onClose(); }}
-              style={{ flex:1, padding:"9px", borderRadius:"99px", border:"none", background:"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:"#fff", fontSize:"12px", fontWeight:"700", cursor:"pointer", fontFamily:C.font }}>
+              style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"12px", fontWeight:"700", cursor:"pointer", fontFamily:C.font }}>
               ✦ Generate Content
             </button>
           )}
@@ -90,6 +91,25 @@ export default function SocioMeePDF({ onSendToGenerator, user }) {
   const [fileObj, setFileObj] = useState(null);
   const [thumbs, setThumbs] = useState([]);
   const [thumbsLoading, setThumbsLoading] = useState(false);
+  const [showOrganize, setShowOrganize] = useState(false);
+  const [pageOps, setPageOps] = useState([]);
+  const [organizeSaving, setOrganizeSaving] = useState(false);
+  const [showMerge, setShowMerge] = useState(false);
+  const [mergeFiles, setMergeFiles] = useState([]);
+  const [mergeSaving, setMergeSaving] = useState(false);
+  const [showSplit, setShowSplit] = useState(false);
+  const [splitFrom, setSplitFrom] = useState(1);
+  const [splitTo, setSplitTo] = useState(1);
+  const [splitSaving, setSplitSaving] = useState(false);
+  const [showPageNum, setShowPageNum] = useState(false);
+  const [pageNumSaving, setPageNumSaving] = useState(false);
+  const [compressSaving, setCompressSaving] = useState(false);
+  const [showToImage, setShowToImage] = useState(false);
+  const [toImageSaving, setToImageSaving] = useState(false);
+  const [toImageProgress, setToImageProgress] = useState(0);
+  const [showImgToPdf, setShowImgToPdf] = useState(false);
+  const [imgToPdfFiles, setImgToPdfFiles] = useState([]);
+  const [imgToPdfSaving, setImgToPdfSaving] = useState(false);
 
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -224,12 +244,255 @@ export default function SocioMeePDF({ onSendToGenerator, user }) {
 
   const changeZoom = (d) => setScale(s => Math.min(3, Math.max(0.5, parseFloat((s+d).toFixed(1)))));
 
+  // ── Phase 1: pdf-lib powered editing ──────────────────────────
+  const openOrganize = () => {
+    setPageOps(thumbs.map((t, i) => ({ origIndex: i, rotation: 0, deleted: false })));
+    setShowOrganize(true);
+  };
+
+  const rotatePageOp = (idx) => {
+    setPageOps(ops => ops.map((o, i) => i === idx ? { ...o, rotation: (o.rotation + 90) % 360 } : o));
+  };
+
+  const toggleDeletePageOp = (idx) => {
+    setPageOps(ops => ops.map((o, i) => i === idx ? { ...o, deleted: !o.deleted } : o));
+  };
+
+  const movePageOp = (idx, dir) => {
+    setPageOps(ops => {
+      const next = [...ops];
+      const target = idx + dir;
+      if (target < 0 || target >= next.length) return ops;
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+  };
+
+  const saveOrganizedPdf = async () => {
+    setOrganizeSaving(true);
+    try {
+      const srcBytes = await fileObj.arrayBuffer();
+      const srcDoc = await PDFDocument.load(srcBytes);
+      const newDoc = await PDFDocument.create();
+      const kept = pageOps.filter(o => !o.deleted);
+      const copiedPages = await newDoc.copyPages(srcDoc, kept.map(o => o.origIndex));
+      copiedPages.forEach((page, i) => {
+        const rot = kept[i].rotation;
+        if (rot) page.setRotation(degrees(page.getRotation().angle + rot));
+        newDoc.addPage(page);
+      });
+      const outBytes = await newDoc.save();
+      const newFile = new File([outBytes], fileName || "document.pdf", { type: "application/pdf" });
+      setShowOrganize(false);
+      setFileObj(newFile);
+      await loadPDF(newFile);
+    } catch (e) {
+      console.error("Organize save failed:", e);
+      alert("Could not save changes. Please try again.");
+    } finally {
+      setOrganizeSaving(false);
+    }
+  };
+
+  const addMergeFiles = (files) => {
+    setMergeFiles(prev => [...prev, ...Array.from(files)]);
+  };
+
+  const removeMergeFile = (idx) => {
+    setMergeFiles(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const runMerge = async () => {
+    if (!fileObj || mergeFiles.length === 0) return;
+    setMergeSaving(true);
+    try {
+      const mainBytes = await fileObj.arrayBuffer();
+      const mainDoc = await PDFDocument.load(mainBytes);
+      const newDoc = await PDFDocument.create();
+      const mainPages = await newDoc.copyPages(mainDoc, mainDoc.getPageIndices());
+      mainPages.forEach(p => newDoc.addPage(p));
+      for (const f of mergeFiles) {
+        const bytes = await f.arrayBuffer();
+        const doc = await PDFDocument.load(bytes);
+        const pages = await newDoc.copyPages(doc, doc.getPageIndices());
+        pages.forEach(p => newDoc.addPage(p));
+      }
+      const outBytes = await newDoc.save();
+      const newFile = new File([outBytes], "merged.pdf", { type: "application/pdf" });
+      setShowMerge(false);
+      setMergeFiles([]);
+      setFileObj(newFile);
+      setFileName("merged.pdf");
+      await loadPDF(newFile);
+    } catch (e) {
+      console.error("Merge failed:", e);
+      alert("Could not merge PDFs. Please try again.");
+    } finally {
+      setMergeSaving(false);
+    }
+  };
+
+  const runSplit = async () => {
+    if (!fileObj) return;
+    const from = Math.max(1, Math.min(splitFrom, totalPages));
+    const to = Math.max(from, Math.min(splitTo, totalPages));
+    setSplitSaving(true);
+    try {
+      const srcBytes = await fileObj.arrayBuffer();
+      const srcDoc = await PDFDocument.load(srcBytes);
+      const newDoc = await PDFDocument.create();
+      const indices = [];
+      for (let i = from - 1; i <= to - 1; i++) indices.push(i);
+      const pages = await newDoc.copyPages(srcDoc, indices);
+      pages.forEach(p => newDoc.addPage(p));
+      const outBytes = await newDoc.save();
+      const blob = new Blob([outBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `${(fileName||"document").replace(/\.pdf$/i,"")}_p${from}-${to}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+      setShowSplit(false);
+    } catch (e) {
+      console.error("Split failed:", e);
+      alert("Could not split PDF. Please try again.");
+    } finally {
+      setSplitSaving(false);
+    }
+  };
+
+  const runCompress = async () => {
+    if (!fileObj) return;
+    setCompressSaving(true);
+    try {
+      const token = localStorage.getItem("sociomee_token");
+      const form = new FormData();
+      form.append("file", fileObj, fileName || "document.pdf");
+      const res = await fetch("https://sociomeeai.com/api/pdf/compress", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: form,
+      });
+      if (!res.ok) throw new Error("Compress request failed");
+      const blob = await res.blob();
+      const newFile = new File([blob], fileName || "document.pdf", { type: "application/pdf" });
+      setFileObj(newFile);
+      await loadPDF(newFile);
+    } catch (e) {
+      console.error("Compress failed:", e);
+      alert("Could not compress this PDF. Please try again.");
+    } finally {
+      setCompressSaving(false);
+    }
+  };
+
+  const runExportImages = async () => {
+    if (!pdfDoc) return;
+    setToImageSaving(true);
+    setToImageProgress(0);
+    try {
+      for (let i = 1; i <= totalPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d");
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${(fileName||"document").replace(/\.pdf$/i,"")}_page${i}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        setToImageProgress(i);
+        await new Promise(r => setTimeout(r, 200));
+      }
+      setShowToImage(false);
+    } catch (e) {
+      console.error("Export images failed:", e);
+      alert("Could not export pages as images. Please try again.");
+    } finally {
+      setToImageSaving(false);
+    }
+  };
+
+  const addImgToPdfFiles = (files) => {
+    setImgToPdfFiles(prev => [...prev, ...Array.from(files)]);
+  };
+
+  const removeImgToPdfFile = (idx) => {
+    setImgToPdfFiles(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const runImageToPdf = async () => {
+    if (imgToPdfFiles.length === 0) return;
+    setImgToPdfSaving(true);
+    try {
+      const newDoc = await PDFDocument.create();
+      for (const f of imgToPdfFiles) {
+        const bytes = await f.arrayBuffer();
+        let img;
+        if (f.type === "image/png") {
+          img = await newDoc.embedPng(bytes);
+        } else {
+          img = await newDoc.embedJpg(bytes);
+        }
+        const page = newDoc.addPage([img.width, img.height]);
+        page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+      }
+      const outBytes = await newDoc.save();
+      const blob = new Blob([outBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "images.pdf"; a.click();
+      URL.revokeObjectURL(url);
+      setShowImgToPdf(false);
+      setImgToPdfFiles([]);
+    } catch (e) {
+      console.error("Image to PDF failed:", e);
+      alert("Could not create PDF from these images. Please try again.");
+    } finally {
+      setImgToPdfSaving(false);
+    }
+  };
+
+  const runAddPageNumbers = async () => {
+    if (!fileObj) return;
+    setPageNumSaving(true);
+    try {
+      const srcBytes = await fileObj.arrayBuffer();
+      const doc = await PDFDocument.load(srcBytes);
+      const pages = doc.getPages();
+      pages.forEach((page, i) => {
+        const { width } = page.getSize();
+        page.drawText(`${i + 1} / ${pages.length}`, {
+          x: width / 2 - 20,
+          y: 18,
+          size: 10,
+        });
+      });
+      const outBytes = await doc.save();
+      const newFile = new File([outBytes], fileName || "document.pdf", { type: "application/pdf" });
+      setShowPageNum(false);
+      setFileObj(newFile);
+      await loadPDF(newFile);
+    } catch (e) {
+      console.error("Page numbering failed:", e);
+      alert("Could not add page numbers. Please try again.");
+    } finally {
+      setPageNumSaving(false);
+    }
+  };
+
+
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100vh", background:C.bg, fontFamily:C.font, overflow:"hidden" }}>
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-        .pdf-btn:hover{background:rgba(124,58,237,0.18)!important;border-color:rgba(124,58,237,0.4)!important;color:#a78bfa!important;}
+        .pdf-btn:hover{background:rgba(255,255,255,0.14)!important;border-color:rgba(255,255,255,0.3)!important;color:#ffffff!important;transform:translateY(-1px);}
+.pdf-btn:active{transform:translateY(0);}
         .pdf-nav:hover{background:rgba(255,255,255,0.1)!important;}
         .pdf-thumb:hover{border-color:rgba(124,58,237,0.5)!important;transform:scale(1.03);}
         .pdf-upload:hover{border-color:rgba(124,58,237,0.5)!important;background:rgba(124,58,237,0.06)!important;}
@@ -242,31 +505,70 @@ export default function SocioMeePDF({ onSendToGenerator, user }) {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           </div>
           <div>
-            <h2 style={{ fontSize:"13px", fontWeight:"800", color:C.white, margin:0, fontFamily:C.font }}>SocioMee PDF</h2>
-            {fileName && <p style={{ fontSize:"10px", color:C.muted, margin:0, fontFamily:C.font, maxWidth:"200px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{fileName}</p>}
+            {fileName ? (
+              <h2 style={{ fontSize:"13px", fontWeight:"700", color:C.white, margin:0, fontFamily:C.font, maxWidth:"280px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{fileName}</h2>
+            ) : (
+              <h2 style={{ fontSize:"13px", fontWeight:"700", color:C.white, margin:0, fontFamily:C.font }}>PDF</h2>
+            )}
           </div>
         </div>
 
         {pdfDoc && (
           <div style={{ display:"flex", gap:"6px", alignItems:"center" }}>
             <button onClick={()=>analyzeWithAI("summary")} disabled={aiLoading} className="pdf-btn"
-              style={{ display:"flex", alignItems:"center", gap:"5px", padding:"6px 12px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"9px 18px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"12.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
               {aiLoading ? <div style={{ width:"10px", height:"10px", borderRadius:"50%", border:"2px solid rgba(124,58,237,0.3)", borderTopColor:"#7c3aed", animation:"spin 0.8s linear infinite" }}/> : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>}
               {aiLoading ? "Analyzing..." : "Summarize"}
             </button>
             <button onClick={()=>analyzeWithAI("contract")} disabled={aiLoading} className="pdf-btn"
-              style={{ display:"flex", alignItems:"center", gap:"5px", padding:"6px 12px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"9px 18px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"12.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
               Review Deal
             </button>
             <div style={{ width:"1px", height:"18px", background:C.border }}/>
+            <button onClick={openOrganize} className="pdf-btn"
+              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"9px 18px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"12.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+              Organize
+            </button>
+            <button onClick={()=>setShowMerge(true)} className="pdf-btn"
+              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"9px 18px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"12.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+              Merge
+            </button>
+            <button onClick={()=>{setSplitFrom(1);setSplitTo(totalPages);setShowSplit(true);}} className="pdf-btn"
+              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"9px 18px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"12.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><line x1="12" y1="3" x2="12" y2="21" strokeDasharray="3 3"/></svg>
+              Split
+            </button>
+            <button onClick={()=>setShowPageNum(true)} className="pdf-btn"
+              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"9px 18px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"12.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+              Page #
+            </button>
+            <button onClick={runCompress} disabled={compressSaving} className="pdf-btn"
+              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"9px 18px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"12.5px", fontWeight:"600", cursor:compressSaving?"wait":"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              {compressSaving?"Compressing...":"Compress"}
+            </button>
+            <button onClick={()=>setShowToImage(true)} className="pdf-btn"
+              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"9px 18px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"12.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              To Images
+            </button>
+            <button onClick={()=>setShowImgToPdf(true)} className="pdf-btn"
+              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"9px 18px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"12.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Img to PDF
+            </button>
+            <div style={{ width:"1px", height:"18px", background:C.border }}/>
             <button onClick={sharePDF} className="pdf-btn"
-              style={{ display:"flex", alignItems:"center", gap:"5px", padding:"6px 12px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"9px 18px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"12.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
               Share
             </button>
             <button onClick={downloadPDF} className="pdf-btn"
-              style={{ display:"flex", alignItems:"center", gap:"5px", padding:"6px 12px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              style={{ display:"flex", alignItems:"center", gap:"6px", padding:"9px 18px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"12.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download
             </button>
@@ -373,6 +675,218 @@ export default function SocioMeePDF({ onSendToGenerator, user }) {
               <div style={{ boxShadow:"0 8px 48px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.5)", borderRadius:"3px", overflow:"hidden", height:"fit-content" }}>
                 <canvas ref={canvasRef} style={{ display:"block" }}/>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showOrganize && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
+          onClick={e => e.target===e.currentTarget && setShowOrganize(false)}>
+          <div style={{ width:"100%", maxWidth:"720px", maxHeight:"85vh", background:"rgba(8,8,8,0.97)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
+            <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                </div>
+                <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:C.font }}>Organize Pages</span>
+              </div>
+              <button onClick={()=>setShowOrganize(false)} style={{ background:"rgba(255,255,255,0.06)", border:"none", color:C.muted, width:"28px", height:"28px", borderRadius:"8px", cursor:"pointer", fontSize:"16px" }}>X</button>
+            </div>
+            <div style={{ flex:1, overflowY:"auto", padding:"20px" }}>
+              <p style={{ fontSize:"11px", color:C.muted, fontFamily:C.font, margin:"0 0 16px" }}>Rotate, delete, or reorder pages. Changes apply when you save.</p>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(110px, 1fr))", gap:"14px" }}>
+                {pageOps.map((op, idx) => {
+                  const thumb = thumbs[op.origIndex];
+                  return (
+                    <div key={idx} style={{ opacity: op.deleted ? 0.35 : 1, transition:"opacity 0.15s" }}>
+                      <div style={{ borderRadius:"8px", overflow:"hidden", border:"1.5px solid rgba(255,255,255,0.12)", background:"#2a2a2a", aspectRatio:"3/4", position:"relative" }}>
+                        {thumb?.dataUrl ? (
+                          <img src={thumb.dataUrl} alt={`Page ${op.origIndex+1}`} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block", transform:`rotate(${op.rotation}deg)`, transition:"transform 0.2s" }}/>
+                        ) : (
+                          <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                          </div>
+                        )}
+                        <div style={{ position:"absolute", bottom:"3px", right:"4px", fontSize:"9px", fontWeight:"700", color:"rgba(255,255,255,0.7)", fontFamily:C.font, background:"rgba(0,0,0,0.5)", padding:"1px 5px", borderRadius:"4px" }}>{op.origIndex+1}</div>
+                      </div>
+                      <div style={{ display:"flex", gap:"3px", marginTop:"6px", justifyContent:"center" }}>
+                        <button onClick={()=>movePageOp(idx,-1)} disabled={idx===0} title="Move left" style={{ width:"22px", height:"22px", borderRadius:"5px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:idx===0?"rgba(255,255,255,0.15)":C.muted, cursor:idx===0?"not-allowed":"pointer", fontSize:"10px" }}>L</button>
+                        <button onClick={()=>rotatePageOp(idx)} title="Rotate" style={{ width:"22px", height:"22px", borderRadius:"5px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:C.muted, cursor:"pointer", fontSize:"10px" }}>R</button>
+                        <button onClick={()=>toggleDeletePageOp(idx)} title={op.deleted?"Restore":"Delete"} style={{ width:"22px", height:"22px", borderRadius:"5px", border:"1px solid rgba(255,255,255,0.1)", background: op.deleted ? "rgba(220,38,38,0.15)" : "rgba(255,255,255,0.04)", color: op.deleted ? "#f87171" : C.muted, cursor:"pointer", fontSize:"10px" }}>D</button>
+                        <button onClick={()=>movePageOp(idx,1)} disabled={idx===pageOps.length-1} title="Move right" style={{ width:"22px", height:"22px", borderRadius:"5px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:idx===pageOps.length-1?"rgba(255,255,255,0.15)":C.muted, cursor:idx===pageOps.length-1?"not-allowed":"pointer", fontSize:"10px" }}>R</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div style={{ padding:"14px 20px", borderTop:"1px solid rgba(255,255,255,0.07)", display:"flex", gap:"8px" }}>
+              <button onClick={()=>setShowOrganize(false)} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>Cancel</button>
+              <button onClick={saveOrganizedPdf} disabled={organizeSaving} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"12px", fontWeight:"700", cursor:organizeSaving?"wait":"pointer", fontFamily:C.font, opacity:organizeSaving?0.6:1 }}>{organizeSaving?"Saving...":"Save Changes"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMerge && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
+          onClick={e => e.target===e.currentTarget && setShowMerge(false)}>
+          <div style={{ width:"100%", maxWidth:"480px", maxHeight:"85vh", background:"rgba(8,8,8,0.97)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
+            <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                </div>
+                <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:C.font }}>Merge PDFs</span>
+              </div>
+              <button onClick={()=>setShowMerge(false)} style={{ background:"rgba(255,255,255,0.06)", border:"none", color:C.muted, width:"28px", height:"28px", borderRadius:"8px", cursor:"pointer", fontSize:"16px" }}>X</button>
+            </div>
+            <div style={{ flex:1, overflowY:"auto", padding:"20px" }}>
+              <p style={{ fontSize:"11px", color:C.muted, fontFamily:C.font, margin:"0 0 14px" }}>These PDFs will be appended after <strong style={{color:"rgba(255,255,255,0.7)"}}>{fileName}</strong>, in order.</p>
+              <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"14px" }}>
+                {mergeFiles.map((f, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"8px 12px", borderRadius:"8px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)" }}>
+                    <span style={{ fontSize:"12px", color:"rgba(255,255,255,0.7)", fontFamily:C.font, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{f.name}</span>
+                    <button onClick={()=>removeMergeFile(i)} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.3)", cursor:"pointer", fontSize:"14px" }}>X</button>
+                  </div>
+                ))}
+              </div>
+              <label className="pdf-upload" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", padding:"14px", border:"2px dashed rgba(255,255,255,0.1)", borderRadius:"12px", cursor:"pointer", color:C.muted, fontSize:"12px", fontFamily:C.font }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add PDF files
+                <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{addMergeFiles(e.target.files);e.target.value="";}}/>
+              </label>
+            </div>
+            <div style={{ padding:"14px 20px", borderTop:"1px solid rgba(255,255,255,0.07)", display:"flex", gap:"8px" }}>
+              <button onClick={()=>setShowMerge(false)} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>Cancel</button>
+              <button onClick={runMerge} disabled={mergeSaving || mergeFiles.length===0} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"12px", fontWeight:"700", cursor:(mergeSaving||mergeFiles.length===0)?"not-allowed":"pointer", fontFamily:C.font, opacity:(mergeSaving||mergeFiles.length===0)?0.5:1 }}>{mergeSaving?"Merging...":"Merge & Download"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSplit && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
+          onClick={e => e.target===e.currentTarget && setShowSplit(false)}>
+          <div style={{ width:"100%", maxWidth:"400px", background:"rgba(8,8,8,0.97)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
+            <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/></svg>
+                </div>
+                <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:C.font }}>Split PDF</span>
+              </div>
+              <button onClick={()=>setShowSplit(false)} style={{ background:"rgba(255,255,255,0.06)", border:"none", color:C.muted, width:"28px", height:"28px", borderRadius:"8px", cursor:"pointer", fontSize:"16px" }}>X</button>
+            </div>
+            <div style={{ padding:"20px" }}>
+              <p style={{ fontSize:"11px", color:C.muted, fontFamily:C.font, margin:"0 0 16px" }}>Choose the page range to extract into a new PDF (document has {totalPages} pages).</p>
+              <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
+                <div style={{ flex:1 }}>
+                  <label style={{ fontSize:"10px", color:"rgba(255,255,255,0.35)", fontFamily:C.font, display:"block", marginBottom:"6px" }}>From page</label>
+                  <input type="number" min="1" max={totalPages} value={splitFrom} onChange={e=>setSplitFrom(parseInt(e.target.value)||1)}
+                    style={{ width:"100%", padding:"8px 10px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:C.white, fontSize:"13px", fontFamily:C.font, textAlign:"center", outline:"none", boxSizing:"border-box" }}/>
+                </div>
+                <span style={{ color:"rgba(255,255,255,0.3)", marginTop:"18px" }}>to</span>
+                <div style={{ flex:1 }}>
+                  <label style={{ fontSize:"10px", color:"rgba(255,255,255,0.35)", fontFamily:C.font, display:"block", marginBottom:"6px" }}>To page</label>
+                  <input type="number" min="1" max={totalPages} value={splitTo} onChange={e=>setSplitTo(parseInt(e.target.value)||1)}
+                    style={{ width:"100%", padding:"8px 10px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:C.white, fontSize:"13px", fontFamily:C.font, textAlign:"center", outline:"none", boxSizing:"border-box" }}/>
+                </div>
+              </div>
+            </div>
+            <div style={{ padding:"14px 20px", borderTop:"1px solid rgba(255,255,255,0.07)", display:"flex", gap:"8px" }}>
+              <button onClick={()=>setShowSplit(false)} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>Cancel</button>
+              <button onClick={runSplit} disabled={splitSaving} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"12px", fontWeight:"700", cursor:splitSaving?"wait":"pointer", fontFamily:C.font, opacity:splitSaving?0.6:1 }}>{splitSaving?"Splitting...":"Split & Download"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPageNum && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
+          onClick={e => e.target===e.currentTarget && setShowPageNum(false)}>
+          <div style={{ width:"100%", maxWidth:"380px", background:"rgba(8,8,8,0.97)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
+            <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+                </div>
+                <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:C.font }}>Add Page Numbers</span>
+              </div>
+              <button onClick={()=>setShowPageNum(false)} style={{ background:"rgba(255,255,255,0.06)", border:"none", color:C.muted, width:"28px", height:"28px", borderRadius:"8px", cursor:"pointer", fontSize:"16px" }}>X</button>
+            </div>
+            <div style={{ padding:"20px" }}>
+              <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.6)", fontFamily:C.font, lineHeight:1.7, margin:0 }}>This adds page and total numbering to the bottom center of every page in this document. The original file will be replaced with the numbered version.</p>
+            </div>
+            <div style={{ padding:"14px 20px", borderTop:"1px solid rgba(255,255,255,0.07)", display:"flex", gap:"8px" }}>
+              <button onClick={()=>setShowPageNum(false)} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>Cancel</button>
+              <button onClick={runAddPageNumbers} disabled={pageNumSaving} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"12px", fontWeight:"700", cursor:pageNumSaving?"wait":"pointer", fontFamily:C.font, opacity:pageNumSaving?0.6:1 }}>{pageNumSaving?"Adding...":"Add Page Numbers"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showToImage && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
+          onClick={e => e.target===e.currentTarget && !toImageSaving && setShowToImage(false)}>
+          <div style={{ width:"100%", maxWidth:"380px", background:"rgba(8,8,8,0.97)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
+            <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>
+                <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:C.font }}>Export as Images</span>
+              </div>
+              <button onClick={()=>!toImageSaving && setShowToImage(false)} style={{ background:"rgba(255,255,255,0.06)", border:"none", color:C.muted, width:"28px", height:"28px", borderRadius:"8px", cursor:"pointer", fontSize:"16px" }}>X</button>
+            </div>
+            <div style={{ padding:"20px" }}>
+              <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.6)", fontFamily:C.font, lineHeight:1.7, margin:0 }}>
+                {toImageSaving
+                  ? `Downloading page ${toImageProgress} of ${totalPages}...`
+                  : `Each of the ${totalPages} pages will download as a separate PNG image.`}
+              </p>
+            </div>
+            <div style={{ padding:"14px 20px", borderTop:"1px solid rgba(255,255,255,0.07)", display:"flex", gap:"8px" }}>
+              <button onClick={()=>!toImageSaving && setShowToImage(false)} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>Cancel</button>
+              <button onClick={runExportImages} disabled={toImageSaving} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"12px", fontWeight:"700", cursor:toImageSaving?"wait":"pointer", fontFamily:C.font, opacity:toImageSaving?0.6:1 }}>{toImageSaving?"Exporting...":"Export All Pages"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showImgToPdf && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
+          onClick={e => e.target===e.currentTarget && setShowImgToPdf(false)}>
+          <div style={{ width:"100%", maxWidth:"480px", maxHeight:"85vh", background:"rgba(8,8,8,0.97)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
+            <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:C.font }}>Images to PDF</span>
+              </div>
+              <button onClick={()=>setShowImgToPdf(false)} style={{ background:"rgba(255,255,255,0.06)", border:"none", color:C.muted, width:"28px", height:"28px", borderRadius:"8px", cursor:"pointer", fontSize:"16px" }}>X</button>
+            </div>
+            <div style={{ flex:1, overflowY:"auto", padding:"20px" }}>
+              <p style={{ fontSize:"11px", color:C.muted, fontFamily:C.font, margin:"0 0 14px" }}>Images will become pages in a new PDF, in the order added.</p>
+              <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"14px" }}>
+                {imgToPdfFiles.map((f, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"8px 12px", borderRadius:"8px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)" }}>
+                    <span style={{ fontSize:"12px", color:"rgba(255,255,255,0.7)", fontFamily:C.font, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{f.name}</span>
+                    <button onClick={()=>removeImgToPdfFile(i)} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.3)", cursor:"pointer", fontSize:"14px" }}>X</button>
+                  </div>
+                ))}
+              </div>
+              <label className="pdf-upload" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", padding:"14px", border:"2px dashed rgba(255,255,255,0.1)", borderRadius:"12px", cursor:"pointer", color:C.muted, fontSize:"12px", fontFamily:C.font }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add images
+                <input type="file" accept="image/png,image/jpeg" multiple style={{ display:"none" }} onChange={e=>{addImgToPdfFiles(e.target.files);e.target.value="";}}/>
+              </label>
+            </div>
+            <div style={{ padding:"14px 20px", borderTop:"1px solid rgba(255,255,255,0.07)", display:"flex", gap:"8px" }}>
+              <button onClick={()=>setShowImgToPdf(false)} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>Cancel</button>
+              <button onClick={runImageToPdf} disabled={imgToPdfSaving || imgToPdfFiles.length===0} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"12px", fontWeight:"700", cursor:(imgToPdfSaving||imgToPdfFiles.length===0)?"not-allowed":"pointer", fontFamily:C.font, opacity:(imgToPdfSaving||imgToPdfFiles.length===0)?0.5:1 }}>{imgToPdfSaving?"Creating...":"Create PDF"}</button>
             </div>
           </div>
         </div>

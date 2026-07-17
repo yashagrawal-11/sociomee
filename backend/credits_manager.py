@@ -21,8 +21,8 @@ from typing import Any, Dict, Optional
 # ── Plan config ───────────────────────────────────────────────────────
 PLAN_LIMITS: Dict[str, int] = {
     "free":             20,
-    "pro_monthly":      170,
-    "pro_annual":       170,
+    "pro_monthly":      180,
+    "pro_annual":       180,
     "premium_monthly":  300,
     "premium_annual":   300,
 }
@@ -31,7 +31,7 @@ PLAN_PRICES: Dict[str, Dict[str, Any]] = {
     "pro_monthly": {
         "amount":    49900,
         "label":     "SocioMee Pro Monthly",
-        "credits":   200,
+        "credits":   180,
         "uploads":   4,
         "type":      "plan",
         "features":  ["Full AI SEO", "Full script", "4 auto-uploads/month", "Instagram Auto DM", "Best time scheduling", "Thumbnail AI"],
@@ -39,7 +39,7 @@ PLAN_PRICES: Dict[str, Dict[str, Any]] = {
     "pro_annual": {
         "amount":    399900,
         "label":     "SocioMee Pro Annual",
-        "credits":   200,
+        "credits":   180,
         "uploads":   4,
         "type":      "plan",
         "features":  ["Full AI SEO", "Full script", "4 auto-uploads/month", "Instagram Auto DM", "Best time scheduling", "Thumbnail AI", "33% off vs monthly"],
@@ -47,7 +47,7 @@ PLAN_PRICES: Dict[str, Dict[str, Any]] = {
     "premium_monthly": {
         "amount":    299900,
         "label":     "SocioMee Pro+ Monthly",
-        "credits":   500,
+        "credits":   300,
         "uploads":   15,
         "type":      "plan",
         "features":  ["Perfect SEO + competitor research", "Script + hooks + research", "15 auto-uploads/month", "Instagram Auto DM", "Best time scheduling", "Thumbnail AI", "Priority support"],
@@ -55,7 +55,7 @@ PLAN_PRICES: Dict[str, Dict[str, Any]] = {
     "premium_annual": {
         "amount":    2399900,
         "label":     "SocioMee Pro+ Annual",
-        "credits":   500,
+        "credits":   300,
         "uploads":   15,
         "type":      "plan",
         "features":  ["Perfect SEO + competitor research", "Script + hooks + research", "15 auto-uploads/month", "Instagram Auto DM", "Best time scheduling", "Thumbnail AI", "Priority support", "33% off vs monthly"],
