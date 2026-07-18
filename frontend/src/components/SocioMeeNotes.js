@@ -61,6 +61,10 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
   const recognitionRef = useRef(null);
   const shouldRecordRef = useRef(false);
   const finalTranscriptRef = useRef("");
+  const [summarizingId, setSummarizingId] = useState(null);
+  const [taggingId, setTaggingId] = useState(null);
+  const [showCalModal, setShowCalModal] = useState(false);
+  const [calDate, setCalDate] = useState(new Date().toISOString().slice(0,10));
   const [recordSeconds, setRecordSeconds] = useState(0);
   const recordTimerRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -160,14 +164,31 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
         try { rec.start(); } catch (err) {}
       } else {
         setRecording(false);
-        const finalContent = finalTranscriptRef.current.trim();
-        if (finalContent) {
-          const note = { id:Date.now(), type:"note", title:"Voice Note", content:finalContent, category:"drafts", color:"#fff", pinned:false, starred:false, image:null, todos:[], createdAt:Date.now(), updatedAt:Date.now() };
-          const updated = [note, ...notes];
-          save(updated);
-          setActiveNote(note.id);
-          setActiveCat("drafts");
-        }
+        const rawContent = finalTranscriptRef.current.trim();
+        (async () => {
+          let finalContent = rawContent;
+          if (rawContent && isPremium) {
+            try {
+              const token = localStorage.getItem("sociomee_token");
+              const prompt = `Clean up this raw voice transcript: fix punctuation and capitalization, remove filler words (um, uh, like, you know) and false-start repeats, but keep the original meaning and wording otherwise unchanged. Return ONLY the cleaned text, no commentary. Transcript: ${rawContent}`;
+              const res = await fetch("https://sociomeeai.com/api/ai/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                body: JSON.stringify({ messages: [{ role: "user", content: prompt }], cost: 3 }),
+              });
+              const data = await res.json();
+              const text = data.content?.[0]?.text || data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+              if (text.trim()) finalContent = text.trim();
+            } catch (e) { console.error("Transcript cleanup failed:", e); }
+          }
+          if (finalContent) {
+            const note = { id:Date.now(), type:"note", title:"Voice Note", content:finalContent, category:"drafts", color:"#fff", pinned:false, starred:false, image:null, todos:[], createdAt:Date.now(), updatedAt:Date.now() };
+            const updated = [note, ...notes];
+            save(updated);
+            setActiveNote(note.id);
+            setActiveCat("drafts");
+          }
+        })();
         setRecordingText("");
         finalTranscriptRef.current = "";
       }
@@ -204,6 +225,84 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
     if (recordTimerRef.current) { clearInterval(recordTimerRef.current); recordTimerRef.current = null; }
   };
 
+  const addToCalendar = (noteId) => {
+    if (!isPremium) { alert("Note to Reminder is a Pro+ feature."); return; }
+    setCalDate(new Date().toISOString().slice(0,10));
+    setShowCalModal(true);
+  };
+  const confirmAddToCalendar = () => {
+    const note = activeNoteObj;
+    if (!note || !calDate) return;
+    const parts = calDate.split("-");
+    if (parts.length !== 3) { alert("Please pick a valid date."); return; }
+    const yr = parseInt(parts[0], 10);
+    const mo = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    if (isNaN(yr) || isNaN(mo) || isNaN(day)) { alert("Please pick a valid date."); return; }
+    const fk = `${yr}-${mo}-${day}`;
+    try {
+      const pe = JSON.parse(localStorage.getItem("cal_pe") || "{}");
+      const label = note.title && note.title !== "Untitled" ? note.title : "Note";
+      const existing = pe[fk] || "";
+      pe[fk] = existing ? `${existing}\n${label}: ${note.content}` : `${label}: ${note.content}`;
+      localStorage.setItem("cal_pe", JSON.stringify(pe));
+      setShowCalModal(false);
+    } catch (e) {
+      console.error(e);
+      alert("Could not add to Calendar. Please try again.");
+    }
+  };
+  const summarizeNote = async (noteId) => {
+    if (!isPremium) { alert("AI Auto-Summarize is a Pro+ feature."); return; }
+    const note = notes.find(n=>n.id===noteId);
+    if (!note || !note.content || !note.content.trim()) return;
+    setSummarizingId(noteId);
+    try {
+      const token = localStorage.getItem("sociomee_token");
+      const prompt = `Summarize this note in 1-2 short sentences. Return ONLY the summary text, no quotes, no extra commentary. Note: ${note.content.slice(0,3000)}`;
+      const res = await fetch("https://sociomeeai.com/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], cost: 3 }),
+      });
+      const data = await res.json();
+      const text = data.content?.[0]?.text || data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      updateNote(noteId, { summary: text.trim() });
+    } catch (e) {
+      console.error(e);
+      alert("Could not summarize this note. Please try again.");
+    } finally {
+      setSummarizingId(null);
+    }
+  };
+  const autoTagNote = async (noteId) => {
+    if (!isPremium) { alert("AI Auto-Tag is a Pro+ feature."); return; }
+    const note = notes.find(n=>n.id===noteId);
+    if (!note || !note.content || !note.content.trim()) return;
+    setTaggingId(noteId);
+    try {
+      const token = localStorage.getItem("sociomee_token");
+      const prompt = `Suggest 2-4 short relevant tags (single words or short phrases) for this note. Return ONLY valid JSON with no extra text: {"tags":["tag1","tag2","tag3"]}. Note: ${note.content.slice(0,3000)}`;
+      const res = await fetch("https://sociomeeai.com/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], cost: 3 }),
+      });
+      const data = await res.json();
+      const text = data.content?.[0]?.text || data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      const clean = text.replace(/```json|```/g,"").trim();
+      const jsonMatch = clean.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        updateNote(noteId, { tags: parsed.tags || [] });
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Could not tag this note. Please try again.");
+    } finally {
+      setTaggingId(null);
+    }
+  };
   const handleImage = (noteId, file) => {
     if (!file || !file.type.startsWith("image/")) return;
     const reader = new FileReader();
@@ -311,7 +410,9 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
                 <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:note.color==="whites"||note.color==="#fff"?"rgba(255,255,255,0.3)":note.color, flexShrink:0 }}/>
                 <span style={{ fontSize:"12px", fontWeight:"600", color:C.white, fontFamily:FONT, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{note.title||"Untitled"}</span>
               </div>
-              {note.content && <p style={{ fontSize:"10px", color:C.muted, fontFamily:FONT, margin:"0 0 4px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", lineHeight:1.5 }}>{note.content}</p>}
+              {note.summary
+                ? <p style={{ fontSize:"10px", color:"rgba(255,255,255,0.5)", fontStyle:"italic", fontFamily:FONT, margin:"0 0 4px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", lineHeight:1.5 }}>{note.summary}</p>
+                : note.content && <p style={{ fontSize:"10px", color:C.muted, fontFamily:FONT, margin:"0 0 4px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", lineHeight:1.5 }}>{note.content}</p>}
               {note.type==="todo" && note.todos?.length > 0 && <p style={{ fontSize:"10px", color:C.dim, fontFamily:FONT, margin:"0 0 4px" }}>{note.todos.filter(t=>t.done).length}/{note.todos.length} done</p>}
               <p style={{ fontSize:"9px", color:"rgba(255,255,255,0.2)", fontFamily:FONT, margin:0 }}>{timeAgo(note.updatedAt)}</p>
             </div>
@@ -363,6 +464,25 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
                   </button>
                 )}
+                {isPremium && (
+                  <button onClick={()=>summarizeNote(activeNoteObj.id)} disabled={summarizingId===activeNoteObj.id} className="nt-btn"
+                    style={{ padding:"7px 14px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.2s" }}>
+                    {summarizingId===activeNoteObj.id ? "..." : "✦ Summarize"}
+                  </button>
+                )}
+                {isPremium && (
+                  <button onClick={()=>autoTagNote(activeNoteObj.id)} disabled={taggingId===activeNoteObj.id} className="nt-btn"
+                    style={{ padding:"7px 14px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.2s" }}>
+                    {taggingId===activeNoteObj.id ? "..." : "✦ Auto-Tag"}
+                  </button>
+                )}
+                {isPremium && (
+                  <button onClick={()=>addToCalendar(activeNoteObj.id)} className="nt-btn"
+                    style={{ width:"30px", height:"30px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}
+                    title="Add to Calendar">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  </button>
+                )}
                 {onSendToGenerator && (
                   <button onClick={()=>onSendToGenerator(activeNoteObj.content)} className="nt-btn"
                     style={{ padding:"7px 16px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.09)", color:"#fff", fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:FONT, transition:"all 0.2s" }}>
@@ -391,6 +511,19 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
             )}
 
             <div style={{ flex:1, overflowY:"auto", padding:"20px" }}>
+              {activeNoteObj.summary && (
+                <div style={{ padding:"10px 12px", borderRadius:"10px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", marginBottom:"14px" }}>
+                  <p style={{ fontSize:"9px", fontWeight:"700", color:"rgba(255,255,255,0.3)", letterSpacing:"1px", textTransform:"uppercase", fontFamily:FONT, margin:"0 0 4px" }}>Summary</p>
+                  <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.7)", fontFamily:FONT, lineHeight:1.6, margin:0 }}>{activeNoteObj.summary}</p>
+                </div>
+              )}
+              {activeNoteObj.tags && activeNoteObj.tags.length > 0 && (
+                <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"14px" }}>
+                  {activeNoteObj.tags.map((tag,i)=>(
+                    <span key={i} style={{ padding:"4px 10px", borderRadius:"99px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.6)", fontSize:"10px", fontWeight:"600", fontFamily:FONT }}>{tag}</span>
+                  ))}
+                </div>
+              )}
               {activeNoteObj.image && (
                 <div style={{ position:"relative", marginBottom:"16px", borderRadius:"12px", overflow:"visible", textAlign:"center" }}>
                   <img src={activeNoteObj.image} alt="" style={{ maxWidth:"100%", maxHeight:"420px", width:"auto", height:"auto", objectFit:"contain", display:"block", borderRadius:"10px", margin:"0 auto" }}/>
@@ -434,6 +567,31 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
           </>
         )}
       </div>
+      {showCalModal && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
+          onClick={e => e.target===e.currentTarget && setShowCalModal(false)}>
+          <div style={{ width:"100%", maxWidth:"340px", background:"rgba(8,8,8,0.97)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
+            <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:FONT_HEAD }}>Add to Calendar</span>
+              </div>
+              <button onClick={()=>setShowCalModal(false)} style={{ background:"rgba(255,255,255,0.06)", border:"none", color:C.muted, width:"28px", height:"28px", borderRadius:"8px", cursor:"pointer", fontSize:"16px" }}>X</button>
+            </div>
+            <div style={{ padding:"20px" }}>
+              <p style={{ fontSize:"11px", color:C.muted, fontFamily:FONT, margin:"0 0 14px" }}>This note will appear as a personal note on the date you pick.</p>
+              <input type="date" value={calDate} onChange={e=>setCalDate(e.target.value)}
+                style={{ width:"100%", padding:"10px 12px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:C.white, fontSize:"13px", fontFamily:FONT, outline:"none", boxSizing:"border-box", colorScheme:"dark" }}/>
+            </div>
+            <div style={{ padding:"14px 20px", borderTop:"1px solid rgba(255,255,255,0.07)", display:"flex", gap:"8px" }}>
+              <button onClick={()=>setShowCalModal(false)} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>Cancel</button>
+              <button onClick={confirmAddToCalendar} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"12px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>Add</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

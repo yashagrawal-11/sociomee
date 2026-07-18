@@ -188,7 +188,7 @@ export default function SocioMeeCalendar({ user }) {
                 const fi=hasFest?up.findIndex(f=>f.name===dayFests[0].name):-1;
                 const isSel=sel===fi&&fi!==-1;
                 return (
-                  <div key={i} className="cd" onClick={()=>hasFest&&setSel(isSel?null:fi)}
+                  <div key={i} className="cd" onClick={()=>{ if(hasFest){ setSel(isSel?null:fi); } else { setEk(fk); setEt(pe[fk]||""); } }}
                     style={{height:"64px",borderRadius:"10px",border:`1px solid ${isToday?"rgba(255,255,255,0.2)":hasFest?u.border:isSel?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.04)"}`,background:isToday?"rgba(255,255,255,0.09)":hasFest?u.bg:isSel?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.02)",cursor:hasFest?"pointer":"default",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"3px",transition:"background 0.15s",position:"relative",padding:"4px"}}>
                     <span style={{fontSize:"13px",fontWeight:isToday||hasFest?"700":"400",color:isToday?"#fff":hasFest?u.c:"rgba(255,255,255,0.5)",fontFamily:F,lineHeight:1}}>{day}</span>
                     {hasFest&&<span style={{fontSize:"8px",color:u.c,fontFamily:F,fontWeight:"600",textAlign:"center",lineHeight:1.1,padding:"0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"90%"}}>{dayFests[0].name.split(" ").slice(0,2).join(" ")}</span>}
