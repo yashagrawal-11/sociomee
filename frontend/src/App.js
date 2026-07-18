@@ -2758,7 +2758,7 @@ export default function App() {
       {activeTab==="notes" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Notes" onUpgrade={()=>setShowPricing(true)}>
-          <SocioMeeNotes onSendToGenerator={()=>setActiveTab("generate")}/>
+          <SocioMeeNotes onSendToGenerator={()=>setActiveTab("generate")} user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}

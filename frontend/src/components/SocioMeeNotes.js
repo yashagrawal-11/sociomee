@@ -3,7 +3,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 const FONT = "'DM Sans','Syne',sans-serif";
 const FONT_HEAD = "'Poppins',sans-serif";
 const C = {
-  bg: "#080810",
+  bg: "#0a0a0a",
   border: "rgba(255,255,255,0.07)",
   card: "rgba(255,255,255,0.04)",
   cardHover: "rgba(255,255,255,0.07)",
@@ -42,8 +42,8 @@ function timeAgo(ts) {
   return new Date(ts).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
 }
 
-export default function SocioMeeNotes({ user, onSendToGenerator }) {
-  const rawPlan = user?.plan || user?.plan_label || "free";
+export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus }) {
+  const rawPlan = creditStatus?.plan || user?.plan || user?.plan_label || "free";
   const plan = rawPlan.toLowerCase().includes("premium") ? "premium" : rawPlan.toLowerCase().includes("pro") ? "pro" : "free";
   const isPro = plan === "pro" || plan === "premium";
   const isPremium = plan === "premium";
@@ -59,6 +59,10 @@ export default function SocioMeeNotes({ user, onSendToGenerator }) {
   const [recordingText, setRecordingText] = useState("");
   const mediaRecRef = useRef(null);
   const recognitionRef = useRef(null);
+  const shouldRecordRef = useRef(false);
+  const finalTranscriptRef = useRef("");
+  const [recordSeconds, setRecordSeconds] = useState(0);
+  const recordTimerRef = useRef(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => { setTimeout(() => setLoading(false), 500); }, []);
@@ -118,37 +122,86 @@ export default function SocioMeeNotes({ user, onSendToGenerator }) {
     updateNote(noteId, { todos:note.todos.filter(t=>t.id!==todoId) });
   };
 
-  const startVoice = () => {
-    if (!isPro) { alert("Voice to Note is available on Pro and Pro+ plans."); return; }
+  const startRecognitionInstance = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { alert("Speech recognition not supported in this browser. Try Chrome."); return; }
     const rec = new SR();
     rec.continuous = true;
     rec.interimResults = true;
     rec.lang = "en-IN";
     rec.onresult = (e) => {
-      const transcript = Array.from(e.results).map(r=>r[0].transcript).join(" ");
-      setRecordingText(transcript);
+      let interimText = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) {
+          finalTranscriptRef.current = (finalTranscriptRef.current + " " + r[0].transcript).trim();
+        } else {
+          interimText += r[0].transcript;
+        }
+      }
+      setRecordingText((finalTranscriptRef.current + " " + interimText).trim());
+    };
+    rec.onerror = (e) => {
+      if (e.error === "not-allowed" || e.error === "permission-denied") {
+        alert("Microphone access was denied. Please allow microphone access and try again.");
+        shouldRecordRef.current = false;
+        setRecording(false);
+      } else if (e.error === "network") {
+        alert("Network issue with voice recognition. Please check your connection and try again.");
+        shouldRecordRef.current = false;
+        setRecording(false);
+      } else if (e.error === "audio-capture") {
+        alert("No microphone found. Please connect a microphone and try again.");
+        shouldRecordRef.current = false;
+        setRecording(false);
+      }
     };
     rec.onend = () => {
-      setRecording(false);
-      if (recordingText.trim()) {
-        const note = { id:Date.now(), type:"note", title:"Voice Note", content:recordingText.trim(), category:"drafts", color:"#fff", pinned:false, starred:false, image:null, todos:[], createdAt:Date.now(), updatedAt:Date.now() };
-        const updated = [note, ...notes];
-        save(updated);
-        setActiveNote(note.id);
-        setActiveCat("drafts");
+      if (shouldRecordRef.current) {
+        try { rec.start(); } catch (err) {}
+      } else {
+        setRecording(false);
+        const finalContent = finalTranscriptRef.current.trim();
+        if (finalContent) {
+          const note = { id:Date.now(), type:"note", title:"Voice Note", content:finalContent, category:"drafts", color:"#fff", pinned:false, starred:false, image:null, todos:[], createdAt:Date.now(), updatedAt:Date.now() };
+          const updated = [note, ...notes];
+          save(updated);
+          setActiveNote(note.id);
+          setActiveCat("drafts");
+        }
         setRecordingText("");
+        finalTranscriptRef.current = "";
       }
     };
     rec.start();
     recognitionRef.current = rec;
+  };
+  const startVoice = () => {
+    if (!isPro) { alert("Voice to Note is available on Pro and Pro+ plans."); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert("Speech recognition not supported in this browser. Try Chrome."); return; }
+    setRecordingText("");
+    finalTranscriptRef.current = "";
+    shouldRecordRef.current = true;
     setRecording(true);
+    setRecordSeconds(0);
+    if (recordTimerRef.current) clearInterval(recordTimerRef.current);
+    recordTimerRef.current = setInterval(() => setRecordSeconds(s => s + 1), 1000);
+    startRecognitionInstance();
   };
 
   const stopVoice = () => {
+    shouldRecordRef.current = false;
+    recognitionRef.current?.stop();
+    if (recordTimerRef.current) { clearInterval(recordTimerRef.current); recordTimerRef.current = null; }
+  };
+
+  const cancelVoice = () => {
+    shouldRecordRef.current = false;
+    finalTranscriptRef.current = "";
+    setRecordingText("");
     recognitionRef.current?.stop();
     setRecording(false);
+    if (recordTimerRef.current) { clearInterval(recordTimerRef.current); recordTimerRef.current = null; }
   };
 
   const handleImage = (noteId, file) => {
@@ -206,13 +259,6 @@ export default function SocioMeeNotes({ user, onSendToGenerator }) {
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"10px" }}>
             <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:FONT_HEAD }}>Notes</span>
             <div style={{ display:"flex", gap:"3px" }}>
-              {isPro && (
-                <button onClick={recording?stopVoice:startVoice} className="nt-btn"
-                  style={{ width:"26px", height:"26px", borderRadius:"7px", border:"none", background:recording?"rgba(239,68,68,0.15)":"transparent", color:recording?"#f87171":C.muted, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", animation:recording?"pulse 1s ease-in-out infinite":"none" }}
-                  title={recording?"Stop Recording":"Voice to Note"}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
-                </button>
-              )}
             </div>
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:"3px" }}>
@@ -303,30 +349,51 @@ export default function SocioMeeNotes({ user, onSendToGenerator }) {
                 ))}
                 <div style={{ width:"1px", height:"16px", background:"rgba(255,255,255,0.08)", margin:"0 4px" }}/>
                 <button onClick={()=>updateNote(activeNoteObj.id,{pinned:!activeNoteObj.pinned})} className="nt-btn"
-                  style={{ width:"26px", height:"26px", borderRadius:"7px", border:"none", background:"transparent", color:activeNoteObj.pinned?"rgba(255,255,255,0.9)":C.muted, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill={activeNoteObj.pinned?"currentColor":"none"} stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  style={{ width:"30px", height:"30px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:activeNoteObj.pinned?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.05)", color:activeNoteObj.pinned?"#fff":"rgba(255,255,255,0.75)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill={activeNoteObj.pinned?"currentColor":"none"} stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                 </button>
-                <label className="nt-btn" style={{ width:"26px", height:"26px", borderRadius:"7px", border:"none", background:"transparent", color:C.muted, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <label className="nt-btn" style={{ width:"30px", height:"30px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                   <input type="file" accept="image/*" style={{ display:"none" }} onChange={e=>handleImage(activeNoteObj.id,e.target.files[0])}/>
                 </label>
+                {isPro && (
+                  <button onClick={recording?stopVoice:startVoice} className="nt-btn"
+                    style={{ width:"30px", height:"30px", borderRadius:"99px", border:`1px solid ${recording?"rgba(239,68,68,0.4)":"rgba(255,255,255,0.12)"}`, background:recording?"rgba(239,68,68,0.15)":"rgba(255,255,255,0.05)", color:recording?"#f87171":"rgba(255,255,255,0.75)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s", animation:recording?"pulse 1s ease-in-out infinite":"none" }}
+                    title={recording?"Stop Recording":"Voice to Note"}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+                  </button>
+                )}
                 {onSendToGenerator && (
                   <button onClick={()=>onSendToGenerator(activeNoteObj.content)} className="nt-btn"
-                    style={{ padding:"4px 10px", borderRadius:"7px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:C.muted, fontSize:"10px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.15s" }}>
+                    style={{ padding:"7px 16px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.09)", color:"#fff", fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:FONT, transition:"all 0.2s" }}>
                     ✦ Generate
                   </button>
                 )}
                 <button onClick={()=>deleteNote(activeNoteObj.id)} className="nt-btn"
-                  style={{ width:"26px", height:"26px", borderRadius:"7px", border:"none", background:"transparent", color:"rgba(239,68,68,0.4)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                  style={{ width:"30px", height:"30px", borderRadius:"99px", border:"1px solid rgba(239,68,68,0.2)", background:"rgba(239,68,68,0.08)", color:"rgba(239,68,68,0.7)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
                 </button>
               </div>
             </div>
 
+            {recording && (
+              <div style={{ margin:"12px 20px 0", padding:"14px 16px", borderRadius:"12px", background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.2)", display:"flex", flexDirection:"column", gap:"10px" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                  <div style={{ width:"8px", height:"8px", borderRadius:"50%", background:"#f87171", animation:"pulse 1s ease-in-out infinite", flexShrink:0 }}/>
+                  <span style={{ fontSize:"11px", fontWeight:"700", color:"#f87171", fontFamily:FONT }}>Recording</span>
+                  <span style={{ fontSize:"11px", color:C.muted, fontFamily:FONT, fontVariantNumeric:"tabular-nums" }}>{String(Math.floor(recordSeconds/60)).padStart(2,"0")}:{String(recordSeconds%60).padStart(2,"0")}</span>
+                  <div style={{ flex:1 }}/>
+                  <button onClick={cancelVoice} style={{ padding:"5px 12px", borderRadius:"7px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"10px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>Cancel</button>
+                  <button onClick={stopVoice} style={{ padding:"5px 14px", borderRadius:"7px", border:"none", background:"rgba(239,68,68,0.8)", color:"#fff", fontSize:"10px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>Stop &amp; Save</button>
+                </div>
+                <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.6)", fontFamily:FONT, lineHeight:1.6, margin:0, minHeight:"18px" }}>{recordingText || "Listening..."}</p>
+              </div>
+            )}
+
             <div style={{ flex:1, overflowY:"auto", padding:"20px" }}>
               {activeNoteObj.image && (
-                <div style={{ position:"relative", marginBottom:"16px", borderRadius:"12px", overflow:"hidden", maxHeight:"200px" }}>
-                  <img src={activeNoteObj.image} alt="" style={{ width:"100%", objectFit:"cover", display:"block", maxHeight:"200px" }}/>
+                <div style={{ position:"relative", marginBottom:"16px", borderRadius:"12px", overflow:"visible", textAlign:"center" }}>
+                  <img src={activeNoteObj.image} alt="" style={{ maxWidth:"100%", maxHeight:"420px", width:"auto", height:"auto", objectFit:"contain", display:"block", borderRadius:"10px", margin:"0 auto" }}/>
                   <button onClick={()=>updateNote(activeNoteObj.id,{image:null})}
                     style={{ position:"absolute", top:"8px", right:"8px", width:"24px", height:"24px", borderRadius:"6px", border:"none", background:"rgba(0,0,0,0.6)", color:"#fff", cursor:"pointer", fontSize:"12px", display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
                 </div>
