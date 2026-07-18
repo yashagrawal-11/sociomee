@@ -57,7 +57,7 @@ export default function SocioMeeCalendar({ user }) {
   const sf = sel!==null?up[sel]:null;
 
   if(!isPro) return (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"100vh",padding:"32px",fontFamily:F,background:"#080810"}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"100vh",padding:"32px",fontFamily:F,background:"#0a0a0a"}}>
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"20px",textAlign:"center",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"24px",padding:"48px 40px",maxWidth:"400px",width:"100%"}}>
         <div style={{width:"68px",height:"68px",borderRadius:"20px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -66,13 +66,13 @@ export default function SocioMeeCalendar({ user }) {
           <h3 style={{fontSize:"20px",fontWeight:"700",color:"#fff",margin:"0 0 10px",fontFamily:FH}}>Festival Calendar</h3>
           <p style={{fontSize:"13px",color:"rgba(255,255,255,0.4)",lineHeight:1.8,margin:0}}>Plan content around Indian festivals with content ideas and optimal upload windows.</p>
         </div>
-        <a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px 0",borderRadius:"12px",background:"#fff",color:"#080810",fontWeight:"700",fontSize:"14px",textDecoration:"none",width:"100%",fontFamily:F}}>Upgrade to Pro</a>
+        <a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px 0",borderRadius:"12px",background:"#fff",color:"#0a0a0a",fontWeight:"700",fontSize:"14px",textDecoration:"none",width:"100%",fontFamily:F}}>Upgrade to Pro</a>
       </div>
     </div>
   );
 
   return (
-    <div style={{display:"flex",height:"100vh",background:"#080810",fontFamily:F,overflow:"hidden"}}>
+    <div style={{display:"flex",height:"100vh",background:"#0a0a0a",fontFamily:F,overflow:"hidden"}}>
       <style>{`
         @keyframes skpulse{0%,100%{opacity:0.3}50%{opacity:0.7}}
         @keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -108,9 +108,9 @@ export default function SocioMeeCalendar({ user }) {
       {/* LEFT: Month picker — large scrollable list */}
       <div style={{width:"160px",flexShrink:0,display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         {/* Top fade */}
-        <div style={{position:"absolute",top:0,left:0,right:0,height:"80px",background:"linear-gradient(to bottom,#080810,transparent)",zIndex:2,pointerEvents:"none"}}/>
+        <div style={{position:"absolute",top:0,left:0,right:0,height:"80px",background:"linear-gradient(to bottom,#0a0a0a,transparent)",zIndex:2,pointerEvents:"none"}}/>
         {/* Bottom fade */}
-        <div style={{position:"absolute",bottom:0,left:0,right:0,height:"80px",background:"linear-gradient(to top,#080810,transparent)",zIndex:2,pointerEvents:"none"}}/>
+        <div style={{position:"absolute",bottom:0,left:0,right:0,height:"80px",background:"linear-gradient(to top,#0a0a0a,transparent)",zIndex:2,pointerEvents:"none"}}/>
         {/* Year + nav */}
         <div style={{padding:"20px 16px 10px",flexShrink:0,zIndex:3,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <span style={{fontSize:"13px",fontWeight:"700",color:"rgba(255,255,255,0.25)",fontFamily:FH}}>{yr}</span>

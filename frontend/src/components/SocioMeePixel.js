@@ -3,7 +3,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 const FONT = "'DM Sans','Syne',sans-serif";
 const FONT_HEAD = "'Poppins',sans-serif";
 const C = {
-  bg: "#080810",
+  bg: "#0a0a0a",
   border: "rgba(255,255,255,0.07)",
   card: "rgba(255,255,255,0.04)",
   muted: "rgba(255,255,255,0.35)",
