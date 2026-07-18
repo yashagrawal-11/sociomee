@@ -3057,7 +3057,7 @@ export default function App() {
       {activeTab==="yt-trending"  && isLoggedIn && <TrendingVideos/>}
       {activeTab==="yt-evergreen" && isLoggedIn && <EvergreenScore/>}
       {activeTab==="yt-ideas"     && isLoggedIn && <DailyVideoIdeas/>}
-      {activeTab==="screenrecorder" && isLoggedIn && <ScreenRecorder/>}
+      {activeTab==="screenrecorder" && isLoggedIn && <ScreenRecorder user={user} creditStatus={creditStatus}/>}
       {activeTab==="hashtags"   && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HashtagGenerator user={user}/></div>}
           {activeTab==="texttaudio" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TextToAudio user={user}/></div>}
           {activeTab==="hookgenerator"&&isLoggedIn&& <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HookGenerator user={user}/></div>}

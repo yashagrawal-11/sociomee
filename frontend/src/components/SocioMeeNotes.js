@@ -52,6 +52,45 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
     try { return JSON.parse(localStorage.getItem("sociomee_notes_v2") || "[]"); } catch { return []; }
   });
   const [activeCat, setActiveCat] = useState("all");
+  const [folders, setFolders] = useState(()=>{try{return JSON.parse(localStorage.getItem("sociomee_folders")||"[]");}catch{return [];}});
+  const saveFolders = (updated) => { setFolders(updated); try{localStorage.setItem("sociomee_folders", JSON.stringify(updated));}catch{} };
+  const [showFolderModal, setShowFolderModal] = useState(false);
+  const [folderModalMode, setFolderModalMode] = useState("add");
+  const [folderModalId, setFolderModalId] = useState(null);
+  const [folderNameInput, setFolderNameInput] = useState("");
+  const addFolder = () => {
+    if (!isPremium) { alert("Custom Folders are a Pro+ feature."); return; }
+    setFolderModalMode("add");
+    setFolderModalId(null);
+    setFolderNameInput("");
+    setShowFolderModal(true);
+  };
+  const renameFolder = (id) => {
+    const folder = folders.find(f=>f.id===id);
+    if (!folder) return;
+    setFolderModalMode("rename");
+    setFolderModalId(id);
+    setFolderNameInput(folder.name);
+    setShowFolderModal(true);
+  };
+  const confirmFolderModal = () => {
+    const name = folderNameInput.trim();
+    if (!name) return;
+    if (folderModalMode==="add") {
+      const folder = { id: "folder_"+Date.now(), name };
+      saveFolders([...folders, folder]);
+    } else {
+      saveFolders(folders.map(f=>f.id===folderModalId?{...f,name}:f));
+    }
+    setShowFolderModal(false);
+  };
+  const deleteFolder = (id) => {
+    if (!window.confirm("Delete this folder? Notes inside will move back to their normal category.")) return;
+    saveFolders(folders.filter(f=>f.id!==id));
+    const updatedNotes = notes.map(n=>n.folderId===id?{...n,folderId:null}:n);
+    save(updatedNotes);
+    if (activeCat===id) setActiveCat("all");
+  };
   const [search, setSearch] = useState("");
   const [activeNote, setActiveNote] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -311,7 +350,7 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
   };
 
   const filtered = notes.filter(n => {
-    const matchCat = activeCat==="all" || n.category===activeCat;
+    const matchCat = activeCat==="all" || n.category===activeCat || n.folderId===activeCat;
     const matchSearch = !search || n.title?.toLowerCase().includes(search.toLowerCase()) || n.content?.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   }).sort((a,b) => (b.pinned?1:0)-(a.pinned?1:0) || b.updatedAt-a.updatedAt);
@@ -384,6 +423,26 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
               </button>
             );
           })}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", margin:"12px 6px 4px" }}>
+            <p style={{ fontSize:"9px", fontWeight:"600", color:"rgba(255,255,255,0.2)", letterSpacing:"1.5px", textTransform:"uppercase", fontFamily:FONT, margin:0 }}>Folders</p>
+            <button onClick={addFolder} style={{ background:"transparent", border:"none", color:"rgba(255,255,255,0.3)", cursor:"pointer", fontSize:"13px", padding:0, lineHeight:1 }} title="New Folder">+</button>
+          </div>
+          {folders.map(folder=>{
+            const isActive = activeCat===folder.id;
+            const count = notes.filter(n=>n.folderId===folder.id).length;
+            return (
+              <div key={folder.id} className="nt-cat" onClick={()=>setActiveCat(folder.id)}
+                style={{ width:"100%", display:"flex", alignItems:"center", gap:"8px", padding:"6px 8px", borderRadius:"8px", border:`1px solid ${isActive?"rgba(255,255,255,0.1)":"transparent"}`, background:isActive?"rgba(255,255,255,0.06)":"transparent", cursor:"pointer", transition:"all 0.15s", marginBottom:"1px" }}>
+                <span style={{ color:isActive?"rgba(255,255,255,0.8)":"rgba(255,255,255,0.3)" }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-8l-2-2H5a2 2 0 0 0-2 2z"/></svg>
+                </span>
+                <span style={{ fontSize:"12px", fontWeight:isActive?"600":"400", color:isActive?"rgba(255,255,255,0.9)":C.muted, fontFamily:FONT, flex:1, textAlign:"left", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{folder.name}</span>
+                {count > 0 && <span style={{ fontSize:"9px", color:"rgba(255,255,255,0.2)", fontFamily:FONT }}>{count}</span>}
+                <button onClick={e=>{e.stopPropagation();renameFolder(folder.id);}} style={{ background:"transparent", border:"none", color:"rgba(255,255,255,0.2)", cursor:"pointer", fontSize:"10px", padding:"2px" }} title="Rename">✎</button>
+                <button onClick={e=>{e.stopPropagation();deleteFolder(folder.id);}} style={{ background:"transparent", border:"none", color:"rgba(239,68,68,0.4)", cursor:"pointer", fontSize:"10px", padding:"2px" }} title="Delete">✕</button>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -449,6 +508,13 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
                     style={{ width:"14px", height:"14px", borderRadius:"50%", background:col==="whites"||col==="#fff"?"rgba(255,255,255,0.3)":col, border:activeNoteObj.color===col?"2px solid rgba(255,255,255,0.8)":"2px solid transparent", cursor:"pointer", padding:0, flexShrink:0 }}/>
                 ))}
                 <div style={{ width:"1px", height:"16px", background:"rgba(255,255,255,0.08)", margin:"0 4px" }}/>
+                {isPremium && folders.length > 0 && (
+                  <select value={activeNoteObj.folderId||""} onChange={e=>updateNote(activeNoteObj.id,{folderId:e.target.value||null})}
+                    style={{ height:"30px", padding:"0 8px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"11px", fontFamily:FONT, cursor:"pointer", outline:"none" }}>
+                    <option value="">No folder</option>
+                    {folders.map(f=><option key={f.id} value={f.id}>{f.name}</option>)}
+                  </select>
+                )}
                 <button onClick={()=>updateNote(activeNoteObj.id,{pinned:!activeNoteObj.pinned})} className="nt-btn"
                   style={{ width:"30px", height:"30px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:activeNoteObj.pinned?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.05)", color:activeNoteObj.pinned?"#fff":"rgba(255,255,255,0.75)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill={activeNoteObj.pinned?"currentColor":"none"} stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -588,6 +654,31 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
             <div style={{ padding:"14px 20px", borderTop:"1px solid rgba(255,255,255,0.07)", display:"flex", gap:"8px" }}>
               <button onClick={()=>setShowCalModal(false)} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>Cancel</button>
               <button onClick={confirmAddToCalendar} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"12px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>Add</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showFolderModal && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
+          onClick={e => e.target===e.currentTarget && setShowFolderModal(false)}>
+          <div style={{ width:"100%", maxWidth:"340px", background:"rgba(8,8,8,0.97)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
+            <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><path d="M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-8l-2-2H5a2 2 0 0 0-2 2z"/></svg>
+                </div>
+                <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:FONT_HEAD }}>{folderModalMode==="add"?"New Folder":"Rename Folder"}</span>
+              </div>
+              <button onClick={()=>setShowFolderModal(false)} style={{ background:"rgba(255,255,255,0.06)", border:"none", color:C.muted, width:"28px", height:"28px", borderRadius:"8px", cursor:"pointer", fontSize:"16px" }}>X</button>
+            </div>
+            <div style={{ padding:"20px" }}>
+              <input value={folderNameInput} onChange={e=>setFolderNameInput(e.target.value)} placeholder="Folder name" autoFocus
+                onKeyDown={e=>{if(e.key==="Enter")confirmFolderModal();}}
+                style={{ width:"100%", padding:"10px 12px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:C.white, fontSize:"13px", fontFamily:FONT, outline:"none", boxSizing:"border-box" }}/>
+            </div>
+            <div style={{ padding:"14px 20px", borderTop:"1px solid rgba(255,255,255,0.07)", display:"flex", gap:"8px" }}>
+              <button onClick={()=>setShowFolderModal(false)} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>Cancel</button>
+              <button onClick={confirmFolderModal} style={{ flex:1, padding:"9px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"12px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>{folderModalMode==="add"?"Create":"Save"}</button>
             </div>
           </div>
         </div>

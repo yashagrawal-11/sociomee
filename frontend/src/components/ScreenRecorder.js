@@ -1,6 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 
-export default function ScreenRecorder() {
+export default function ScreenRecorder({ user, creditStatus }) {
+  const rawPlan = creditStatus?.plan || user?.plan || user?.plan_label || "free";
+  const plan = rawPlan.toLowerCase().includes("premium") ? "premium" : rawPlan.toLowerCase().includes("pro") ? "pro" : "free";
+  const isPro = plan === "pro" || plan === "premium";
+  const isPremium = plan === "premium";
+  const MAX_PRO_SECONDS = 300;
   const [status, setStatus] = useState("idle"); // idle | recording | paused | preview
   const [captureTarget, setCaptureTarget] = useState("screen"); // screen | window | tab
   const [micEnabled, setMicEnabled] = useState(false);
@@ -22,12 +27,19 @@ export default function ScreenRecorder() {
 
   useEffect(() => {
     if (status === "recording") {
-      timerRef.current = setInterval(() => setDuration(d => d + 1), 1000);
+      timerRef.current = setInterval(() => setDuration(d => {
+        const next = d + 1;
+        if (!isPremium && next >= MAX_PRO_SECONDS) {
+          stopRecording();
+          alert(`Pro plan recordings are capped at ${MAX_PRO_SECONDS/60} minutes. Upgrade to Pro+ for unlimited recording length.`);
+        }
+        return next;
+      }), 1000);
     } else {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [status]);
+  }, [status, isPremium]);
 
   const formatTime = (s) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 
@@ -82,6 +94,20 @@ export default function ScreenRecorder() {
         setVideoUrl(URL.createObjectURL(blob));
         setStatus("preview");
         if (liveRef.current) liveRef.current.srcObject = null;
+        if (isPremium) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const existing = JSON.parse(localStorage.getItem("cloud_files") || "[]");
+              const entry = { id: Date.now()+Math.random(), name: `Screen Recording ${new Date().toLocaleString()}.webm`, size: blob.size, type: "video/webm", category: "video", addedAt: Date.now(), starred: false, data: reader.result };
+              const updated = [...existing, entry];
+              localStorage.setItem("cloud_files", JSON.stringify(updated));
+            } catch (e) {
+              console.warn("Could not auto-save recording to Cloud:", e);
+            }
+          };
+          reader.readAsDataURL(blob);
+        }
       };
 
       displayStream.getVideoTracks()[0].onended = () => stopRecording();
@@ -132,28 +158,43 @@ export default function ScreenRecorder() {
     label: { fontSize: "10px", fontWeight: "700", letterSpacing: "2px", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", marginBottom: "12px" },
     segGroup: { display: "flex", gap: "6px", flexWrap: "wrap" },
     seg: (active) => ({
-      padding: "8px 16px", borderRadius: "99px", fontSize: "12px", fontWeight: "700",
-      border: active ? "1px solid rgba(124,58,237,0.6)" : "1px solid rgba(255,255,255,0.08)",
-      background: active ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.03)",
-      color: active ? "#c4b5fd" : "rgba(255,255,255,0.45)",
-      cursor: "pointer", transition: "all 0.15s",
+      padding: "9px 18px", borderRadius: "99px", fontSize: "11.5px", fontWeight: "600",
+      border: active ? "1px solid rgba(255,255,255,0.25)" : "1px solid rgba(255,255,255,0.12)",
+      background: active ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.05)",
+      color: active ? "#fff" : "rgba(255,255,255,0.75)",
+      cursor: "pointer", transition: "all 0.2s",
     }),
     toggle: (active) => ({
       width: "40px", height: "22px", borderRadius: "99px", border: "none", cursor: "pointer",
-      background: active ? "linear-gradient(135deg,#7c3aed,#9b5cf6)" : "rgba(255,255,255,0.08)",
+      background: active ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.08)",
       position: "relative", transition: "all 0.2s", flexShrink: 0,
     }),
     dot: (active) => ({
       position: "absolute", top: "3px", left: active ? "21px" : "3px",
       width: "16px", height: "16px", borderRadius: "50%", background: "#fff", transition: "all 0.2s",
     }),
-    primaryBtn: { width: "100%", padding: "14px", borderRadius: "99px", border: "none", background: "linear-gradient(135deg,#7c3aed,#9b5cf6)", color: "#fff", fontWeight: "800", fontSize: "14px", cursor: "pointer", letterSpacing: "0.5px", boxShadow: "0 0 24px rgba(124,58,237,0.4)", transition: "all 0.2s" },
-    secondaryBtn: { flex: 1, padding: "12px", borderRadius: "99px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.7)", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.2s" },
-    dangerBtn: { flex: 1, padding: "12px", borderRadius: "99px", border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)", color: "rgba(239,68,68,0.8)", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.2s" },
-    successBtn: { flex: 1, padding: "12px", borderRadius: "99px", border: "none", background: "linear-gradient(135deg,#059669,#10b981)", color: "#fff", fontWeight: "700", fontSize: "13px", cursor: "pointer" },
+    primaryBtn: { width: "100%", padding: "14px", borderRadius: "99px", border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.14)", color: "#fff", fontWeight: "700", fontSize: "13px", cursor: "pointer", letterSpacing: "0.3px", transition: "all 0.2s" },
+    secondaryBtn: { flex: 1, padding: "12px", borderRadius: "99px", border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.75)", fontWeight: "600", fontSize: "12.5px", cursor: "pointer", transition: "all 0.2s" },
+    dangerBtn: { flex: 1, padding: "12px", borderRadius: "99px", border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.08)", color: "rgba(239,68,68,0.75)", fontWeight: "600", fontSize: "12.5px", cursor: "pointer", transition: "all 0.2s" },
+    successBtn: { flex: 1, padding: "12px", borderRadius: "99px", border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.08)", color: "#fff", fontWeight: "700", fontSize: "12.5px", cursor: "pointer" },
     timer: { fontFamily: "'Orbitron',monospace", fontSize: "32px", fontWeight: "900", color: "#fff", letterSpacing: "4px" },
     dot_rec: { width: "8px", height: "8px", borderRadius: "50%", background: "#ef4444", animation: "pulse 1s infinite", display: "inline-block", marginRight: "8px" },
   };
+
+  if (!isPro) return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"32px 24px", fontFamily:"'DM Sans','Syne',sans-serif" }}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"24px", textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"24px", padding:"52px 44px", maxWidth:"420px", width:"100%", backdropFilter:"blur(24px)" }}>
+        <div style={{ width:"68px", height:"68px", borderRadius:"20px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.7"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div>
+          <h3 style={{ fontSize:"22px", fontWeight:"700", color:"#fff", margin:"0 0 10px", fontFamily:"'Poppins',sans-serif" }}>Screen Recorder</h3>
+          <p style={{ fontSize:"13px", color:"rgba(255,255,255,0.4)", lineHeight:1.8, margin:0 }}>Record your screen, window, or tab with mic and camera overlay. Available on Pro and Pro+ plans.</p>
+        </div>
+        <a href="/pricing" style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"13px 0", borderRadius:"12px", background:"#fff", color:"#0a0a0a", fontWeight:"700", fontSize:"14px", textDecoration:"none", width:"100%" }}>Upgrade to Pro</a>
+      </div>
+    </div>
+  );
 
   return (
     <div style={S.wrap}>
