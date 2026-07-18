@@ -501,6 +501,9 @@ def _check_credits(user_id: str, cost: int = 10):
         return {"error": f"No credits remaining on your {status.get('plan','free').replace('_',' ').title()} plan.", "credits": 0, "credit_status": status}
     return None
 
+def _is_pro_plus(user: dict) -> bool:
+    live_plan = get_credit_status(user.get("user_id","")).get("plan","free")
+    return str(live_plan).startswith("premium")
 def _attach_credits(result: dict, user_id: str) -> dict:
     if isinstance(result, dict):
         status = get_credit_status(user_id)
@@ -1781,6 +1784,162 @@ async def remove_bg(request: Request, user: dict = Depends(get_current_user)):
         result_b64 = base64.b64encode(r.content).decode()
         return {"image": f"data:image/png;base64,{result_b64}"}
 
+# ── SocioMee Pixel AI Thumbnail Generator (Pro+) ────────────────────────────
+@app.post("/pixel/generate-thumbnail")
+@limiter.limit("10/hour")
+async def pixel_generate_thumbnail(request: Request, user: dict = Depends(get_current_user)):
+    import base64, io as _io
+    if not _is_pro_plus(user):
+        raise HTTPException(403, "AI Thumbnail Generator is available on Pro+ only.")
+    err = _check_credits(user.get("user_id",""), cost=8)
+    if err: return err
+    body = await request.json()
+    prompt = (body.get("prompt") or "").strip()
+    if not prompt:
+        raise HTTPException(400, "Prompt is required.")
+    if len(prompt) > 500:
+        prompt = prompt[:500]
+    try:
+        import vertexai
+        from vertexai.preview.vision_models import ImageGenerationModel
+        os.environ.setdefault('GOOGLE_APPLICATION_CREDENTIALS', '/var/www/sociomee/backend/sociomee-auth-key.json')
+        vertexai.init(project='sociomee-auth', location='us-central1')
+        model = ImageGenerationModel.from_pretrained("imagegeneration@006")
+        images = model.generate_images(
+            prompt=f"YouTube thumbnail, high contrast, bold, eye-catching: {prompt}",
+            number_of_images=1,
+            aspect_ratio="16:9",
+        )
+        img_bytes = images[0]._image_bytes
+        result_b64 = base64.b64encode(img_bytes).decode()
+        return {"image": f"data:image/png;base64,{result_b64}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Thumbnail generation failed: {str(e)}")
+
+# ── SocioMee Pixel AI Upscale (Pro+) ────────────────────────────────────────
+@app.post("/pixel/upscale")
+@limiter.limit("15/hour")
+async def pixel_upscale(request: Request, user: dict = Depends(get_current_user)):
+    import base64, io as _io
+    from PIL import Image, ImageFilter
+    if not _is_pro_plus(user):
+        raise HTTPException(403, "AI Upscale is available on Pro+ only.")
+    err = _check_credits(user.get("user_id",""))
+    if err: return err
+    body = await request.json()
+    img_data = body.get("image","")
+    scale = body.get("scale", 2)
+    if scale not in (2, 4):
+        scale = 2
+    if "," in img_data:
+        img_data = img_data.split(",")[1]
+    try:
+        img_bytes = base64.b64decode(img_data)
+        pil_img = Image.open(_io.BytesIO(img_bytes)).convert("RGB")
+        if pil_img.width * scale > 6000 or pil_img.height * scale > 6000:
+            raise HTTPException(400, "Result would be too large. Try a smaller image or lower scale.")
+        new_size = (pil_img.width * scale, pil_img.height * scale)
+        upscaled = pil_img.resize(new_size, Image.LANCZOS)
+        sharpened = upscaled.filter(ImageFilter.UnsharpMask(radius=1.5, percent=55, threshold=4))
+        out_buf = _io.BytesIO()
+        sharpened.save(out_buf, format="PNG", optimize=True)
+        result_b64 = base64.b64encode(out_buf.getvalue()).decode()
+        return {"image": f"data:image/png;base64,{result_b64}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Upscale failed: {str(e)}")
+
+# ── SocioMee PDF Password Protect (Pro+) ────────────────────────────────────
+@app.post("/pdf/protect")
+@limiter.limit("20/hour")
+async def pdf_protect(request: Request, file: UploadFile = File(...), password: str = Form(...), user: dict = Depends(get_current_user)):
+    import fitz
+    from fastapi.responses import Response
+    if not _is_pro_plus(user):
+        raise HTTPException(403, "This feature is available on Pro+ only.")
+    err = _check_credits(user.get("user_id",""))
+    if err: return err
+    pdf_bytes = await file.read()
+    if len(pdf_bytes) > 50 * 1024 * 1024:
+        raise HTTPException(400, "File too large. Max 50MB.")
+    if not password or len(password) < 4:
+        raise HTTPException(400, "Password must be at least 4 characters.")
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        out_bytes = doc.tobytes(
+            encryption=fitz.PDF_ENCRYPT_AES_256,
+            owner_pw=password,
+            user_pw=password,
+            permissions=int(fitz.PDF_PERM_PRINT | fitz.PDF_PERM_COPY | fitz.PDF_PERM_ANNOTATE),
+        )
+        doc.close()
+        return Response(content=out_bytes, media_type="application/pdf")
+    except Exception as e:
+        raise HTTPException(500, f"Protection failed: {str(e)}")
+
+@app.post("/pdf/unlock")
+@limiter.limit("20/hour")
+async def pdf_unlock(request: Request, file: UploadFile = File(...), password: str = Form(...), user: dict = Depends(get_current_user)):
+    import fitz
+    from fastapi.responses import Response
+    if not _is_pro_plus(user):
+        raise HTTPException(403, "This feature is available on Pro+ only.")
+    err = _check_credits(user.get("user_id",""))
+    if err: return err
+    pdf_bytes = await file.read()
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        if doc.is_encrypted:
+            ok = doc.authenticate(password)
+            if not ok:
+                raise HTTPException(400, "Incorrect password.")
+        out_bytes = doc.tobytes()
+        doc.close()
+        return Response(content=out_bytes, media_type="application/pdf")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Unlock failed: {str(e)}")
+
+# ── SocioMee PDF OCR (Pro+) ──────────────────────────────────────────────────
+@app.post("/pdf/ocr")
+@limiter.limit("10/hour")
+async def pdf_ocr(request: Request, file: UploadFile = File(...), user: dict = Depends(get_current_user)):
+    import fitz, pytesseract, io as _io
+    from PIL import Image
+    from fastapi.responses import Response
+    if not _is_pro_plus(user):
+        raise HTTPException(403, "This feature is available on Pro+ only.")
+    err = _check_credits(user.get("user_id",""), cost=10)
+    if err: return err
+    pdf_bytes = await file.read()
+    if len(pdf_bytes) > 30 * 1024 * 1024:
+        raise HTTPException(400, "File too large. Max 30MB for OCR.")
+    try:
+        src_doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        if src_doc.page_count > 25:
+            raise HTTPException(400, "OCR is limited to 25 pages per file.")
+        out_doc = fitz.open()
+        for page in src_doc:
+            pix = page.get_pixmap(dpi=200)
+            img_bytes = pix.tobytes("png")
+            pil_img = Image.open(_io.BytesIO(img_bytes))
+            page_pdf_bytes = pytesseract.image_to_pdf_or_hocr(pil_img, extension="pdf")
+            temp_doc = fitz.open(stream=page_pdf_bytes, filetype="pdf")
+            out_doc.insert_pdf(temp_doc)
+            temp_doc.close()
+        out_bytes = out_doc.tobytes(garbage=4, deflate=True)
+        out_doc.close()
+        src_doc.close()
+        return Response(content=out_bytes, media_type="application/pdf")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"OCR failed: {str(e)}")
+
 # ── SocioMee PDF Compress ───────────────────────────────────────────────────
 @app.post("/pdf/compress")
 @limiter.limit("20/hour")
@@ -1794,24 +1953,7 @@ async def pdf_compress(request: Request, file: UploadFile = File(...), user: dic
         raise HTTPException(400, "File too large. Max 50MB.")
     try:
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        for page in doc:
-            for img in page.get_images(full=True):
-                xref = img[0]
-                try:
-                    base_img = doc.extract_image(xref)
-                    img_bytes = base_img["image"]
-                    from PIL import Image
-                    import io as _io
-                    pil_img = Image.open(_io.BytesIO(img_bytes))
-                    max_dim = 1600
-                    if pil_img.width > max_dim or pil_img.height > max_dim:
-                        pil_img.thumbnail((max_dim, max_dim))
-                    out_buf = _io.BytesIO()
-                    pil_img.convert("RGB").save(out_buf, format="JPEG", quality=70, optimize=True)
-                    doc.update_stream(xref, out_buf.getvalue())
-                except Exception:
-                    continue
-        out_bytes = doc.tobytes(garbage=4, deflate=True, clean=True)
+        out_bytes = doc.tobytes(garbage=4, deflate=True, deflate_images=True, deflate_fonts=True, clean=True)
         doc.close()
         return Response(content=out_bytes, media_type="application/pdf")
     except Exception as e:

@@ -2784,14 +2784,14 @@ export default function App() {
       {activeTab==="pixel" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Pixel" onUpgrade={()=>setShowPricing(true)}>
-          <SocioMeePixel user={user}/>
+          <SocioMeePixel user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="pdf" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee PDF" onUpgrade={()=>setShowPricing(true)}>
-          <SocioMeePDF onSendToGenerator={(text)=>setActiveTab("generate")} user={user}/>
+          <SocioMeePDF onSendToGenerator={(text)=>setActiveTab("generate")} user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}

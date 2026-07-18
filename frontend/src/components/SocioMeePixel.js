@@ -36,10 +36,19 @@ const FILTERS = [
   { id:"punch",  label:"Punch",    css:"contrast(1.3) saturate(1.4)" },
 ];
 
+const TEXT_TEMPLATES = [
+  { id:"clean",   label:"Clean White",   preview:{color:"#ffffff", bg:"#222"}, style:{ color:"#ffffff", font:"Poppins, sans-serif", bold:true, italic:false, shadow:true, strokeColor:null, strokeWidth:0, highlightBg:null } },
+  { id:"bold_out",label:"Bold Outline",  preview:{color:"#ffe600", bg:"#111"}, style:{ color:"#ffe600", font:"Poppins, sans-serif", bold:true, italic:false, shadow:false, strokeColor:"#000000", strokeWidth:8, highlightBg:null } },
+  { id:"neon",    label:"Neon Glow",     preview:{color:"#00e5ff", bg:"#0a0a1a"}, style:{ color:"#00e5ff", font:"Poppins, sans-serif", bold:true, italic:false, shadow:true, strokeColor:null, strokeWidth:0, highlightBg:null } },
+  { id:"highlight",label:"Highlight Box",preview:{color:"#000000", bg:"#ffe600"}, style:{ color:"#000000", font:"Poppins, sans-serif", bold:true, italic:false, shadow:false, strokeColor:null, strokeWidth:0, highlightBg:"#ffe600" } },
+  { id:"minimal", label:"Minimal Black", preview:{color:"#000000", bg:"#f2f2f2"}, style:{ color:"#000000", font:"Poppins, sans-serif", bold:false, italic:false, shadow:false, strokeColor:null, strokeWidth:0, highlightBg:null } },
+  { id:"comic",   label:"Comic Bold",    preview:{color:"#ff3d3d", bg:"#111"}, style:{ color:"#ff3d3d", font:"Poppins, sans-serif", bold:true, italic:true, shadow:false, strokeColor:"#000000", strokeWidth:6, highlightBg:null } },
+];
 const TABS = [
   { id:"adjust",  label:"Adjust",  icon:"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" },
   { id:"filter",  label:"Filters", icon:"M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" },
   { id:"text",    label:"Text",    icon:"M4 7V4h16v3M9 20h6M12 4v16" },
+  { id:"image",   label:"Image",   icon:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8L12 3 7 8M12 3v12" },
   { id:"resize",  label:"Resize",  icon:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" },
   { id:"export",  label:"Export",  icon:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" },
 ];
@@ -61,10 +70,11 @@ function Slider({ label, value, min, max, step=1, unit="", onChange }) {
   );
 }
 
-export default function SocioMeePixel({ user }) {
-  const rawPlan = user?.plan || user?.plan_label || user?.subscription || "free";
+export default function SocioMeePixel({ user, creditStatus }) {
+  const rawPlan = creditStatus?.plan || user?.plan || user?.plan_label || user?.subscription || "free";
   const plan = rawPlan.toLowerCase().includes("premium") ? "premium" : rawPlan.toLowerCase().includes("pro") ? "pro" : "free";
   const isPremium = plan === "premium";
+  const [upscaling, setUpscaling] = useState(false);
   const [image, setImage] = useState(null);
   const [fileName, setFileName] = useState("");
   const [adj, setAdj] = useState(DEFAULT_ADJ);
@@ -73,6 +83,11 @@ export default function SocioMeePixel({ user }) {
   const [customW, setCustomW] = useState(1280);
   const [customH, setCustomH] = useState(720);
   const [texts, setTexts] = useState([]);
+  const [overlays, setOverlays] = useState([]);
+  const [exportRes, setExportRes] = useState(1);
+  const [selOverlay, setSelOverlay] = useState(null);
+  const overlayElsRef = useRef({});
+  const overlayFileInputRef = useRef(null);
   const [selText, setSelText] = useState(null);
   const [activeTab, setActiveTab] = useState("adjust");
   const [dragOver, setDragOver] = useState(false);
@@ -106,13 +121,34 @@ export default function SocioMeePixel({ user }) {
       const x = (tw-w)/2, y = (th-h)/2;
       ctx.drawImage(img, x, y, w, h);
       ctx.filter = "none";
+      overlays.forEach(ov => {
+        const el = overlayElsRef.current[ov.id];
+        if (el && el.complete) {
+          ctx.save();
+          ctx.globalAlpha = (ov.opacity ?? 100) / 100;
+          ctx.drawImage(el, ov.x, ov.y, ov.width, ov.height);
+          ctx.restore();
+        }
+      });
       texts.forEach(t => {
         ctx.save();
         ctx.globalAlpha = t.opacity/100;
-        ctx.fillStyle = t.color;
         ctx.font = `${t.italic?"italic ":""}${t.bold?"bold ":""} ${t.size}px ${t.font}`;
         ctx.textAlign = t.align;
+        if (t.highlightBg) {
+          const metrics = ctx.measureText(t.text);
+          const pad = t.size * 0.25;
+          const bx = t.align==="center" ? t.x-metrics.width/2-pad : t.align==="right" ? t.x-metrics.width-pad : t.x-pad;
+          ctx.fillStyle = t.highlightBg;
+          ctx.fillRect(bx, t.y - t.size*0.85, metrics.width + pad*2, t.size*1.25);
+        }
         if (t.shadow) { ctx.shadowColor="rgba(0,0,0,0.8)"; ctx.shadowBlur=8; }
+        if (t.strokeColor && t.strokeWidth) {
+          ctx.lineWidth = t.strokeWidth;
+          ctx.strokeStyle = t.strokeColor;
+          ctx.strokeText(t.text, t.x, t.y);
+        }
+        ctx.fillStyle = t.color;
         ctx.fillText(t.text, t.x, t.y);
         ctx.restore();
       });
@@ -124,7 +160,7 @@ export default function SocioMeePixel({ user }) {
       img.onload = () => { canvas.width = tw; canvas.height = th; draw(); };
       img.src = image;
     }
-  }, [image, adj, filter, tw, th, texts, buildFilter]);
+  }, [image, adj, filter, tw, th, texts, overlays, buildFilter]);
 
   const handleFile = (file) => {
     if (!file || !file.type.startsWith("image/")) return;
@@ -135,12 +171,90 @@ export default function SocioMeePixel({ user }) {
   };
 
   const addText = () => {
-    const t = { id:Date.now(), text:"Your Text Here", x:tw/2, y:th/2, size:48, color:"#ffffff", font:"Poppins, sans-serif", bold:true, italic:false, align:"center", opacity:100, shadow:true };
+    const t = { id:Date.now(), text:"Your Text Here", x:tw/2, y:th/2, size:48, color:"#ffffff", font:"Poppins, sans-serif", bold:true, italic:false, align:"center", opacity:100, shadow:true, strokeColor:null, strokeWidth:0, highlightBg:null };
     setTexts(prev=>[...prev,t]); setSelText(t.id); setActiveTab("text");
   };
 
   const updateText = (id, fields) => setTexts(prev=>prev.map(t=>t.id===id?{...t,...fields}:t));
   const deleteText = (id) => { setTexts(prev=>prev.filter(t=>t.id!==id)); setSelText(null); };
+  const addOverlay = (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const el = new Image();
+      const id = Date.now();
+      el.onload = () => {
+        const maxDim = 220;
+        const scale = Math.min(1, maxDim / Math.max(el.naturalWidth, el.naturalHeight));
+        const w = el.naturalWidth * scale, h = el.naturalHeight * scale;
+        overlayElsRef.current[id] = el;
+        setOverlays(prev => [...prev, { id, x: tw/2 - w/2, y: th/2 - h/2, width: w, height: h, opacity: 100 }]);
+        setSelOverlay(id);
+      };
+      el.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  const updateOverlay = (id, fields) => setOverlays(prev => prev.map(o => o.id===id ? {...o, ...fields} : o));
+  const deleteOverlay = (id) => { setOverlays(prev => prev.filter(o => o.id!==id)); delete overlayElsRef.current[id]; setSelOverlay(null); };
+  const draggingRef = useRef(null);
+  const getCanvasPoint = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+  };
+  const hitTestText = (pt) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const ctx = canvas.getContext("2d");
+    for (let i = texts.length - 1; i >= 0; i--) {
+      const t = texts[i];
+      ctx.font = `${t.italic?"italic ":""}${t.bold?"bold ":""} ${t.size}px ${t.font}`;
+      const w = ctx.measureText(t.text).width;
+      const h = t.size * 1.2;
+      const left = t.align==="center" ? t.x - w/2 : t.align==="right" ? t.x - w : t.x;
+      const top = t.y - t.size;
+      if (pt.x >= left - 6 && pt.x <= left + w + 6 && pt.y >= top - 6 && pt.y <= top + h + 6) {
+        return t;
+      }
+    }
+    return null;
+  };
+  const hitTestOverlay = (pt) => {
+    for (let i = overlays.length - 1; i >= 0; i--) {
+      const ov = overlays[i];
+      if (pt.x >= ov.x && pt.x <= ov.x + ov.width && pt.y >= ov.y && pt.y <= ov.y + ov.height) {
+        return ov;
+      }
+    }
+    return null;
+  };
+  const handleCanvasMouseDown = (e) => {
+    const pt = getCanvasPoint(e);
+    const hitText = hitTestText(pt);
+    if (hitText) {
+      setSelText(hitText.id);
+      setActiveTab("text");
+      draggingRef.current = { type:"text", id: hitText.id, offsetX: pt.x - hitText.x, offsetY: pt.y - hitText.y };
+      return;
+    }
+    const hitOv = hitTestOverlay(pt);
+    if (hitOv) {
+      setSelOverlay(hitOv.id);
+      setActiveTab("image");
+      draggingRef.current = { type:"overlay", id: hitOv.id, offsetX: pt.x - hitOv.x, offsetY: pt.y - hitOv.y };
+    }
+  };
+  const handleCanvasMouseMove = (e) => {
+    if (!draggingRef.current) return;
+    const pt = getCanvasPoint(e);
+    const { type, id, offsetX, offsetY } = draggingRef.current;
+    if (type === "overlay") updateOverlay(id, { x: pt.x - offsetX, y: pt.y - offsetY });
+    else updateText(id, { x: pt.x - offsetX, y: pt.y - offsetY });
+  };
+  const handleCanvasMouseUp = () => { draggingRef.current = null; };
 
   const removeBg = async () => {
     if (!image) return;
@@ -158,13 +272,81 @@ export default function SocioMeePixel({ user }) {
     finally { setBgRemoving(false); }
   };
 
+  const upscaleImage = async (scale=2) => {
+    if (!image) return;
+    if (!isPremium) { alert("AI Upscale is a Pro+ feature. Upgrade to Pro+ to use it."); return; }
+    setUpscaling(true);
+    try {
+      const res = await fetch("https://sociomeeai.com/api/pixel/upscale", { method:"POST", headers:{"Content-Type":"application/json"}, credentials:"include", body:JSON.stringify({image, scale}) });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(res.status + ": " + errText);
+      }
+      const data = await res.json();
+      setImage(data.image);
+    } catch(err) { alert("Upscale failed: " + (err?.message || "unknown error. Please try again.")); }
+    finally { setUpscaling(false); }
+  };
   const exportImage = () => {
     if (!canvasRef.current) return;
+    const scale = exportRes || 1;
+    if (scale === 1) {
+      const mime = exportFmt==="jpg"?"image/jpeg":exportFmt==="webp"?"image/webp":"image/png";
+      const q = exportFmt==="png"?1:exportQ/100;
+      const a = document.createElement("a");
+      a.href = canvasRef.current.toDataURL(mime, q);
+      a.download = `${fileName.replace(/\.[^.]+$/,"")}_pixel.${exportFmt}`;
+      a.click();
+      return;
+    }
+    const outW = tw * scale, outH = th * scale;
+    const off = document.createElement("canvas");
+    off.width = outW; off.height = outH;
+    const ctx = off.getContext("2d");
+    const img = imgRef.current;
+    ctx.clearRect(0,0,outW,outH);
+    ctx.filter = buildFilter();
+    const bscale = Math.min(outW/img.naturalWidth, outH/img.naturalHeight);
+    const bw = img.naturalWidth*bscale, bh = img.naturalHeight*bscale;
+    const bx = (outW-bw)/2, by = (outH-bh)/2;
+    ctx.drawImage(img, bx, by, bw, bh);
+    ctx.filter = "none";
+    overlays.forEach(ov => {
+      const el = overlayElsRef.current[ov.id];
+      if (el && el.complete) {
+        ctx.save();
+        ctx.globalAlpha = (ov.opacity ?? 100) / 100;
+        ctx.drawImage(el, ov.x*scale, ov.y*scale, ov.width*scale, ov.height*scale);
+        ctx.restore();
+      }
+    });
+    texts.forEach(t => {
+      ctx.save();
+      ctx.globalAlpha = t.opacity/100;
+      ctx.font = `${t.italic?"italic ":""}${t.bold?"bold ":""} ${t.size*scale}px ${t.font}`;
+      ctx.textAlign = t.align;
+      if (t.highlightBg) {
+        const metrics = ctx.measureText(t.text);
+        const pad = t.size*scale * 0.25;
+        const bxT = t.align==="center" ? t.x*scale-metrics.width/2-pad : t.align==="right" ? t.x*scale-metrics.width-pad : t.x*scale-pad;
+        ctx.fillStyle = t.highlightBg;
+        ctx.fillRect(bxT, t.y*scale - t.size*scale*0.85, metrics.width + pad*2, t.size*scale*1.25);
+      }
+      if (t.shadow) { ctx.shadowColor="rgba(0,0,0,0.8)"; ctx.shadowBlur=8*scale; }
+      if (t.strokeColor && t.strokeWidth) {
+        ctx.lineWidth = t.strokeWidth*scale;
+        ctx.strokeStyle = t.strokeColor;
+        ctx.strokeText(t.text, t.x*scale, t.y*scale);
+      }
+      ctx.fillStyle = t.color;
+      ctx.fillText(t.text, t.x*scale, t.y*scale);
+      ctx.restore();
+    });
     const mime = exportFmt==="jpg"?"image/jpeg":exportFmt==="webp"?"image/webp":"image/png";
     const q = exportFmt==="png"?1:exportQ/100;
     const a = document.createElement("a");
-    a.href = canvasRef.current.toDataURL(mime, q);
-    a.download = `${fileName.replace(/\.[^.]+$/,"")}_pixel.${exportFmt}`;
+    a.href = off.toDataURL(mime, q);
+    a.download = `${fileName.replace(/\.[^.]+$/,"")}_pixel_${scale}x.${exportFmt}`;
     a.click();
   };
 
@@ -238,45 +420,35 @@ export default function SocioMeePixel({ user }) {
       {/* Header */}
       <div style={{ padding:"10px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, background:"rgba(255,255,255,0.01)", backdropFilter:"blur(10px)" }}>
         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C12 2 11.5 7.5 9 9C9 9 4 10.5 2 12C2 12 7 13.5 9 15C9 15 11.5 20.5 12 22C12 22 12.5 16.5 15 15C15 15 20 13.5 22 12C22 12 17 10.5 15 9C15 9 12.5 3.5 12 2Z" fill="currentColor" stroke="none"/></svg>
-          <span style={{ fontSize:"13px", fontWeight:"600", color:C.white, fontFamily:FONT }}>SocioMee Pixel</span>
-          {fileName && <span style={{ fontSize:"10px", color:C.muted, fontFamily:FONT }}>{fileName} · {tw}×{th}</span>}
+          {fileName && <span style={{ fontSize:"11px", color:C.muted, fontFamily:FONT }}>{fileName} · {tw}×{th}</span>}
         </div>
-        <div style={{ display:"flex", gap:"6px" }}>
-          <button onClick={addText} className="px-btn" style={{ display:"flex", alignItems:"center", gap:"5px", padding:"6px 12px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.15s" }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Text
-          </button>
-          <button onClick={removeBg} disabled={bgRemoving} className="px-btn" style={{ display:"flex", alignItems:"center", gap:"5px", padding:"6px 12px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.15s" }}>
+        <div style={{ display:"flex", gap:"6px", flexWrap:"nowrap", overflowX:"auto" }}>
+          {[
+            {id:"adjust", label:"Adjust"}, {id:"filter", label:"Filters"}, {id:"text", label:"Text"},
+            {id:"image", label:"Image"}, {id:"resize", label:"Resize"},
+          ].map(t=>(
+            <button key={t.id} onClick={()=>setActiveTab(t.id)} className="px-btn"
+              style={{ display:"flex", alignItems:"center", gap:"5px", padding:"9px 16px", borderRadius:"99px", flexShrink:0, whiteSpace:"nowrap", border:`1px solid ${activeTab===t.id?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.12)"}`, background:activeTab===t.id?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.05)", color:activeTab===t.id?"#fff":"rgba(255,255,255,0.75)", fontSize:"11.5px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.2s" }}>
+              {t.label}
+            </button>
+          ))}
+          <div style={{ width:"1px", background:"rgba(255,255,255,0.1)", flexShrink:0 }}/>
+          <button onClick={removeBg} disabled={bgRemoving} className="px-btn" style={{ display:"flex", alignItems:"center", gap:"5px", padding:"9px 18px", borderRadius:"99px", flexShrink:0, whiteSpace:"nowrap", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"11.5px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.2s" }}>
             {bgRemoving?<div style={{ width:"10px",height:"10px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.2)",borderTopColor:"#fff",animation:"spin 0.8s linear infinite" }}/>:"✦"} Remove BG
           </button>
-          <button onClick={exportImage} style={{ display:"flex", alignItems:"center", gap:"5px", padding:"6px 14px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.1)", color:"#fff", fontSize:"11px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export {exportFmt.toUpperCase()}
+          <button onClick={()=>upscaleImage(2)} disabled={upscaling} className="px-btn" style={{ display:"flex", alignItems:"center", gap:"5px", padding:"9px 18px", borderRadius:"99px", flexShrink:0, whiteSpace:"nowrap", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"11.5px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.2s" }}>
+            {upscaling?<div style={{ width:"10px",height:"10px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.2)",borderTopColor:"#fff",animation:"spin 0.8s linear infinite" }}/>:"✦"} {upscaling?"Upscaling...":"AI Upscale"}{!isPremium && " ✦"}
           </button>
-          <button onClick={()=>{setImage(null);setFileName("");}} className="px-btn" style={{ padding:"6px 10px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"11px", cursor:"pointer", fontFamily:FONT, transition:"all 0.15s" }}>New</button>
+          <button onClick={()=>setActiveTab("export")} style={{ display:"flex", alignItems:"center", gap:"5px", padding:"9px 20px", borderRadius:"99px", flexShrink:0, whiteSpace:"nowrap", border:`1px solid ${activeTab==="export"?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.25)"}`, background:activeTab==="export"?"rgba(255,255,255,0.18)":"rgba(255,255,255,0.14)", color:"#fff", fontSize:"11.5px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+          <button onClick={()=>{setImage(null);setFileName("");}} className="px-btn" style={{ padding:"9px 16px", borderRadius:"99px", flexShrink:0, whiteSpace:"nowrap", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"11.5px", cursor:"pointer", fontFamily:FONT, transition:"all 0.2s" }}>New</button>
         </div>
       </div>
 
       {/* Editor */}
       <div className="px-editor-main" style={{ flex:1, display:"flex", overflow:"hidden" }}>
-
-        {/* Left tabs - desktop */}
-        <div className="px-side" style={{ width:"52px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", background:"rgba(255,255,255,0.02)", display:"flex", flexDirection:"column", alignItems:"center", paddingTop:"8px", gap:"2px" }}>
-          {TABS.map(tab=>(
-            <button key={tab.id} className="px-tab" onClick={()=>setActiveTab(tab.id)}
-              style={{ width:"40px", height:"40px", borderRadius:"10px", border:"none", background:activeTab===tab.id?"rgba(255,255,255,0.1)":"transparent", color:activeTab===tab.id?"#fff":C.muted, cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"3px", transition:"all 0.15s", padding:0 }}
-              title={tab.label}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                {tab.id==="adjust" && <><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></>}
-                {tab.id==="filter" && <><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></>}
-                {tab.id==="text" && <><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></>}
-                {tab.id==="resize" && <><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></>}
-                {tab.id==="export" && <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>}
-              </svg>
-              <span style={{ fontSize:"8px", fontFamily:FONT, fontWeight:"600" }}>{tab.label}</span>
-            </button>
-          ))}
-        </div>
 
         {/* Canvas */}
         <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", overflow:"auto", padding:"20px", position:"relative", background:"rgba(0,0,0,0.3)" }}
@@ -284,7 +456,12 @@ export default function SocioMeePixel({ user }) {
           onDragLeave={()=>setDragOver(false)}
           onDrop={e=>{e.preventDefault();setDragOver(false);handleFile(e.dataTransfer.files[0])}}>
           <div style={{ position:"relative", boxShadow:"0 24px 80px rgba(0,0,0,0.6)", borderRadius:"4px", overflow:"hidden" }}>
-            <canvas ref={canvasRef} style={{ display:"block", maxWidth:"100%", maxHeight:"calc(100vh - 160px)", transform:`scale(${zoom})`, transformOrigin:"top center", imageRendering:"pixelated" }}/>
+            <canvas ref={canvasRef}
+              onMouseDown={handleCanvasMouseDown}
+              onMouseMove={handleCanvasMouseMove}
+              onMouseUp={handleCanvasMouseUp}
+              onMouseLeave={handleCanvasMouseUp}
+              style={{ display:"block", maxWidth:"100%", maxHeight:"calc(100vh - 160px)", transform:`scale(${zoom})`, transformOrigin:"top center", imageRendering:"pixelated", cursor: texts.length ? "grab" : "default" }}/>
           </div>
           <div style={{ position:"absolute", bottom:"12px", right:"12px", display:"flex", gap:"4px" }}>
             {[0.5,0.75,1,1.25,1.5].map(z=>(
@@ -335,6 +512,18 @@ export default function SocioMeePixel({ user }) {
               ))}
               {selTextObj && <>
                 <div style={{ height:"1px", background:"rgba(255,255,255,0.06)", margin:"12px 0" }}/>
+                <p style={{ fontSize:"11px", fontWeight:"600", color:C.muted, fontFamily:FONT, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px" }}>Templates</p>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"6px", marginBottom:"14px" }}>
+                  {TEXT_TEMPLATES.map(tpl=>(
+                    <button key={tpl.id} className="px-filter" onClick={()=>updateText(selText, tpl.style)}
+                      style={{ padding:"8px", borderRadius:"10px", border:"1px solid rgba(255,255,255,0.07)", background:"rgba(255,255,255,0.03)", cursor:"pointer", textAlign:"center", transition:"all 0.15s" }}>
+                      <div style={{ height:"28px", borderRadius:"6px", background:tpl.preview.bg, marginBottom:"6px", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <span style={{ fontSize:"11px", fontWeight:"800", color:tpl.preview.color, fontFamily:FONT }}>Aa</span>
+                      </div>
+                      <span style={{ fontSize:"10px", fontWeight:"600", color:C.muted, fontFamily:FONT }}>{tpl.label}</span>
+                    </button>
+                  ))}
+                </div>
                 <textarea value={selTextObj.text} onChange={e=>updateText(selText,{text:e.target.value})} rows={2}
                   style={{ width:"100%", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"8px", padding:"8px", color:C.white, fontSize:"12px", fontFamily:FONT, resize:"none", outline:"none", boxSizing:"border-box", marginBottom:"12px" }}/>
                 <Slider label="Font Size" value={selTextObj.size} min={12} max={200} onChange={v=>updateText(selText,{size:v})}/>
@@ -353,6 +542,23 @@ export default function SocioMeePixel({ user }) {
                   <button onClick={()=>updateText(selText,{shadow:!selTextObj.shadow})} style={{ flex:1, padding:"6px", borderRadius:"7px", border:`1px solid ${selTextObj.shadow?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.07)"}`, background:selTextObj.shadow?"rgba(255,255,255,0.08)":"transparent", color:selTextObj.shadow?"#fff":C.muted, fontSize:"10px", cursor:"pointer", fontFamily:FONT }}>Shadow</button>
                 </div>
               </>}
+            </>}
+            {activeTab==="image" && <>
+              <button onClick={()=>overlayFileInputRef.current?.click()} style={{ width:"100%", padding:"9px", borderRadius:"10px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.8)", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, marginBottom:"14px" }}>+ Add Image Layer</button>
+              {overlays.length === 0 && <p style={{ fontSize:"12px", color:C.dim, fontFamily:FONT, textAlign:"center", padding:"20px 0" }}>No image layers yet. Add a logo, sticker, or inset (A-roll/B-roll) image.</p>}
+              {overlays.map(ov=>(
+                <div key={ov.id} onClick={()=>setSelOverlay(ov.id)}
+                  style={{ padding:"10px 12px", borderRadius:"10px", border:`1px solid ${selOverlay===ov.id?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.07)"}`, background:selOverlay===ov.id?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.02)", cursor:"pointer", marginBottom:"6px", display:"flex", alignItems:"center", gap:"8px" }}>
+                  <img src={overlayElsRef.current[ov.id]?.src} alt="" style={{ width:"28px", height:"28px", borderRadius:"5px", objectFit:"cover", flexShrink:0 }}/>
+                  <span style={{ fontSize:"12px", color:C.white, fontFamily:FONT, flex:1 }}>Image Layer</span>
+                  <button onClick={e=>{e.stopPropagation();deleteOverlay(ov.id);}} style={{ background:"transparent", border:"none", color:C.muted, cursor:"pointer", fontSize:"12px" }}>✕</button>
+                </div>
+              ))}
+              {(() => { const selOv = overlays.find(o=>o.id===selOverlay); return selOv && <>
+                <div style={{ height:"1px", background:"rgba(255,255,255,0.06)", margin:"12px 0" }}/>
+                <Slider label="Width"   value={Math.round(selOv.width)}  min={20} max={tw} onChange={v=>{ const ratio=v/selOv.width; updateOverlay(selOv.id,{width:v, height:selOv.height*ratio}); }}/>
+                <Slider label="Opacity" value={selOv.opacity} min={0} max={100} unit="%" onChange={v=>updateOverlay(selOv.id,{opacity:v})}/>
+              </>; })()}
             </>}
             {activeTab==="resize" && <>
               <p style={{ fontSize:"11px", fontWeight:"600", color:C.muted, fontFamily:FONT, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"10px" }}>Presets</p>
@@ -386,6 +592,20 @@ export default function SocioMeePixel({ user }) {
                 ))}
               </div>
               {exportFmt!=="png" && <Slider label="Quality" value={exportQ} min={10} max={100} unit="%" onChange={setExportQ}/>}
+              <p style={{ fontSize:"11px", fontWeight:"600", color:C.muted, fontFamily:FONT, textTransform:"uppercase", letterSpacing:"1px", marginTop:"16px", marginBottom:"10px" }}>Resolution</p>
+              <div style={{ display:"flex", gap:"6px", marginBottom:"16px" }}>
+                {[
+                  { mult:1, label:"1x", locked:false },
+                  { mult:2, label:"2x", locked:false },
+                  { mult:4, label:"4x", locked:!isPremium },
+                ].map(r=>(
+                  <button key={r.mult} onClick={()=>{ if(r.locked){ alert("4x export is a Pro+ feature. Upgrade to Pro+ to use it."); return; } setExportRes(r.mult); }}
+                    style={{ flex:1, padding:"8px", borderRadius:"9px", border:`1px solid ${exportRes===r.mult?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.07)"}`, background:exportRes===r.mult?"rgba(255,255,255,0.08)":"transparent", color:exportRes===r.mult?"#fff":C.muted, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>
+                    {r.label}{r.locked?" ✦":""}
+                  </button>
+                ))}
+              </div>
+              <p style={{ fontSize:"10px", color:C.dim, fontFamily:FONT, marginBottom:"16px" }}>{tw*exportRes} × {th*exportRes}px</p>
               <button onClick={exportImage} style={{ width:"100%", padding:"11px", borderRadius:"11px", border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FONT, display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Export {exportFmt.toUpperCase()}
@@ -412,6 +632,7 @@ export default function SocioMeePixel({ user }) {
         ))}
       </div>
       <input ref={fileInputRef} type="file" accept="image/*" style={{ display:"none" }} onChange={e=>{handleFile(e.target.files[0]);e.target.value="";}}/>
+      <input ref={overlayFileInputRef} type="file" accept="image/*" style={{ display:"none" }} onChange={e=>{addOverlay(e.target.files[0]);e.target.value="";}}/>
     </div>
   );
 }
