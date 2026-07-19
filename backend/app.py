@@ -1999,7 +1999,19 @@ async def share_create(request: Request, user: dict = Depends(get_current_user))
     if file_type not in ALLOWED_TYPES:
         raise HTTPException(400, f"File type '{file_type}' is not allowed.")
 
-    code = str(secrets.randbelow(900000) + 100000)  # 6-digit code
+    import json, re as _re, redis as _redis_mod
+    _rc = _redis_mod.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+    custom_code = (body.get("custom_code") or "").strip().lower()
+    if custom_code:
+        if not _is_pro_plus(user):
+            raise HTTPException(403, "Custom branded links are available on Pro+ only.")
+        if not _re.match(r"^[a-z0-9\-]{3,30}$", custom_code):
+            raise HTTPException(400, "Custom link can only contain lowercase letters, numbers, and hyphens (3-30 characters).")
+        if _rc.get(f"share:{custom_code}"):
+            raise HTTPException(409, "That custom link is already taken. Please choose another.")
+        code = custom_code
+    else:
+        code = str(secrets.randbelow(900000) + 100000)  # 6-digit code
     key  = f"share:{code}"
     payload = {
         "code": code,
@@ -2009,11 +2021,11 @@ async def share_create(request: Request, user: dict = Depends(get_current_user))
         "file": file_data,
         "message": message,
         "sender": user.get("name", "Someone"),
+        "sender_id": user.get("user_id", ""),
         "created": int(time.time()),
         "expires": int(time.time()) + expires_in,
+        "clicks": 0,
     }
-    import json, redis as _redis_mod
-    _rc = _redis_mod.Redis(host="localhost", port=6379, db=0, decode_responses=True)
     _rc.setex(key, expires_in, json.dumps(payload))
     return {"code": code, "expires_in": expires_in}
 
@@ -2026,6 +2038,10 @@ async def share_get(code: str, request: Request):
     if not raw:
         raise HTTPException(404, "Share not found or expired.")
     data = json.loads(raw)
+    data["clicks"] = data.get("clicks", 0) + 1
+    ttl = _rc.ttl(key)
+    if ttl and ttl > 0:
+        _rc.setex(key, ttl, json.dumps(data))
     # Return metadata only first
     return {
         "code": data["code"],
@@ -2037,6 +2053,20 @@ async def share_get(code: str, request: Request):
         "expires": data["expires"],
         "file": data["file"],  # base64
     }
+
+@app.get("/share/{code}/stats")
+async def share_stats(code: str, user: dict = Depends(get_current_user)):
+    if not _is_pro_plus(user):
+        raise HTTPException(403, "Click analytics are available on Pro+ only.")
+    import json, redis as _redis_mod
+    _rc = _redis_mod.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+    raw = _rc.get(f"share:{code}")
+    if not raw:
+        raise HTTPException(404, "Share not found or expired.")
+    data = json.loads(raw)
+    if data.get("sender_id") and data["sender_id"] != user.get("user_id",""):
+        raise HTTPException(403, "You can only view analytics for your own shared links.")
+    return {"code": code, "clicks": data.get("clicks", 0), "expires": data["expires"], "created": data.get("created")}
 
 @app.delete("/share/{code}")
 async def share_delete(code: str, user: dict = Depends(get_current_user)):

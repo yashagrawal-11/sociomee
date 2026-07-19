@@ -1,12 +1,12 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import QRCode from "qrcode";
 
 const C = {
   bg: "#0a0a0a",
   panel: "rgba(6,4,15,0.97)",
   border: "rgba(255,255,255,0.07)",
-  purple: "#7c3aed",
-  purpleLight: "#a78bfa",
+  purple: "#ffffff",
+  purpleLight: "#ffffff",
   muted: "rgba(255,255,255,0.35)",
   white: "#fff",
   font: "Poppins, sans-serif",
@@ -27,10 +27,10 @@ function formatTime(secs) {
 }
 
 // ── Line icons (replacing emoji for visual consistency) ──────────────
-function IconUpload({ size=28, color="#a78bfa" }) {
+function IconUpload({ size=28, color="#ffffff" }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4"/><path d="M6 10l6-6 6 6"/><path d="M4 20h16"/></svg>;
 }
-function IconDownload({ size=28, color="#a78bfa" }) {
+function IconDownload({ size=28, color="#ffffff" }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v12"/><path d="M6 12l6 6 6-6"/><path d="M4 20h16"/></svg>;
 }
 function IconPaperclip({ size=32, color="rgba(255,255,255,0.4)" }) {
@@ -42,7 +42,7 @@ function FileIcon({ type, size=26 }) {
   const isPDF  = type === "application/pdf";
   const isVid  = type?.startsWith("video/");
   const isAud  = type?.startsWith("audio/");
-  const stroke = "#a78bfa";
+  const stroke = "#ffffff";
   if (isImg) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>;
   if (isPDF) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>;
   if (isVid) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M17 10l5-3v10l-5-3"/></svg>;
@@ -50,7 +50,13 @@ function FileIcon({ type, size=26 }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>;
 }
 
-export default function SocioMeeShare() {
+export default function SocioMeeShare({ user, creditStatus }) {
+  const rawPlan = creditStatus?.plan || user?.plan || user?.plan_label || "free";
+  const plan = rawPlan.toLowerCase().includes("premium") ? "premium" : rawPlan.toLowerCase().includes("pro") ? "pro" : "free";
+  const isPro = plan === "pro" || plan === "premium";
+  const isPremium = plan === "premium";
+  const [customCode, setCustomCode] = useState("");
+  const [stats, setStats] = useState(null);
   const [mode, setMode]       = useState("home");   // home | send | receive | sent | received
   const [file, setFile]       = useState(null);
   const [message, setMessage] = useState("");
@@ -77,6 +83,34 @@ export default function SocioMeeShare() {
     setFile(f);
   };
 
+  useEffect(() => {
+    if (!code || !isPremium || mode !== "sent") return;
+    let cancelled = false;
+    const fetchStats = async () => {
+      try {
+        const resp = await fetch(`${API}/${code}/stats`, { headers: { "Authorization": `Bearer ${token()}` } });
+        const data = await resp.json();
+        if (!cancelled && resp.ok) setStats(data);
+      } catch (e) { /* ignore */ }
+    };
+    fetchStats();
+    const interval = setInterval(fetchStats, 10000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [code, isPremium, mode]);
+  if (!isPro) return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"32px 24px", fontFamily:C.font }}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"24px", textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"24px", padding:"52px 44px", maxWidth:"420px", width:"100%", backdropFilter:"blur(24px)" }}>
+        <div style={{ width:"68px", height:"68px", borderRadius:"20px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.7"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.6" x2="15.4" y2="6.4"/><line x1="8.6" y1="13.4" x2="15.4" y2="17.6"/></svg>
+        </div>
+        <div>
+          <h3 style={{ fontSize:"22px", fontWeight:"700", color:"#fff", margin:"0 0 10px", fontFamily:C.font }}>SocioMee Share</h3>
+          <p style={{ fontSize:"13px", color:"rgba(255,255,255,0.4)", lineHeight:1.8, margin:0 }}>Send and receive files with expiring share links and QR codes. Available on Pro and Pro+ plans.</p>
+        </div>
+        <a href="/pricing" style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"13px 0", borderRadius:"12px", background:"#fff", color:"#0a0a0a", fontWeight:"700", fontSize:"14px", textDecoration:"none", width:"100%" }}>Upgrade to Pro</a>
+      </div>
+    </div>
+  );
   const startCountdown = (secs) => {
     setCountdown(secs);
     timerRef.current = setInterval(() => {
@@ -108,6 +142,7 @@ export default function SocioMeeShare() {
           size: file.size,
           message,
           expires,
+          custom_code: isPremium ? customCode.trim().toLowerCase() : "",
         }),
       });
       const data = await resp.json();
@@ -194,16 +229,16 @@ export default function SocioMeeShare() {
         @keyframes ping{0%{transform:scale(1);opacity:1}75%,100%{transform:scale(1.8);opacity:0}}
         .share-btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px);}
         .share-btn-secondary:hover{background:rgba(255,255,255,0.06)!important;border-color:rgba(255,255,255,0.2)!important;}
-        .share-upload:hover{border-color:rgba(124,58,237,0.5)!important;background:rgba(124,58,237,0.06)!important;}
+        .share-upload:hover{border-color:rgba(255,255,255,0.5)!important;background:rgba(255,255,255,0.06)!important;}
         .share-card{animation:fadeUp 0.3s ease-out;}
-        ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.3);border-radius:99px}
+        ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.3);border-radius:99px}
       `}</style>
 
       {/* Header */}
       <div style={{ padding:"10px 20px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
           <div style={{ width:"30px", height:"30px", borderRadius:"9px", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           </div>
           <div>
             <h2 style={{ fontSize:"13px", fontWeight:"800", color:C.white, margin:0, fontFamily:"'Orbitron',sans-serif", letterSpacing:"1px", textTransform:"uppercase" }}>SocioMee Share</h2>
@@ -222,18 +257,18 @@ export default function SocioMeeShare() {
         {/* HOME */}
         {mode === "home" && (
           <div className="share-card" style={{ width:"100%", maxWidth:"520px", textAlign:"center" }}>
-            <div style={{ width:"72px", height:"72px", borderRadius:"18px", background:"rgba(124,58,237,0.12)", border:"1px solid rgba(124,58,237,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px" }}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <div style={{ width:"72px", height:"72px", borderRadius:"18px", background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px" }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
             </div>
             <h3 style={{ fontSize:"24px", fontWeight:"800", color:C.white, margin:"0 0 8px", fontFamily:"'Orbitron',sans-serif", letterSpacing:"2px", textTransform:"uppercase" }}>SocioMee Share</h3>
             <p style={{ fontSize:"14px", color:C.muted, margin:"0 0 32px", lineHeight:1.7, fontFamily:C.font, maxWidth:"420px", marginLeft:"auto", marginRight:"auto" }}>Transfer files instantly between your phone and PC. No app, no Bluetooth, no compression. Just a 6-digit code.</p>
 
             <div style={{ display:"flex", gap:"14px", justifyContent:"center", marginBottom:"36px" }}>
               <button onClick={()=>setMode("send")} className="share-btn-primary"
-                style={{ flex:1, maxWidth:"200px", padding:"22px 20px", borderRadius:"16px", border:"none", background:"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:"#fff", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s", boxShadow:"0 8px 24px rgba(124,58,237,0.3)" }}>
-                <div style={{ display:"flex", justifyContent:"center", marginBottom:"10px" }}><IconUpload size={26} color="#fff"/></div>
+                style={{ flex:1, maxWidth:"200px", padding:"22px 20px", borderRadius:"16px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.03)", color:C.white, fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+                <div style={{ display:"flex", justifyContent:"center", marginBottom:"10px" }}><IconUpload size={26} color="rgba(255,255,255,0.7)"/></div>
                 Send a File
-                <div style={{ fontSize:"10px", fontWeight:"400", color:"rgba(255,255,255,0.7)", marginTop:"4px" }}>Upload from this device</div>
+                <div style={{ fontSize:"10px", fontWeight:"400", color:"rgba(255,255,255,0.3)", marginTop:"4px" }}>Upload from this device</div>
               </button>
               <button onClick={()=>setMode("receive")} className="share-btn-secondary"
                 style={{ flex:1, maxWidth:"200px", padding:"22px 20px", borderRadius:"16px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.03)", color:C.white, fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
@@ -247,7 +282,7 @@ export default function SocioMeeShare() {
             <div style={{ padding:"24px", borderRadius:"18px", background:"rgba(255,255,255,0.02)", border:`1px solid ${C.border}`, textAlign:"left" }}>
               <p style={{ fontSize:"10px", fontWeight:"700", color:C.muted, letterSpacing:"1.5px", textTransform:"uppercase", fontFamily:C.font, marginBottom:"18px" }}>How it works</p>
               <div style={{ position:"relative" }}>
-                <div style={{ position:"absolute", left:"11px", top:"11px", bottom:"11px", width:"1px", background:"rgba(124,58,237,0.25)" }} />
+                <div style={{ position:"absolute", left:"11px", top:"11px", bottom:"11px", width:"1px", background:"rgba(255,255,255,0.25)" }} />
                 <div style={{ display:"flex", flexDirection:"column", gap:"16px" }}>
                   {[
                     ["1", "Upload a file on your phone"],
@@ -256,13 +291,13 @@ export default function SocioMeeShare() {
                     ["4", "Enter the code and download instantly"],
                   ].map(([n, t]) => (
                     <div key={n} style={{ display:"flex", gap:"12px", alignItems:"center", position:"relative" }}>
-                      <span style={{ width:"22px", height:"22px", borderRadius:"50%", background:"#0a0a0a", border:"1px solid rgba(124,58,237,0.4)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", fontWeight:"800", color:"#a78bfa", flexShrink:0, fontFamily:C.font, zIndex:1 }}>{n}</span>
+                      <span style={{ width:"22px", height:"22px", borderRadius:"50%", background:"#0a0a0a", border:"1px solid rgba(255,255,255,0.4)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", fontWeight:"800", color:"#ffffff", flexShrink:0, fontFamily:C.font, zIndex:1 }}>{n}</span>
                       <span style={{ fontSize:"13px", color:"rgba(255,255,255,0.65)", fontFamily:C.font }}>{t}</span>
                     </div>
                   ))}
                 </div>
               </div>
-              <div style={{ marginTop:"18px", padding:"12px 14px", borderRadius:"10px", background:"rgba(124,58,237,0.06)", border:"1px solid rgba(124,58,237,0.15)" }}>
+              <div style={{ marginTop:"18px", padding:"12px 14px", borderRadius:"10px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.15)" }}>
                 <p style={{ fontSize:"11px", color:"rgba(255,255,255,0.4)", margin:0, fontFamily:C.font, lineHeight:1.6 }}>Files are stored temporarily for 30 minutes. Max 50MB. No compression. Original quality always.</p>
               </div>
             </div>
@@ -280,14 +315,14 @@ export default function SocioMeeShare() {
                 onDragLeave={()=>setDragOver(false)}
                 onDrop={e=>{e.preventDefault();setDragOver(false);handleFile(e.dataTransfer.files[0])}}
                 onClick={()=>fileInputRef.current?.click()}
-                style={{ padding:"40px 24px", border:`2px dashed ${dragOver?"rgba(124,58,237,0.6)":"rgba(255,255,255,0.1)"}`, borderRadius:"16px", background:dragOver?"rgba(124,58,237,0.06)":"rgba(255,255,255,0.02)", cursor:"pointer", textAlign:"center", transition:"all 0.2s", marginBottom:"16px" }}>
+                style={{ padding:"40px 24px", border:`2px dashed ${dragOver?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.1)"}`, borderRadius:"16px", background:dragOver?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.02)", cursor:"pointer", textAlign:"center", transition:"all 0.2s", marginBottom:"16px" }}>
                 <div style={{ display:"flex", justifyContent:"center", marginBottom:"14px" }}><IconPaperclip size={32}/></div>
                 <p style={{ fontSize:"14px", fontWeight:"600", color:C.white, margin:"0 0 6px", fontFamily:C.font }}>Drop your file here</p>
                 <p style={{ fontSize:"12px", color:C.muted, margin:0, fontFamily:C.font }}>Any file type. Max 50MB. Images, videos, PDFs, scripts.</p>
                 <input ref={fileInputRef} type="file" style={{ display:"none" }} onChange={e=>{handleFile(e.target.files[0]);e.target.value="";}}/>
               </div>
             ) : (
-              <div style={{ padding:"16px", borderRadius:"12px", background:"rgba(124,58,237,0.08)", border:"1px solid rgba(124,58,237,0.2)", marginBottom:"16px", display:"flex", gap:"12px", alignItems:"center" }}>
+              <div style={{ padding:"16px", borderRadius:"12px", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.2)", marginBottom:"16px", display:"flex", gap:"12px", alignItems:"center" }}>
                 <FileIcon type={file.type}/>
                 <div style={{ flex:1, minWidth:0 }}>
                   <p style={{ fontSize:"13px", fontWeight:"600", color:C.white, margin:"0 0 2px", fontFamily:C.font, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{file.name}</p>
@@ -308,15 +343,20 @@ export default function SocioMeeShare() {
               <div style={{ display:"flex", gap:"6px" }}>
                 {[[900,"15 min"],[1800,"30 min"],[3600,"1 hour"],[86400,"24 hours"]].map(([v,l])=>(
                   <button key={v} onClick={()=>setExpires(v)}
-                    style={{ flex:1, padding:"7px", borderRadius:"8px", border:`1px solid ${expires===v?"rgba(124,58,237,0.5)":C.border}`, background:expires===v?"rgba(124,58,237,0.12)":"rgba(255,255,255,0.03)", color:expires===v?"#a78bfa":C.muted, fontSize:"10px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>
+                    style={{ flex:1, padding:"7px", borderRadius:"8px", border:`1px solid ${expires===v?"rgba(255,255,255,0.5)":C.border}`, background:expires===v?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.03)", color:expires===v?"#ffffff":C.muted, fontSize:"10px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>
                     {l}
                   </button>
                 ))}
               </div>
             </div>
+            <div style={{ marginBottom:"20px" }}>
+              <p style={{ fontSize:"11px", color:C.muted, margin:"0 0 6px", fontFamily:C.font }}>Custom link (optional){!isPremium && " — Pro+"}</p>
+              <input value={customCode} onChange={e=>setCustomCode(e.target.value)} placeholder={isPremium ? "e.g. my-brand-file" : "Upgrade to Pro+ for custom links"} disabled={!isPremium}
+                style={{ width:"100%", padding:"10px 14px", borderRadius:"10px", border:`1px solid ${C.border}`, background:isPremium?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.02)", color:isPremium?C.white:"rgba(255,255,255,0.3)", fontSize:"13px", fontFamily:C.font, outline:"none", boxSizing:"border-box", cursor:isPremium?"text":"not-allowed" }}/>
+            </div>
 
             <button onClick={sendFile} disabled={!file || loading}
-              style={{ width:"100%", padding:"12px", borderRadius:"99px", border:"none", background:!file?"rgba(255,255,255,0.06)":"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:!file?"rgba(255,255,255,0.3)":"#fff", fontSize:"14px", fontWeight:"700", cursor:!file?"not-allowed":"pointer", fontFamily:C.font, display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
+              style={{ width:"100%", padding:"12px", borderRadius:"99px", border:"none", background:!file?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.14)", color:!file?"rgba(255,255,255,0.3)":"#fff", fontSize:"14px", fontWeight:"700", cursor:!file?"not-allowed":"pointer", fontFamily:C.font, display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
               {loading ? <><div style={{ width:"14px", height:"14px", borderRadius:"50%", border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#fff", animation:"spin 0.8s linear infinite" }}/> Uploading...</> : "Generate Share Code"}
             </button>
 
@@ -338,8 +378,14 @@ export default function SocioMeeShare() {
                 Live · Expires in {countdown !== null ? formatTime(countdown) : "—"}
               </span>
             </div>
+            {isPremium && (
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", marginBottom:"14px" }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span style={{ fontSize:"11px", color:"rgba(255,255,255,0.5)", fontFamily:C.font }}>{stats ? `${stats.clicks} click${stats.clicks===1?"":"s"}` : "Loading analytics..."}</span>
+              </div>
+            )}
 
-            <div style={{ background:"rgba(124,58,237,0.08)", border:"1px solid rgba(124,58,237,0.25)", borderRadius:"20px", padding:"24px", marginBottom:"20px" }}>
+            <div style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.25)", borderRadius:"20px", padding:"24px", marginBottom:"20px" }}>
               <p style={{ fontSize:"11px", fontWeight:"700", color:C.muted, letterSpacing:"2px", textTransform:"uppercase", fontFamily:C.font, marginBottom:"12px" }}>Share Code</p>
               <div style={{ display:"flex", gap:"8px", justifyContent:"center", marginBottom:"16px" }}>
                 {code.split("").map((d, i) => (
@@ -350,7 +396,7 @@ export default function SocioMeeShare() {
               </div>
               <div style={{ display:"flex", gap:"8px", justifyContent:"center" }}>
                 <button onClick={copyCode}
-                  style={{ padding:"8px 20px", borderRadius:"99px", border:"1px solid rgba(124,58,237,0.3)", background:"rgba(124,58,237,0.1)", color:"#a78bfa", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>
+                  style={{ padding:"8px 20px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.3)", background:"rgba(255,255,255,0.1)", color:"#ffffff", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:C.font }}>
                   {copied ? "Copied!" : "Copy Code"}
                 </button>
                 <button onClick={copyUrl}
@@ -363,7 +409,7 @@ export default function SocioMeeShare() {
             {qrUrl && (
               <div style={{ marginBottom:"20px" }}>
                 <p style={{ fontSize:"11px", color:C.muted, fontFamily:C.font, marginBottom:"10px" }}>Or scan QR code on your other device</p>
-                <div style={{ display:"inline-block", padding:"12px", borderRadius:"14px", background:"#0a0a0a", border:"1px solid rgba(124,58,237,0.25)" }}>
+                <div style={{ display:"inline-block", padding:"12px", borderRadius:"14px", background:"#0a0a0a", border:"1px solid rgba(255,255,255,0.25)" }}>
                   <img src={qrUrl} alt="QR Code" style={{ width:"160px", height:"160px", display:"block" }}/>
                 </div>
               </div>
@@ -388,7 +434,7 @@ export default function SocioMeeShare() {
         {/* RECEIVE */}
         {mode === "receive" && (
           <div className="share-card" style={{ width:"100%", maxWidth:"400px", textAlign:"center" }}>
-            <div style={{ width:"64px", height:"64px", borderRadius:"16px", background:"rgba(124,58,237,0.12)", border:"1px solid rgba(124,58,237,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
+            <div style={{ width:"64px", height:"64px", borderRadius:"16px", background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
               <IconDownload size={28}/>
             </div>
             <h3 style={{ fontSize:"18px", fontWeight:"800", color:C.white, margin:"0 0 8px", fontFamily:C.font }}>Receive a File</h3>
@@ -406,12 +452,12 @@ export default function SocioMeeShare() {
                   }}
                   onKeyDown={e => { if (e.key==="Backspace" && !inputCode[i] && i>0) document.getElementById(`sc-${i-1}`)?.focus(); }}
                   id={`sc-${i}`}
-                  style={{ width:"44px", height:"56px", borderRadius:"10px", border:`1px solid ${inputCode[i]?"rgba(124,58,237,0.5)":C.border}`, background:inputCode[i]?"rgba(124,58,237,0.1)":"rgba(255,255,255,0.04)", color:"#a78bfa", fontSize:"24px", fontWeight:"800", textAlign:"center", outline:"none", fontFamily:"Orbitron, monospace" }}/>
+                  style={{ width:"44px", height:"56px", borderRadius:"10px", border:`1px solid ${inputCode[i]?"rgba(255,255,255,0.5)":C.border}`, background:inputCode[i]?"rgba(255,255,255,0.1)":"rgba(255,255,255,0.04)", color:"#ffffff", fontSize:"24px", fontWeight:"800", textAlign:"center", outline:"none", fontFamily:"Orbitron, monospace" }}/>
               ))}
             </div>
 
             <button onClick={receiveFile} disabled={inputCode.length<6||loading}
-              style={{ width:"100%", padding:"12px", borderRadius:"99px", border:"none", background:inputCode.length<6?"rgba(255,255,255,0.06)":"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:inputCode.length<6?"rgba(255,255,255,0.3)":"#fff", fontSize:"14px", fontWeight:"700", cursor:inputCode.length<6?"not-allowed":"pointer", fontFamily:C.font, display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
+              style={{ width:"100%", padding:"12px", borderRadius:"99px", border:"none", background:inputCode.length<6?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.14)", color:inputCode.length<6?"rgba(255,255,255,0.3)":"#fff", fontSize:"14px", fontWeight:"700", cursor:inputCode.length<6?"not-allowed":"pointer", fontFamily:C.font, display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
               {loading ? <><div style={{ width:"14px", height:"14px", borderRadius:"50%", border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#fff", animation:"spin 0.8s linear infinite" }}/> Fetching...</> : "Get File"}
             </button>
 
@@ -425,7 +471,7 @@ export default function SocioMeeShare() {
         {mode === "received" && received && (
           <div className="share-card" style={{ width:"100%", maxWidth:"440px" }}>
             <div style={{ textAlign:"center", marginBottom:"24px" }}>
-              <div style={{ width:"64px", height:"64px", borderRadius:"16px", background:"rgba(124,58,237,0.12)", border:"1px solid rgba(124,58,237,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px" }}>
+              <div style={{ width:"64px", height:"64px", borderRadius:"16px", background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.25)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px" }}>
                 <FileIcon type={received.type} size={30}/>
               </div>
               <h3 style={{ fontSize:"18px", fontWeight:"800", color:C.white, margin:"0 0 4px", fontFamily:C.font }}>{received.name}</h3>
@@ -433,8 +479,8 @@ export default function SocioMeeShare() {
             </div>
 
             {received.message && (
-              <div style={{ padding:"14px", borderRadius:"12px", background:"rgba(124,58,237,0.06)", border:"1px solid rgba(124,58,237,0.15)", marginBottom:"20px" }}>
-                <p style={{ fontSize:"11px", fontWeight:"700", color:"#a78bfa", margin:"0 0 6px", fontFamily:C.font, letterSpacing:"1px", textTransform:"uppercase" }}>Message</p>
+              <div style={{ padding:"14px", borderRadius:"12px", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.15)", marginBottom:"20px" }}>
+                <p style={{ fontSize:"11px", fontWeight:"700", color:"#ffffff", margin:"0 0 6px", fontFamily:C.font, letterSpacing:"1px", textTransform:"uppercase" }}>Message</p>
                 <p style={{ fontSize:"13px", color:"rgba(255,255,255,0.7)", margin:0, fontFamily:C.font, lineHeight:1.6 }}>{received.message}</p>
               </div>
             )}
@@ -446,7 +492,7 @@ export default function SocioMeeShare() {
             )}
 
             <button onClick={downloadFile}
-              style={{ width:"100%", padding:"13px", borderRadius:"99px", border:"none", background:"linear-gradient(135deg,#7c3aed,#9b5cf6)", color:"#fff", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, marginBottom:"8px", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
+              style={{ width:"100%", padding:"13px", borderRadius:"99px", border:"none", background:"rgba(255,255,255,0.14)", color:"#fff", fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:C.font, marginBottom:"8px", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download File
             </button>

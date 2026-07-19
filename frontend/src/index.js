@@ -6,6 +6,7 @@ import { AuthCallback } from "./LoginPage";
 import LoginPage from "./LoginPage";
 import App from "./App";
 import YouTubeCallback from "./YouTubeCallback";
+import PublicReceiveShare from "./PublicReceiveShare";
 
 const pulse = {animation:"pulse 1.5s ease-in-out infinite",background:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)",backgroundSize:"200% 100%"};
 
@@ -70,6 +71,10 @@ function Router() {
 
   // Always handle these before auth check
   if (path === "/youtube/callback" || path === "/youtube/callback/") return <YouTubeCallback/>;
+  if (path.startsWith("/share/")) {
+    const code = path.replace("/share/", "").replace(/\/$/, "");
+    return <PublicReceiveShare code={code}/>;
+  }
   if (path.includes("/auth/callback")) return <AuthCallback/>;
   if (path.includes("/auth/social-callback")) {
     const params = new URLSearchParams(window.location.search);
