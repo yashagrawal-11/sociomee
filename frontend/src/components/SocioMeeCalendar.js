@@ -83,11 +83,14 @@ export default function SocioMeeCalendar({ user }) {
         .mitem:hover{color:rgba(255,255,255,0.7)!important;}
         ::-webkit-scrollbar{width:0px;height:2px}
         ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:99px}
+        .cal-pills::-webkit-scrollbar{height:3px}
+        .cal-pills::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.18);border-radius:99px}
+        .cal-pills::-webkit-scrollbar-track{background:transparent}
       `}</style>
 
       {ek&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(8px)"}} onClick={()=>setEk(null)}>
-          <div style={{background:"rgba(12,12,20,0.98)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"18px",padding:"22px 24px",width:"340px"}} onClick={e=>e.stopPropagation()}>
+          <div style={{background:"rgba(8,8,8,0.98)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"22px 24px",width:"340px"}} onClick={e=>e.stopPropagation()}>
             <p style={{fontSize:"11px",color:"rgba(255,255,255,0.4)",fontFamily:F,margin:"0 0 12px"}}>{ek?.split("-")[2]} {MONTHS[Number(ek?.split("-")[1])]} {ek?.split("-")[0]}</p>
             <input autoFocus value={et} onChange={e=>setEt(e.target.value)}
               onKeyDown={e=>{
@@ -208,8 +211,8 @@ export default function SocioMeeCalendar({ user }) {
         <div style={{height:"1px",background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.07) 20%,rgba(255,255,255,0.07) 80%,transparent)",margin:"12px 0",flexShrink:0}}/>
 
         {/* Festival pills */}
-        <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column",gap:"10px",paddingBottom:"16px"}}>
-          <div style={{overflowX:"auto",display:"flex",gap:"6px",flexShrink:0,paddingBottom:"4px"}}>
+        <div style={{flex:1,overflow:"visible",display:"flex",flexDirection:"column",gap:"10px",paddingBottom:"16px"}}>
+          <div className="cal-pills" style={{overflowX:"auto",display:"flex",gap:"6px",flexShrink:0,paddingBottom:"4px",scrollbarWidth:"thin",scrollbarColor:"rgba(255,255,255,0.18) transparent"}}>
             {loading?Array(6).fill(0).map((_,i)=><div key={i} style={{width:"100px",height:"40px",borderRadius:"99px",background:"rgba(255,255,255,0.04)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0}}/>):
             up.slice(0,14).map((f,i)=>{
               const u=urg(f.dl);

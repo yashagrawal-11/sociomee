@@ -4,7 +4,7 @@ const FONT = "'DM Sans','Syne',sans-serif";
 const FONT_HEAD = "'Poppins',sans-serif";
 
 const C = {
-  bg: "#080810",
+  bg: "#0a0a0a",
   sidebar: "rgba(255,255,255,0.025)",
   card: "rgba(255,255,255,0.04)",
   cardHover: "rgba(255,255,255,0.07)",
@@ -144,7 +144,7 @@ export default function SocioMeeCloud({ user }) {
             <span style={{ fontSize:"13px", color:"rgba(255,255,255,0.85)", fontWeight:"600", fontFamily:FONT }}>8 GB Storage</span>
           </div>
         </div>
-        <a href="/pricing" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", padding:"13px 0", borderRadius:"12px", background:"#fff", color:"#080810", fontWeight:"700", fontSize:"14px", textDecoration:"none", width:"100%", fontFamily:FONT }}>Upgrade to Pro</a>
+        <a href="/pricing" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", padding:"13px 0", borderRadius:"12px", background:"#fff", color:"#0a0a0a", fontWeight:"700", fontSize:"14px", textDecoration:"none", width:"100%", fontFamily:FONT }}>Upgrade to Pro</a>
       </div>
     </div>
   );

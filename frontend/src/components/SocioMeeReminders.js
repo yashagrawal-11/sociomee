@@ -76,7 +76,7 @@ export default function SocioMeeReminders({ user }) {
   const overdueCount = reminders.filter(r=>isOverdue(r.scheduled_ts)).length;
 
   if(!isPro) return (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"100vh",padding:"32px",fontFamily:F,background:"#080810"}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"100vh",padding:"32px",fontFamily:F,background:"#0a0a0a"}}>
       <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"20px",textAlign:"center",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"24px",padding:"48px 40px",maxWidth:"400px",width:"100%",backdropFilter:"blur(24px)"}}>
         <div style={{width:"68px",height:"68px",borderRadius:"20px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -91,13 +91,13 @@ export default function SocioMeeReminders({ user }) {
           <div style={{height:"1px",background:"rgba(255,255,255,0.06)"}}/>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:"12px",color:"rgba(255,255,255,0.4)",fontFamily:F}}>Pro+</span><span style={{fontSize:"12px",color:"rgba(255,255,255,0.8)",fontWeight:"600",fontFamily:F}}>Unlimited + festival auto-reminders</span></div>
         </div>
-        <a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px 0",borderRadius:"12px",background:"#fff",color:"#080810",fontWeight:"700",fontSize:"14px",textDecoration:"none",width:"100%",fontFamily:F}}>Upgrade to Pro</a>
+        <a href="/pricing" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"13px 0",borderRadius:"12px",background:"#fff",color:"#0a0a0a",fontWeight:"700",fontSize:"14px",textDecoration:"none",width:"100%",fontFamily:F}}>Upgrade to Pro</a>
       </div>
     </div>
   );
 
   return (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#080810",fontFamily:F,padding:"32px 24px",overflowY:"auto"}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#0a0a0a",fontFamily:F,padding:"32px 24px",overflowY:"auto"}}>
       <style>{`
         @keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}
         @keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
