@@ -28,6 +28,7 @@ import SocioMeeNotes from "./components/SocioMeeNotes";
 import SocioMeePDF from "./components/SocioMeePDF";
 import SocioMeePixel from "./components/SocioMeePixel";
 import SocioMeeShare from "./components/SocioMeeShare";
+import SocioMeeConvert from "./components/SocioMeeConvert";
 import SocioMeeCloud from "./components/SocioMeeCloud";
 import SocioMeeCalendar from "./components/SocioMeeCalendar";
 import { TikTokHook, TikTokCaption, TikTokVideoIdeas, TikTokHashtags, TikTokBestTime } from "./TikTokTools";
@@ -115,7 +116,7 @@ const TONES = [
   {id:"funny",emoji:"😂",color:"#f59e0b"},
   {id:"emotional",emoji:"💖",color:"#ff3d8f"},
   {id:"informative",emoji:"📚",color:"#7c3aed"},
-  {id:"aggressive",emoji:"⚡",color:"#6d28d9"},
+  {id:"aggressive",emoji:"",color:"#6d28d9"},
   {id:"sales",emoji:"💸",color:"#10b981"},
   {id:"dramatic",emoji:"🎭",color:"#dc2626"},
   {id:"casual",emoji:"😎",color:"#0891b2"},
@@ -182,7 +183,7 @@ async function runRazorpayCheckout({ planId, userId, email, onSuccess, onError }
 // PRICING POPUP
 // ══════════════════════════════════════════════════════════════════════
 // PRICING POPUP REPLACEMENT for App.js
-function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
+function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", currentPlan="free" }) {
   const [paying,     setPaying    ] = useState(null);
   const [payErr,     setPayErr    ] = useState("");
   const [doneMsg,    setDoneMsg   ] = useState("");
@@ -309,10 +310,10 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
 
   const S = {
     overlay: { position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,0.95)",backdropFilter:"blur(32px)",display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"0",overflowY:"auto" },
-    modal: { width:"100%",maxWidth:"520px",background:"#0a0a0f",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"24px 24px 0 0",boxShadow:"0 32px 80px rgba(0,0,0,0.9),0 0 0 1px rgba(255,255,255,0.04)",overflow:"hidden",animation:"smPop 0.2s ease",fontFamily:"Poppins,sans-serif" },
-    header: { background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",padding:"20px 20px 16px",position:"relative" },
-    headerTitle: { fontSize:"22px",fontWeight:"900",color:"#fff",margin:"0 0 4px",fontFamily:"Orbitron,sans-serif",letterSpacing:"1px" },
-    headerSub: { fontSize:"12px",color:"rgba(255,255,255,0.8)",margin:0 },
+    modal: { width:"100%",maxWidth:"900px",background:"rgba(8,8,8,0.98)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"24px 24px 0 0",boxShadow:"0 32px 80px rgba(0,0,0,0.9)",overflow:"hidden",animation:"smPop 0.2s ease",fontFamily:"Poppins,sans-serif" },
+    header: { background:"rgba(255,255,255,0.03)",borderBottom:"1px solid rgba(255,255,255,0.07)",padding:"20px 24px 16px",position:"relative" },
+    headerTitle: { fontSize:"22px",fontWeight:"900",color:"#fff",margin:"0 0 4px",fontFamily:"Orbitron,sans-serif",letterSpacing:"2px",textTransform:"uppercase" },
+    headerSub: { fontSize:"12px",color:"rgba(255,255,255,0.5)",margin:0,fontFamily:"Poppins,sans-serif" },
     closeBtn: { position:"absolute",top:"16px",right:"16px",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",width:"28px",height:"28px",borderRadius:"50%",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center" },
     toggle: { display:"flex",gap:"4px",background:"rgba(0,0,0,0.3)",borderRadius:"99px",padding:"3px",marginTop:"14px",width:"fit-content" },
     toggleBtn: (active) => ({ padding:"5px 16px",borderRadius:"99px",border:"none",background:active?"#fff":"transparent",color:active?"#7c3aed":"rgba(255,255,255,0.7)",fontWeight:"800",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif",transition:"all 0.15s" }),
@@ -320,16 +321,16 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
     sectionLabel: { fontSize:"10px",fontWeight:"700",letterSpacing:"2px",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",marginBottom:"10px" },
     topupGrid: { display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginBottom:"16px" },
     topupCard: { background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"14px",position:"relative" },
-    plansGrid: { display:"grid",gridTemplateColumns:"1fr",gap:"10px",marginBottom:"16px" },
+    plansGrid: { display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"12px",marginBottom:"16px" },
     planCard: (highlight) => ({ background:highlight?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.02)",border:`1px solid ${highlight?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.05)"}`,borderRadius:"16px",padding:"16px",display:"flex",flexDirection:"column",gap:"8px",position:"relative",boxShadow:highlight?"0 8px 32px rgba(0,0,0,0.4)":"none" }),
     planName: { fontSize:"12px",fontWeight:"800",color:"#ede8ff" },
     planPrice: { fontSize:"20px",fontWeight:"900",color:"#fff",letterSpacing:"-0.5px" },
     planSub: { fontSize:"10px",color:"rgba(167,139,250,0.8)",fontWeight:"600" },
     feature: { fontSize:"9.5px",color:"rgba(196,181,253,0.75)",display:"flex",gap:"5px",alignItems:"flex-start" },
     pillBtn: (primary) => ({ width:"100%",padding:"9px 0",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.18)",background:"rgba(255,255,255,0.07)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",color:"#fff",fontWeight:"700",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif",marginTop:"auto",transition:"all 0.35s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:"inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 16px rgba(0,0,0,0.3)" }),
-    couponWrap: { background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"12px",padding:"12px 14px",marginBottom:"12px" },
+    couponWrap: { background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"16px",marginBottom:"12px" },
     couponInput: { flex:1,padding:"8px 12px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",color:"#fff",fontSize:"12px",fontFamily:"Poppins,sans-serif",outline:"none",letterSpacing:"1px",fontWeight:"700" },
-    couponBtn: { padding:"8px 16px",borderRadius:"99px",border:"none",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontWeight:"800",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif" },
+    couponBtn: { padding:"8px 20px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.08)",color:"#fff",fontWeight:"700",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif" },
     badge: { position:"absolute",top:"-9px",right:"10px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontSize:"8px",fontWeight:"900",padding:"2px 7px",borderRadius:"99px" },
     popularTag: { position:"absolute",top:"-9px",left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontSize:"8px",fontWeight:"900",padding:"2px 10px",borderRadius:"99px",whiteSpace:"nowrap" },
   };
@@ -342,7 +343,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
         {/* Header */}
         <div style={S.header}>
           <button onClick={onClose} style={S.closeBtn}>✕</button>
-          <div style={{ fontSize:"9px",fontWeight:"700",letterSpacing:"2px",color:"rgba(255,255,255,0.7)",textTransform:"uppercase",marginBottom:"6px" }}>✦ SocioMee Plans</div>
+          <div style={{ fontSize:"9px",fontWeight:"700",letterSpacing:"2px",color:"rgba(255,255,255,0.7)",textTransform:"uppercase",marginBottom:"6px" }}>SocioMee Plans</div>
           <h2 style={S.headerTitle}>{isNocredits ? "out of credits." : "choose your plan."}</h2>
           <p style={S.headerSub}>{isNocredits ? "top up instantly or upgrade for more every month." : "upgrade to unlock more credits, uploads and AI features."}</p>
           <div style={S.toggle}>
@@ -358,7 +359,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
           {payErr && <div style={{ padding:"8px 14px",background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:"10px",marginBottom:"12px",fontSize:"12px",color:"#f87171",fontWeight:"600" }}>⚠ {payErr}</div>}
 
           {/* Top-ups */}
-          {isNocredits && <p style={S.sectionLabel}>⚡ Quick top-up</p>}
+          {isNocredits && <p style={S.sectionLabel}> Quick top-up</p>}
           {isNocredits && (
             <div style={S.topupGrid}>
               {topups.map(t => (
@@ -398,12 +399,18 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
                       </div>
                     ))}
                   </div>
-                  <button onClick={() => pay(planId, base)} disabled={!!paying}
-                    onMouseEnter={e=>{ e.currentTarget.style.background="radial-gradient(ellipse at 30% 30%,#9b5cf6,#7c3aed 50%,#4c1d95)"; e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.boxShadow="0 0 20px rgba(124,58,237,0.8),0 0 40px rgba(124,58,237,0.4),0 8px 32px rgba(124,58,237,0.3),inset 0 1px 0 rgba(255,255,255,0.2)"; e.currentTarget.style.transform="translateY(-2px) scale(1.04)"; }}
-                    onMouseLeave={e=>{ e.currentTarget.style.background="rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.18)"; e.currentTarget.style.boxShadow="inset 0 1px 0 rgba(255,255,255,0.15),0 4px 16px rgba(0,0,0,0.3)"; e.currentTarget.style.transform="none"; }}
-                    style={{ ...S.pillBtn(plan.popular||!isFree),marginTop:"10px",opacity:paying&&paying!==planId?0.5:1 }}>
-                    {paying===planId?"processing…":plan.cta}
-                  </button>
+                  {currentPlan===planId||currentPlan===(billing==="annual"?plan.id_a:plan.id_m) ? (
+                    <button disabled style={{ ...S.pillBtn(false),marginTop:"10px",opacity:1,cursor:"default",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.15)",color:"rgba(255,255,255,0.5)" }}>
+                      ✓ Active Plan
+                    </button>
+                  ) : (
+                    <button onClick={() => pay(planId, base)} disabled={!!paying}
+                      onMouseEnter={e=>{ e.currentTarget.style.background="rgba(255,255,255,0.16)"; e.currentTarget.style.transform="translateY(-1px)"; }}
+                      onMouseLeave={e=>{ e.currentTarget.style.background="rgba(255,255,255,0.07)"; e.currentTarget.style.transform="none"; }}
+                      style={{ ...S.pillBtn(plan.popular||!isFree),marginTop:"10px",opacity:paying&&paying!==planId?0.5:1 }}>
+                      {paying===planId?"processing…":plan.cta}
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -412,7 +419,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
           {/* Non-nocredits topups */}
           {!isNocredits && (
             <>
-              <p style={S.sectionLabel}>⚡ quick top-up</p>
+              <p style={S.sectionLabel}> quick top-up</p>
               <div style={S.topupGrid}>
                 {topups.map(t => (
                   <div key={t.id} style={S.topupCard}>
@@ -429,7 +436,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade" }) {
 
           {/* Coupon */}
           <div style={S.couponWrap}>
-            <div style={{ fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.4)",marginBottom:"8px",letterSpacing:"1px" }}>🎟 PROMO CODE</div>
+            <div style={{ fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.4)",marginBottom:"8px",letterSpacing:"1px" }}>PROMO CODE</div>
             <div style={{ display:"flex",gap:"6px" }}>
               <input value={coupon} onChange={e => setCoupon(e.target.value.toUpperCase())} onKeyDown={e => e.key==="Enter" && applyCoupon()} placeholder="enter promo code" style={S.couponInput}/>
               <button onClick={applyCoupon} style={S.couponBtn}>Apply</button>
@@ -1929,8 +1936,9 @@ export default function App() {
     reminders:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
     news:     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>,
     recorder: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,
+    convert:  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 7 13.5 16.5 8.5 11.5 1 19"/><polyline points="17 7 23 7 23 13"/></svg>,
   };
-  const APP_TAB_MAP = { notes:"notes", vault:"cloud", share:"share", pixel:"pixel", pdf:"pdf", calendar:"calendar", news:"news", screenrecorder:"screenrecorder" };
+  const APP_TAB_MAP = { notes:"notes", vault:"cloud", share:"share", pixel:"pixel", pdf:"pdf", calendar:"calendar", news:"news", screenrecorder:"screenrecorder", convert:"convert" };
 
   // Handle ?get_app= deep link from the Store page
   useEffect(() => {
@@ -2071,7 +2079,7 @@ export default function App() {
     biowriter:"Bio Writer | SocioMee",
     notes:"Notes | SocioMee", pixel:"Pixel | SocioMee", pdf:"PDF | SocioMee",
     share:"Share | SocioMee", calendar:"Calendar | SocioMee", news:"News | SocioMee", reminders:"Reminders | SocioMee",
-    cloud:"Cloud | SocioMee", screenrecorder:"Screen Recorder | SocioMee",
+    cloud:"Cloud | SocioMee", screenrecorder:"Screen Recorder | SocioMee", convert:"Convert | SocioMee",
   };
   useEffect(() => { document.title = PAGE_TITLES[activeTab] || "SocioMee"; }, [activeTab]);
   // Sync activeTab with URL: /app/notes, /app/pixel, etc.
@@ -2765,7 +2773,7 @@ export default function App() {
       {activeTab==="cloud" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Cloud" onUpgrade={()=>setShowPricing(true)}>
-          <SocioMeeCloud user={user}/>
+          <SocioMeeCloud user={user} onUpgradeClick={()=>setShowPricing(true)}/>
           </PlanGate>
         </div>
       )}
@@ -2926,7 +2934,7 @@ export default function App() {
                   {[
                     {id:"bold",label:t("toneBold"),emoji:"🔥"},{id:"funny",label:t("toneFunny"),emoji:"😂"},
                     {id:"emotional",label:t("toneEmotional"),emoji:"💖"},{id:"informative",label:t("toneInformative"),emoji:"📚"},
-                    {id:"aggressive",label:t("toneAggressive"),emoji:"⚡"},{id:"sales",label:t("toneSales"),emoji:"💸"},
+                    {id:"aggressive",label:t("toneAggressive"),emoji:""},{id:"sales",label:t("toneSales"),emoji:"💸"},
                     {id:"dramatic",label:t("toneDramatic"),emoji:"🎭"},{id:"casual",label:t("toneCasual"),emoji:"😎"},
                     {id:"motivational",label:t("toneMotivational"),emoji:"🚀"},{id:"storytelling",label:t("toneStorytelling"),emoji:"📖"},
                     {id:"educational",label:t("toneEducational"),emoji:"🎓"},{id:"trending",label:t("toneTrending"),emoji:"📈"},
@@ -2942,7 +2950,7 @@ export default function App() {
                   <CustomSelect centered={true} value={tone} onChange={setTone} grid={true} label={"😎 "+t("toneCasual")} options={[
                     {id:"bold",label:"🔥 "+t("toneBold")},{id:"funny",label:"😂 "+t("toneFunny")},
                     {id:"emotional",label:"💖 "+t("toneEmotional")},{id:"informative",label:"📚 "+t("toneInformative")},
-                    {id:"aggressive",label:"⚡ "+t("toneAggressive")},{id:"sales",label:"💸 "+t("toneSales")},
+                    {id:"aggressive",label:" "+t("toneAggressive")},{id:"sales",label:"💸 "+t("toneSales")},
                     {id:"dramatic",label:"🎭 "+t("toneDramatic")},{id:"casual",label:"😎 "+t("toneCasual")},
                     {id:"motivational",label:"🚀 "+t("toneMotivational")},{id:"storytelling",label:"📖 "+t("toneStorytelling")},
                     {id:"educational",label:"🎓 "+t("toneEducational")},{id:"cinematic",label:"🎬 "+t("toneCinematic")},
@@ -3058,6 +3066,13 @@ export default function App() {
       {activeTab==="yt-evergreen" && isLoggedIn && <EvergreenScore/>}
       {activeTab==="yt-ideas"     && isLoggedIn && <DailyVideoIdeas/>}
       {activeTab==="screenrecorder" && isLoggedIn && <ScreenRecorder user={user} creditStatus={creditStatus}/>}
+      {activeTab==="convert" && isLoggedIn && (
+        <div style={{ flex:1, height:"100vh", overflow:"auto", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100, background:"#0a0a0a" }}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Convert" onUpgrade={()=>setShowPricing(true)}>
+          <SocioMeeConvert user={user} creditStatus={creditStatus}/>
+          </PlanGate>
+        </div>
+      )}
       {activeTab==="hashtags"   && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HashtagGenerator user={user}/></div>}
           {activeTab==="texttaudio" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><TextToAudio user={user}/></div>}
           {activeTab==="hookgenerator"&&isLoggedIn&& <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><HookGenerator user={user}/></div>}
@@ -3104,6 +3119,7 @@ export default function App() {
           mode={pricingMode}
           userId={user?.user_id||localStorage.getItem("sociomee_user_id")||"default_user"}
           email={user?.email||localStorage.getItem("sociomee_email")||""}
+          currentPlan={creditStatus?.plan||"free"}
           onClose={()=>setShowPricing(false)}
           onSuccess={handlePaymentSuccess}
         />
@@ -3111,6 +3127,8 @@ export default function App() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800;900&family=Orbitron:wght@400;700;900&display=swap');
+        .sm-plans-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+        @media(max-width:720px){ .sm-plans-grid{ grid-template-columns:1fr!important; } }
         .dark-scroll::-webkit-scrollbar { width: 6px; }
         .dark-scroll::-webkit-scrollbar-track { background: transparent; }
         .dark-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 99px; }

@@ -2280,3 +2280,39 @@ async def register_fingerprint(request: Request, user=Depends(get_current_user))
         return {"fingerprint": fp[:8]+"...", "abuse_score": result["abuse_score"], "allowed": result["allowed"]}
     except Exception as e:
         return {"ok": True}
+
+# ── SocioMee Convert — Image to SVG ────────────────────────────────────────
+@app.post("/convert/img-to-svg")
+@limiter.limit("20/hour")
+async def img_to_svg(request: Request, user: dict = Depends(get_current_user)):
+    _check_credits(user, cost=3)
+    body = await request.json()
+    img_data = body.get("image", "")
+    threshold = int(body.get("threshold", 128))
+    if not img_data:
+        raise HTTPException(400, "No image provided.")
+    import base64, io, subprocess, tempfile, os
+    from PIL import Image
+    header, _, b64 = img_data.partition(",")
+    raw = base64.b64decode(b64 if b64 else img_data)
+    img = Image.open(io.BytesIO(raw)).convert("L")
+    if img.width > 2000 or img.height > 2000:
+        img.thumbnail((2000, 2000), Image.LANCZOS)
+    bmp_data = io.BytesIO()
+    bw = img.point(lambda x: 0 if x < threshold else 255, "1")
+    bw.save(bmp_data, format="BMP")
+    with tempfile.NamedTemporaryFile(suffix=".bmp", delete=False) as tmp_bmp:
+        tmp_bmp.write(bmp_data.getvalue())
+        tmp_bmp_path = tmp_bmp.name
+    svg_path = tmp_bmp_path.replace(".bmp", ".svg")
+    try:
+        subprocess.run(["potrace", "--svg", "-o", svg_path, tmp_bmp_path], check=True, timeout=30)
+        with open(svg_path, "r") as f:
+            svg_content = f.read()
+        return {"svg": svg_content}
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(500, "Vectorization failed. Please try a clearer image.")
+    finally:
+        os.unlink(tmp_bmp_path)
+        if os.path.exists(svg_path):
+            os.unlink(svg_path)

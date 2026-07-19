@@ -75,7 +75,7 @@ function detectCat(file) {
   return "other";
 }
 
-export default function SocioMeeCloud({ user }) {
+export default function SocioMeeCloud({ user, onUpgradeClick }) {
   const [files, setFiles] = useState(() => {
     try { return JSON.parse(localStorage.getItem("cloud_files") || "[]"); } catch { return []; }
   });
@@ -144,7 +144,7 @@ export default function SocioMeeCloud({ user }) {
             <span style={{ fontSize:"13px", color:"rgba(255,255,255,0.85)", fontWeight:"600", fontFamily:FONT }}>8 GB Storage</span>
           </div>
         </div>
-        <a href="/pricing" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", padding:"13px 0", borderRadius:"12px", background:"#fff", color:"#0a0a0a", fontWeight:"700", fontSize:"14px", textDecoration:"none", width:"100%", fontFamily:FONT }}>Upgrade to Pro</a>
+        <button onClick={onUpgradeClick} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", padding:"13px 0", borderRadius:"12px", background:"#fff", color:"#0a0a0a", fontWeight:"700", fontSize:"14px", border:"none", cursor:"pointer", width:"100%", fontFamily:FONT }}>Upgrade to Pro</button>
       </div>
     </div>
   );
@@ -202,7 +202,7 @@ export default function SocioMeeCloud({ user }) {
           <div style={{ height:"3px", borderRadius:"99px", background:"rgba(255,255,255,0.07)", overflow:"hidden" }}>
             <div style={{ height:"100%", width:`${usedPct}%`, background:"rgba(255,255,255,0.6)", borderRadius:"99px", transition:"width 0.5s ease" }}/>
           </div>
-          <a href="/pricing" style={{ display:"block", fontSize:"10px", color:"rgba(255,255,255,0.35)", fontFamily:FONT, fontWeight:"500", textDecoration:"none", marginTop:"8px" }}>Upgrade plan ↗</a>
+          <button onClick={onUpgradeClick} style={{ display:"block", fontSize:"10px", color:"rgba(255,255,255,0.35)", fontFamily:FONT, fontWeight:"500", background:"none", border:"none", cursor:"pointer", padding:0, marginTop:"8px" }}>Upgrade plan ↗</button>
         </div>
       </div>
 
