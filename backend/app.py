@@ -2282,6 +2282,77 @@ async def register_fingerprint(request: Request, user=Depends(get_current_user))
         return {"ok": True}
 
 # ── SocioMee Convert — Image to SVG ────────────────────────────────────────
+
+@app.post("/convert/doc-to-pdf")
+async def doc_to_pdf(request: Request, user: dict = Depends(get_current_user)):
+    _check_credits(user.get("user_id",""), cost=2)
+    import subprocess, tempfile, os, base64
+    form = await request.form()
+    file = form.get("file")
+    if not file:
+        raise HTTPException(400, "No file provided.")
+    fname = file.filename or "document.docx"
+    ext = fname.rsplit(".",1)[-1].lower()
+    raw = await file.read()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        in_path = os.path.join(tmpdir, f"input.{ext}")
+        with open(in_path, "wb") as f2:
+            f2.write(raw)
+        try:
+            subprocess.run(["libreoffice","--headless","--convert-to","pdf","--outdir",tmpdir,in_path], check=True, timeout=60, capture_output=True)
+            out_path = os.path.join(tmpdir, f"input.pdf")
+            if not os.path.exists(out_path):
+                raise HTTPException(500, "Conversion produced no output.")
+            with open(out_path,"rb") as f3:
+                pdf_b64 = base64.b64encode(f3.read()).decode()
+            return {"pdf": pdf_b64, "name": fname.rsplit(".",1)[0]+".pdf"}
+        except subprocess.CalledProcessError as e:
+            raise HTTPException(500, f"Conversion failed: {e.stderr.decode() if e.stderr else str(e)}")
+        except Exception as e:
+            import traceback; log.error("doc-to-pdf: %s", traceback.format_exc())
+            raise HTTPException(500, str(e))
+
+@app.post("/convert/media")
+async def convert_media(request: Request, user: dict = Depends(get_current_user)):
+    _check_credits(user.get("user_id",""), cost=3)
+    import subprocess, tempfile, os, base64
+    form = await request.form()
+    file = form.get("file")
+    target = form.get("target","mp3")
+    if not file:
+        raise HTTPException(400, "No file provided.")
+    fname = file.filename or "media"
+    ext = fname.rsplit(".",1)[-1].lower()
+    raw = await file.read()
+    mime_map = {"mp3":"audio/mpeg","wav":"audio/wav","ogg":"audio/ogg","mp4":"video/mp4","webm":"video/webm","gif":"image/gif"}
+    with tempfile.TemporaryDirectory() as tmpdir:
+        in_path = os.path.join(tmpdir, f"input.{ext}")
+        out_path = os.path.join(tmpdir, f"output.{target}")
+        with open(in_path,"wb") as f2:
+            f2.write(raw)
+        try:
+            cmd = ["ffmpeg","-y","-i",in_path]
+            if target == "mp3":
+                cmd += ["-q:a","2","-map","a"]
+            elif target == "wav":
+                cmd += ["-map","a"]
+            elif target == "gif":
+                cmd += ["-vf","fps=10,scale=480:-1:flags=lanczos","-loop","0"]
+            elif target in ("mp4","webm"):
+                cmd += ["-c:v","libvpx-vp9" if target=="webm" else "libx264","-crf","28","-preset","fast" if target=="mp4" else None,"-c:a","libvorbis" if target=="webm" else "aac"]
+                cmd = [x for x in cmd if x]
+            cmd.append(out_path)
+            subprocess.run(cmd, check=True, timeout=120, capture_output=True)
+            with open(out_path,"rb") as f3:
+                out_b64 = base64.b64encode(f3.read()).decode()
+            out_name = fname.rsplit(".",1)[0]+f".{target}"
+            return {"file": out_b64, "name": out_name, "mime": mime_map.get(target,"application/octet-stream")}
+        except subprocess.CalledProcessError as e:
+            raise HTTPException(500, f"Media conversion failed: {e.stderr.decode() if e.stderr else str(e)}")
+        except Exception as e:
+            import traceback; log.error("media-convert: %s", traceback.format_exc())
+            raise HTTPException(500, str(e))
+
 @app.post("/convert/pdf-to-images")
 async def pdf_to_images(request: Request, user: dict = Depends(get_current_user)):
     _check_credits(user.get("user_id",""), cost=2)
@@ -2308,6 +2379,9 @@ async def pdf_to_images(request: Request, user: dict = Depends(get_current_user)
     except Exception as e:
         import traceback
         log.error("pdf-to-images error: %s", traceback.format_exc())
+        err = str(e).lower()
+        if "encrypted" in err or "closed" in err or "password" in err:
+            raise HTTPException(400, "This PDF is password protected. Please unlock it first and try again.")
         raise HTTPException(500, f"PDF conversion failed: {str(e)}")
 
 @app.post("/convert/img-to-svg")

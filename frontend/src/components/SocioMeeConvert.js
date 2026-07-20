@@ -6,21 +6,32 @@ const token = () => localStorage.getItem("sociomee_token");
 const API = "https://sociomeeai.com/api";
 
 const CONVERSIONS = [
-  { id:"img-svg",  label:"Image \u2192 SVG",    accept:"image/*",         multi:false, group:"Image" },
-  { id:"img-pdf",  label:"Image \u2192 PDF",    accept:"image/*",         multi:false, group:"Image" },
-  { id:"img-jpg",  label:"Image \u2192 JPG",    accept:"image/*",         multi:false, group:"Image" },
-  { id:"img-png",  label:"Image \u2192 PNG",    accept:"image/*",         multi:false, group:"Image" },
-  { id:"img-webp", label:"Image \u2192 WebP",   accept:"image/*",         multi:false, group:"Image" },
-  { id:"img-gif",  label:"Images \u2192 GIF",   accept:"image/*",         multi:true,  group:"Image" },
-  { id:"png-jpg",  label:"PNG \u2192 JPG",      accept:"image/png",       multi:false, group:"Image" },
-  { id:"jpg-png",  label:"JPG \u2192 PNG",      accept:"image/jpeg",      multi:false, group:"Image" },
-  { id:"webp-png", label:"WebP \u2192 PNG",     accept:"image/webp",      multi:false, group:"Image" },
-  { id:"webp-jpg", label:"WebP \u2192 JPG",     accept:"image/webp",      multi:false, group:"Image" },
-  { id:"png-webp", label:"PNG \u2192 WebP",     accept:"image/png",       multi:false, group:"Image" },
-  { id:"jpg-webp", label:"JPG \u2192 WebP",     accept:"image/jpeg",      multi:false, group:"Image" },
-  { id:"pdf-img",  label:"PDF \u2192 Images",   accept:"application/pdf", multi:false, group:"PDF"   },
-  { id:"imgs-pdf", label:"Images \u2192 PDF",   accept:"image/*",         multi:true,  group:"PDF"   },
+  { id:"img-svg",   label:"Image → SVG",      accept:"image/*",         multi:false, group:"Image"    },
+  { id:"img-pdf",   label:"Image → PDF",      accept:"image/*",         multi:false, group:"Image"    },
+  { id:"img-jpg",   label:"Image → JPG",      accept:"image/*",         multi:false, group:"Image"    },
+  { id:"img-png",   label:"Image → PNG",      accept:"image/*",         multi:false, group:"Image"    },
+  { id:"img-webp",  label:"Image → WebP",     accept:"image/*",         multi:false, group:"Image"    },
+  { id:"img-gif",   label:"Images → GIF",     accept:"image/*",         multi:true,  group:"Image"    },
+  { id:"png-jpg",   label:"PNG → JPG",        accept:"image/png",       multi:false, group:"Image"    },
+  { id:"jpg-png",   label:"JPG → PNG",        accept:"image/jpeg",      multi:false, group:"Image"    },
+  { id:"webp-png",  label:"WebP → PNG",       accept:"image/webp",      multi:false, group:"Image"    },
+  { id:"webp-jpg",  label:"WebP → JPG",       accept:"image/webp",      multi:false, group:"Image"    },
+  { id:"png-webp",  label:"PNG → WebP",       accept:"image/png",       multi:false, group:"Image"    },
+  { id:"jpg-webp",  label:"JPG → WebP",       accept:"image/jpeg",      multi:false, group:"Image"    },
+  { id:"pdf-img",   label:"PDF → Images",     accept:"application/pdf", multi:false, group:"PDF"      },
+  { id:"imgs-pdf",  label:"Images → PDF",     accept:"image/*",         multi:true,  group:"PDF"      },
+  { id:"docx-pdf",  label:"DOCX → PDF",       accept:".docx,.doc",      multi:false, group:"Document" },
+  { id:"pptx-pdf",  label:"PPTX → PDF",       accept:".pptx,.ppt",      multi:false, group:"Document" },
+  { id:"xlsx-pdf",  label:"XLSX → PDF",       accept:".xlsx,.xls",      multi:false, group:"Document" },
+  { id:"mp4-mp3",   label:"MP4 → MP3",        accept:"video/mp4,video/*", multi:false, group:"Audio"  },
+  { id:"mp3-wav",   label:"MP3 → WAV",        accept:"audio/mpeg,audio/*", multi:false, group:"Audio" },
+  { id:"wav-mp3",   label:"WAV → MP3",        accept:"audio/wav,audio/*",  multi:false, group:"Audio" },
+  { id:"mp4-gif",   label:"MP4 → GIF",        accept:"video/mp4,video/*", multi:false, group:"Video"  },
+  { id:"mp4-webm",  label:"MP4 → WebM",       accept:"video/mp4,video/*", multi:false, group:"Video"  },
+  { id:"webm-mp4",  label:"WebM → MP4",       accept:"video/webm,video/*",multi:false, group:"Video"  },
 ];
+
+const GROUPS = ["Image","PDF","Document","Audio","Video"];
 
 function formatBytes(b) {
   if (!b) return "";
@@ -47,6 +58,8 @@ export default function SocioMeeConvert({ user, creditStatus }) {
   const activeConv = CONVERSIONS.find(c => c.id === active);
   const isMulti = activeConv?.multi || false;
   const isPdfInput = activeConv?.accept === "application/pdf";
+  const isDocInput = ["docx-pdf","pptx-pdf","xlsx-pdf"].includes(active);
+  const isMediaInput = ["mp4-mp3","mp3-wav","wav-mp3","mp4-gif","mp4-webm","webm-mp4"].includes(active);
 
   const reset = () => { setFiles([]); setPreview(null); setResult(null); setError(""); setImgW(0); setImgH(0); };
   const switchTab = (id) => { setActive(id); reset(); };
@@ -91,6 +104,31 @@ export default function SocioMeeConvert({ user, creditStatus }) {
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || "Failed");
         setResult({ type:"pdf-pages", pages: data.images, name: f.name.replace(/\.[^.]+$/,"") });
+      } else if (["docx-pdf","pptx-pdf","xlsx-pdf"].includes(active)) {
+        const fd = new FormData(); fd.append("file", f);
+        const resp = await fetch(`${API}/convert/doc-to-pdf`, {
+          method:"POST", headers:{"Authorization":`Bearer ${token()}`}, body: fd,
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Failed");
+        const raw = atob(data.pdf);
+        const bytes = new Uint8Array(raw.length);
+        for (let i=0;i<raw.length;i++) bytes[i]=raw.charCodeAt(i);
+        setResult({ type:"pdf", blob: new Blob([bytes],{type:"application/pdf"}), name: data.name });
+      } else if (["mp4-mp3","mp3-wav","wav-mp3","mp4-gif","mp4-webm","webm-mp4"].includes(active)) {
+        const targetMap = {"mp4-mp3":"mp3","mp3-wav":"wav","wav-mp3":"mp3","mp4-gif":"gif","mp4-webm":"webm","webm-mp4":"mp4"};
+        const target = targetMap[active];
+        const fd = new FormData(); fd.append("file", f); fd.append("target", target);
+        const resp = await fetch(`${API}/convert/media`, {
+          method:"POST", headers:{"Authorization":`Bearer ${token()}`}, body: fd,
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Failed");
+        const raw = atob(data.file);
+        const bytes = new Uint8Array(raw.length);
+        for (let i=0;i<raw.length;i++) bytes[i]=raw.charCodeAt(i);
+        const blob = new Blob([bytes],{type:data.mime});
+        setResult({ type:"media", blob, name: data.name, mime: data.mime, ext: target });
       } else {
         const img = new Image();
         img.src = preview;
@@ -134,6 +172,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
     if (result.type === "svg") dlFile(URL.createObjectURL(new Blob([result.content],{type:"image/svg+xml"})), `SocioMee_${files[0]?.name?.replace(/\.[^.]+$/,"")||"vector"}.svg`);
     else if (result.type === "pdf") dlFile(URL.createObjectURL(result.blob), result.name);
     else if (result.type === "image") dlFile(result.dataUrl, result.name);
+    else if (result.type === "media") dlFile(URL.createObjectURL(result.blob), result.name);
   };
 
   if (!isPro) return (
@@ -170,10 +209,14 @@ export default function SocioMeeConvert({ user, creditStatus }) {
                 <div style={{ width:"52px", height:"52px", borderRadius:"14px", background:"rgba(255,255,255,0.06)", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.7"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 </div>
-                <p style={{ fontSize:"13px", fontWeight:"600", color:C.white, margin:"0 0 4px" }}>{isPdfInput?"Drop PDF here":isMulti?"Drop images here":"Drop image here"}</p>
-                <p style={{ fontSize:"11px", color:C.muted, margin:"0 0 18px" }}>{isPdfInput?"PDF files only":isMulti?"PNG, JPG, WEBP":"PNG, JPG, WEBP, SVG"}</p>
+                <p style={{ fontSize:"13px", fontWeight:"600", color:C.white, margin:"0 0 4px" }}>
+                  {isPdfInput?"Drop PDF here":isDocInput?"Drop document here":isMediaInput?"Drop media file here":isMulti?"Drop images here":"Drop image here"}
+                </p>
+                <p style={{ fontSize:"11px", color:C.muted, margin:"0 0 18px" }}>
+                  {isPdfInput?"PDF files only":isDocInput?"DOCX, PPTX, XLSX":isMediaInput?"MP4, MP3, WAV, WebM":isMulti?"PNG, JPG, WEBP":"PNG, JPG, WEBP, SVG"}
+                </p>
                 <button style={{ padding:"9px 24px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.9)", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>
-                  {isPdfInput?"Choose PDF":isMulti?"Choose Images":"Choose Image"}
+                  {isPdfInput?"Choose PDF":isDocInput?"Choose Document":isMediaInput?"Choose File":isMulti?"Choose Images":"Choose Image"}
                 </button>
                 <input ref={fileRef} type="file" accept={activeConv?.accept||"image/*"} multiple={isMulti} style={{display:"none"}} onChange={e=>handleFiles(e.target.files)}/>
               </div>
@@ -275,9 +318,23 @@ export default function SocioMeeConvert({ user, creditStatus }) {
               {result && result.type==="note" && (
                 <p style={{ fontSize:"13px", color:C.muted, textAlign:"center", lineHeight:1.7 }}>{result.note}</p>
               )}
+              {result && result.type==="media" && (
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"14px", padding:"20px" }}>
+                  {result.mime?.startsWith("audio") && (
+                    <audio controls src={URL.createObjectURL(result.blob)} style={{ width:"100%", maxWidth:"320px" }}/>
+                  )}
+                  {result.mime?.startsWith("video") && (
+                    <video controls src={URL.createObjectURL(result.blob)} style={{ width:"100%", borderRadius:"10px" }}/>
+                  )}
+                  {result.mime?.startsWith("image") && (
+                    <img src={URL.createObjectURL(result.blob)} alt="result" style={{ maxWidth:"100%", borderRadius:"10px" }}/>
+                  )}
+                  <p style={{ fontSize:"12px", color:C.muted, margin:0 }}>{result.name}</p>
+                </div>
+              )}
             </div>
           </div>
-          {result && (result.type==="svg"||result.type==="image"||result.type==="pdf") && (
+          {result && (result.type==="svg"||result.type==="image"||result.type==="pdf"||result.type==="media") && (
             <button onClick={downloadResult} style={{ flexShrink:0, padding:"12px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.08)", color:C.white, fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FONT, marginTop:"8px" }}>
               {result.type==="svg"?"Download SVG":result.type==="pdf"?"Download PDF":`Download ${result.ext?.toUpperCase()}`}
             </button>
@@ -291,7 +348,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
           <p style={{ fontSize:"9px", fontWeight:"600", color:"rgba(255,255,255,0.2)", letterSpacing:"2px", textTransform:"uppercase", margin:0 }}>Convert</p>
         </div>
         <div style={{ flex:1, overflowY:"auto", padding:"4px 10px 24px", scrollbarWidth:"none" }}>
-          {["Image","PDF"].map(grp => (
+          {GROUPS.map(grp => (
             <div key={grp}>
               <p style={{ fontSize:"8px", fontWeight:"600", color:"rgba(255,255,255,0.15)", letterSpacing:"1.5px", textTransform:"uppercase", margin:"18px 6px 6px" }}>{grp}</p>
               {CONVERSIONS.filter(c=>c.group===grp).map(c=>(
