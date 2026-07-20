@@ -2285,7 +2285,7 @@ async def register_fingerprint(request: Request, user=Depends(get_current_user))
 
 @app.post("/convert/doc-to-pdf")
 async def doc_to_pdf(request: Request, user: dict = Depends(get_current_user)):
-    _check_credits(user.get("user_id",""), cost=2)
+    _check_credits(user.get("user_id",""), cost=1)
     import subprocess, tempfile, os, base64
     form = await request.form()
     file = form.get("file")
@@ -2314,7 +2314,7 @@ async def doc_to_pdf(request: Request, user: dict = Depends(get_current_user)):
 
 @app.post("/convert/media")
 async def convert_media(request: Request, user: dict = Depends(get_current_user)):
-    _check_credits(user.get("user_id",""), cost=3)
+    _check_credits(user.get("user_id",""), cost=1)
     import subprocess, tempfile, os, base64
     form = await request.form()
     file = form.get("file")
@@ -2361,7 +2361,7 @@ async def convert_media(request: Request, user: dict = Depends(get_current_user)
 
 @app.post("/convert/pdf-to-images")
 async def pdf_to_images(request: Request, user: dict = Depends(get_current_user)):
-    _check_credits(user.get("user_id",""), cost=2)
+    _check_credits(user.get("user_id",""), cost=1)
     import io, base64, tempfile, os
     try:
         import fitz  # PyMuPDF
@@ -2392,7 +2392,7 @@ async def pdf_to_images(request: Request, user: dict = Depends(get_current_user)
 
 @app.post("/convert/img-to-svg")
 async def img_to_svg(request: Request, user: dict = Depends(get_current_user)):
-    _check_credits(user.get("user_id",""), cost=3)
+    _check_credits(user.get("user_id",""), cost=1)
     try:
         body = await request.json()
     except Exception as e:
