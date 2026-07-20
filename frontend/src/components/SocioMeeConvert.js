@@ -60,6 +60,8 @@ export default function SocioMeeConvert({ user, creditStatus }) {
   const isPdfInput = activeConv?.accept === "application/pdf";
   const isDocInput = ["docx-pdf","pptx-pdf","xlsx-pdf"].includes(active);
   const isMediaInput = ["mp4-mp3","mp3-wav","wav-mp3","mp4-gif","mp4-webm","webm-mp4"].includes(active);
+  const isPP = rawPlan.includes("premium") || rawPlan.includes("pro+") || rawPlan.includes("annual");
+  const isMediaLocked = isMediaInput && !isPP;
 
   const reset = () => { setFiles([]); setPreview(null); setResult(null); setError(""); setImgW(0); setImgH(0); };
   const switchTab = (id) => { setActive(id); reset(); };
@@ -263,7 +265,16 @@ export default function SocioMeeConvert({ user, creditStatus }) {
             </div>
           )}
 
-          {error && <div style={{ padding:"10px 14px", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:"10px", color:"rgba(239,68,68,0.8)", fontSize:"12px", flexShrink:0 }}>{error}</div>}
+          {isMediaLocked && (
+          <div style={{ padding:"14px 16px", background:"rgba(124,58,237,0.08)", border:"1px solid rgba(124,58,237,0.25)", borderRadius:"12px", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"space-between", gap:"12px" }}>
+            <div>
+              <p style={{ fontSize:"12px", fontWeight:"700", color:"#a78bfa", margin:"0 0 2px" }}>Pro+ only</p>
+              <p style={{ fontSize:"11px", color:"rgba(255,255,255,0.4)", margin:0 }}>Audio and video conversion requires Pro+</p>
+            </div>
+            <a href="/pricing" style={{ padding:"8px 16px", borderRadius:"99px", background:"rgba(124,58,237,0.3)", border:"1px solid rgba(124,58,237,0.5)", color:"#c4b5fd", fontSize:"11px", fontWeight:"700", textDecoration:"none", whiteSpace:"nowrap" }}>Upgrade</a>
+          </div>
+        )}
+        {error && <div style={{ padding:"10px 14px", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:"10px", color:"rgba(239,68,68,0.8)", fontSize:"12px", flexShrink:0 }}>{error}</div>}
 
           {files.length > 0 && (
             <div style={{ display:"flex", gap:"8px", flexShrink:0 }}>
