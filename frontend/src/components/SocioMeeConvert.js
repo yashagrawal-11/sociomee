@@ -67,6 +67,8 @@ export default function SocioMeeConvert({ user, creditStatus }) {
   const handleFiles = (fList) => {
     const arr = Array.from(fList);
     if (!arr.length) return;
+    const tooBig = arr.find(f => f.size > 100 * 1024 * 1024);
+    if (tooBig) { setError(`File too large (${formatBytes(tooBig.size)}). Max 100MB per file.`); return; }
     setFiles(arr); setResult(null); setError("");
     if (isPdfInput) { setPreview(null); return; }
     const r = new FileReader();
