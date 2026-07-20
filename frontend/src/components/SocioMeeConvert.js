@@ -71,6 +71,11 @@ export default function SocioMeeConvert({ user, creditStatus }) {
     if (tooBig) { setError(`File too large (${formatBytes(tooBig.size)}). Max 100MB per file.`); return; }
     setFiles(arr); setResult(null); setError("");
     if (isPdfInput) { setPreview(null); return; }
+    const f0 = arr[0];
+    if (f0.type.startsWith("video/") || f0.type.startsWith("audio/")) {
+      setPreview(URL.createObjectURL(f0));
+      return;
+    }
     const r = new FileReader();
     r.onload = e => {
       setPreview(e.target.result);
@@ -78,7 +83,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
       img.onload = () => { setImgW(img.naturalWidth); setImgH(img.naturalHeight); };
       img.src = e.target.result;
     };
-    r.readAsDataURL(arr[0]);
+    r.readAsDataURL(f0);
   };
 
   const convert = async () => {
