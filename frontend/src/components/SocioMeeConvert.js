@@ -211,13 +211,15 @@ export default function SocioMeeConvert({ user, creditStatus }) {
 
           {error && <div style={{ padding:"10px 14px", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:"10px", color:"rgba(239,68,68,0.8)", fontSize:"12px", flexShrink:0 }}>{error}</div>}
 
-          <div style={{ display:"flex", gap:"8px", flexShrink:0 }}>
-            {files.length>0 && <button onClick={reset} style={{ padding:"12px 18px", borderRadius:"99px", border:`1px solid ${C.border}`, background:C.card, color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>Clear</button>}
-            <button onClick={files.length?convert:()=>fileRef.current?.click()} disabled={loading}
-              style={{ flex:1, padding:"12px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.22)", background:"rgba(255,255,255,0.12)", color:C.white, fontSize:"13px", fontWeight:"700", cursor:loading?"not-allowed":"pointer", fontFamily:FONT, display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
-              {loading?<><div style={{ width:"14px",height:"14px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.3)",borderTopColor:"#fff",animation:"spin 0.8s linear infinite" }}/> Converting...</>:btnLabel}
-            </button>
-          </div>
+          {files.length > 0 && (
+            <div style={{ display:"flex", gap:"8px", flexShrink:0 }}>
+              <button onClick={reset} style={{ padding:"12px 18px", borderRadius:"99px", border:`1px solid ${C.border}`, background:C.card, color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>Clear</button>
+              <button onClick={convert} disabled={loading}
+                style={{ flex:1, padding:"12px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.22)", background:"rgba(255,255,255,0.12)", color:C.white, fontSize:"13px", fontWeight:"700", cursor:loading?"not-allowed":"pointer", fontFamily:FONT, display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
+                {loading?<><div style={{ width:"14px",height:"14px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.3)",borderTopColor:"#fff",animation:"spin 0.8s linear infinite" }}/> Converting...</>:btnLabel}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* RESULT PANEL */}
@@ -276,7 +278,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
             </div>
           </div>
           {result && (result.type==="svg"||result.type==="image"||result.type==="pdf") && (
-            <button onClick={downloadResult} style={{ flexShrink:0, padding:"12px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.08)", color:C.white, fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>
+            <button onClick={downloadResult} style={{ flexShrink:0, padding:"12px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.08)", color:C.white, fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FONT, marginTop:"8px" }}>
               {result.type==="svg"?"Download SVG":result.type==="pdf"?"Download PDF":`Download ${result.ext?.toUpperCase()}`}
             </button>
           )}
