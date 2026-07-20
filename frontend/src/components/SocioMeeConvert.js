@@ -281,10 +281,10 @@ export default function SocioMeeConvert({ user, creditStatus }) {
         </div>
 
         {/* RESULT PANEL */}
-        <div style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", padding:"14px", display:"flex", flexDirection:"column", backdropFilter:"blur(24px)", minWidth:0 }}>
+        <div style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", padding:"14px", display:"flex", flexDirection:"column", backdropFilter:"blur(24px)", minWidth:0, maxHeight:"520px" }}>
           <p style={{ fontSize:"9px", fontWeight:"700", color:C.muted, letterSpacing:"1.8px", textTransform:"uppercase", margin:"0 0 10px", flexShrink:0 }}>Result</p>
 
-          <div style={{ borderRadius:"12px", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(255,255,255,0.015)", minHeight:"200px" }}>
+          <div style={{ borderRadius:"12px", overflow:"hidden", overflowY:"auto", display:"flex", alignItems: result && result.type === "pdf-pages" ? "flex-start" : "center", justifyContent:"center", background:"rgba(255,255,255,0.015)", minHeight:"200px", flex:1, scrollbarWidth:"thin", scrollbarColor:"rgba(255,255,255,0.08) transparent" }}>
             {!result && !loading && (
               <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"10px" }}>
                 <div style={{ width:"52px", height:"52px", borderRadius:"14px", background:"rgba(255,255,255,0.04)", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -317,13 +317,13 @@ export default function SocioMeeConvert({ user, creditStatus }) {
               </div>
             )}
             {result && result.type === "pdf-pages" && (
-              <div style={{ width:"100%", maxHeight:"400px", overflowY:"auto", display:"flex", flexDirection:"column", gap:"8px", padding:"4px", scrollbarWidth:"thin", scrollbarColor:"rgba(255,255,255,0.08) transparent" }}>
+              <div style={{ width:"100%", display:"flex", flexDirection:"column", gap:"8px", padding:"8px" }}>
                 {result.pages.map((pg, i) => (
                   <div key={i} style={{ position:"relative" }}>
                     <img src={`data:image/png;base64,${pg}`} alt={`Page ${i+1}`} style={{ width:"100%", display:"block", borderRadius:"8px" }}/>
                     <button onClick={() => download(`data:image/png;base64,${pg}`, `${result.name}_page${i+1}.png`)}
-                      style={{ position:"absolute", bottom:"8px", right:"8px", padding:"6px 14px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.2)", background:"rgba(10,10,10,0.75)", backdropFilter:"blur(8px)", color:C.white, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>
-                      Page {i+1}
+                      style={{ position:"absolute", bottom:"10px", right:"10px", padding:"6px 14px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.25)", background:"rgba(10,10,10,0.8)", backdropFilter:"blur(8px)", color:C.white, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>
+                      ⤓ Page {i+1}
                     </button>
                   </div>
                 ))}
@@ -339,16 +339,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
               {result.type === "svg" ? "Download SVG" : result.type === "pdf" ? "Download PDF" : `Download ${result.ext?.toUpperCase()}`}
             </button>
           )}
-          {result && result.type === "pdf-pages" && (
-            <div style={{ marginTop:"10px", display:"flex", gap:"6px", flexShrink:0 }}>
-              {result.pages.map((pg, i) => (
-                <button key={i} onClick={() => download(`data:image/png;base64,${pg}`, `${result.name}_page${i+1}.png`)}
-                  style={{ flex:1, padding:"10px 6px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.07)", color:C.white, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>
-                  Page {i+1}
-                </button>
-              ))}
-            </div>
-          )}
+
 
           {result && result.type === "pdf-pages" && (
             <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
