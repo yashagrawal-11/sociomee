@@ -235,8 +235,8 @@ export default function SocioMeeConvert({ user, creditStatus }) {
                   {isPdfInput ? "PDF file" : isMulti ? `${files.length} files selected` : "Source"}
                 </p>
                 {preview ? (
-                  <div style={{ width:"100%", aspectRatio: aspect, overflow:"hidden", borderRadius:"12px", background:"rgba(255,255,255,0.02)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <img src={preview} alt="" style={{ width:"100%", height:"100%", objectFit:"contain", display:"block" }}/>
+                  <div style={{ width:"100%", borderRadius:"12px", background:"rgba(255,255,255,0.02)" }}>
+                    <img src={preview} alt="" style={{ width:"100%", display:"block" }}/>
                   </div>
                 ) : (
                   <div style={{ width:"100%", aspectRatio:"4/3", borderRadius:"12px", background:"rgba(255,255,255,0.02)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"8px" }}>
