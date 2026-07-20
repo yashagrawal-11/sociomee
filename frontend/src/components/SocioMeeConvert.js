@@ -231,7 +231,11 @@ export default function SocioMeeConvert({ user, creditStatus }) {
               <div style={{ flex:1, display:"flex", flexDirection:"column", padding:"10px 14px 14px", minHeight:0 }}>
                 <div style={{ flex:1, minHeight:0, borderRadius:"12px", overflow:"hidden", background:"rgba(255,255,255,0.02)", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {preview
-                    ? <img src={preview} alt="" style={{ maxWidth:"100%", maxHeight:"100%", objectFit:"contain", display:"block" }}/>
+                    ? files[0]?.type?.startsWith("video/")
+                      ? <video src={preview} controls style={{ maxWidth:"100%", maxHeight:"100%", borderRadius:"8px", display:"block" }}/>
+                      : files[0]?.type?.startsWith("audio/")
+                      ? <div style={{ padding:"20px", width:"100%" }}><audio src={preview} controls style={{ width:"100%" }}/></div>
+                      : <img src={preview} alt="" style={{ maxWidth:"100%", maxHeight:"100%", objectFit:"contain", display:"block" }}/>
                     : <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"8px" }}>
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         <span style={{ fontSize:"12px", color:C.muted }}>{files[0]?.name}</span>
