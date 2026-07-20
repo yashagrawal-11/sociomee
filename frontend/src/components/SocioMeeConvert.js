@@ -222,7 +222,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
 
         {/* RESULT PANEL */}
         <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"12px", minWidth:0, overflow:"hidden" }}>
-          <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", overflow:"hidden", flex:1, display:"flex", flexDirection:"column", minHeight:0 }}>
+          <div style={{ background:"#111", border:`1px solid ${C.border}`, borderRadius:"20px", overflow:"hidden", flex:1, display:"flex", flexDirection:"column", minHeight:0, position:"relative", zIndex:1 }}>
             <div style={{ padding:"12px 14px 0", flexShrink:0 }}>
               <p style={{ fontSize:"9px", fontWeight:"700", color:C.muted, letterSpacing:"1.5px", textTransform:"uppercase", margin:0 }}>Result</p>
             </div>
