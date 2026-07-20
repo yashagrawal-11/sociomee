@@ -2297,21 +2297,36 @@ async def img_to_svg(request: Request, user: dict = Depends(get_current_user)):
     from PIL import Image
     header, _, b64 = img_data.partition(",")
     raw = base64.b64decode(b64 if b64 else img_data)
-    img = Image.open(io.BytesIO(raw)).convert("L")
-    if img.width > 2000 or img.height > 2000:
-        img.thumbnail((2000, 2000), Image.LANCZOS)
+    orig = Image.open(io.BytesIO(raw)).convert("RGBA")
+    if orig.width > 2000 or orig.height > 2000:
+        orig.thumbnail((2000, 2000), Image.LANCZOS)
+    # Extract dominant color from non-transparent, non-white pixels
+    rgba_data = list(orig.getdata())
+    colored = [(r,g,b) for r,g,b,a in rgba_data if a > 128 and not (r>220 and g>220 and b>220)]
+    if colored:
+        avg_r = int(sum(c[0] for c in colored) / len(colored))
+        avg_g = int(sum(c[1] for c in colored) / len(colored))
+        avg_b = int(sum(c[2] for c in colored) / len(colored))
+        hex_color = "#{:02x}{:02x}{:02x}".format(avg_r, avg_g, avg_b)
+    else:
+        hex_color = "#000000"
+    # Convert to grayscale for tracing
+    gray = orig.convert("L")
     bmp_data = io.BytesIO()
-    bw = img.point(lambda x: 0 if x < threshold else 255, "1")
+    bw = gray.point(lambda x: 0 if x < threshold else 255, "1")
     bw.save(bmp_data, format="BMP")
     with tempfile.NamedTemporaryFile(suffix=".bmp", delete=False) as tmp_bmp:
         tmp_bmp.write(bmp_data.getvalue())
         tmp_bmp_path = tmp_bmp.name
     svg_path = tmp_bmp_path.replace(".bmp", ".svg")
+    # Use natural image dimensions for SVG canvas
+    w_pt = f"{orig.width}pt"
+    h_pt = f"{orig.height}pt"
     try:
-        subprocess.run(["potrace", "--svg", "-W", "800pt", "-H", "600pt", "-o", svg_path, tmp_bmp_path], check=True, timeout=30)
+        subprocess.run(["potrace", "--svg", "--color", hex_color, "-W", w_pt, "-H", h_pt, "-o", svg_path, tmp_bmp_path], check=True, timeout=30)
         with open(svg_path, "r") as f:
             svg_content = f.read()
-        return {"svg": svg_content}
+        return {"svg": svg_content, "color": hex_color}
     except subprocess.CalledProcessError as e:
         raise HTTPException(500, f"Vectorization failed: {e.stderr}")
     except Exception as e:

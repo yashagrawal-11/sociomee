@@ -98,8 +98,8 @@ export default function SocioMeeConvert({ user, creditStatus }) {
         const svgOut = data.svg
           .replace(/<svg([^>]*)width="[^"]*"/, `<svg$1width="100%"`)
           .replace(/<svg([^>]*)height="[^"]*"/, `<svg$1height="100%"`)
-          .replace(/<svg /, `<svg style="display:block;width:100%;height:100%;" `);
-        setResult({ type:"svg", content: svgOut });
+          .replace(/<svg /, `<svg style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;" `);
+        setResult({ type:"svg", content: svgOut, color: data.color });
 
       } else if (active === "pdf-img") {
         // PDF to images via backend
@@ -300,8 +300,10 @@ export default function SocioMeeConvert({ user, creditStatus }) {
               </div>
             )}
             {result && result.type === "svg" && (
-              <div style={{ width:"100%", height:"100%", background:"rgba(255,255,255,0.97)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden" }}
-                dangerouslySetInnerHTML={{ __html: result.content }}/>
+              <div style={{ width:"100%", height:"100%", background:"rgba(255,255,255,0.97)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", padding:"12px", boxSizing:"border-box" }}>
+                <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}
+                  dangerouslySetInnerHTML={{ __html: result.content }}/>
+              </div>
             )}
             {result && result.type === "image" && (
               <img src={result.dataUrl} alt="result" style={{ maxWidth:"100%", maxHeight:"100%", objectFit:"contain", display:"block" }}/>
