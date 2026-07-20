@@ -284,24 +284,25 @@ export default function SocioMeeConvert({ user, creditStatus }) {
       </div>
 
       {/* RIGHT SIDEBAR — full height, stuck to right edge */}
-      <div style={{ width:"220px", height:"100%", background:"rgba(255,255,255,0.02)", borderLeft:`1px solid ${C.border}`, display:"flex", flexDirection:"column", flexShrink:0, overflow:"hidden" }}>
-        <div style={{ padding:"20px 16px 10px", flexShrink:0 }}>
-          <p style={{ fontSize:"10px", fontWeight:"700", color:"rgba(255,255,255,0.3)", letterSpacing:"1.4px", textTransform:"uppercase", margin:0 }}>Convert</p>
+      <div style={{ width:"200px", height:"100%", background:"#111111", borderLeft:"1px solid rgba(255,255,255,0.05)", display:"flex", flexDirection:"column", flexShrink:0, overflow:"hidden" }}>
+        <div style={{ padding:"22px 18px 8px", flexShrink:0 }}>
+          <p style={{ fontSize:"9px", fontWeight:"600", color:"rgba(255,255,255,0.2)", letterSpacing:"2px", textTransform:"uppercase", margin:0 }}>Convert</p>
         </div>
-        <div style={{ flex:1, overflowY:"auto", padding:"0 8px 20px", scrollbarWidth:"thin", scrollbarColor:"rgba(255,255,255,0.06) transparent" }}>
+        <div style={{ flex:1, overflowY:"auto", padding:"4px 10px 24px", scrollbarWidth:"none" }}>
           {["Image","PDF"].map(grp => (
             <div key={grp}>
-              <p style={{ fontSize:"9px", fontWeight:"700", color:"rgba(255,255,255,0.2)", letterSpacing:"1.2px", textTransform:"uppercase", margin:"16px 8px 6px" }}>{grp}</p>
+              <p style={{ fontSize:"8px", fontWeight:"600", color:"rgba(255,255,255,0.15)", letterSpacing:"1.5px", textTransform:"uppercase", margin:"18px 6px 6px" }}>{grp}</p>
               {CONVERSIONS.filter(c=>c.group===grp).map(c=>(
                 <button key={c.id} onClick={()=>switchTab(c.id)} style={{
-                  display:"flex", alignItems:"center", width:"100%", padding:"10px 12px",
-                  borderRadius:"10px", border:"none",
-                  background: active===c.id?"rgba(255,255,255,0.09)":"transparent",
-                  color: active===c.id?C.white:"rgba(255,255,255,0.45)",
-                  fontSize:"13px", fontWeight: active===c.id?"600":"400",
+                  display:"flex", alignItems:"center", width:"100%", padding:"9px 10px",
+                  borderRadius:"8px", border:"none",
+                  background: active===c.id?"rgba(255,255,255,0.07)":"transparent",
+                  color: active===c.id?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.35)",
+                  fontSize:"12px", fontWeight: active===c.id?"500":"400",
                   cursor:"pointer", fontFamily:FONT, textAlign:"left",
-                  transition:"all 0.15s", marginBottom:"2px",
-                  outline: active===c.id?"1px solid rgba(255,255,255,0.1)":"none"
+                  transition:"all 0.12s", marginBottom:"1px",
+                  borderLeft: active===c.id?"2px solid rgba(255,255,255,0.3)":"2px solid transparent",
+                  paddingLeft: "10px"
                 }}>
                   {c.label}
                 </button>
