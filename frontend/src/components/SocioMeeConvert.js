@@ -203,14 +203,14 @@ export default function SocioMeeConvert({ user, creditStatus }) {
 
         {/* SOURCE PANEL */}
         <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"12px", minWidth:0 }}>
-          <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", overflow:"hidden", backdropFilter:"blur(24px)" }}>
+          <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", overflow:"hidden", backdropFilter:"blur(24px)", height:"340px" }}>
             {!files.length ? (
               <div
                 onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={e => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
                 onClick={() => fileRef.current?.click()}
-                style={{ padding:"60px 24px", textAlign:"center", cursor:"pointer", background: dragOver ? "rgba(255,255,255,0.04)" : "transparent", transition:"all 0.2s" }}>
+                style={{ height:"340px", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", cursor:"pointer", background: dragOver ? "rgba(255,255,255,0.04)" : "transparent", transition:"all 0.2s", padding:"24px" }}>
                 <div style={{ width:"56px", height:"56px", borderRadius:"16px", background:"rgba(255,255,255,0.06)", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 18px" }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.7">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -281,49 +281,64 @@ export default function SocioMeeConvert({ user, creditStatus }) {
         </div>
 
         {/* RESULT PANEL */}
-        <div style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", padding:"16px", display:"flex", flexDirection:"column", backdropFilter:"blur(24px)", minWidth:0 }}>
-          <p style={{ fontSize:"9px", fontWeight:"700", color:C.muted, letterSpacing:"1.8px", textTransform:"uppercase", margin:"0 0 14px" }}>Result</p>
+        <div style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", padding:"14px", display:"flex", flexDirection:"column", backdropFilter:"blur(24px)", minWidth:0, height:"340px" }}>
+          <p style={{ fontSize:"9px", fontWeight:"700", color:C.muted, letterSpacing:"1.8px", textTransform:"uppercase", margin:"0 0 10px", flexShrink:0 }}>Result</p>
 
-          {!result && !loading && (
-            <div style={{ aspectRatio: aspect, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"10px" }}>
-              <div style={{ width:"52px", height:"52px", borderRadius:"14px", background:"rgba(255,255,255,0.04)", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5"><polyline points="23 7 13.5 16.5 8.5 11.5 1 19"/><polyline points="17 7 23 7 23 13"/></svg>
+          <div style={{ flex:1, minHeight:0, borderRadius:"12px", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(255,255,255,0.015)" }}>
+            {!result && !loading && (
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"10px" }}>
+                <div style={{ width:"52px", height:"52px", borderRadius:"14px", background:"rgba(255,255,255,0.04)", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5"><polyline points="23 7 13.5 16.5 8.5 11.5 1 19"/><polyline points="17 7 23 7 23 13"/></svg>
+                </div>
+                <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.18)", margin:0, textAlign:"center", lineHeight:1.6 }}>Converted file<br/>will appear here</p>
               </div>
-              <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.18)", margin:0, textAlign:"center", lineHeight:1.6 }}>Converted file<br/>will appear here</p>
-            </div>
-          )}
-
-          {loading && (
-            <div style={{ aspectRatio: aspect, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"14px" }}>
-              <div style={{ width:"36px",height:"36px",borderRadius:"50%",border:"3px solid rgba(255,255,255,0.08)",borderTopColor:"rgba(255,255,255,0.55)",animation:"spin 0.8s linear infinite" }}/>
-              <p style={{ fontSize:"12px", color:C.muted, margin:0 }}>Converting...</p>
-            </div>
-          )}
-
-          {result && result.type === "svg" && (
-            <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
-              <div style={{ width:"100%", aspectRatio: aspect, borderRadius:"12px", overflow:"hidden", background:"rgba(255,255,255,0.97)", display:"flex", alignItems:"center", justifyContent:"center" }}
+            )}
+            {loading && (
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"14px" }}>
+                <div style={{ width:"36px",height:"36px",borderRadius:"50%",border:"3px solid rgba(255,255,255,0.08)",borderTopColor:"rgba(255,255,255,0.55)",animation:"spin 0.8s linear infinite" }}/>
+                <p style={{ fontSize:"12px", color:C.muted, margin:0 }}>Converting...</p>
+              </div>
+            )}
+            {result && result.type === "svg" && (
+              <div style={{ width:"100%", height:"100%", background:"rgba(255,255,255,0.97)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden" }}
                 dangerouslySetInnerHTML={{ __html: result.content }}/>
-              <button onClick={downloadResult} style={{ width:"100%", padding:"12px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.08)", color:C.white, fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>Download SVG</button>
-            </div>
-          )}
-
-          {result && result.type === "image" && (
-            <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
-              <div style={{ width:"100%", aspectRatio: aspect, overflow:"hidden", borderRadius:"12px", background:"rgba(255,255,255,0.02)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <img src={result.dataUrl} alt="result" style={{ width:"100%", height:"100%", objectFit:"contain", display:"block" }}/>
+            )}
+            {result && result.type === "image" && (
+              <img src={result.dataUrl} alt="result" style={{ maxWidth:"100%", maxHeight:"100%", objectFit:"contain", display:"block" }}/>
+            )}
+            {result && result.type === "pdf" && (
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"12px" }}>
+                <div style={{ width:"64px", height:"80px", borderRadius:"12px", background:"rgba(255,255,255,0.05)", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <p style={{ fontSize:"13px", color:C.white, margin:0, fontWeight:"600" }}>PDF ready</p>
               </div>
-              <button onClick={downloadResult} style={{ width:"100%", padding:"12px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.08)", color:C.white, fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>Download {result.ext?.toUpperCase()}</button>
-            </div>
-          )}
-
-          {result && result.type === "pdf" && (
-            <div style={{ aspectRatio:"4/3", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"16px" }}>
-              <div style={{ width:"64px", height:"80px", borderRadius:"12px", background:"rgba(255,255,255,0.05)", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            )}
+            {result && result.type === "pdf-pages" && (
+              <div style={{ width:"100%", height:"100%", overflowY:"auto", display:"flex", flexDirection:"column", gap:"8px", padding:"4px" }}>
+                {result.pages.map((pg, i) => (
+                  <img key={i} src={`data:image/png;base64,${pg}`} alt={`Page ${i+1}`} style={{ width:"100%", display:"block", borderRadius:"6px" }}/>
+                ))}
               </div>
-              <p style={{ fontSize:"13px", color:C.white, margin:0, fontWeight:"600" }}>PDF ready</p>
-              <button onClick={downloadResult} style={{ width:"100%", padding:"12px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.08)", color:C.white, fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>Download PDF</button>
+            )}
+            {result && result.type === "note" && (
+              <p style={{ fontSize:"13px", color:C.muted, textAlign:"center", lineHeight:1.7, padding:"16px" }}>{result.note}</p>
+            )}
+          </div>
+
+          {result && (result.type === "svg" || result.type === "image" || result.type === "pdf") && (
+            <button onClick={downloadResult} style={{ marginTop:"10px", width:"100%", padding:"11px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.08)", color:C.white, fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FONT, flexShrink:0 }}>
+              {result.type === "svg" ? "Download SVG" : result.type === "pdf" ? "Download PDF" : `Download ${result.ext?.toUpperCase()}`}
+            </button>
+          )}
+          {result && result.type === "pdf-pages" && (
+            <div style={{ marginTop:"10px", display:"flex", gap:"6px", flexShrink:0 }}>
+              {result.pages.map((pg, i) => (
+                <button key={i} onClick={() => download(`data:image/png;base64,${pg}`, `${result.name}_page${i+1}.png`)}
+                  style={{ flex:1, padding:"10px 6px", borderRadius:"99px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.07)", color:C.white, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>
+                  Page {i+1}
+                </button>
+              ))}
             </div>
           )}
 
