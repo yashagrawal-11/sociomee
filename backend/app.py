@@ -2282,6 +2282,34 @@ async def register_fingerprint(request: Request, user=Depends(get_current_user))
         return {"ok": True}
 
 # ── SocioMee Convert — Image to SVG ────────────────────────────────────────
+@app.post("/convert/pdf-to-images")
+async def pdf_to_images(request: Request, user: dict = Depends(get_current_user)):
+    _check_credits(user.get("user_id",""), cost=2)
+    import io, base64, tempfile, os
+    try:
+        import fitz  # PyMuPDF
+    except ImportError:
+        raise HTTPException(500, "PyMuPDF not installed. Run: pip install pymupdf")
+    form = await request.form()
+    file = form.get("file")
+    if not file:
+        raise HTTPException(400, "No file provided.")
+    pdf_bytes = await file.read()
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        images = []
+        for page in doc:
+            mat = fitz.Matrix(2.0, 2.0)  # 2x zoom = ~150dpi
+            pix = page.get_pixmap(matrix=mat)
+            img_bytes = pix.tobytes("png")
+            images.append(base64.b64encode(img_bytes).decode())
+        doc.close()
+        return {"images": images, "pages": len(images)}
+    except Exception as e:
+        import traceback
+        log.error("pdf-to-images error: %s", traceback.format_exc())
+        raise HTTPException(500, f"PDF conversion failed: {str(e)}")
+
 @app.post("/convert/img-to-svg")
 async def img_to_svg(request: Request, user: dict = Depends(get_current_user)):
     _check_credits(user.get("user_id",""), cost=3)

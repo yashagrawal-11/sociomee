@@ -317,9 +317,15 @@ export default function SocioMeeConvert({ user, creditStatus }) {
               </div>
             )}
             {result && result.type === "pdf-pages" && (
-              <div style={{ width:"100%", height:"100%", overflowY:"auto", display:"flex", flexDirection:"column", gap:"8px", padding:"4px" }}>
+              <div style={{ width:"100%", maxHeight:"400px", overflowY:"auto", display:"flex", flexDirection:"column", gap:"8px", padding:"4px", scrollbarWidth:"thin", scrollbarColor:"rgba(255,255,255,0.08) transparent" }}>
                 {result.pages.map((pg, i) => (
-                  <img key={i} src={`data:image/png;base64,${pg}`} alt={`Page ${i+1}`} style={{ width:"100%", display:"block", borderRadius:"6px" }}/>
+                  <div key={i} style={{ position:"relative" }}>
+                    <img src={`data:image/png;base64,${pg}`} alt={`Page ${i+1}`} style={{ width:"100%", display:"block", borderRadius:"8px" }}/>
+                    <button onClick={() => download(`data:image/png;base64,${pg}`, `${result.name}_page${i+1}.png`)}
+                      style={{ position:"absolute", bottom:"8px", right:"8px", padding:"6px 14px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.2)", background:"rgba(10,10,10,0.75)", backdropFilter:"blur(8px)", color:C.white, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>
+                      Page {i+1}
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
