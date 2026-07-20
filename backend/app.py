@@ -2283,10 +2283,12 @@ async def register_fingerprint(request: Request, user=Depends(get_current_user))
 
 # ── SocioMee Convert — Image to SVG ────────────────────────────────────────
 @app.post("/convert/img-to-svg")
-@limiter.limit("20/hour")
 async def img_to_svg(request: Request, user: dict = Depends(get_current_user)):
-    _check_credits(user, cost=3)
-    body = await request.json()
+    _check_credits(user.get("user_id",""), cost=3)
+    try:
+        body = await request.json()
+    except Exception as e:
+        raise HTTPException(400, f"Invalid request body: {e}")
     img_data = body.get("image", "")
     threshold = int(body.get("threshold", 128))
     if not img_data:
@@ -2306,13 +2308,20 @@ async def img_to_svg(request: Request, user: dict = Depends(get_current_user)):
         tmp_bmp_path = tmp_bmp.name
     svg_path = tmp_bmp_path.replace(".bmp", ".svg")
     try:
-        subprocess.run(["potrace", "--svg", "-o", svg_path, tmp_bmp_path], check=True, timeout=30)
+        subprocess.run(["potrace", "--svg", "-W", "800pt", "-H", "600pt", "-o", svg_path, tmp_bmp_path], check=True, timeout=30)
         with open(svg_path, "r") as f:
             svg_content = f.read()
         return {"svg": svg_content}
     except subprocess.CalledProcessError as e:
-        raise HTTPException(500, "Vectorization failed. Please try a clearer image.")
+        raise HTTPException(500, f"Vectorization failed: {e.stderr}")
+    except Exception as e:
+        import traceback
+        log.error("img-to-svg error: %s", traceback.format_exc())
+        raise HTTPException(500, f"Error: {str(e)}")
     finally:
-        os.unlink(tmp_bmp_path)
-        if os.path.exists(svg_path):
-            os.unlink(svg_path)
+        try:
+            os.unlink(tmp_bmp_path)
+        except: pass
+        try:
+            if os.path.exists(svg_path): os.unlink(svg_path)
+        except: pass
