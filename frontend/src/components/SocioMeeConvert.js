@@ -23,12 +23,12 @@ const CONVERSIONS = [
   { id:"docx-pdf",  label:"DOCX → PDF",       accept:".docx,.doc",      multi:false, group:"Document" },
   { id:"pptx-pdf",  label:"PPTX → PDF",       accept:".pptx,.ppt",      multi:false, group:"Document" },
   { id:"xlsx-pdf",  label:"XLSX → PDF",       accept:".xlsx,.xls",      multi:false, group:"Document" },
-  { id:"mp4-mp3",   label:"MP4 → MP3",        accept:"video/mp4,video/*", multi:false, group:"Audio"  },
-  { id:"mp3-wav",   label:"MP3 → WAV",        accept:"audio/mpeg,audio/*", multi:false, group:"Audio" },
-  { id:"wav-mp3",   label:"WAV → MP3",        accept:"audio/wav,audio/*",  multi:false, group:"Audio" },
-  { id:"mp4-gif",   label:"MP4 → GIF",        accept:"video/mp4,video/*", multi:false, group:"Video"  },
-  { id:"mp4-webm",  label:"MP4 → WebM",       accept:"video/mp4,video/*", multi:false, group:"Video"  },
-  { id:"webm-mp4",  label:"WebM → MP4",       accept:"video/webm,video/*",multi:false, group:"Video"  },
+  { id:"mp4-mp3",   label:"Video → MP3",      accept:"video/*,audio/*",   multi:false, group:"Audio"  },
+  { id:"mp3-wav",   label:"MP3 → WAV",        accept:"audio/*",            multi:false, group:"Audio" },
+  { id:"wav-mp3",   label:"WAV → MP3",        accept:"audio/*",            multi:false, group:"Audio" },
+  { id:"mp4-gif",   label:"Video → GIF",      accept:"video/*",            multi:false, group:"Video"  },
+  { id:"mp4-webm",  label:"Video → WebM",     accept:"video/*",            multi:false, group:"Video"  },
+  { id:"webm-mp4",  label:"Video → MP4",      accept:"video/*",            multi:false, group:"Video"  },
 ];
 
 const GROUPS = ["Image","PDF","Document","Audio","Video"];
