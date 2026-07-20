@@ -2332,17 +2332,23 @@ async def convert_media(request: Request, user: dict = Depends(get_current_user)
             f2.write(raw)
         try:
             cmd = ["ffmpeg","-y","-i",in_path]
-            if target == "mp3":
-                cmd += ["-q:a","2","-map","a"]
-            elif target == "wav":
-                cmd += ["-map","a"]
+            if target in ("mp3","wav"):
+                cmd += ["-map","0:a:0","-q:a","2"] if target=="mp3" else ["-map","0:a:0"]
             elif target == "gif":
-                cmd += ["-vf","fps=10,scale=480:-1:flags=lanczos","-loop","0"]
-            elif target in ("mp4","webm"):
-                cmd += ["-c:v","libvpx-vp9" if target=="webm" else "libx264","-crf","28","-preset","fast" if target=="mp4" else None,"-c:a","libvorbis" if target=="webm" else "aac"]
-                cmd = [x for x in cmd if x]
+                cmd += ["-vf","fps=10,scale=480:-1:flags=lanczos","-loop","0","-map","0:v:0"]
+            elif target == "webm":
+                cmd += ["-c:v","libvpx-vp9","-crf","28","-b:v","0","-map","0"]
+            elif target == "mp4":
+                cmd += ["-c:v","libx264","-crf","28","-preset","fast","-movflags","+faststart","-map","0"]
             cmd.append(out_path)
-            subprocess.run(cmd, check=True, timeout=120, capture_output=True)
+            proc = subprocess.run(cmd, timeout=120, capture_output=True)
+            if proc.returncode != 0:
+                err = proc.stderr.decode()
+                if "matches no streams" in err or "no audio" in err.lower():
+                    raise HTTPException(400, "No audio stream found in this file.")
+                if "moov atom not found" in err or "Invalid data" in err:
+                    raise HTTPException(400, "This file is corrupted or incomplete. Try re-downloading it.")
+                raise HTTPException(500, "Conversion failed. Please try a different file.")
             with open(out_path,"rb") as f3:
                 out_b64 = base64.b64encode(f3.read()).decode()
             out_name = fname.rsplit(".",1)[0]+f".{target}"
