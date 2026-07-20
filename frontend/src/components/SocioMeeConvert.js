@@ -203,14 +203,14 @@ export default function SocioMeeConvert({ user, creditStatus }) {
 
         {/* SOURCE PANEL */}
         <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"12px", minWidth:0 }}>
-          <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", overflow:"hidden", backdropFilter:"blur(24px)", height:"340px" }}>
+          <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", overflow:"hidden", backdropFilter:"blur(24px)" }}>
             {!files.length ? (
               <div
                 onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={e => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
                 onClick={() => fileRef.current?.click()}
-                style={{ height:"340px", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", cursor:"pointer", background: dragOver ? "rgba(255,255,255,0.04)" : "transparent", transition:"all 0.2s", padding:"24px" }}>
+                style={{ padding:"52px 24px", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", cursor:"pointer", background: dragOver ? "rgba(255,255,255,0.04)" : "transparent", transition:"all 0.2s" }}>
                 <div style={{ width:"56px", height:"56px", borderRadius:"16px", background:"rgba(255,255,255,0.06)", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 18px" }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.7">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -281,10 +281,10 @@ export default function SocioMeeConvert({ user, creditStatus }) {
         </div>
 
         {/* RESULT PANEL */}
-        <div style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", padding:"14px", display:"flex", flexDirection:"column", backdropFilter:"blur(24px)", minWidth:0, height:"340px" }}>
+        <div style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", padding:"14px", display:"flex", flexDirection:"column", backdropFilter:"blur(24px)", minWidth:0 }}>
           <p style={{ fontSize:"9px", fontWeight:"700", color:C.muted, letterSpacing:"1.8px", textTransform:"uppercase", margin:"0 0 10px", flexShrink:0 }}>Result</p>
 
-          <div style={{ flex:1, minHeight:0, borderRadius:"12px", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(255,255,255,0.015)" }}>
+          <div style={{ borderRadius:"12px", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(255,255,255,0.015)", minHeight:"200px" }}>
             {!result && !loading && (
               <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"10px" }}>
                 <div style={{ width:"52px", height:"52px", borderRadius:"14px", background:"rgba(255,255,255,0.04)", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -300,13 +300,13 @@ export default function SocioMeeConvert({ user, creditStatus }) {
               </div>
             )}
             {result && result.type === "svg" && (
-              <div style={{ width:"100%", height:"100%", background:"rgba(255,255,255,0.97)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", padding:"12px", boxSizing:"border-box" }}>
-                <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}
+              <div style={{ width:"100%", background:"rgba(255,255,255,0.97)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden" }}>
+                <div style={{ width:"100%" }}
                   dangerouslySetInnerHTML={{ __html: result.content }}/>
               </div>
             )}
             {result && result.type === "image" && (
-              <img src={result.dataUrl} alt="result" style={{ maxWidth:"100%", maxHeight:"100%", objectFit:"contain", display:"block" }}/>
+              <img src={result.dataUrl} alt="result" style={{ width:"100%", display:"block", borderRadius:"12px" }}/>
             )}
             {result && result.type === "pdf" && (
               <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"12px" }}>
@@ -370,18 +370,18 @@ export default function SocioMeeConvert({ user, creditStatus }) {
         </div>
 
         {/* RIGHT SIDEBAR */}
-        <div style={{ display:"flex", flexDirection:"column", background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", backdropFilter:"blur(24px)", flexShrink:0, width:"172px", overflow:"hidden" }}>
-          <p style={{ fontSize:"9px", fontWeight:"700", color:"rgba(255,255,255,0.25)", letterSpacing:"1.8px", textTransform:"uppercase", margin:"0", padding:"16px 14px 8px" }}>Convert</p>
-          <div style={{ overflowY:"auto", maxHeight:"420px", padding:"0 8px 12px", scrollbarWidth:"thin", scrollbarColor:"rgba(255,255,255,0.08) transparent" }}>
+        <div style={{ display:"flex", flexDirection:"column", background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", backdropFilter:"blur(24px)", flexShrink:0, width:"220px", overflow:"hidden" }}>
+          <p style={{ fontSize:"11px", fontWeight:"700", color:"rgba(255,255,255,0.35)", letterSpacing:"1.2px", textTransform:"uppercase", margin:"0", padding:"20px 16px 10px" }}>Convert</p>
+          <div style={{ overflowY:"auto", maxHeight:"calc(100vh - 160px)", padding:"0 10px 16px", scrollbarWidth:"thin", scrollbarColor:"rgba(255,255,255,0.08) transparent" }}>
             {GROUPS.map(grp => (
               <div key={grp} style={{ marginBottom:"4px" }}>
-                <p style={{ fontSize:"8px", fontWeight:"700", color:"rgba(255,255,255,0.18)", letterSpacing:"1.4px", textTransform:"uppercase", margin:"10px 4px 4px" }}>{grp}</p>
+                <p style={{ fontSize:"10px", fontWeight:"700", color:"rgba(255,255,255,0.25)", letterSpacing:"1.2px", textTransform:"uppercase", margin:"12px 6px 6px" }}>{grp}</p>
                 {CONVERSIONS.filter(c => c.group === grp).map(c => (
                   <button key={c.id} onClick={() => switchTab(c.id)} style={{
-                    display:"block", width:"100%", padding:"9px 10px", borderRadius:"10px", border:"none",
+                    display:"flex", alignItems:"center", width:"100%", padding:"11px 14px", borderRadius:"12px", border:"none",
                     background: active === c.id ? "rgba(255,255,255,0.10)" : "transparent",
-                    color: active === c.id ? C.white : C.muted,
-                    fontSize:"11px", fontWeight: active === c.id ? "700" : "400",
+                    color: active === c.id ? C.white : "rgba(255,255,255,0.5)",
+                    fontSize:"13px", fontWeight: active === c.id ? "600" : "400",
                     cursor:"pointer", fontFamily:FONT, textAlign:"left",
                     transition:"all 0.15s",
                     outline: active === c.id ? "1px solid rgba(255,255,255,0.12)" : "none",
