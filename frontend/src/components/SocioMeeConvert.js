@@ -279,7 +279,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
           {files.length > 0 && (
             <div style={{ display:"flex", gap:"8px", flexShrink:0 }}>
               <button onClick={reset} style={{ padding:"12px 18px", borderRadius:"99px", border:`1px solid ${C.border}`, background:C.card, color:C.muted, fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>Clear</button>
-              <button onClick={convert} disabled={loading}
+              <button onClick={isMediaLocked ? () => window.location.href="/pricing" : convert} disabled={loading}
                 style={{ flex:1, padding:"12px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.22)", background:"rgba(255,255,255,0.12)", color:C.white, fontSize:"13px", fontWeight:"700", cursor:loading?"not-allowed":"pointer", fontFamily:FONT, display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
                 {loading?<><div style={{ width:"14px",height:"14px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.3)",borderTopColor:"#fff",animation:"spin 0.8s linear infinite" }}/> Converting...</>:btnLabel}
               </button>
