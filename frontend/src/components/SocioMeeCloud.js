@@ -116,7 +116,14 @@ export default function SocioMeeCloud({ user, onUpgradeClick }) {
     setUploading(false);
   }, [files, usedBytes, limitBytes]);
 
-  const deleteFile = (id) => { saveFiles(files.filter(f=>f.id!==id)); if(preview?.id===id) { setPreview(null); if(mob) setMobilePanel("main"); } };
+  const deleteFile = (id) => {
+    const updated = files.filter(f=>f.id!==id);
+    setFiles(updated);
+    try {
+      localStorage.setItem("cloud_files", JSON.stringify(updated.map(x => ({...x, data: x.size < 500*1024 ? x.data : undefined}))));
+    } catch {}
+    if(preview?.id===id) { setPreview(null); if(mob) setMobilePanel("main"); }
+  };
   const starFile = (id) => saveFiles(files.map(f=>f.id===id?{...f,starred:!f.starred}:f));
   const downloadFile = (file) => { const a=document.createElement("a"); a.href=file.data; a.download=file.name; a.click(); };
 
