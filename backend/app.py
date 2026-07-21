@@ -828,6 +828,11 @@ def validate_coupon_endpoint(request: Request, code: str = Body(..., embed=True)
         return {"valid": False, "message": "Could not validate coupon. Please try again."}
 
 
+@app.get("/credits/me")
+def get_my_credits(user: dict = Depends(get_current_user)):
+    try: return get_credit_status(user.get("user_id",""))
+    except Exception as e: raise HTTPException(500, str(e))
+
 @app.get("/credits/{user_id}")
 def get_credits(user_id: str, request: Request, user: dict = Depends(get_current_user)):
     # Ownership check — user can only access their own credits
