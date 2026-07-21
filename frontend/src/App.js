@@ -2206,7 +2206,7 @@ export default function App() {
             if (!appInfo) return null;
             const tab = APP_TAB_MAP[appId] || appId;
             return (
-              <button key={appId} onClick={()=>{ const rp=user?.plan||user?.plan_label||"free"; const isFree=!rp.toLowerCase().includes("pro")&&!rp.toLowerCase().includes("premium"); if(isFree){setShowPricing(true);return;} toggleTab(tab);setSidebarOpen(false);}}
+              <button key={appId} onClick={()=>{ const rp=user?.plan||user?.plan_label||"free"; const isFree=!rp.toLowerCase().includes("pro")&&!rp.toLowerCase().includes("premium"); if(isFree){window.location.href="/pricing?from=app";return;} toggleTab(tab);setSidebarOpen(false);}}
                 style={{display:"flex",alignItems:"center",gap:"10px",padding:"8px 12px 8px 30px",borderRadius:"8px",border:"none",borderLeft:activeTab===tab?"3px solid rgba(255,255,255,0.6)":"3px solid transparent",background:activeTab===tab?"rgba(255,255,255,0.08)":"transparent",color:activeTab===tab?"#fff":"rgba(255,255,255,0.4)",fontSize:"12.5px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}>
                 {APP_ICONS[appInfo.icon]}{appInfo.label.replace("SocioMee ","")}
               </button>
@@ -2217,7 +2217,7 @@ export default function App() {
           <div style={{fontSize:"9px",fontWeight:"700",color:"rgba(255,255,255,0.18)",letterSpacing:"1.5px",padding:"12px 12px 4px",textTransform:"uppercase"}}>Connect</div>
 
           {CHANNELS.map(ch=>(
-            <button key={ch.id} onClick={()=>{ if(!isPro){setShowPricing(true);return;} toggleTab(ch.id);setSidebarOpen(false);}}
+            <button key={ch.id} onClick={()=>{ if(!isPro){window.location.href="/pricing?from=app";return;} toggleTab(ch.id);setSidebarOpen(false);}}
               style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 12px",borderRadius:"8px",border:"none",borderLeft:activeTab===ch.id?`3px solid ${ch.color}`:"3px solid transparent",background:activeTab===ch.id?`${ch.color}14`:"transparent",color:activeTab===ch.id?ch.color:"rgba(255,255,255,0.4)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}>
               <span style={{display:"flex",alignItems:"center",gap:"8px"}}>{ch.icon}{ch.label}</span>
             </button>
@@ -2227,7 +2227,7 @@ export default function App() {
           <div style={{fontSize:"9px",fontWeight:"700",color:"rgba(255,255,255,0.18)",letterSpacing:"1.5px",padding:"12px 12px 4px",textTransform:"uppercase"}}>{t("tools")}</div>
 
           {/* YouTube Tools */}
-          <button onClick={()=>{ if(!isPro){setShowPricing(true);return;} toggleGroup("youtube");}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.youtube?"rgba(255,0,0,0.06)":"transparent",color:openGroups.youtube?"#ff6b6b":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s"}}>
+          <button onClick={()=>{ if(!isPro){window.location.href="/pricing?from=app";return;} toggleGroup("youtube");}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.youtube?"rgba(255,0,0,0.06)":"transparent",color:openGroups.youtube?"#ff6b6b":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s"}}>
             <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/youtube.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>YouTube {t("tools")}</span>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.youtube?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
@@ -2257,7 +2257,7 @@ export default function App() {
           )}
 
           {/* LinkedIn Tools */}
-          <button onClick={()=>{ if(!isPro){setShowPricing(true);return;} toggleGroup("linkedin_tools");}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.linkedin_tools?"rgba(10,102,194,0.06)":"transparent",color:openGroups.linkedin_tools?"#60a5fa":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+          <button onClick={()=>{ if(!isPro){window.location.href="/pricing?from=app";return;} toggleGroup("linkedin_tools");}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.linkedin_tools?"rgba(10,102,194,0.06)":"transparent",color:openGroups.linkedin_tools?"#60a5fa":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
             <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/linkedin.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>LinkedIn Tools</span>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.linkedin_tools?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
@@ -2282,7 +2282,7 @@ export default function App() {
           )}
 
           {/* Quora Tools */}
-          <button onClick={()=>{ if(!isPro){setShowPricing(true);return;} toggleGroup("quora_tools");}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.quora_tools?"rgba(185,43,39,0.06)":"transparent",color:openGroups.quora_tools?"#e07875":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
+          <button onClick={()=>{ if(!isPro){window.location.href="/pricing?from=app";return;} toggleGroup("quora_tools");}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"8px",border:"none",background:openGroups.quora_tools?"rgba(185,43,39,0.06)":"transparent",color:openGroups.quora_tools?"#e07875":"rgba(255,255,255,0.45)",fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"all 0.15s",marginTop:"2px"}}>
             <span style={{display:"flex",alignItems:"center",gap:"8px"}}><img src="/icons/quora.png" style={{width:14,height:14,objectFit:"contain"}} alt=""/>Quora Tools</span>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:openGroups.quora_tools?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
@@ -2546,7 +2546,7 @@ export default function App() {
 
         {/* Bottom */}
         <div style={{flexShrink:0,borderTop:"1px solid rgba(255,255,255,0.05)",padding:"12px 8px"}}>
-          {!isPro&&<button onClick={()=>setShowPricing(true)} style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"10px",borderRadius:"99px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.15)",backdropFilter:"blur(16px)",color:"rgba(255,255,255,0.8)",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",marginBottom:"8px",width:"100%"}}>✦ Upgrade to Pro</button>}
+          {!isPro&&<button onClick={()=>window.location.href="/pricing?from=app"} style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"10px",borderRadius:"99px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.15)",backdropFilter:"blur(16px)",color:"rgba(255,255,255,0.8)",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",marginBottom:"8px",width:"100%"}}>✦ Upgrade to Pro</button>}
           <button onClick={logout} style={{width:"100%",padding:"9px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>{t("signout")}</button>
         </div>
 
@@ -2801,14 +2801,14 @@ export default function App() {
       {/* MAIN CONTENT */}
       {activeTab==="notes" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
-          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Notes" onUpgrade={()=>setShowPricing(true)}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Notes" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeNotes onSendToGenerator={()=>setActiveTab("generate")} user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="cloud" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
-          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Cloud" onUpgrade={()=>setShowPricing(true)}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Cloud" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeCloud user={user} onUpgradeClick={()=>window.location.href="/pricing?from=app"}/>
           </PlanGate>
         </div>
@@ -2820,21 +2820,21 @@ export default function App() {
       )}
       {activeTab==="share" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
-          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Share" onUpgrade={()=>setShowPricing(true)}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Share" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeShare user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="pixel" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
-          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Pixel" onUpgrade={()=>setShowPricing(true)}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Pixel" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeePixel user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="pdf" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
-          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee PDF" onUpgrade={()=>setShowPricing(true)}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee PDF" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeePDF onSendToGenerator={(text)=>setActiveTab("generate")} user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
@@ -3104,7 +3104,7 @@ export default function App() {
       {activeTab==="screenrecorder" && isLoggedIn && <ScreenRecorder user={user} creditStatus={creditStatus}/>}
       {activeTab==="convert" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"auto", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100, background:"#0a0a0a" }}>
-          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Convert" onUpgrade={()=>setShowPricing(true)}>
+          <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Convert" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeConvert user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
@@ -3148,7 +3148,7 @@ export default function App() {
         </div>
       )}
       {channelSettingsOpen && (
-        <ChannelSettingsModal user={{...user, plan_label: creditStatus?.plan_label||"Free"}} onClose={()=>setChannelSettingsOpen(false)} BASE={BASE} onUpgrade={()=>setShowPricing(true)}/>
+        <ChannelSettingsModal user={{...user, plan_label: creditStatus?.plan_label||"Free"}} onClose={()=>setChannelSettingsOpen(false)} BASE={BASE} onUpgrade={()=>window.location.href="/pricing?from=app"}/>
       )}
       {showPricing && (
         <PricingPopup
