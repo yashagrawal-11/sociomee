@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
 const FONT = "'DM Sans','Syne',sans-serif";
+const isMobile = () => window.innerWidth <= 767;
 const FONT_HEAD = "'Poppins',sans-serif";
 const C = {
   bg: "#0a0a0a",
@@ -358,6 +359,8 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
   const catCounts = {};
   notes.forEach(n => { catCounts[n.category]=(catCounts[n.category]||0)+1; });
 
+  const [mobilePanel, setMobilePanel] = useState("list");
+  const mob = isMobile();
   const activeNoteObj = notes.find(n=>n.id===activeNote);
 
   const skel = { height:"60px", borderRadius:"10px", background:"rgba(255,255,255,0.04)", animation:"skpulse 1.4s ease-in-out infinite", marginBottom:"6px" };
@@ -392,11 +395,12 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
       `}</style>
 
       {/* Sidebar */}
-      <div style={{ width:"200px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", background:C.sidebar, backdropFilter:"blur(20px)", display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <div style={{ width:"200px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", background:C.sidebar, backdropFilter:"blur(20px)", display:mob&&mobilePanel!=="cats"?"none":"flex", flexDirection:"column", overflow:"hidden" }}>
         <div style={{ padding:"14px 12px 10px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"10px" }}>
-            <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:FONT_HEAD }}>Notes</span>
+            <span style={{ fontSize:"13px", fontWeight:"700", color:C.white, fontFamily:FONT_HEAD, paddingLeft:mob?"52px":"0" }}>Notes</span>
             <div style={{ display:"flex", gap:"3px" }}>
+              {mob && <button onClick={()=>{window.location.href="/app";}} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"8px", width:"26px", height:"26px", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"rgba(255,255,255,0.5)", fontSize:"14px" }}>✕</button>}
             </div>
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:"3px" }}>
@@ -415,7 +419,7 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
           {CATS.map(cat=>{
             const isActive = activeCat===cat.id;
             return (
-              <button key={cat.id} className="nt-cat" onClick={()=>setActiveCat(cat.id)}
+              <button key={cat.id} className="nt-cat" onClick={()=>{setActiveCat(cat.id);if(isMobile())setMobilePanel("list");}}
                 style={{ width:"100%", display:"flex", alignItems:"center", gap:"8px", padding:"6px 8px", borderRadius:"8px", border:`1px solid ${isActive?"rgba(255,255,255,0.1)":"transparent"}`, background:isActive?"rgba(255,255,255,0.06)":"transparent", cursor:"pointer", transition:"all 0.15s", marginBottom:"1px" }}>
                 <span style={{ color:isActive?"rgba(255,255,255,0.8)":"rgba(255,255,255,0.3)" }}><CatIcon d={cat.icon} size={13}/></span>
                 <span style={{ fontSize:"12px", fontWeight:isActive?"600":"400", color:isActive?"rgba(255,255,255,0.9)":C.muted, fontFamily:FONT, flex:1, textAlign:"left" }}>{cat.label}</span>
@@ -447,7 +451,13 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
       </div>
 
       {/* Notes list */}
-      <div style={{ width:"260px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", background:"rgba(255,255,255,0.01)", display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <div style={{ width:mob?"100%":"260px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", background:"rgba(255,255,255,0.01)", display:mob&&mobilePanel!=="list"?"none":"flex", flexDirection:"column", overflow:"hidden" }}>
+        {mob && (
+          <div style={{ padding:"8px 12px 8px 62px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:"8px" }}>
+            <button onClick={()=>setMobilePanel("cats")} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"99px", padding:"5px 14px", color:"rgba(255,255,255,0.6)", fontSize:"12px", cursor:"pointer", fontFamily:FONT }}>Categories</button>
+            <span style={{ fontSize:"12px", fontWeight:"600", color:"rgba(255,255,255,0.7)", fontFamily:FONT }}>Notes</span>
+          </div>
+        )}
         <div style={{ padding:"10px 12px", borderBottom:"1px solid rgba(255,255,255,0.06)", flexShrink:0 }}>
           <div style={{ position:"relative" }}>
             <svg style={{ position:"absolute", left:"8px", top:"50%", transform:"translateY(-50%)", color:"rgba(255,255,255,0.2)" }} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -462,7 +472,7 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
               <p style={{ fontSize:"12px", color:C.muted, fontFamily:FONT, textAlign:"center", margin:0 }}>No notes yet.<br/>Create one.</p>
             </div>
           ) : filtered.map(note=>(
-            <div key={note.id} className="nt-note" onClick={()=>setActiveNote(note.id)}
+            <div key={note.id} className="nt-note" onClick={()=>{setActiveNote(note.id);if(isMobile())setMobilePanel("editor");}}
               style={{ padding:"10px 12px", borderRadius:"10px", border:`1px solid ${activeNote===note.id?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.06)"}`, background:activeNote===note.id?"rgba(255,255,255,0.07)":"rgba(255,255,255,0.03)", cursor:"pointer", marginBottom:"4px", transition:"all 0.15s" }}>
               <div style={{ display:"flex", alignItems:"center", gap:"6px", marginBottom:"4px" }}>
                 {note.pinned && <svg width="9" height="9" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>}
@@ -480,7 +490,12 @@ export default function SocioMeeNotes({ user, onSendToGenerator, creditStatus })
       </div>
 
       {/* Editor */}
-      <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <div style={{ flex:1, display:mob&&mobilePanel!=="editor"?"none":"flex", flexDirection:"column", overflow:"hidden" }}>
+        {mob && mobilePanel==="editor" && (
+          <div style={{ padding:"10px 12px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:"8px" }}>
+            <button onClick={()=>setMobilePanel("list")} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"8px", padding:"5px 10px", color:"rgba(255,255,255,0.6)", fontSize:"12px", cursor:"pointer", fontFamily:FONT }}>← Back</button>
+          </div>
+        )}
         {!activeNoteObj ? (
           <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"14px", opacity:0.4 }}>
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>

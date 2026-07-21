@@ -75,6 +75,8 @@ function detectCat(file) {
   return "other";
 }
 
+const mob = typeof window !== "undefined" && window.innerWidth <= 767;
+
 export default function SocioMeeCloud({ user, onUpgradeClick }) {
   const [files, setFiles] = useState(() => {
     try { return JSON.parse(localStorage.getItem("cloud_files") || "[]"); } catch { return []; }
@@ -85,6 +87,7 @@ export default function SocioMeeCloud({ user, onUpgradeClick }) {
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState("sidebar");
   const fileInputRef = useRef(null);
 
   const rawPlan = user?.plan || user?.plan_label || "free";
@@ -96,7 +99,10 @@ export default function SocioMeeCloud({ user, onUpgradeClick }) {
 
   const saveFiles = (f) => {
     setFiles(f);
-    try { localStorage.setItem("cloud_files", JSON.stringify(f.map(x => ({...x, data:undefined})))); } catch {}
+    try {
+      const toStore = f.map(x => ({...x, data: x.size < 500*1024 ? x.data : undefined}));
+      localStorage.setItem("cloud_files", JSON.stringify(toStore));
+    } catch { localStorage.setItem("cloud_files", JSON.stringify(f.map(x => ({...x, data:undefined})))); }
   };
   const addFiles = useCallback(async (fileList) => {
     setUploading(true);
@@ -110,7 +116,7 @@ export default function SocioMeeCloud({ user, onUpgradeClick }) {
     setUploading(false);
   }, [files, usedBytes, limitBytes]);
 
-  const deleteFile = (id) => { saveFiles(files.filter(f=>f.id!==id)); if(preview?.id===id) setPreview(null); };
+  const deleteFile = (id) => { saveFiles(files.filter(f=>f.id!==id)); if(preview?.id===id) { setPreview(null); if(mob) setMobilePanel("main"); } };
   const starFile = (id) => saveFiles(files.map(f=>f.id===id?{...f,starred:!f.starred}:f));
   const downloadFile = (file) => { const a=document.createElement("a"); a.href=file.data; a.download=file.name; a.click(); };
 
@@ -163,11 +169,12 @@ export default function SocioMeeCloud({ user, onUpgradeClick }) {
       `}</style>
 
       {/* Sidebar */}
-      <div style={{ width:"210px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", background:"rgba(255,255,255,0.02)", backdropFilter:"blur(20px)", display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        <div style={{ padding:"18px 16px 14px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:"9px", marginBottom:"14px" }}>
+      <div style={{ width:mob?"100%":"210px", flexShrink:0, borderRight:"1px solid rgba(255,255,255,0.06)", background:"rgba(255,255,255,0.02)", backdropFilter:"blur(20px)", display:mob&&mobilePanel!=="sidebar"?"none":"flex", flexDirection:"column", overflow:"hidden" }}>
+        <div style={{ padding:mob?"10px 12px 10px":"18px 16px 14px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:"9px", marginBottom:"14px", paddingLeft:mob?"52px":"0" }}>
             <IconCloud size={16}/>
-            <span style={{ fontSize:"13px", fontWeight:"600", color:C.white, letterSpacing:"0.2px" }}>Cloud</span>
+            <span style={{ fontSize:"13px", fontWeight:"600", color:C.white, letterSpacing:"0.2px", flex:1 }}>Cloud</span>
+            {mob && <button onClick={()=>{window.location.href="/app";}} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"8px", width:"26px", height:"26px", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"rgba(255,255,255,0.5)", fontSize:"14px" }}>✕</button>}
           </div>
           <button onClick={()=>fileInputRef.current?.click()}
             style={{ width:"100%", padding:"9px", borderRadius:"10px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.8)", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", transition:"all 0.15s" }}>
@@ -183,7 +190,7 @@ export default function SocioMeeCloud({ user, onUpgradeClick }) {
             const Icon = cat.Icon;
             const isActive = activeCat === cat.id;
             return (
-              <button key={cat.id} className={`cl-cat${isActive?" active":""}`} onClick={()=>setActiveCat(cat.id)}
+              <button key={cat.id} className={`cl-cat${isActive?" active":""}`} onClick={()=>{setActiveCat(cat.id);if(mob)setMobilePanel("main");}}
                 style={{ width:"100%", display:"flex", alignItems:"center", gap:"8px", padding:"7px 10px", borderRadius:"8px", border:`1px solid ${isActive?"rgba(255,255,255,0.12)":"transparent"}`, background:isActive?"rgba(255,255,255,0.06)":"transparent", cursor:"pointer", transition:"all 0.15s", marginBottom:"1px" }}>
                 <span style={{color:isActive?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.35)"}}><Icon size={14}/></span>
                 <span style={{ fontSize:"12px", fontWeight:isActive?"600":"400", color:isActive?"rgba(255,255,255,0.9)":C.muted, fontFamily:FONT, flex:1, textAlign:"left" }}>{cat.label}</span>
@@ -207,12 +214,13 @@ export default function SocioMeeCloud({ user, onUpgradeClick }) {
       </div>
 
       {/* Main */}
-      <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        <div style={{ padding:"14px 20px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:"12px", flexShrink:0 }}>
-          <div style={{ flex:1, maxWidth:"380px", position:"relative" }}>
+      <div style={{ flex:1, display:mob&&mobilePanel!=="main"?"none":"flex", flexDirection:"column", overflow:"hidden" }}>
+        <div style={{ padding:mob?"10px 12px":"14px 20px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:"8px", flexShrink:0 }}>
+          {mob && <button onClick={()=>setMobilePanel("sidebar")} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"99px", padding:"5px 14px", color:"rgba(255,255,255,0.6)", fontSize:"12px", cursor:"pointer", fontFamily:FONT, flexShrink:0, marginLeft:"44px" }}>Categories</button>}
+          <div style={{ flex:1, maxWidth:mob?"100%":"380px", position:"relative" }}>
             <div style={{ position:"absolute", left:"10px", top:"50%", transform:"translateY(-50%)", color:"rgba(255,255,255,0.25)" }}><IconSearch/></div>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search files..."
-              style={{ width:"100%", padding:"8px 12px 8px 32px", borderRadius:"10px", border:"1px solid rgba(255,255,255,0.07)", background:"rgba(255,255,255,0.04)", color:C.white, fontSize:"12px", fontFamily:FONT, outline:"none", boxSizing:"border-box" }}/>
+              style={{ width:"100%", padding:mob?"6px 10px 6px 28px":"8px 12px 8px 32px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:C.white, fontSize:mob?"11px":"12px", fontFamily:FONT, outline:"none", boxSizing:"border-box" }}/>
           </div>
           <div style={{ display:"flex", gap:"3px", marginLeft:"auto" }}>
             {["grid","list"].map(m => (
@@ -266,7 +274,7 @@ export default function SocioMeeCloud({ user, onUpgradeClick }) {
                   const info = getCatInfo(file.category);
                   const Icon = info.Icon;
                   return (
-                    <div key={file.id} className="cl-file" onClick={()=>setPreview(file)}
+                    <div key={file.id} className="cl-file" onClick={()=>{setPreview(file);if(mob)setMobilePanel("preview");}}
                       style={{ borderRadius:"12px", border:"1px solid rgba(255,255,255,0.07)", background:"rgba(255,255,255,0.03)", overflow:"hidden", cursor:"pointer", transition:"all 0.2s" }}>
                       {file.type?.startsWith("image/") && file.data ? (
                         <img src={file.data} alt={file.name} style={{ width:"100%", height:"72px", objectFit:"cover", display:"block" }}/>
@@ -309,7 +317,7 @@ export default function SocioMeeCloud({ user, onUpgradeClick }) {
                     const info = getCatInfo(file.category);
                     const Icon = info.Icon;
                     return (
-                      <div key={file.id} className="cl-file" onClick={()=>setPreview(file)}
+                      <div key={file.id} className="cl-file" onClick={()=>{setPreview(file);if(mob)setMobilePanel("preview");}}
                         style={{ borderRadius:"12px", border:"1px solid rgba(255,255,255,0.07)", background:"rgba(255,255,255,0.03)", overflow:"hidden", cursor:"pointer", transition:"all 0.2s", animation:"fadeUp 0.3s ease" }}>
                         {file.type?.startsWith("image/") && file.data ? (
                           <img src={file.data} alt={file.name} style={{ width:"100%", height:"80px", objectFit:"cover", display:"block" }}/>
@@ -358,10 +366,10 @@ export default function SocioMeeCloud({ user, onUpgradeClick }) {
 
       {/* Preview panel */}
       {preview && (
-        <div style={{ width:"280px", flexShrink:0, borderLeft:"1px solid rgba(255,255,255,0.06)", background:"rgba(255,255,255,0.02)", backdropFilter:"blur(20px)", display:"flex", flexDirection:"column", overflow:"hidden" }}>
+        <div style={{ width:mob?"100%":"280px", position:mob?"fixed":"relative", inset:mob?"0":undefined, zIndex:mob?300:undefined, flexShrink:0, borderLeft:"1px solid rgba(255,255,255,0.06)", background:"rgba(10,10,10,0.98)", backdropFilter:"blur(20px)", display:"flex", flexDirection:"column", overflow:"hidden" }}>
           <div style={{ padding:"14px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-            <span style={{ fontSize:"12px", fontWeight:"600", color:C.white, fontFamily:FONT }}>Preview</span>
-            <button onClick={()=>setPreview(null)} style={{ width:"24px", height:"24px", borderRadius:"6px", border:"none", background:"transparent", color:C.muted, cursor:"pointer", fontSize:"14px", display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+            <span style={{ fontSize:"12px", fontWeight:"600", color:C.white, fontFamily:FONT, paddingLeft:mob?"44px":"0" }}>Preview</span>
+            <button onClick={()=>{setPreview(null);if(mob)setMobilePanel("main");}} style={{ width:"24px", height:"24px", borderRadius:"6px", border:"none", background:"transparent", color:C.muted, cursor:"pointer", fontSize:"14px", display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
           </div>
           <div style={{ flex:1, overflowY:"auto", padding:"16px" }}>
             {preview.type?.startsWith("image/") && preview.data ? (

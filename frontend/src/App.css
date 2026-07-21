@@ -39,6 +39,23 @@
 
 /* ── MOBILE DONUT FIXES (max-width 767px only) ── */
 @media (max-width: 767px) {
+  /* App fullscreen panels — remove sidebar offset on mobile */
+  .app-fullscreen-panel {
+    left: 0 !important;
+  }
+  /* Hide hamburger when fullscreen app is open on mobile */
+  .app-fullscreen-panel ~ #hamburger-btn,
+  .app-fullscreen-panel ~ * #hamburger-btn {
+    display: none !important;
+  }
+  #hamburger-btn {
+    display: none !important;
+  }
+  /* Welcome screen description — smaller font on mobile */
+  .welcome-body-text {
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+  }
   /* Traffic Sources donut — shrink from 160 to 120 */
   .yt-traffic-wrap > div:first-child > svg {
     width: 120px !important;

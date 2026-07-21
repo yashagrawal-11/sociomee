@@ -2157,7 +2157,7 @@ export default function App() {
 
       {sidebarOpen && <div onClick={()=>setSidebarOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.65)", backdropFilter:"blur(4px)", zIndex:98 }}/>}
 
-      <button onClick={()=>setSidebarOpen(s=>!s)} id="hamburger-btn" className={sidebarOpen?"hidden":""} style={{ position:"absolute", top:"14px", left:"14px", zIndex:101, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"8px", padding:"6px", cursor:"pointer", display:"none", flexDirection:"column", gap:"3px", alignItems:"center" }}>
+      <button onClick={()=>setSidebarOpen(s=>!s)} id="hamburger-btn" className={sidebarOpen?"hidden":""} style={{ position:"absolute", top:"14px", left:"14px", zIndex:101, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"8px", padding:"6px", cursor:"pointer", display:(["notes","pdf","pixel","share","cloud","calendar"].includes(activeTab)&&window.innerWidth<=767)?"none":"none", flexDirection:"column", gap:"3px", alignItems:"center" }}>
         <span style={{ width:"14px", height:"1.5px", background:"rgba(255,255,255,0.7)", display:"block", borderRadius:"2px" }}/><span style={{ width:"14px", height:"1.5px", background:"rgba(255,255,255,0.7)", display:"block", borderRadius:"2px" }}/><span style={{ width:"14px", height:"1.5px", background:"rgba(255,255,255,0.7)", display:"block", borderRadius:"2px" }}/>
       </button>
 
@@ -2587,23 +2587,7 @@ export default function App() {
           <span style={{flex:1}}>Delete Account</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.4)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <div style={{position:"relative"}}><button onClick={()=>setLangMenuOpen(l=>!l)} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:langMenuOpen?"0 0 10px 10px":"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          <span style={{flex:1}}>Language</span>
-          <span style={{fontSize:"11px",color:"#a78bfa",fontWeight:"700"}}>{LANGS.find(l=>l.code===UI_LANG)?.label||"English"}</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" style={{transform:langMenuOpen?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        {langMenuOpen && (
-          <div style={{position:"absolute",bottom:"100%",left:0,right:0,background:"rgba(8,6,18,0.98)",border:"1px solid rgba(124,58,237,0.2)",borderBottom:"none",borderRadius:"10px 10px 0 0",padding:"6px 6px 4px",zIndex:300}}>
-            {LANGS.map(({code,label})=>{ const isActive=UI_LANG===code; return (
-              <button key={code} onClick={()=>{localStorage.setItem("sociomee_lang",code);window.location.reload();}} style={{display:"flex",alignItems:"center",gap:"8px",width:"100%",padding:"8px 10px",borderRadius:"8px",border:"none",background:isActive?"rgba(124,58,237,0.15)":"transparent",color:isActive?"#a78bfa":"rgba(255,255,255,0.6)",fontSize:"12px",fontWeight:isActive?"700":"500",cursor:"pointer",fontFamily:"inherit",textAlign:"left"}} onMouseEnter={e=>{if(!isActive)e.currentTarget.style.background="rgba(255,255,255,0.05)";}} onMouseLeave={e=>{if(!isActive)e.currentTarget.style.background="transparent";}}>
-                <span>{label}</span>
-                {isActive&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="3" style={{marginLeft:"auto"}}><polyline points="20 6 9 17 4 12"/></svg>}
-              </button>
-            );})}
-          </div>
-        )}
-        </div>
+
       </div>
 
       {showNotificationsModal && (
@@ -2800,40 +2784,40 @@ export default function App() {
 
       {/* MAIN CONTENT */}
       {activeTab==="notes" && isLoggedIn && (
-        <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Notes" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeNotes onSendToGenerator={()=>setActiveTab("generate")} user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="cloud" && isLoggedIn && (
-        <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Cloud" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeCloud user={user} onUpgradeClick={()=>window.location.href="/pricing?from=app"}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="calendar" && isLoggedIn && (
-        <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
           <SocioMeeCalendar user={user}/>
         </div>
       )}
       {activeTab==="share" && isLoggedIn && (
-        <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Share" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeShare user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="pixel" && isLoggedIn && (
-        <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Pixel" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeePixel user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="pdf" && isLoggedIn && (
-        <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee PDF" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeePDF onSendToGenerator={(text)=>setActiveTab("generate")} user={user} creditStatus={creditStatus}/>
           </PlanGate>
@@ -2851,7 +2835,7 @@ export default function App() {
           {!isLoggedIn && (
             <div style={{ textAlign:"center", padding:"60px 20px" }}>
               <h2 style={{ color:"#fff", fontFamily:"'Orbitron',sans-serif", fontSize:"22px", marginBottom:"12px" }}>{t("welcomeTitle")}</h2>
-              <p style={{ color:"rgba(255,255,255,0.4)", marginBottom:"24px" }}>{t("welcomeBody")}</p>
+              <p className="welcome-body-text" style={{ color:"rgba(255,255,255,0.4)", marginBottom:"24px" }}>{t("welcomeBody")}</p>
               <a href="/login" style={{ padding:"12px 32px", borderRadius:"99px", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", color:"#fff", fontWeight:"800", textDecoration:"none", fontSize:"14px" }}>{t("logIn")}</a>
             </div>
           )}
