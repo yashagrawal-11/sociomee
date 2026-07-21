@@ -8,6 +8,8 @@ const dim = (y,m) => new Date(y,m+1,0).getDate();
 const fst = (y,m) => new Date(y,m,1).getDay();
 const urg = d => d<=7?{c:"#f87171",bg:"rgba(248,113,113,0.14)",border:"rgba(248,113,113,0.3)"}:d<=30?{c:"#fb923c",bg:"rgba(251,146,60,0.1)",border:"rgba(251,146,60,0.25)"}:{c:"rgba(255,255,255,0.4)",bg:"rgba(255,255,255,0.05)",border:"rgba(255,255,255,0.1)"};
 
+const mob = typeof window !== "undefined" && window.innerWidth <= 767;
+
 export default function SocioMeeCalendar({ user }) {
   const raw = user?.plan||user?.plan_label||"free";
   const plan = raw.toLowerCase().includes("premium")?"premium":raw.toLowerCase().includes("pro")?"pro":"free";
@@ -21,6 +23,7 @@ export default function SocioMeeCalendar({ user }) {
   const [pe,setPe] = useState(()=>{try{return JSON.parse(localStorage.getItem("cal_pe")||"{}");}catch{return {};}});
   const [ek,setEk] = useState(null);
   const [et,setEt] = useState("");
+  const [showMonths, setShowMonths] = useState(false)
   const monthListRef = useRef(null);
 
   useEffect(()=>{
@@ -109,13 +112,14 @@ export default function SocioMeeCalendar({ user }) {
       )}
 
       {/* LEFT: Month picker — large scrollable list */}
-      <div style={{width:"160px",flexShrink:0,display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+      <div style={{width:mob?"100%":"160px",flexShrink:0,display:mob&&!showMonths?"none":"flex",flexDirection:"column",position:mob?"fixed":"relative",inset:mob?"0":undefined,zIndex:mob?300:undefined,background:mob?"rgba(10,10,10,0.98)":undefined,overflow:"hidden"}}>
         {/* Top fade */}
         <div style={{position:"absolute",top:0,left:0,right:0,height:"80px",background:"linear-gradient(to bottom,#0a0a0a,transparent)",zIndex:2,pointerEvents:"none"}}/>
         {/* Bottom fade */}
         <div style={{position:"absolute",bottom:0,left:0,right:0,height:"80px",background:"linear-gradient(to top,#0a0a0a,transparent)",zIndex:2,pointerEvents:"none"}}/>
         {/* Year + nav */}
         <div style={{padding:"20px 16px 10px",flexShrink:0,zIndex:3,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          {mob&&<button onClick={()=>setShowMonths(false)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",padding:"5px 10px",color:"rgba(255,255,255,0.6)",fontSize:"12px",cursor:"pointer",fontFamily:F}}>Done</button>}
           <span style={{fontSize:"13px",fontWeight:"700",color:"rgba(255,255,255,0.25)",fontFamily:FH}}>{yr}</span>
           <div style={{display:"flex",gap:"3px"}}>
             <button className="nb" onClick={()=>setYr(y=>y-1)} style={{width:"20px",height:"20px",border:"none",background:"transparent",color:"rgba(255,255,255,0.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"color 0.15s"}}>
@@ -146,7 +150,7 @@ export default function SocioMeeCalendar({ user }) {
       </div>
 
       {/* Curved separator */}
-      <div style={{width:"24px",flexShrink:0,position:"relative",overflow:"visible"}}>
+      <div style={{width:"24px",flexShrink:0,position:"relative",overflow:"visible",display:mob?"none":"block"}}>
         <svg width="24" height="100%" viewBox="0 0 24 800" preserveAspectRatio="none" style={{position:"absolute",inset:0,width:"24px",height:"100%"}}>
           <path d="M0 0 Q24 400 0 800 L24 800 L24 0 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1" vectorEffect="non-scaling-stroke"/>
         </svg>
@@ -156,10 +160,11 @@ export default function SocioMeeCalendar({ user }) {
       <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",padding:"20px 24px 0"}}>
 
         {/* Calendar header */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"12px",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"12px",flexShrink:0,paddingLeft:mob?"52px":"0"}}>
           <div>
             <div style={{display:"flex",alignItems:"baseline",gap:"8px"}}>
-              <h2 style={{fontSize:"20px",fontWeight:"800",color:"#fff",margin:0,fontFamily:FH}}>{MONTHS[mo].substring(0,3)} {today.getDate()},</h2>
+              {mob&&<button onClick={()=>setShowMonths(true)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"99px",padding:"4px 12px",color:"rgba(255,255,255,0.6)",fontSize:"11px",cursor:"pointer",fontFamily:F,marginRight:"6px"}}>{MONTHS[mo]}</button>}
+              <h2 style={{fontSize:mob?"16px":"20px",fontWeight:"800",color:"#fff",margin:0,fontFamily:FH}}>{!mob&&MONTHS[mo].substring(0,3)+" "}{today.getDate()},</h2>
               <span style={{fontSize:"14px",color:"rgba(255,255,255,0.35)",fontFamily:F}}>{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][today.getDay()]}</span>
             </div>
           </div>
@@ -192,7 +197,7 @@ export default function SocioMeeCalendar({ user }) {
                 const isSel=sel===fi&&fi!==-1;
                 return (
                   <div key={i} className="cd" onClick={()=>{ if(hasFest){ setSel(isSel?null:fi); } else { setEk(fk); setEt(pe[fk]||""); } }}
-                    style={{height:"64px",borderRadius:"10px",border:`1px solid ${isToday?"rgba(255,255,255,0.2)":hasFest?u.border:isSel?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.04)"}`,background:isToday?"rgba(255,255,255,0.09)":hasFest?u.bg:isSel?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.02)",cursor:hasFest?"pointer":"default",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"3px",transition:"background 0.15s",position:"relative",padding:"4px"}}>
+                    style={{height:mob?"44px":"64px",borderRadius:"10px",border:`1px solid ${isToday?"rgba(255,255,255,0.2)":hasFest?u.border:isSel?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.04)"}`,background:isToday?"rgba(255,255,255,0.09)":hasFest?u.bg:isSel?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.02)",cursor:hasFest?"pointer":"default",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"3px",transition:"background 0.15s",position:"relative",padding:"4px"}}>
                     <span style={{fontSize:"13px",fontWeight:isToday||hasFest?"700":"400",color:isToday?"#fff":hasFest?u.c:"rgba(255,255,255,0.5)",fontFamily:F,lineHeight:1}}>{day}</span>
                     {hasFest&&<span style={{fontSize:"8px",color:u.c,fontFamily:F,fontWeight:"600",textAlign:"center",lineHeight:1.1,padding:"0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"90%"}}>{dayFests[0].name.split(" ").slice(0,2).join(" ")}</span>}
                     {hasPE&&!hasFest&&<div style={{width:"3px",height:"3px",borderRadius:"50%",background:"rgba(96,165,250,0.7)"}}/>}

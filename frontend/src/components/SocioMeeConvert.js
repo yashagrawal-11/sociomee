@@ -40,6 +40,8 @@ function formatBytes(b) {
   return `${n.toFixed(1)} ${u[i]}`;
 }
 
+const mob = typeof window !== "undefined" && window.innerWidth <= 767;
+
 export default function SocioMeeConvert({ user, creditStatus }) {
   const rawPlan = creditStatus?.plan || user?.plan || "free";
   const isPro = rawPlan.includes("pro") || rawPlan.includes("premium");
@@ -53,6 +55,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
   const [error, setError] = useState("");
   const [threshold, setThreshold] = useState(128);
   const [dragOver, setDragOver] = useState(false);
+  const [showFormatPicker, setShowFormatPicker] = useState(false);
   const fileRef = useRef(null);
 
   const activeConv = CONVERSIONS.find(c => c.id === active);
@@ -199,8 +202,40 @@ export default function SocioMeeConvert({ user, creditStatus }) {
   return (
     <div style={{ display:"flex", height:"calc(100vh - 60px)", fontFamily:FONT, overflow:"hidden" }}>
 
+      {/* MOBILE FORMAT PICKER */}
+      {mob && (
+        <div style={{ padding:"8px 12px 0", flexShrink:0 }}>
+          <button onClick={()=>setShowFormatPicker(true)}
+            style={{ width:"100%", padding:"10px 16px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <span style={{ color:"rgba(255,255,255,0.5)", fontSize:"11px" }}>Format:</span>
+            <span>{activeConv?.label || "Select format"}</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+      )}
+      {mob && showFormatPicker && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", zIndex:300, display:"flex", flexDirection:"column", justifyContent:"flex-end" }} onClick={()=>setShowFormatPicker(false)}>
+          <div style={{ background:"#111", borderRadius:"20px 20px 0 0", padding:"16px", maxHeight:"70vh", overflowY:"auto" }} onClick={e=>e.stopPropagation()}>
+            <div style={{ width:"40px", height:"3px", borderRadius:"99px", background:"rgba(255,255,255,0.2)", margin:"0 auto 16px" }}/>
+            {GROUPS.map(grp=>(
+              <div key={grp}>
+                <p style={{ fontSize:"9px", fontWeight:"600", color:"rgba(255,255,255,0.3)", letterSpacing:"1.5px", textTransform:"uppercase", margin:"12px 0 6px", fontFamily:FONT }}>{grp}</p>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:"6px" }}>
+                  {CONVERSIONS.filter(c=>c.group===grp).map(c=>(
+                    <button key={c.id} onClick={()=>{switchTab(c.id);setShowFormatPicker(false);}}
+                      style={{ padding:"7px 14px", borderRadius:"99px", border:`1px solid ${active===c.id?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.1)"}`, background:active===c.id?"rgba(255,255,255,0.1)":"transparent", color:active===c.id?"#fff":"rgba(255,255,255,0.5)", fontSize:"12px", fontWeight:"500", cursor:"pointer", fontFamily:FONT }}>
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div style={{ height:"20px" }}/>
+          </div>
+        </div>
+      )}
       {/* MAIN CONTENT */}
-      <div style={{ flex:1, display:"flex", gap:"16px", padding:"20px", overflow:"hidden", minWidth:0 }}>
+      <div style={{ flex:1, display:"flex", gap:mob?"0":"16px", padding:mob?"12px":"20px", overflow:"hidden", minWidth:0 }}>
 
         {/* SOURCE PANEL */}
         <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"12px", minWidth:0, overflow:"hidden" }}>
@@ -365,7 +400,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
       </div>
 
       {/* RIGHT SIDEBAR — full height, stuck to right edge */}
-      <div style={{ width:"200px", height:"100%", background:"#111111", borderLeft:"1px solid rgba(255,255,255,0.05)", display:"flex", flexDirection:"column", flexShrink:0, overflow:"hidden" }}>
+      <div style={{ width:"200px", height:"100%", background:"#111111", borderLeft:"1px solid rgba(255,255,255,0.05)", display:mob?"none":"flex", flexDirection:"column", flexShrink:0, overflow:"hidden" }}>
         <div style={{ padding:"22px 18px 8px", flexShrink:0 }}>
           <p style={{ fontSize:"9px", fontWeight:"600", color:"rgba(255,255,255,0.2)", letterSpacing:"2px", textTransform:"uppercase", margin:0 }}>Convert</p>
         </div>
