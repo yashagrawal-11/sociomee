@@ -45,12 +45,13 @@ const TEXT_TEMPLATES = [
   { id:"comic",   label:"Comic Bold",    preview:{color:"#ff3d3d", bg:"#111"}, style:{ color:"#ff3d3d", font:"Poppins, sans-serif", bold:true, italic:true, shadow:false, strokeColor:"#000000", strokeWidth:6, highlightBg:null } },
 ];
 const TABS = [
-  { id:"adjust",  label:"Adjust",  icon:"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" },
-  { id:"filter",  label:"Filters", icon:"M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" },
-  { id:"text",    label:"Text",    icon:"M4 7V4h16v3M9 20h6M12 4v16" },
-  { id:"image",   label:"Image",   icon:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8L12 3 7 8M12 3v12" },
-  { id:"resize",  label:"Resize",  icon:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" },
-  { id:"export",  label:"Export",  icon:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" },
+  { id:"adjust",     label:"Adjust",   icon:"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" },
+  { id:"filter",     label:"Filters",  icon:"M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" },
+  { id:"text",       label:"Text",     icon:"M4 7V4h16v3M9 20h6M12 4v16" },
+  { id:"image",      label:"Layer",    icon:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8L12 3 7 8M12 3v12" },
+  { id:"resize",     label:"Resize",   icon:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" },
+  { id:"remove_bg",  label:"AI Tools", icon:"M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" },
+  { id:"export",     label:"Export",   icon:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" },
 ];
 
 function SvgIcon({ d, size=14, stroke=1.8 }) {
@@ -69,6 +70,8 @@ function Slider({ label, value, min, max, step=1, unit="", onChange }) {
     </div>
   );
 }
+
+const mob = typeof window !== "undefined" && window.innerWidth <= 767;
 
 export default function SocioMeePixel({ user, creditStatus }) {
   const rawPlan = creditStatus?.plan || user?.plan || user?.plan_label || user?.subscription || "free";
@@ -414,21 +417,22 @@ export default function SocioMeePixel({ user, creditStatus }) {
         .px-filter:hover{border-color:rgba(255,255,255,0.2)!important;background:rgba(255,255,255,0.06)!important;}
         .px-platform:hover{background:rgba(255,255,255,0.06)!important;border-color:rgba(255,255,255,0.12)!important;}
         ::-webkit-scrollbar{width:2px} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:99px}
-        @media(max-width:768px){.px-editor-main{flex-direction:column!important;}.px-side{display:none!important;}.px-mobile-tabs{display:flex!important;}.px-mobile-panel{display:flex!important;}}
+        @media(max-width:768px){.px-editor-main{flex-direction:column!important;}.px-side{display:none!important;}}
       `}</style>
 
       {/* Header */}
-      <div style={{ padding:"10px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, background:"rgba(255,255,255,0.01)", backdropFilter:"blur(10px)" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+      <div style={{ borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", flexShrink:0, background:"rgba(255,255,255,0.01)", backdropFilter:"blur(10px)", overflow:"hidden" }}>
+        {mob && <div style={{ width:"52px", flexShrink:0, height:"44px" }}/>}
+        {!mob && <div style={{ padding:"10px 16px", display:"flex", alignItems:"center", gap:"10px", flexShrink:0 }}>
           {fileName && <span style={{ fontSize:"11px", color:C.muted, fontFamily:FONT }}>{fileName} · {tw}×{th}</span>}
-        </div>
-        <div style={{ display:"flex", gap:"6px", flexWrap:"nowrap", overflowX:"auto" }}>
+        </div>}
+        <div style={{ display:"flex", gap:"6px", flexWrap:"nowrap", overflowX:"auto", padding:mob?"8px 8px":"0 8px 0 0", flex:1 }}>
           {[
             {id:"adjust", label:"Adjust"}, {id:"filter", label:"Filters"}, {id:"text", label:"Text"},
             {id:"image", label:"Image"}, {id:"resize", label:"Resize"},
           ].map(t=>(
             <button key={t.id} onClick={()=>setActiveTab(t.id)} className="px-btn"
-              style={{ display:"flex", alignItems:"center", gap:"5px", padding:"9px 16px", borderRadius:"99px", flexShrink:0, whiteSpace:"nowrap", border:`1px solid ${activeTab===t.id?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.12)"}`, background:activeTab===t.id?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.05)", color:activeTab===t.id?"#fff":"rgba(255,255,255,0.75)", fontSize:"11.5px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.2s" }}>
+              style={{ display:"flex", alignItems:"center", gap:"5px", padding:mob?"6px 12px":"9px 16px", borderRadius:"99px", flexShrink:0, whiteSpace:"nowrap", border:`1px solid ${activeTab===t.id?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.12)"}`, background:activeTab===t.id?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.05)", color:activeTab===t.id?"#fff":"rgba(255,255,255,0.75)", fontSize:mob?"10px":"11.5px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, transition:"all 0.2s" }}>
               {t.label}
             </button>
           ))}
@@ -451,7 +455,7 @@ export default function SocioMeePixel({ user, creditStatus }) {
       <div className="px-editor-main" style={{ flex:1, display:"flex", overflow:"hidden" }}>
 
         {/* Canvas */}
-        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", overflow:"auto", padding:"20px", position:"relative", background:"rgba(0,0,0,0.3)" }}
+        <div style={{ flex:mob?0:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:mob?"flex-start":"center", overflow:mob?"visible":"auto", padding:mob?"0":"20px", position:"relative", background:"rgba(0,0,0,0.3)", width:mob?"100%":"auto" }}
           onDragOver={e=>{e.preventDefault();setDragOver(true)}}
           onDragLeave={()=>setDragOver(false)}
           onDrop={e=>{e.preventDefault();setDragOver(false);handleFile(e.dataTransfer.files[0])}}>
@@ -461,9 +465,12 @@ export default function SocioMeePixel({ user, creditStatus }) {
               onMouseMove={handleCanvasMouseMove}
               onMouseUp={handleCanvasMouseUp}
               onMouseLeave={handleCanvasMouseUp}
-              style={{ display:"block", maxWidth:"100%", maxHeight:"calc(100vh - 160px)", transform:`scale(${zoom})`, transformOrigin:"top center", imageRendering:"pixelated", cursor: texts.length ? "grab" : "default" }}/>
+              onTouchStart={e=>{e.preventDefault();const t=e.touches[0];handleCanvasMouseDown({clientX:t.clientX,clientY:t.clientY});}}
+              onTouchMove={e=>{e.preventDefault();const t=e.touches[0];handleCanvasMouseMove({clientX:t.clientX,clientY:t.clientY});}}
+              onTouchEnd={e=>{e.preventDefault();handleCanvasMouseUp();}}
+              style={{ display:"block", width:mob?"100%":"auto", maxWidth:mob?"100%":"100%", maxHeight:mob?"none":"calc(100vh - 160px)", transform:mob?"none":`scale(${zoom})`, transformOrigin:"top center", imageRendering:"pixelated", cursor: texts.length ? "grab" : "default" }}/>
           </div>
-          <div style={{ position:"absolute", bottom:"12px", right:"12px", display:"flex", gap:"4px" }}>
+          <div style={{ position:"absolute", bottom:"12px", right:"12px", display:mob?"none":"flex", gap:"4px" }}>
             {[0.5,0.75,1,1.25,1.5].map(z=>(
               <button key={z} onClick={()=>setZoom(z)} style={{ padding:"4px 8px", borderRadius:"6px", border:`1px solid ${zoom===z?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.07)"}`, background:zoom===z?"rgba(255,255,255,0.1)":"rgba(255,255,255,0.04)", color:zoom===z?"#fff":C.muted, fontSize:"10px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>
                 {z===1?"100%":z*100+"%"}
@@ -472,8 +479,103 @@ export default function SocioMeePixel({ user, creditStatus }) {
           </div>
         </div>
 
+        {/* Mobile filename bar */}
+        {mob && fileName && (
+          <div style={{ background:"rgba(255,255,255,0.03)", borderTop:"1px solid rgba(255,255,255,0.06)", padding:"4px 12px", display:"flex", alignItems:"center", gap:"8px", flexShrink:0 }}>
+            <span style={{ fontSize:"10px", color:"rgba(255,255,255,0.35)", fontFamily:FONT, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", flex:1 }}>{fileName}</span>
+            <span style={{ fontSize:"10px", color:"rgba(255,255,255,0.2)", fontFamily:FONT, flexShrink:0 }}>{tw}×{th}</span>
+            <button onClick={()=>{setImage(null);setFileName("");}} style={{ background:"transparent", border:"none", color:"rgba(255,255,255,0.25)", cursor:"pointer", fontSize:"11px", padding:"0 4px", flexShrink:0 }}>New</button>
+          </div>
+        )}
+        {/* Mobile panel below canvas */}
+        {mob && (
+          <div style={{ flex:1, overflowY:"auto", background:C.bg, borderTop:"1px solid rgba(255,255,255,0.06)", padding:"16px" }}>
+            <p style={{ fontSize:"10px", fontWeight:"700", color:"rgba(255,255,255,0.3)", letterSpacing:"1.5px", textTransform:"uppercase", fontFamily:FONT, marginBottom:"12px" }}>{TABS.find(t=>t.id===activeTab)?.label}</p>
+            {activeTab==="adjust" && <>
+              <button onClick={()=>setAdj(DEFAULT_ADJ)} style={{ fontSize:"10px", color:C.muted, background:"transparent", border:"none", cursor:"pointer", fontFamily:FONT, marginBottom:"12px", padding:0 }}>Reset all</button>
+              <Slider label="Brightness" value={adj.brightness} min={0} max={200} unit="%" onChange={v=>setAdj(p=>({...p,brightness:v}))}/>
+              <Slider label="Contrast"   value={adj.contrast}   min={0} max={200} unit="%" onChange={v=>setAdj(p=>({...p,contrast:v}))}/>
+              <Slider label="Saturation" value={adj.saturation} min={0} max={200} unit="%" onChange={v=>setAdj(p=>({...p,saturation:v}))}/>
+              <Slider label="Hue Rotate" value={adj.hue}        min={0} max={360} unit="°" onChange={v=>setAdj(p=>({...p,hue:v}))}/>
+              <Slider label="Blur"       value={adj.blur}       min={0} max={20}  unit="px" onChange={v=>setAdj(p=>({...p,blur:v}))}/>
+              <Slider label="Opacity"    value={adj.opacity}    min={0} max={100} unit="%" onChange={v=>setAdj(p=>({...p,opacity:v}))}/>
+            </>}
+            {activeTab==="filter" && <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"6px" }}>
+              {FILTERS.map(f=>(
+                <button key={f.id} className="px-filter" onClick={()=>setFilter(f.id)}
+                  style={{ padding:"6px", borderRadius:"10px", border:`1px solid ${filter===f.id?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.07)"}`, background:filter===f.id?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.03)", cursor:"pointer", textAlign:"center" }}>
+                  <div style={{ height:"36px", borderRadius:"6px", background:"rgba(255,255,255,0.05)", marginBottom:"4px", overflow:"hidden" }}>
+                    {image && <img src={image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", filter:f.css }}/>}
+                  </div>
+                  <span style={{ fontSize:"9px", fontWeight:"600", color:filter===f.id?"#fff":C.muted, fontFamily:FONT }}>{f.label}</span>
+                </button>
+              ))}
+            </div>}
+            {activeTab==="text" && <>
+              <button onClick={addText} style={{ width:"100%", padding:"9px", borderRadius:"10px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.8)", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, marginBottom:"12px" }}>+ Add Text Layer</button>
+              {texts.map(t=>(
+                <div key={t.id} onClick={()=>setSelText(t.id)}
+                  style={{ padding:"8px 12px", borderRadius:"10px", border:`1px solid ${selText===t.id?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.07)"}`, background:selText===t.id?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.02)", cursor:"pointer", marginBottom:"6px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span style={{ fontSize:"12px", color:C.white, fontFamily:FONT }}>{t.text}</span>
+                  <button onClick={e=>{e.stopPropagation();deleteText(t.id);}} style={{ background:"transparent", border:"none", color:C.muted, cursor:"pointer", fontSize:"12px" }}>✕</button>
+                </div>
+              ))}
+              {selTextObj && <>
+                <textarea value={selTextObj.text} onChange={e=>updateText(selText,{text:e.target.value})} rows={2}
+                  style={{ width:"100%", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"8px", padding:"8px", color:C.white, fontSize:"12px", fontFamily:FONT, resize:"none", outline:"none", boxSizing:"border-box", marginBottom:"10px" }}/>
+                <Slider label="Font Size" value={selTextObj.size} min={12} max={200} onChange={v=>updateText(selText,{size:v})}/>
+                <Slider label="Opacity"   value={selTextObj.opacity} min={0} max={100} unit="%" onChange={v=>updateText(selText,{opacity:v})}/>
+                <div style={{ display:"flex", gap:"6px", marginBottom:"10px" }}>
+                  {["left","center","right"].map(a=>(
+                    <button key={a} onClick={()=>updateText(selText,{align:a})} style={{ flex:1, padding:"6px", borderRadius:"7px", border:`1px solid ${selTextObj.align===a?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.07)"}`, background:selTextObj.align===a?"rgba(255,255,255,0.08)":"transparent", color:selTextObj.align===a?"#fff":C.muted, fontSize:"10px", cursor:"pointer", fontFamily:FONT }}>{a}</button>
+                  ))}
+                </div>
+              </>}
+            </>}
+            {activeTab==="image" && <>
+              <button onClick={()=>overlayFileInputRef.current?.click()} style={{ width:"100%", padding:"9px", borderRadius:"10px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.8)", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, marginBottom:"12px" }}>+ Add Image Layer</button>
+              {overlays.map(ov=>(
+                <div key={ov.id} onClick={()=>setSelOverlay(ov.id)} style={{ padding:"8px 12px", borderRadius:"10px", border:`1px solid ${selOverlay===ov.id?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.07)"}`, background:"rgba(255,255,255,0.02)", cursor:"pointer", marginBottom:"6px", display:"flex", alignItems:"center", gap:"8px" }}>
+                  <img src={overlayElsRef.current[ov.id]?.src} alt="" style={{ width:"28px", height:"28px", borderRadius:"5px", objectFit:"cover" }}/>
+                  <span style={{ fontSize:"12px", color:C.white, fontFamily:FONT, flex:1 }}>Image Layer</span>
+                  <button onClick={e=>{e.stopPropagation();deleteOverlay(ov.id);}} style={{ background:"transparent", border:"none", color:C.muted, cursor:"pointer", fontSize:"12px" }}>✕</button>
+                </div>
+              ))}
+            </>}
+            {activeTab==="resize" && <div style={{ display:"flex", flexDirection:"column", gap:"4px" }}>
+              {PLATFORMS.map(p=>(
+                <button key={p.id} className="px-platform" onClick={()=>setPlatform(p.id)}
+                  style={{ padding:"8px 12px", borderRadius:"9px", border:`1px solid ${platform===p.id?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.06)"}`, background:platform===p.id?"rgba(255,255,255,0.07)":"transparent", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span style={{ fontSize:"12px", fontWeight:"500", color:platform===p.id?"#fff":C.muted, fontFamily:FONT }}>{p.label}</span>
+                  {p.w && <span style={{ fontSize:"10px", color:C.dim, fontFamily:FONT }}>{p.w}×{p.h}</span>}
+                </button>
+              ))}
+            </div>}
+            {activeTab==="export" && <>
+              <div style={{ display:"flex", gap:"6px", marginBottom:"12px" }}>
+                {["png","jpg","webp"].map(f=>(
+                  <button key={f} onClick={()=>setExportFmt(f)} style={{ flex:1, padding:"8px", borderRadius:"9px", border:`1px solid ${exportFmt===f?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.07)"}`, background:exportFmt===f?"rgba(255,255,255,0.08)":"transparent", color:exportFmt===f?"#fff":C.muted, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>{f.toUpperCase()}</button>
+                ))}
+              </div>
+              <div style={{ display:"flex", gap:"6px", marginBottom:"12px" }}>
+                {[{mult:1,label:"1x",locked:false},{mult:2,label:"2x",locked:false},{mult:4,label:"4x ✦",locked:!isPremium}].map(r=>(
+                  <button key={r.mult} onClick={()=>{if(r.locked){alert("4x export is Pro+ only.");return;}setExportRes(r.mult);}} style={{ flex:1, padding:"8px", borderRadius:"9px", border:`1px solid ${exportRes===r.mult?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.07)"}`, background:exportRes===r.mult?"rgba(255,255,255,0.08)":"transparent", color:exportRes===r.mult?"#fff":C.muted, fontSize:"11px", fontWeight:"600", cursor:"pointer", fontFamily:FONT }}>{r.label}</button>
+                ))}
+              </div>
+              <button onClick={exportImage} style={{ width:"100%", padding:"12px", borderRadius:"11px", border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>Export {exportFmt.toUpperCase()}</button>
+            </>}
+            {activeTab==="remove_bg" && <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
+              <button onClick={removeBg} disabled={bgRemoving} style={{ width:"100%", padding:"12px", borderRadius:"11px", border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>
+                {bgRemoving?"Removing...":"Remove Background"}{!isPremium?" (Pro+)":""}
+              </button>
+              <button onClick={()=>upscaleImage(2)} disabled={upscaling} style={{ width:"100%", padding:"12px", borderRadius:"11px", border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.08)", color:"#fff", fontSize:"13px", fontWeight:"700", cursor:"pointer", fontFamily:FONT }}>
+                {upscaling?"Upscaling...":"AI Upscale 2x"}{!isPremium?" (Pro+)":""}
+              </button>
+            </div>}
+          </div>
+        )}
         {/* Right panel */}
-        <div style={panelStyle}>
+        <div style={{...panelStyle, display:mob?"none":"flex"}}>
           <div style={{ padding:"12px 14px", borderBottom:"1px solid rgba(255,255,255,0.06)", flexShrink:0 }}>
             <span style={{ fontSize:"11px", fontWeight:"600", color:C.muted, fontFamily:FONT, textTransform:"uppercase", letterSpacing:"1px" }}>{TABS.find(t=>t.id===activeTab)?.label}</span>
           </div>
@@ -616,7 +718,7 @@ export default function SocioMeePixel({ user, creditStatus }) {
       </div>
 
       {/* Mobile bottom tab bar */}
-      <div className="px-mobile-tabs" style={{ display:"none", borderTop:"1px solid rgba(255,255,255,0.06)", background:"rgba(255,255,255,0.02)", backdropFilter:"blur(20px)" }}>
+      <div className="px-mobile-tabs" style={{ display:"none", borderTop:"1px solid rgba(255,255,255,0.06)", background:"rgba(8,8,8,0.98)", backdropFilter:"blur(20px)", flexShrink:0 }}>
         {TABS.map(tab=>(
           <button key={tab.id} onClick={()=>setActiveTab(tab.id)}
             style={{ flex:1, padding:"10px 4px 8px", border:"none", background:"transparent", color:activeTab===tab.id?"#fff":C.muted, cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:"4px", borderTop:`2px solid ${activeTab===tab.id?"rgba(255,255,255,0.6)":"transparent"}` }}>
