@@ -123,6 +123,7 @@ function LinkedInDashboard({ user }) {
           </button>
         </div>
         {postMsg && <div style={{ fontSize:"12px", color: postMsg.startsWith("Error") ? "#f87171" : "#4ade80", fontWeight:"600" }}>{postMsg}</div>}
+        </>}
       </div>
 
       <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"16px" }}>
