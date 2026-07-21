@@ -86,8 +86,7 @@ export default function SocioMeeCalendar({ user }) {
         .mitem:hover{color:rgba(255,255,255,0.7)!important;}
         ::-webkit-scrollbar{width:0px;height:2px}
         ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:99px}
-        .cal-pills::-webkit-scrollbar{height:3px}
-        .cal-pills::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.18);border-radius:99px}
+        .cal-pills::-webkit-scrollbar{height:0px}
         .cal-pills::-webkit-scrollbar-track{background:transparent}
       `}</style>
 
@@ -173,17 +172,17 @@ export default function SocioMeeCalendar({ user }) {
 
         {/* Day headers */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:"4px",flexShrink:0}}>
-          {DAYS.map((d,i)=><div key={i} style={{textAlign:"center",fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.18)",padding:"4px 0",letterSpacing:"0.5px",textTransform:"uppercase"}}>{d}</div>)}
+          {DAYS.map((d,i)=><div key={i} style={{textAlign:"center",fontSize:mob?"8px":"10px",fontWeight:"700",color:"rgba(255,255,255,0.18)",padding:mob?"2px 0":"4px 0",letterSpacing:"0.5px",textTransform:"uppercase"}}>{d[0]}</div>)}
         </div>
 
         {/* Calendar grid */}
         <div style={{flexShrink:0}}>
           {loading?(
-            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:"3px"}}>
-              {Array(35).fill(0).map((_,i)=><div key={i} style={{height:"64px",borderRadius:"10px",background:"rgba(255,255,255,0.025)",animation:"skpulse 1.4s ease-in-out infinite"}}/>)}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:mob?"1px":"3px"}}>
+              {Array(35).fill(0).map((_,i)=><div key={i} style={{height:mob?"38px":"64px",borderRadius:"10px",background:"rgba(255,255,255,0.025)",animation:"skpulse 1.4s ease-in-out infinite"}}/>)}
             </div>
           ):(
-            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:"3px"}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:mob?"1px":"3px"}}>
               {cells.map((day,i)=>{
                 if(!day) return <div key={i} style={{height:"64px"}}/>;
                 const isToday=day===today.getDate()&&mo===today.getMonth()&&yr===today.getFullYear();
@@ -197,8 +196,8 @@ export default function SocioMeeCalendar({ user }) {
                 const isSel=sel===fi&&fi!==-1;
                 return (
                   <div key={i} className="cd" onClick={()=>{ if(hasFest){ setSel(isSel?null:fi); } else { setEk(fk); setEt(pe[fk]||""); } }}
-                    style={{height:mob?"44px":"64px",borderRadius:"10px",border:`1px solid ${isToday?"rgba(255,255,255,0.2)":hasFest?u.border:isSel?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.04)"}`,background:isToday?"rgba(255,255,255,0.09)":hasFest?u.bg:isSel?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.02)",cursor:hasFest?"pointer":"default",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"3px",transition:"background 0.15s",position:"relative",padding:"4px"}}>
-                    <span style={{fontSize:"13px",fontWeight:isToday||hasFest?"700":"400",color:isToday?"#fff":hasFest?u.c:"rgba(255,255,255,0.5)",fontFamily:F,lineHeight:1}}>{day}</span>
+                    style={{height:mob?"38px":"64px",borderRadius:"8px",border:`1px solid ${isToday?"rgba(255,255,255,0.2)":hasFest?u.border:isSel?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.04)"}`,background:isToday?"rgba(255,255,255,0.09)":hasFest?u.bg:isSel?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.02)",cursor:hasFest?"pointer":"default",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"3px",transition:"background 0.15s",position:"relative",padding:"4px"}}>
+                    <span style={{fontSize:mob?"11px":"13px",fontWeight:isToday||hasFest?"700":"400",color:isToday?"#fff":hasFest?u.c:"rgba(255,255,255,0.5)",fontFamily:F,lineHeight:1}}>{day}</span>
                     {hasFest&&<span style={{fontSize:"8px",color:u.c,fontFamily:F,fontWeight:"600",textAlign:"center",lineHeight:1.1,padding:"0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"90%"}}>{dayFests[0].name.split(" ").slice(0,2).join(" ")}</span>}
                     {hasPE&&!hasFest&&<div style={{width:"3px",height:"3px",borderRadius:"50%",background:"rgba(96,165,250,0.7)"}}/>}
                     <button className="cp" onClick={e=>{e.stopPropagation();setEk(fk);setEt(pe[fk]||"");}}
@@ -234,7 +233,7 @@ export default function SocioMeeCalendar({ user }) {
 
           {sf&&(
             <div style={{flex:1,overflowY:"auto",animation:"fadeUp 0.2s ease"}}>
-              <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px 20px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"16px"}}>
+              <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:mob?"10px 12px":"16px 20px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?"10px":"16px"}}>
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:"7px",marginBottom:"3px"}}>
                     <div style={{width:"6px",height:"6px",borderRadius:"50%",background:urg(sf.dl).c}}/>

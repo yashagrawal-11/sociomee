@@ -200,11 +200,11 @@ export default function SocioMeeConvert({ user, creditStatus }) {
   const btnLabel = loading ? null : !files.length ? (isPdfInput ? "Choose PDF" : isMulti ? "Choose Images" : "Choose Image") : `Convert to ${activeConv?.label?.split("\u2192")[1]?.trim()||""}`;
 
   return (
-    <div style={{ display:"flex", height:"calc(100vh - 60px)", fontFamily:FONT, overflow:"hidden" }}>
+    <div style={{ display:"flex", flexDirection:mob?"column":"row", height:"calc(100vh - 60px)", fontFamily:FONT, overflow:"hidden" }}>
 
       {/* MOBILE FORMAT PICKER */}
       {mob && (
-        <div style={{ padding:"8px 12px 0", flexShrink:0 }}>
+        <div style={{ padding:"8px 12px 0 68px", flexShrink:0 }}>
           <button onClick={()=>setShowFormatPicker(true)}
             style={{ width:"100%", padding:"10px 16px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:"12px", fontWeight:"600", cursor:"pointer", fontFamily:FONT, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
             <span style={{ color:"rgba(255,255,255,0.5)", fontSize:"11px" }}>Format:</span>
@@ -235,11 +235,11 @@ export default function SocioMeeConvert({ user, creditStatus }) {
         </div>
       )}
       {/* MAIN CONTENT */}
-      <div style={{ flex:1, display:"flex", gap:mob?"0":"16px", padding:mob?"12px":"20px", overflow:"hidden", minWidth:0 }}>
+      <div style={{ flex:1, display:"flex", flexDirection:mob?"column":"row", gap:mob?"8px":"16px", padding:mob?"10px":"20px", overflow:mob?"auto":"hidden", minWidth:0 }}>
 
         {/* SOURCE PANEL */}
-        <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"12px", minWidth:0, overflow:"hidden" }}>
-          <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", overflow:"hidden", flex:1, display:"flex", flexDirection:"column" }}>
+        <div style={{ flex:mob?undefined:1, display:"flex", flexDirection:"column", gap:"12px", minWidth:0, overflow:"hidden" }}>
+          <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:"20px", overflow:"hidden", flex:mob?undefined:1, display:"flex", flexDirection:"column", minHeight:mob?"220px":undefined }}>
             <div style={{ padding:"12px 14px 0", flexShrink:0 }}>
               <p style={{ fontSize:"9px", fontWeight:"700", color:C.muted, letterSpacing:"1.5px", textTransform:"uppercase", margin:0 }}>Source</p>
             </div>
@@ -323,8 +323,8 @@ export default function SocioMeeConvert({ user, creditStatus }) {
         </div>
 
         {/* RESULT PANEL */}
-        <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"12px", minWidth:0, overflow:"hidden" }}>
-          <div style={{ background:"#111", border:`1px solid ${C.border}`, borderRadius:"20px", overflow:"hidden", flex:1, display:"flex", flexDirection:"column", minHeight:0, position:"relative", zIndex:1 }}>
+        <div style={{ flex:mob?undefined:1, display:"flex", flexDirection:"column", gap:"12px", minWidth:0, overflow:"hidden" }}>
+          <div style={{ background:"#111", border:`1px solid ${C.border}`, borderRadius:"20px", overflow:"hidden", flex:mob?undefined:1, display:"flex", flexDirection:"column", minHeight:mob?"180px":0, position:"relative", zIndex:1 }}>
             <div style={{ padding:"12px 14px 0", flexShrink:0 }}>
               <p style={{ fontSize:"9px", fontWeight:"700", color:C.muted, letterSpacing:"1.5px", textTransform:"uppercase", margin:0 }}>Result</p>
             </div>
