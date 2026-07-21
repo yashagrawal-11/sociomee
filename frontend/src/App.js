@@ -588,7 +588,7 @@ function ProLock({ label, onUpgradeClick, children }) {
       <div style={{ position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"10px",background:C.purpleXlt+"ee",backdropFilter:"blur(2px)",borderRadius:"14px",border:`1.5px solid ${C.purple}33` }}>
         <span style={{ fontSize:"24px" }}>🔒</span>
         <span style={{ fontSize:"13px",fontWeight:"800",color:C.slate }}>{label}</span>
-        <button onClick={onUpgradeClick} style={{ padding:"8px 20px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:C.white,fontSize:"12.5px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit" }}>✦ Unlock with Pro</button>
+        <button onClick={onUpgradeClick} style={{ padding:"8px 20px",borderRadius:"99px",border:"1px solid rgba(124,58,237,0.4)",background:"rgba(124,58,237,0.12)",color:"#c4b5fd",fontSize:"12.5px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",boxShadow:"0 0 12px rgba(124,58,237,0.2)" }}>✦ Unlock with Pro</button>
       </div>
     </div>
   );
@@ -626,7 +626,7 @@ function CreditBadge({ creditStatus, onUpgradeClick }) {
         </div>
       </div>
       {reset && <span style={{ fontSize:"10px",color:C.muted,flexShrink:0 }}>Resets {reset}</span>}
-      {!isPro && <button onClick={onUpgradeClick} style={{ padding:"6px 14px",borderRadius:"99px",border:"none",background:`linear-gradient(135deg,${C.purple},${C.rose})`,color:C.white,fontSize:"11.5px",fontWeight:"800",cursor:"pointer",fontFamily:"inherit",flexShrink:0 }}>✦ Upgrade</button>}
+      {!isPro && <button onClick={onUpgradeClick} style={{ padding:"6px 14px",borderRadius:"99px",border:"1px solid rgba(124,58,237,0.4)",background:"rgba(124,58,237,0.12)",color:"#c4b5fd",fontSize:"11.5px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",flexShrink:0,boxShadow:"0 0 12px rgba(124,58,237,0.2)" }}>✦ Upgrade</button>}
     </div>
   );
 }
@@ -2809,7 +2809,7 @@ export default function App() {
       {activeTab==="cloud" && isLoggedIn && (
         <div style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Cloud" onUpgrade={()=>setShowPricing(true)}>
-          <SocioMeeCloud user={user} onUpgradeClick={()=>setShowPricing(true)}/>
+          <SocioMeeCloud user={user} onUpgradeClick={()=>window.location.href="/pricing?from=app"}/>
           </PlanGate>
         </div>
       )}
