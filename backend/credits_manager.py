@@ -38,7 +38,7 @@ PLAN_PRICES: Dict[str, Dict[str, Any]] = {
     },
     "pro_annual": {
         "amount":    399900,
-        "label":     "SocioMee Pro Annual",
+        "label":     "Pro Annual",
         "credits":   180,
         "uploads":   4,
         "type":      "plan",
@@ -54,7 +54,7 @@ PLAN_PRICES: Dict[str, Dict[str, Any]] = {
     },
     "premium_annual": {
         "amount":    2399900,
-        "label":     "SocioMee Pro+ Annual",
+        "label":     "Pro+ Annual",
         "credits":   300,
         "uploads":   15,
         "type":      "plan",
@@ -187,7 +187,7 @@ def get_credit_status(user_id: str) -> Dict[str, Any]:
 
     return {
         "plan":                     plan,
-        "plan_label":               plan.replace("_", " ").title(),
+        "plan_label":               {"free":"Free","pro_monthly":"Pro","pro_annual":"Pro Annual","premium_monthly":"Pro+","premium_annual":"Pro+ Annual"}.get(plan, plan.replace("_"," ").title()),
         "credits_remaining":        credits,
         "credits":                  credits,
         "monthly_limit":            limit,
