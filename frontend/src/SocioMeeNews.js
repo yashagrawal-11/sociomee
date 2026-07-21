@@ -71,7 +71,7 @@ function CardFeatured({item, onGenerate}) {
       onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(167,139,250,0.3)';e.currentTarget.style.transform='translateY(-2px)'}}
       onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.07)';e.currentTarget.style.transform='translateY(0)'}}>
       {/* Image */}
-      <div style={{position:'relative',height:'220px',background:'rgba(255,255,255,0.04)',overflow:'hidden'}}>
+      <div style={{position:'relative',aspectRatio:'16/9',background:'rgba(255,255,255,0.04)',overflow:'hidden'}}>
         {img && !imgErr
           ? <img src={img} alt={item.title} onError={()=>setImgErr(true)} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
           : <div style={{width:'100%',height:'100%',background:`linear-gradient(135deg,${col}18,rgba(0,0,0,0.5))`,display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -97,8 +97,8 @@ function CardFeatured({item, onGenerate}) {
             <span style={{fontSize:'11px',color:'rgba(255,255,255,0.2)',fontFamily:'Poppins,sans-serif'}}>{timeAgo(item.published_at||item.publishedAt)}</span>
           </div>
           <button onClick={e=>{e.preventDefault();e.stopPropagation();onGenerate(item)}}
-            style={{padding:'5px 14px',borderRadius:'99px',background:'rgba(167,139,250,0.15)',border:'1px solid rgba(167,139,250,0.35)',color:'#a78bfa',fontSize:'11px',fontWeight:700,fontFamily:'Poppins,sans-serif',cursor:'pointer'}}>
-            ✦ Generate
+            style={{padding:'4px 8px',borderRadius:'99px',background:'rgba(167,139,250,0.15)',border:'1px solid rgba(167,139,250,0.35)',color:'#a78bfa',fontSize:'10px',fontWeight:700,fontFamily:'Poppins,sans-serif',cursor:'pointer',flexShrink:0,whiteSpace:'nowrap'}}>
+            ✦
           </button>
         </div>
       </div>
@@ -116,7 +116,7 @@ function CardGrid({item, onGenerate}) {
       style={{display:'flex',flexDirection:'column',textDecoration:'none',borderRadius:'12px',overflow:'hidden',background:'rgba(255,255,255,0.025)',border:'1px solid rgba(255,255,255,0.06)',transition:'border-color 0.2s,transform 0.2s'}}
       onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(167,139,250,0.25)';e.currentTarget.style.transform='translateY(-2px)'}}
       onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.06)';e.currentTarget.style.transform='translateY(0)'}}>
-      <div style={{position:'relative',height:'150px',background:'rgba(255,255,255,0.04)',overflow:'hidden',flexShrink:0}}>
+      <div style={{position:'relative',aspectRatio:'16/9',background:'rgba(255,255,255,0.04)',overflow:'hidden',flexShrink:0}}>
         {img && !imgErr
           ? <img src={img} alt={item.title} onError={()=>setImgErr(true)} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
           : <div style={{width:'100%',height:'100%',background:`linear-gradient(135deg,${col}18,rgba(0,0,0,0.5))`,display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -283,7 +283,10 @@ export default function SocioMeeNews({userId='anonymous'}) {
             {/* Featured — 2 col */}
             {featured.length > 0 && (
               <div className="news-grid-2" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px',marginBottom:'20px'}}>
-                {featured.map(item=><CardFeatured key={item.id} item={item} onGenerate={setModal}/>)}
+                {featured.map(item=>window.innerWidth<=767
+                  ? <CardGrid key={item.id} item={item} onGenerate={setModal}/>
+                  : <CardFeatured key={item.id} item={item} onGenerate={setModal}/>
+                )}
               </div>
             )}
 

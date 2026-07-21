@@ -26,7 +26,7 @@ function AISummaryPanel({ summary, keyPoints, onClose, onSendToGenerator }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
       onClick={e => e.target===e.currentTarget && onClose()}>
-      <div style={{ width:"100%", maxWidth:"600px", maxHeight:"85vh", background:"rgba(8,8,8,0.97)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
+      <div style={{ width:"100%", maxWidth:"600px", maxHeight:mob?"95vh":"85vh", background:"rgba(8,8,8,0.97)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }}>
         <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
             <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -76,11 +76,13 @@ function AISummaryPanel({ summary, keyPoints, onClose, onSendToGenerator }) {
   );
 }
 
+const mob = typeof window !== "undefined" && window.innerWidth <= 767;
+
 export default function SocioMeePDF({ onSendToGenerator, user, creditStatus }) {
   const [pdfDoc, setPdfDoc] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [scale, setScale] = useState(1.4);
+  const [scale, setScale] = useState(typeof window!=="undefined"&&window.innerWidth<=767?0.7:1.4);
   const [loading, setLoading] = useState(false);
   const [rendering, setRendering] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -110,6 +112,7 @@ export default function SocioMeePDF({ onSendToGenerator, user, creditStatus }) {
   const [showProtect, setShowProtect] = useState(false);
   const [protectPassword, setProtectPassword] = useState("");
   const [protectSaving, setProtectSaving] = useState(false);
+  const [mobileView, setMobileView] = useState("viewer"); // viewer | tools
   const livePlan = creditStatus?.plan || user?.plan || "free";
   const isPremiumPlan = livePlan === "premium_monthly" || livePlan === "premium_annual";
 
@@ -515,8 +518,9 @@ export default function SocioMeePDF({ onSendToGenerator, user, creditStatus }) {
       `}</style>
 
       {/* Top Header */}
-      <div style={{ padding:"10px 20px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, background:"rgba(255,255,255,0.01)" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+      <div style={{ borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", flexShrink:0, background:"rgba(255,255,255,0.01)" }}>
+        {mob && <div style={{ width:"52px", flexShrink:0, height:"44px" }}/>}
+        {!mob && <div style={{ padding:"10px 16px", display:"flex", alignItems:"center", gap:"10px", flexShrink:0 }}>
           <div style={{ width:"30px", height:"30px", borderRadius:"9px", background:"rgba(255,255,255,0.07)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           </div>
@@ -527,12 +531,12 @@ export default function SocioMeePDF({ onSendToGenerator, user, creditStatus }) {
               <h2 style={{ fontSize:"13px", fontWeight:"700", color:C.white, margin:0, fontFamily:C.font }}>PDF</h2>
             )}
           </div>
-        </div>
+        </div>}
 
         {pdfDoc && (
-          <div style={{ display:"flex", gap:"6px", alignItems:"center", flexWrap:"nowrap", overflowX:"auto", maxWidth:"100%", scrollbarWidth:"thin" }}>
+          <div style={{ display:"flex", gap:"6px", alignItems:"center", flexWrap:"nowrap", overflowX:"auto", flex:1, padding:mob?"8px 8px":"0 16px 0 0", scrollbarWidth:"thin" }}>
             <button onClick={()=>analyzeWithAI("summary")} disabled={aiLoading} className="pdf-btn"
-              style={{ display:"flex", alignItems:"center", gap:"5px", padding:"7px 14px", flexShrink:0, whiteSpace:"nowrap", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:"11.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
+              style={{ display:"flex", alignItems:"center", gap:"5px", padding:mob?"6px 10px":"7px 14px", flexShrink:0, whiteSpace:"nowrap", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.75)", fontSize:mob?"10px":"11.5px", fontWeight:"600", cursor:"pointer", fontFamily:C.font, transition:"all 0.2s" }}>
               {aiLoading ? <div style={{ width:"10px", height:"10px", borderRadius:"50%", border:"2px solid rgba(124,58,237,0.3)", borderTopColor:"#7c3aed", animation:"spin 0.8s linear infinite" }}/> : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>}
               {aiLoading ? "Analyzing..." : "Summarize"}
             </button>
@@ -629,7 +633,7 @@ export default function SocioMeePDF({ onSendToGenerator, user, creditStatus }) {
         <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
 
           {/* Thumbnail Sidebar */}
-          <div style={{ width:"130px", flexShrink:0, borderRight:`1px solid ${C.border}`, background:"#1c1c1c", overflowY:"auto", padding:"12px 8px", display:"flex", flexDirection:"column", gap:"10px" }}>
+          <div style={{ width:"130px", flexShrink:0, borderRight:`1px solid ${C.border}`, background:"#1c1c1c", overflowY:"auto", padding:"12px 8px", display:mob?"none":"flex", flexDirection:"column", gap:"10px" }}>
             <p style={{ fontSize:"9px", fontWeight:"700", color:"rgba(255,255,255,0.35)", letterSpacing:"1.5px", textTransform:"uppercase", fontFamily:C.font, margin:"0 0 8px", textAlign:"center" }}>Pages</p>
             {thumbsLoading && thumbs.length === 0 && (
               <div style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 0" }}>
@@ -655,7 +659,7 @@ export default function SocioMeePDF({ onSendToGenerator, user, creditStatus }) {
           {/* Main viewer */}
           <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
             {/* Toolbar */}
-            <div style={{ padding:"7px 14px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", gap:"10px", flexShrink:0, background:"rgba(255,255,255,0.01)" }}>
+            <div style={{ padding:mob?"6px 8px":"7px 14px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", gap:mob?"6px":"10px", flexShrink:0, background:"rgba(255,255,255,0.01)", overflowX:"auto" }}>
               <button className="pdf-nav" onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} disabled={currentPage<=1}
                 style={{ width:"26px", height:"26px", borderRadius:"6px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.03)", color:currentPage<=1?"rgba(255,255,255,0.15)":C.muted, cursor:currentPage<=1?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -688,9 +692,36 @@ export default function SocioMeePDF({ onSendToGenerator, user, creditStatus }) {
             </div>
 
             {/* Canvas — centered */}
-            <div style={{ flex:1, overflowY:"auto", overflowX:"auto", background:"#525659", display:"flex", justifyContent:"center", alignItems:"flex-start", padding:"24px" }}>
+            <div style={{ flex:1, overflowY:"auto", overflowX:"auto", background:"#525659", display:"flex", justifyContent:"center", alignItems:"flex-start", padding:mob?"8px":"24px" }}
+              ref={el=>{
+                if(!el||el._touchBound) return;
+                el._touchBound=true;
+                let lastDist=null;
+                el.addEventListener("touchstart",e=>{
+                  if(e.touches.length===2){
+                    lastDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+                  }
+                },{passive:true});
+                let scaleRef=1.4;
+                let rafId=null;
+                el.addEventListener("touchmove",e=>{
+                  if(e.touches.length===2&&lastDist){
+                    const dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+                    const delta=(dist-lastDist)*0.008;
+                    lastDist=dist;
+                    scaleRef=Math.min(3,Math.max(0.4,scaleRef+delta));
+                    if(rafId) cancelAnimationFrame(rafId);
+                    rafId=requestAnimationFrame(()=>{
+                      setScale(parseFloat(scaleRef.toFixed(2)));
+                      rafId=null;
+                    });
+                    e.preventDefault();
+                  }
+                },{passive:false});
+                el.addEventListener("touchend",()=>{lastDist=null;},{passive:true});
+              }}>
               <div style={{ boxShadow:"0 8px 48px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.5)", borderRadius:"3px", overflow:"hidden", height:"fit-content", position:"relative" }}>
-                <canvas ref={canvasRef} style={{ display:"block" }}/>
+                <canvas ref={canvasRef} style={{ display:"block", willChange:"transform" }}/>
                 <div ref={textLayerRef} className="textLayer" style={{ position:"absolute", top:0, left:0 }}/>
               </div>
             </div>
