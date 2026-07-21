@@ -230,14 +230,11 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", curre
   };
 
   const plans = [
-    { id:"free", label:"Free", monthly:0, annual:0, credits:20, uploads:0,
-      features:["20 credits/month","Short scripts ≤500 words","Basic SEO — 2 platforms","Community support"],
+    { id:"free", label:"Free", monthly:0, annual:0, credits:20, uploads:0, planKey:"free",
       cta:"Get Started Free" },
-    { id_m:"pro_monthly", id_a:"pro_annual", label:"Pro", monthly:499, annual:3999, credits:180, uploads:4, popular:true,
-      features:["180 credits/month","3000–5000 word scripts","Full SEO — 8 platforms","4 YouTube uploads/month","Thumbnail analyzer","Priority support"],
+    { id_m:"pro_monthly", id_a:"pro_annual", label:"Pro", monthly:499, annual:3999, credits:180, uploads:4, popular:true, planKey:"pro",
       cta:"Upgrade to Pro" },
-    { id_m:"premium_monthly", id_a:"premium_annual", label:"Pro+", monthly:1999, annual:15999, credits:300, uploads:15,
-      features:["300 credits/month","Unlimited word scripts","Full SEO — all platforms","15 YouTube uploads/month","Advanced AI analytics","Dedicated support","Early access"],
+    { id_m:"premium_monthly", id_a:"premium_annual", label:"Pro+", monthly:1999, annual:15999, credits:300, uploads:15, planKey:"pp",
       cta:"Go Pro+" },
   ];
 
@@ -308,6 +305,40 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", curre
     }
   };
 
+  const ALL_F = [
+    { section:"Generate" },
+    { label:"AI content generation", free:true,  pro:true, pp:true, note:{free:"Short only", pro:"Full length", pp:"Full length"} },
+    { label:"Deep Research",          free:false, pro:true, pp:true, note:{pro:"15 cr", pp:"15 cr"} },
+    { label:"Hashtag generator",      free:false, pro:true, pp:true, note:{pro:"1 cr", pp:"1 cr"} },
+    { label:"Hook writer",            free:false, pro:true, pp:true, note:{pro:"1 cr", pp:"1 cr"} },
+    { label:"Thumbnail analyzer",     free:false, pro:true, pp:true, note:{pro:"1 cr", pp:"1 cr"} },
+    { label:"Subtitles + translate",  free:false, pro:true, pp:true, note:{pro:"1 cr", pp:"1 cr"} },
+    { section:"Connect" },
+    { label:"YouTube",   free:false, pro:true, pp:true },
+    { label:"Instagram", free:false, pro:true, pp:true },
+    { label:"Threads",   free:false, pro:true, pp:true },
+    { label:"Facebook",  free:false, pro:true, pp:true },
+    { label:"LinkedIn",  free:false, pro:true, pp:true },
+    { label:"Pinterest", free:false, pro:true, pp:true },
+    { label:"Telegram",  free:false, pro:true, pp:true },
+    { label:"Discord",   free:false, pro:true, pp:true },
+    { label:"Schedule posts",    free:false, pro:true, pp:true },
+    { label:"Best Time heatmap", free:false, pro:true, pp:true },
+    { label:"YouTube uploads",   free:false, pro:true, pp:true, note:{pro:"4/month", pp:"15/month"} },
+    { label:"Bulk Schedule",     free:false, pro:false, pp:true, note:{pp:"Coming soon"} },
+    { section:"Apps" },
+    { label:"Pixel",           free:false, pro:true, pp:true, note:{pro:"Text, overlays, export", pp:"All Pro + Remove BG, AI Upscale"} },
+    { label:"Notes",           free:false, pro:true, pp:true, note:{pro:"Voice, auto-tag — 3 cr", pp:"All Pro + AI summarize, folders"} },
+    { label:"Calendar",        free:false, pro:true, pp:true },
+    { label:"PDF",             free:false, pro:true, pp:true, note:{pro:"View, OCR, compress, split", pp:"All Pro + password protect"} },
+    { label:"Share",           free:false, pro:true, pp:true, note:{pro:"Files, QR, expiring links", pp:"All Pro + custom links"} },
+    { label:"Cloud",           free:false, pro:true, pp:true, note:{pro:"2 GB", pp:"8 GB"} },
+    { label:"Screen Recorder", free:false, pro:true, pp:true, note:{pro:"5 min cap", pp:"Unlimited + cloud save"} },
+    { label:"Convert",         free:false, pro:true, pp:true, note:{pro:"Image, PDF, doc — 1 cr", pp:"All Pro + audio, video"} },
+    { label:"News",            free:false, pro:true, pp:true },
+    { section:"Tools" },
+    { label:"YouTube, Instagram, LinkedIn, Pinterest, Telegram, Threads, Facebook Tools", free:false, pro:true, pp:true, note:{pro:"2 cr each", pp:"2 cr each"} },
+  ];
   const S = {
     overlay: { position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,0.95)",backdropFilter:"blur(32px)",display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"0",overflowY:"auto" },
     modal: { width:"100%",maxWidth:"900px",background:"rgba(8,8,8,0.98)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"24px 24px 0 0",boxShadow:"0 32px 80px rgba(0,0,0,0.9)",overflow:"hidden",animation:"smPop 0.2s ease",fontFamily:"Poppins,sans-serif" },
@@ -316,7 +347,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", curre
     headerSub: { fontSize:"12px",color:"rgba(255,255,255,0.5)",margin:0,fontFamily:"Poppins,sans-serif" },
     closeBtn: { position:"absolute",top:"16px",right:"16px",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",width:"28px",height:"28px",borderRadius:"50%",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center" },
     toggle: { display:"flex",gap:"4px",background:"rgba(0,0,0,0.3)",borderRadius:"99px",padding:"3px",marginTop:"14px",width:"fit-content" },
-    toggleBtn: (active) => ({ padding:"5px 16px",borderRadius:"99px",border:"none",background:active?"#fff":"transparent",color:active?"#7c3aed":"rgba(255,255,255,0.7)",fontWeight:"800",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif",transition:"all 0.15s" }),
+    toggleBtn: (active) => ({ padding:"5px 16px",borderRadius:"99px",border:active?"1px solid rgba(124,58,237,0.5)":"none",background:active?"rgba(124,58,237,0.15)":"transparent",color:active?"#fff":"rgba(255,255,255,0.5)",fontWeight:"700",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif",transition:"all 0.15s",boxShadow:active?"0 0 16px rgba(124,58,237,0.3)":"none" }),
     body: { padding:"16px" },
     sectionLabel: { fontSize:"10px",fontWeight:"700",letterSpacing:"2px",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",marginBottom:"10px" },
     topupGrid: { display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginBottom:"16px" },
@@ -332,7 +363,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", curre
     couponInput: { flex:1,padding:"8px 12px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",color:"#fff",fontSize:"12px",fontFamily:"Poppins,sans-serif",outline:"none",letterSpacing:"1px",fontWeight:"700" },
     couponBtn: { padding:"8px 20px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.08)",color:"#fff",fontWeight:"700",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif" },
     badge: { position:"absolute",top:"-9px",right:"10px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontSize:"8px",fontWeight:"900",padding:"2px 7px",borderRadius:"99px" },
-    popularTag: { position:"absolute",top:"-9px",left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontSize:"8px",fontWeight:"900",padding:"2px 10px",borderRadius:"99px",whiteSpace:"nowrap" },
+    popularTag: { position:"absolute",top:"-9px",left:"50%",transform:"translateX(-50%)",background:"rgba(124,58,237,0.12)",backdropFilter:"blur(12px)",border:"1px solid rgba(124,58,237,0.4)",color:"#c4b5fd",fontSize:"8px",fontWeight:"600",padding:"2px 10px",borderRadius:"99px",whiteSpace:"nowrap",boxShadow:"0 0 12px rgba(124,58,237,0.25)" },
   };
 
   return (
@@ -392,12 +423,17 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", curre
                   </div>
                   <div style={S.planSub}>{plan.credits} credits · {plan.uploads>0?`${plan.uploads} uploads`:"no uploads"}</div>
                   <div style={{ height:"1px",background:"rgba(255,255,255,0.06)",margin:"6px 0" }}/>
-                  <div style={{ flex:1 }}>
-                    {plan.features.map((f,i) => (
-                      <div key={i} style={{ ...S.feature,marginBottom:"3px" }}>
-                        <span style={{ color:"#7c3aed",flexShrink:0 }}>✓</span><span>{f}</span>
-                      </div>
-                    ))}
+                  <div style={{ flex:1,overflowY:"auto",maxHeight:"38vh",scrollbarWidth:"thin",scrollbarColor:"rgba(255,255,255,0.08) transparent" }}>
+                    {ALL_F.map((f,fi) => {
+                      if(f.section) return <div key={fi} style={{fontSize:"8px",fontWeight:600,letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.2)",padding:"10px 0 3px",borderTop:fi>0?"1px solid rgba(255,255,255,0.04)":"none"}}>{f.section}</div>;
+                      const pk = plan.planKey||"free";
+                      const has = pk==="free"?f.free:pk==="pro"?f.pro:f.pp;
+                      const note = f.note?.[pk];
+                      return <div key={fi} style={{display:"flex",alignItems:"flex-start",gap:6,padding:"3px 0",opacity:has?1:0.22,fontSize:"11px",color:has?"rgba(255,255,255,0.85)":"rgba(255,255,255,0.4)"}}>
+                        <span style={{flexShrink:0,fontSize:9,color:has?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.2)",marginTop:1}}>{has?"✓":"–"}</span>
+                        <span>{f.label}{note?<span style={{fontSize:9.5,color:"rgba(255,255,255,0.3)",marginLeft:3}}>{note}</span>:null}</span>
+                      </div>;
+                    })}
                   </div>
                   {currentPlan===planId||currentPlan===(billing==="annual"?plan.id_a:plan.id_m) ? (
                     <button disabled style={{ ...S.pillBtn(false),marginTop:"10px",opacity:1,cursor:"default",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.15)",color:"rgba(255,255,255,0.5)" }}>
