@@ -2060,7 +2060,7 @@ export default function App() {
     if (user?.user_id) initPush(user.user_id);
   }, [user?.user_id]);
 
-  const openPricing = (mode="upgrade") => { setPricingMode(mode); setShowPricing(true); };
+  const openPricing = (mode="upgrade") => { window.location.href = "/pricing?from=app"; };
 
   const handlePaymentSuccess = res => {
     if (res?.credit_status) setCreditStatus(res.credit_status);
