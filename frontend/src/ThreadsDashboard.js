@@ -360,7 +360,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
 
       {/* Tabs */}
       <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16, overflowX:"auto" }}>
-        {[["analytics","Analytics"],["viral","Viral Predictor"],["audience","Audience"],["besttime","Best Time"],["benchmark","Benchmark"],["publish","Publish"],["schedule","Schedule"],["bulk","Bulk Schedule ✶"]].map(([key, label]) => (
+        {[["analytics","Analytics"],["viral","Viral Predictor"],["audience","Audience"],["besttime","Best Time"],["benchmark","Benchmark"],["publish","Publish"],["schedule","Schedule"],["bulk","Bulk Schedule"]].map(([key, label]) => (
           <Tab key={key} label={label} active={tab === key} onClick={() => setTab(key)} />
         ))}
       </div>
@@ -644,6 +644,14 @@ export default function ThreadsDashboard({ user, topic = "" }) {
         </div>
       )}
       {/* ── Schedule Tab ── */}
+      {tab === "bulk" && (
+        <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", backdropFilter:"blur(24px)", borderRadius:16, padding:28, textAlign:"center" }}>
+          <div style={{ fontSize:32, marginBottom:12 }}>⚡</div>
+          <div style={{ fontSize:16, fontWeight:800, color:"rgba(255,255,255,0.9)", marginBottom:8 }}>Bulk Schedule — Coming Soon</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", lineHeight:1.7, marginBottom:20, maxWidth:400, margin:"0 auto 20px" }}>Schedule multiple Threads posts at once with AI-optimised timing. Exclusive to Pro+ members.</div>
+          <a href="/pricing" style={{ display:"inline-block", padding:"10px 28px", borderRadius:99, background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.2)", color:"rgba(255,255,255,0.9)", fontWeight:700, fontSize:13, textDecoration:"none" }}>Upgrade to Pro+</a>
+        </div>
+      )}
       {tab === "schedule" && (
         <ThreadsScheduleTab userId={userId} />
       )}

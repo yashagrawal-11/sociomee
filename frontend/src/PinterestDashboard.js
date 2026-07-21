@@ -683,7 +683,7 @@ export default function PinterestDashboard({ user, topic = "" }) {
           ["benchmark","Benchmark"],
           ["publish","Publish"],
           ["schedule","Schedule"],
-          ["bulk","Bulk Schedule ✶"],
+          ["bulk","Bulk Schedule"],
           ["history","History"],
         ].map(([key, label]) => (
           <Tab key={key} label={label} active={tab === key} onClick={() => setTab(key)} />
@@ -1005,11 +1005,11 @@ export default function PinterestDashboard({ user, topic = "" }) {
       )}
       {/* ── Bulk Schedule Tab ── */}
       {tab === "bulk" && (
-        <div style={{ background:"rgba(230,0,35,0.06)", border:"1.5px solid rgba(230,0,35,0.25)", borderRadius:16, padding:28, textAlign:"center" }}>
+        <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", backdropFilter:"blur(24px)", borderRadius:16, padding:28, textAlign:"center" }}>
           <div style={{ fontSize:32, marginBottom:12 }}>⚡</div>
-          <div style={{ fontSize:16, fontWeight:800, color:"#e60023", marginBottom:8 }}>Bulk Schedule — Coming Soon</div>
+          <div style={{ fontSize:16, fontWeight:800, color:"rgba(255,255,255,0.9)", marginBottom:8 }}>Bulk Schedule — Coming Soon</div>
           <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", lineHeight:1.7, marginBottom:20, maxWidth:400, margin:"0 auto 20px" }}>Pin multiple ideas at once with board targeting and scheduled timing. Exclusive to Pro+ members.</div>
-          <a href="/pricing" style={{ display:"inline-block", padding:"10px 28px", borderRadius:99, background:"linear-gradient(135deg,#e60023,#ad081b)", color:"#fff", fontWeight:700, fontSize:13, textDecoration:"none" }}>Upgrade to Pro+</a>
+          <a href="/pricing" style={{ display:"inline-block", padding:"10px 28px", borderRadius:99, background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.2)", color:"rgba(255,255,255,0.9)", fontWeight:700, fontSize:13, textDecoration:"none" }}>Upgrade to Pro+</a>
         </div>
       )}
       {/* ── Schedule Tab ── */}
