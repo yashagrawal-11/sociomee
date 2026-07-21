@@ -635,18 +635,10 @@ export default function ThreadsDashboard({ user, topic = "" }) {
       )}
 
       {/* ── Bulk Schedule Tab ── */}
-      {tab === "bulk" && (
-        <div style={{ background:`${C.purple}08`, border:`1.5px solid ${C.purple}33`, borderRadius:16, padding:28, textAlign:"center" }}>
-          <div style={{ fontSize:32, marginBottom:12 }}>⚡</div>
-          <div style={{ fontSize:16, fontWeight:800, color:C.purple, marginBottom:8 }}>Bulk Schedule</div>
-          <div style={{ fontSize:13, color:C.muted, lineHeight:1.7, marginBottom:20, maxWidth:400, margin:"0 auto 20px" }}>Schedule multiple Threads posts at once with AI-optimised timing. Exclusive to Pro+ members.</div>
-          <a href="/pricing" style={{ display:"inline-block", padding:"10px 28px", borderRadius:99, background:`linear-gradient(135deg,${C.purple},#7c3aed)`, color:"#fff", fontWeight:700, fontSize:13, textDecoration:"none" }}>Upgrade to Pro+</a>
-        </div>
-      )}
+      
       {/* ── Schedule Tab ── */}
       {tab === "bulk" && (
         <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", backdropFilter:"blur(24px)", borderRadius:16, padding:28, textAlign:"center" }}>
-          <div style={{ fontSize:32, marginBottom:12 }}>⚡</div>
           <div style={{ fontSize:16, fontWeight:800, color:"rgba(255,255,255,0.9)", marginBottom:8 }}>Bulk Schedule</div>
           <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", lineHeight:1.7, marginBottom:20, maxWidth:400, margin:"0 auto 20px" }}>Schedule multiple Threads posts at once with AI-optimised timing. Exclusive to Pro+ members.</div>
           <a href="/pricing" style={{ display:"inline-block", padding:"10px 28px", borderRadius:99, background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.2)", color:"rgba(255,255,255,0.9)", fontWeight:700, fontSize:13, textDecoration:"none" }}>Upgrade to Pro+</a>
