@@ -1997,6 +1997,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
           ["festival",yt("त्योहार कैलेंडर","सण कॅलेंडर","Festival Calendar")],
           ["milestones",yt("विकास माइलस्टोन","वाढ माइलस्टोन","Growth Milestones")],
           ["upload",yt("ऑटो-अपलोड","ऑटो-अपलोड","Auto-Upload")],
+          ["bulk","Bulk Schedule ✶"],
 
           ["sentiment",yt("कमेंट्स","टिप्पण्या","Comments")],
         ].map(([key, label]) => (
@@ -2222,6 +2223,14 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
       {activeTab === "festival"   && <FestivalCalendar />}
       {activeTab === "milestones" && <GrowthMilestones channel={channel} analytics={analytics} />}
       {activeTab === "upload"     && <YouTubeUpload  user={user} />}
+      {activeTab === "bulk" && (
+        <div style={{ background:"rgba(124,58,237,0.06)", border:"1.5px solid rgba(124,58,237,0.25)", borderRadius:16, padding:28, textAlign:"center" }}>
+          <div style={{ fontSize:32, marginBottom:12 }}>⚡</div>
+          <div style={{ fontSize:16, fontWeight:800, color:"#a78bfa", marginBottom:8 }}>Bulk Schedule — Coming Soon</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", lineHeight:1.7, marginBottom:20, maxWidth:400, margin:"0 auto 20px" }}>Upload and schedule multiple YouTube videos at once with AI SEO for each. Exclusive to Pro+ members.</div>
+          <a href="/pricing" style={{ display:"inline-block", padding:"10px 28px", borderRadius:99, background:"linear-gradient(135deg,#a78bfa,#7c3aed)", color:"#fff", fontWeight:700, fontSize:13, textDecoration:"none" }}>Upgrade to Pro+</a>
+        </div>
+      )}
       {activeTab === "performance" && <VideoPerformance userId={userId}/>}
         {activeTab === "sentiment"  && <SentimentTab   userId={userId} channel={channel} C={C} />}
     </div>

@@ -378,6 +378,7 @@ export default function InstagramDashboard({ user, topic = "" }) {
           ["benchmark","Benchmark"],
           ["publish","Publish"],
           ["schedule","Schedule"],
+          ["bulk","Bulk Schedule ✶"],
         ].map(([key, label]) => (
           <Tab key={key} label={label} active={tab === key} onClick={() => setTab(key)} />
         ))}
@@ -764,6 +765,15 @@ export default function InstagramDashboard({ user, topic = "" }) {
         </Section>
       )}
 
+      {/* ── Bulk Schedule Tab ── */}
+      {tab === "bulk" && (
+        <div style={{ background:"rgba(225,48,108,0.06)", border:"1.5px solid rgba(225,48,108,0.25)", borderRadius:16, padding:28, textAlign:"center" }}>
+          <div style={{ fontSize:32, marginBottom:12 }}>⚡</div>
+          <div style={{ fontSize:16, fontWeight:800, color:"#e1306c", marginBottom:8 }}>Bulk Schedule — Coming Soon</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", lineHeight:1.7, marginBottom:20, maxWidth:400, margin:"0 auto 20px" }}>Queue multiple Instagram posts and Reels with smart scheduling. Exclusive to Pro+ members.</div>
+          <a href="/pricing" style={{ display:"inline-block", padding:"10px 28px", borderRadius:99, background:"linear-gradient(135deg,#e1306c,#833ab4)", color:"#fff", fontWeight:700, fontSize:13, textDecoration:"none" }}>Upgrade to Pro+</a>
+        </div>
+      )}
       {/* ── Schedule Tab ── */}
       {tab === "schedule" && (
         <InstagramScheduleTab userId={userId} />

@@ -280,6 +280,7 @@ export default function DiscordScheduler({ user }) {
                   {l}
                 </button>
               ))}
+            <a href="/pricing" style={{ display:"inline-flex", alignItems:"center", padding:"8px 16px", borderRadius:999, border:`1.5px solid ${DC}44`, background:`${DC}10`, color:DC, fontWeight:700, fontSize:12, textDecoration:"none", whiteSpace:"nowrap" }}>Bulk Schedule ✶ — Pro+</a>
             </div>
 
             {schedType === "custom" && (

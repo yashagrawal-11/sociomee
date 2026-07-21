@@ -98,6 +98,13 @@ function LinkedInDashboard({ user }) {
 
       <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"14px", padding:"16px", display:"flex", flexDirection:"column", gap:12, marginBottom:16 }}>
         <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink }}>Post to LinkedIn</div>
+        <div style={{ background:"rgba(10,102,194,0.06)", border:"1.5px solid rgba(10,102,194,0.25)", borderRadius:12, padding:"14px 18px", marginBottom:12, display:"flex", alignItems:"center", justifyContent:"space-between", gap:12 }}>
+          <div>
+            <span style={{ fontSize:13, fontWeight:700, color:"#0a66c2" }}>Bulk Schedule ✶</span>
+            <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginLeft:8 }}>Coming Soon — Pro+</span>
+          </div>
+          <a href="/pricing" style={{ padding:"6px 14px", borderRadius:99, background:"rgba(10,102,194,0.2)", border:"1px solid rgba(10,102,194,0.4)", color:"#4da3ff", fontSize:11, fontWeight:700, textDecoration:"none", whiteSpace:"nowrap" }}>Upgrade</a>
+        </div>
         <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="What do you want to share?" rows={6}
           style={{ width:"100%", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"10px", padding:"12px", color:C.ink, fontSize:"13px", fontFamily:"inherit", resize:"vertical", outline:"none", boxSizing:"border-box" }}/>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>

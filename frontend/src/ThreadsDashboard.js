@@ -360,7 +360,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
 
       {/* Tabs */}
       <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16, overflowX:"auto" }}>
-        {[["analytics","Analytics"],["viral","Viral Predictor"],["audience","Audience"],["besttime","Best Time"],["benchmark","Benchmark"],["publish","Publish"],["schedule","Schedule"]].map(([key, label]) => (
+        {[["analytics","Analytics"],["viral","Viral Predictor"],["audience","Audience"],["besttime","Best Time"],["benchmark","Benchmark"],["publish","Publish"],["schedule","Schedule"],["bulk","Bulk Schedule ✶"]].map(([key, label]) => (
           <Tab key={key} label={label} active={tab === key} onClick={() => setTab(key)} />
         ))}
       </div>
@@ -634,6 +634,15 @@ export default function ThreadsDashboard({ user, topic = "" }) {
         </Section>
       )}
 
+      {/* ── Bulk Schedule Tab ── */}
+      {tab === "bulk" && (
+        <div style={{ background:`${C.purple}08`, border:`1.5px solid ${C.purple}33`, borderRadius:16, padding:28, textAlign:"center" }}>
+          <div style={{ fontSize:32, marginBottom:12 }}>⚡</div>
+          <div style={{ fontSize:16, fontWeight:800, color:C.purple, marginBottom:8 }}>Bulk Schedule — Coming Soon</div>
+          <div style={{ fontSize:13, color:C.muted, lineHeight:1.7, marginBottom:20, maxWidth:400, margin:"0 auto 20px" }}>Schedule multiple Threads posts at once with AI-optimised timing. Exclusive to Pro+ members.</div>
+          <a href="/pricing" style={{ display:"inline-block", padding:"10px 28px", borderRadius:99, background:`linear-gradient(135deg,${C.purple},#7c3aed)`, color:"#fff", fontWeight:700, fontSize:13, textDecoration:"none" }}>Upgrade to Pro+</a>
+        </div>
+      )}
       {/* ── Schedule Tab ── */}
       {tab === "schedule" && (
         <ThreadsScheduleTab userId={userId} />

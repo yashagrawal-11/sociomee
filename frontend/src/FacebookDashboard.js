@@ -149,7 +149,7 @@ export default function FacebookDashboard({ user }) {
       )}
       {/* Tabs */}
       <div style={{ display:"flex", gap:6, marginBottom:16 }}>
-        {[["post","Post"],["posts","Recent Posts"],["schedule","Schedule"]].map(([v,l]) => (
+        {[["post","Post"],["posts","Recent Posts"],["schedule","Schedule"],["bulk","Bulk Schedule ✶"]].map(([v,l]) => (
           <button key={v} onClick={() => setTab(v)} style={{ padding:"8px 18px", borderRadius:99, border:`1.5px solid ${tab===v?"rgba(24,119,242,0.5)":C.hairline}`, background:tab===v?"rgba(24,119,242,0.1)":C.glass, color:tab===v?FB:C.muted, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
         ))}
       </div>
@@ -197,6 +197,14 @@ export default function FacebookDashboard({ user }) {
               </div>
             ))
           )}
+        </div>
+      )}
+      {tab==="bulk" && (
+        <div style={{ background:"rgba(24,119,242,0.06)", border:"1.5px solid rgba(24,119,242,0.25)", borderRadius:16, padding:28, textAlign:"center" }}>
+          <div style={{ fontSize:32, marginBottom:12 }}>⚡</div>
+          <div style={{ fontSize:16, fontWeight:800, color:"#1877f2", marginBottom:8 }}>Bulk Schedule — Coming Soon</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", lineHeight:1.7, marginBottom:20, maxWidth:400, margin:"0 auto 20px" }}>Schedule multiple Facebook Page posts in one go with AI timing. Exclusive to Pro+ members.</div>
+          <a href="/pricing" style={{ display:"inline-block", padding:"10px 28px", borderRadius:99, background:"linear-gradient(135deg,#1877f2,#1a5fbf)", color:"#fff", fontWeight:700, fontSize:13, textDecoration:"none" }}>Upgrade to Pro+</a>
         </div>
       )}
       {tab==="schedule" && (
