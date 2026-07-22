@@ -988,22 +988,21 @@ function RevenueTab({ channel, analytics, C }) {
           </div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
-          {[["▶️",yt("AdSense (मासिक)","AdSense (मासिक)","AdSense (Monthly)"),`₹${monthlyRevenue.toLocaleString()}`,"#ff0000"],["🤝",yt("स्पॉन्सरशिप/वीडियो","स्पॉन्सरशिप/व्हिडिओ","Sponsorship/video"),`₹${sponsorshipRate.toLocaleString()}`,"#fbbf24"],["🔗",yt("एफिलिएट (अनुमान)","एफिलिएट (अंदाज)","Affiliate (est.)"),`₹${affiliateEst.toLocaleString()}`,"#34d399"]].map(([icon,label,val,col])=>(
-            <div key={label} style={{textAlign:"center",padding:"14px 10px",background:`${col}10`,borderRadius:12,border:`1px solid ${col}30`}}>
-              <div style={{fontSize:20}}>{icon}</div>
-              <div style={{fontSize:18,fontWeight:900,color:col,marginTop:4}}>{val}</div>
+          {[["",yt("AdSense (मासिक)","AdSense (मासिक)","AdSense (Monthly)"),`₹${monthlyRevenue.toLocaleString()}`,"#a78bfa"],["",yt("स्पॉन्सरशिप/वीडियो","स्पॉन्सरशिप/व्हिडिओ","Sponsorship/video"),`₹${sponsorshipRate.toLocaleString()}`,"#a78bfa"],["",yt("एफिलिएट (अनुमान)","एफिलिएट (अंदाज)","Affiliate (est.)"),`₹${affiliateEst.toLocaleString()}`,"#a78bfa"]].map(([icon,label,val,col])=>(
+            <div key={label} style={{textAlign:"center",padding:"14px 10px",background:"rgba(255,255,255,0.03)",borderRadius:12,border:"1px solid rgba(255,255,255,0.08)"}}>
+              <div style={{fontSize:18,fontWeight:900,color:"#a78bfa",marginTop:4}}>{val}</div>
               <div style={{fontSize:10,color:C.muted,marginTop:2}}>{label}</div>
             </div>
           ))}
         </div>
-        <div style={{padding:"14px 16px",background:"linear-gradient(135deg,rgba(255,0,0,0.1),rgba(255,0,0,0.05))",borderRadius:12,border:"1px solid rgba(255,0,0,0.2)",textAlign:"center"}}>
-          <div style={{fontSize:11,color:C.muted,marginBottom:4}}>💎 {yt("अनुमानित वार्षिक आय","अंदाजे वार्षिक उत्पन्न","TOTAL ESTIMATED YEARLY INCOME")}</div>
-          <div style={{fontSize:32,fontWeight:900,color:"#ff0000"}}>₹{yearlyRevenue.toLocaleString()}</div>
+        <div style={{padding:"14px 16px",background:"rgba(255,255,255,0.03)",borderRadius:12,border:"1px solid rgba(255,255,255,0.08)",textAlign:"center"}}>
+          <div style={{fontSize:11,color:C.muted,marginBottom:4}}>{yt("अनुमानित वार्षिक आय","अंदाजे वार्षिक उत्पन्न","TOTAL ESTIMATED YEARLY INCOME")}</div>
+          <div style={{fontSize:32,fontWeight:900,color:"#a78bfa"}}>₹{yearlyRevenue.toLocaleString()}</div>
           <div style={{fontSize:11,color:C.muted,marginTop:4}}>Based on {monthlyViews.toLocaleString()} monthly views at ₹{rpm} RPM</div>
         </div>
       </div>
       <div style={{background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:16,padding:20,marginBottom:16}}>
-        <div style={{fontSize:11,fontWeight:800,letterSpacing:"1.2px",textTransform:"uppercase",color:C.muted,marginBottom:14}}>{yt("🏆 हर माइलस्टोन पर राजस्व","🏆 प्रत्येक माइलस्टोनवर महसूल","🏆 REVENUE AT EACH MILESTONE")}</div>
+        <div style={{fontSize:11,fontWeight:800,letterSpacing:"1.2px",textTransform:"uppercase",color:C.muted,marginBottom:14}}>{yt("हर माइलस्टोन पर राजस्व","प्रत्येक माइलस्टोनवर महसूल","REVENUE AT EACH MILESTONE")}</div>
         {milestones.map((m,i)=>{
           const reached=(channel?.subscribers||0)>=m.subs;
           return <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:reached?"rgba(52,211,153,0.08)":"rgba(255,255,255,0.03)",borderRadius:10,marginBottom:8,border:`1px solid ${reached?"rgba(52,211,153,0.3)":C.hairline}`}}>
@@ -1107,7 +1106,7 @@ function SuggestedCompetitors({ userId, C }) {
   const Section = ({title, channels, color, icon}) => (
     <div style={{marginBottom:16}}>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-        <span style={{fontSize:16}}>{icon}</span>
+        {icon && <span style={{fontSize:16}}>{icon}</span>}
         <span style={{fontSize:11,fontWeight:800,color,letterSpacing:"1px",textTransform:"uppercase"}}>{title}</span>
       </div>
       {channels?.length > 0 ? channels.map((ch,i) => (
@@ -1133,21 +1132,21 @@ function SuggestedCompetitors({ userId, C }) {
   return (
     <div style={{background:C.glass,border:`1px solid ${C.hairline}`,borderRadius:16,padding:20,marginBottom:16}}>
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
-        <div style={{width:32,height:32,borderRadius:8,background:"linear-gradient(135deg,#ff0000,#cc0000)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>
-          {nicheEmoji[data.niche]||"📺"}
+        <div style={{width:32,height:32,borderRadius:8,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"rgba(255,255,255,0.7)"}}>
+          {data.niche?.charAt(0).toUpperCase()||"Y"}
         </div>
         <div>
           <div style={{fontSize:13,fontWeight:800,color:C.ink}}>
-            {yt("⚡ SocioMee AI — सुझाए गए प्रतिद्वंद्वी","⚡ SocioMee AI — सुचवलेले स्पर्धक","⚡ SocioMee AI — Suggested Competitors")}
+            {yt("SocioMee AI — सुझाए गए प्रतिद्वंद्वी","SocioMee AI — सुचवलेले स्पर्धक","SocioMee AI — Suggested Competitors")}
           </div>
           <div style={{fontSize:11,color:C.muted}}>
             {data.niche?.charAt(0).toUpperCase()+data.niche?.slice(1)} niche · {data.size_tier?.charAt(0).toUpperCase()+data.size_tier?.slice(1)} creator · {fmtS(data.user_subscribers)} subs
           </div>
         </div>
       </div>
-      <Section title="🇮🇳 Indian Creators to Learn From" channels={data.similar} color="#ff0000" icon="🇮🇳"/>
-      <Section title="Aspirational — Aim for These" channels={data.aspirational} color="#a78bfa" icon="🎯"/>
-      <Section title="Global Benchmark" channels={data.global_benchmark} color="#22d3ee" icon="🌍"/>
+      <Section title="Indian Creators to Learn From" channels={data.similar} color="#a78bfa" icon=""/>
+      <Section title="Aspirational — Aim for These" channels={data.aspirational} color="#a78bfa" icon=""/>
+      <Section title="Global Benchmark" channels={data.global_benchmark} color="#22d3ee" icon=""/>
     </div>
   );
 }
@@ -1200,7 +1199,7 @@ function CompetitorTab({ userId, C }) {
   return (
     <div>
       <SuggestedCompetitors userId={userId} C={C} />
-      <div style={{background:"linear-gradient(135deg,rgba(255,0,0,0.08),rgba(255,0,0,0.03))",border:"1px solid rgba(255,0,0,0.2)",borderRadius:16,padding:20,marginBottom:16}}>
+      <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:16,padding:20,marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
           <div style={{width:32,height:32,borderRadius:8,background:"linear-gradient(135deg,#ff0000,#cc0000)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🕵️</div>
           <div>
@@ -1209,8 +1208,8 @@ function CompetitorTab({ userId, C }) {
           </div>
         </div>
         <div style={{display:"flex",gap:8}}>
-          <input value={channelUrl} onChange={e=>setChannelUrl(e.target.value)} onKeyDown={e=>e.key==="Enter"&&analyze()} placeholder="@handle or youtube.com/channel/..." style={{flex:1,padding:"11px 16px",borderRadius:12,border:"1.5px solid rgba(255,0,0,0.3)",background:"rgba(255,255,255,0.06)",color:C.ink,fontSize:13,fontFamily:"inherit",outline:"none"}}/>
-          <button onClick={analyze} disabled={loading} style={{padding:"11px 24px",borderRadius:12,border:"none",background:loading?"rgba(255,0,0,0.3)":"linear-gradient(135deg,#ff0000,#cc0000)",color:"#fff",fontWeight:800,fontSize:13,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading?"none":"0 4px 16px rgba(255,0,0,0.3)"}}>{loading?"Analyzing...":yt("जासूसी 🔍","हेरगिरी 🔍","Spy 🔍")}</button>
+          <input value={channelUrl} onChange={e=>setChannelUrl(e.target.value)} onKeyDown={e=>e.key==="Enter"&&analyze()} placeholder="@handle or youtube.com/channel/..." style={{flex:1,padding:"11px 16px",borderRadius:12,border:"1.5px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.06)",color:C.ink,fontSize:13,fontFamily:"inherit",outline:"none"}}/>
+          <button onClick={analyze} disabled={loading} style={{padding:"11px 24px",borderRadius:12,border:"none",background:loading?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",fontWeight:800,fontSize:13,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>{loading?"Analyzing...":"Spy"}</button>
         </div>
       </div>
       {competitor&&(
@@ -2197,7 +2196,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
               {/* Age Gender */}
               {deepAnalytics.age_gender?.length>0 && (
                 <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px",padding:"16px"}}>
-                  <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>👥 Audience Demographics</div>
+                  <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"12px"}}>Audience Demographics</div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:"8px"}}>
                     {deepAnalytics.age_gender.map((a,i)=>(
                       <div key={i} style={{background:"rgba(255,255,255,0.02)",borderRadius:"10px",padding:"10px",textAlign:"center"}}>
