@@ -412,7 +412,10 @@ Write ONLY the hook text, nothing else."""
         lang_lower = language.lower()
         script_lang_map = {"bengali":"Bengali script (বাংলা)","tamil":"Tamil script (தமிழ்)","hindi":"Hindi Devanagari (हिंदी)","marathi":"Marathi Devanagari (मराठी)","telugu":"Telugu script (తెలుగు)","gujarati":"Gujarati script (ગુજરાતી)","kannada":"Kannada script (ಕನ್ನಡ)","malayalam":"Malayalam script (മലയാളം)","punjabi":"Punjabi Gurmukhi (ਪੰਜਾਬੀ)"}
         hard_lang = script_lang_map.get(lang_lower, "")
-        lang_override = f"\n\nCRITICAL OVERRIDE — LANGUAGE: You MUST write the ENTIRE script in {hard_lang}. This overrides ALL other instructions. Do NOT use Hinglish, Roman script, or English for the main content. Every sentence must be in {hard_lang}. Persona style/voice still applies but the language MUST be {hard_lang}." if hard_lang else ""
+        if hard_lang:
+            lang_override = "\n\nCRITICAL OVERRIDE — LANGUAGE: You MUST write the ENTIRE script in " + hard_lang + ". This overrides ALL other instructions. Do NOT use Hinglish, Roman script, or English for the main content. Every sentence must be in " + hard_lang + ". Persona style/voice still applies but the language MUST be " + hard_lang + "."
+        else:
+            lang_override = ""
         gemini_prompt = f"""You are writing a YouTube video script. Follow every instruction exactly.
 
 TOPIC: {topic}
