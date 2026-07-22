@@ -785,16 +785,18 @@ export default function YouTubeUpload({ user }) {
   const userId = user?.user_id || localStorage.getItem("sociomee_user_id") || "";
   const [activeTab, setActiveTab] = useState("upload");
   const [plan,      setPlan     ] = useState("free");
+  const [planLoaded, setPlanLoaded] = useState(false);
   const [quota,     setQuota    ] = useState(null);
   const [bestTime,  setBestTime ] = useState(null);
 
   useEffect(() => {
     if (!userId) return;
-    fetch(`${BASE}/youtube/upload/quota?user_id=${userId}`).then(r=>r.json()).then(d=>{setQuota(d);setPlan(d.plan||"free");}).catch(()=>{});
+    fetch(`${BASE}/youtube/upload/quota?user_id=${userId}`).then(r=>r.json()).then(d=>{setQuota(d);setPlan(d.plan||"free");setPlanLoaded(true);}).catch(()=>{setPlanLoaded(true);});
     fetch(`${BASE}/youtube/upload/best-time`).then(r=>r.json()).then(d=>setBestTime(d)).catch(()=>{});
   }, [userId]);
 
   const isPro = plan?.includes("pro") || plan?.includes("premium");
+  if (!planLoaded) return null;
   if (!isPro) return <UpgradeWall />;
 
   return (
