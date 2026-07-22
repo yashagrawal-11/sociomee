@@ -162,6 +162,7 @@ export default function SocioMeeCalendar({ user }) {
           {mob&&<button onClick={()=>setShowMonths(true)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"99px",padding:"4px 10px",color:"rgba(255,255,255,0.6)",fontSize:"10px",cursor:"pointer",fontFamily:F,flexShrink:0}}>{MONTHS[mo]}</button>}
           <h2 style={{fontSize:mob?"15px":"20px",fontWeight:"800",color:"#fff",margin:0,fontFamily:FH,flexShrink:0}}>{!mob&&MONTHS[mo].substring(0,3)+" "}{today.getDate()},</h2>
           <span style={{fontSize:mob?"12px":"14px",color:"rgba(255,255,255,0.35)",fontFamily:F,flexShrink:0}}>{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][today.getDay()]}</span>
+          <span style={{fontSize:mob?"11px":"13px",color:"rgba(255,255,255,0.2)",fontFamily:F,flexShrink:0}}>{yr}</span>
           <div style={{flex:1}}/>
           <button onClick={()=>{setMo(today.getMonth());setYr(today.getFullYear());}} className="nb" style={{padding:"4px 10px",borderRadius:"8px",border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.3)",fontSize:"10px",fontWeight:"700",cursor:"pointer",fontFamily:F,flexShrink:0}}>Today</button>
         </div>
