@@ -108,27 +108,27 @@ export default function FacebookDashboard({ user }) {
     <div style={{ fontFamily:"'DM Sans',sans-serif", paddingBottom:20 }}>
       <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
       {/* Page header */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:`rgba(24,119,242,0.06)`, border:`1px solid rgba(24,119,242,0.15)`, borderRadius:14, padding:"12px 16px", marginBottom:16 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:14, padding:"10px 12px", marginBottom:12, gap:8, flexWrap:"nowrap", minWidth:0 }}>
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           {page?.picture?.data?.url
-            ? <img src={page.picture.data.url} alt="" style={{ width:40, height:40, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
-            : <div style={{ width:40, height:40, borderRadius:"50%", background:FB, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            ? <img src={page.picture.data.url} alt="" style={{ width:32, height:32, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
+            : <div style={{ width:32, height:32, borderRadius:"50%", background:FB, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 <img src="/icons/facebook.png" style={{ width:22, height:22, objectFit:"contain" }} alt=""/>
               </div>
           }
           <div>
-            <div style={{ fontSize:13, fontWeight:700, color:C.ink }}>{page?.name || "No page selected"}</div>
-            {page?.fan_count && <div style={{ fontSize:11, color:C.muted }}>{page.fan_count.toLocaleString()} followers</div>}
-            {page?.category && <div style={{ fontSize:11, color:C.muted }}>{page.category}</div>}
+            <div style={{ fontSize:12, fontWeight:700, color:C.ink, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:120 }}>{page?.name || "No page selected"}</div>
+            {page?.fan_count && <div style={{ fontSize:10, color:C.muted }}>{page.fan_count.toLocaleString()} followers</div>}
+            {page?.category && <div style={{ fontSize:10, color:C.muted, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:120 }}>{page.category}</div>}
           </div>
         </div>
-        <div style={{ display:"flex", gap:8 }}>
+        <div style={{ display:"flex", gap:5, flexShrink:0 }}>
           {pages.length > 1 && (
-            <button onClick={() => setPageModal(true)} style={{ fontSize:11, fontWeight:700, color:FB, background:"rgba(24,119,242,0.08)", border:`1px solid rgba(24,119,242,0.2)`, borderRadius:99, padding:"6px 14px", cursor:"pointer", fontFamily:"inherit" }}>
+            <button onClick={() => setPageModal(true)} style={{ fontSize:10, fontWeight:700, color:FB, background:"rgba(24,119,242,0.08)", border:`1px solid rgba(24,119,242,0.2)`, borderRadius:99, padding:"5px 10px", cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>
               Switch Page
             </button>
           )}
-          <button onClick={handleDisconnect} style={{ fontSize:11, fontWeight:700, color:C.danger, background:`rgba(239,68,68,0.08)`, border:`1px solid rgba(239,68,68,0.2)`, borderRadius:99, padding:"6px 14px", cursor:"pointer", fontFamily:"inherit" }}>
+          <button onClick={handleDisconnect} style={{ fontSize:10, fontWeight:700, color:C.danger, background:`rgba(239,68,68,0.08)`, border:`1px solid rgba(239,68,68,0.2)`, borderRadius:99, padding:"5px 10px", cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>
             Disconnect
           </button>
         </div>
@@ -148,9 +148,9 @@ export default function FacebookDashboard({ user }) {
         </div>
       )}
       {/* Tabs */}
-      <div style={{ display:"flex", gap:6, marginBottom:16 }}>
+      <div style={{ display:"flex", gap:6, marginBottom:16, flexWrap:"nowrap", overflowX:"auto", WebkitOverflowScrolling:"touch", scrollbarWidth:"none", paddingBottom:2 }}>
         {[["post","Post"],["posts","Recent Posts"],["schedule","Schedule"],["bulk","Bulk Schedule"]].map(([v,l]) => (
-          <button key={v} onClick={() => setTab(v)} style={{ padding:"8px 18px", borderRadius:99, border:`1.5px solid ${tab===v?"rgba(24,119,242,0.5)":C.hairline}`, background:tab===v?"rgba(24,119,242,0.1)":C.glass, color:tab===v?FB:C.muted, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
+          <button key={v} onClick={() => setTab(v)} style={{ padding:"6px 14px", borderRadius:99, border:`1.5px solid ${tab===v?"rgba(24,119,242,0.5)":C.hairline}`, background:tab===v?"rgba(24,119,242,0.1)":C.glass, color:tab===v?FB:C.muted, fontWeight:700, fontSize:11, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap", flexShrink:0 }}>{l}</button>
         ))}
       </div>
       {/* Post tab */}

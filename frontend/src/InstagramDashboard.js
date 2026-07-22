@@ -341,19 +341,19 @@ export default function InstagramDashboard({ user, topic = "" }) {
     <div style={{ fontFamily:"'DM Sans',sans-serif" }}>
 
       {/* Profile header */}
-      <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16, background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:16, padding:"14px 18px" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:16, padding:"10px 12px", flexWrap:"nowrap", minWidth:0 }}>
         {profile?.profile_pic
-          ? <img src={profile.profile_pic} alt="" referrerPolicy="no-referrer" style={{ width:48, height:48, borderRadius:"50%", objectFit:"cover", flexShrink:0, border:"2px solid transparent", backgroundImage:C.ig, backgroundOrigin:"border-box" }} />
-          : <div style={{ width:48, height:48, borderRadius:"50%", background:C.ig, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><IGIcon size={24} /></div>
+          ? <img src={profile.profile_pic} alt="" referrerPolicy="no-referrer" crossOrigin="anonymous" style={{ width:34, height:34, borderRadius:"50%", objectFit:"cover", flexShrink:0, border:"2px solid transparent", backgroundImage:C.ig, backgroundOrigin:"border-box" }} />
+          : <div style={{ width:34, height:34, borderRadius:"50%", background:C.ig, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><IGIcon size={18} /></div>
         }
         <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ fontSize:15, fontWeight:800, color:C.ink }}>@{profile?.username}</div>
-          <div style={{ fontSize:11.5, color:C.muted }}>{profile?.display_name} · {fmt(profile?.followers)} followers · {fmt(profile?.media_count)} posts</div>
+          <div style={{ fontSize:12, fontWeight:800, color:C.ink, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>@{profile?.username}</div>
+          <div style={{ fontSize:10, color:C.muted, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{profile?.display_name} · {fmt(profile?.followers)} followers · {fmt(profile?.media_count)} posts</div>
           {profile?.bio && <div style={{ fontSize:11, color:C.muted, marginTop:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{profile.bio}</div>}
         </div>
         <div style={{ display:"flex", gap:6, flexShrink:0 }}>
-          {profile?.profile_url && <a href={profile.profile_url} target="_blank" rel="noreferrer" style={{ padding:"5px 12px", borderRadius:99, border:`1px solid ${C.hairline}`, color:C.slate, fontSize:11.5, fontWeight:700, textDecoration:"none" }}>View</a>}
-          <button onClick={() => { if (window.confirm("Disconnect Instagram?")) fetch(`${BASE}/instagram/disconnect?user_id=${userId}`, {method:"POST"}).then(() => { setConnected(false); setProfile(null); }); }} style={{ padding:"5px 12px", borderRadius:99, border:`1px solid ${C.danger}44`, background:`${C.danger}10`, color:C.danger, fontSize:11.5, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Disconnect</button>
+          {profile?.profile_url && <a href={profile.profile_url} target="_blank" rel="noreferrer" style={{ padding:"4px 9px", borderRadius:99, border:`1px solid ${C.hairline}`, color:C.slate, fontSize:10, fontWeight:700, textDecoration:"none", whiteSpace:"nowrap" }}>View</a>}
+          <button onClick={() => { if (window.confirm("Disconnect Instagram?")) fetch(`${BASE}/instagram/disconnect?user_id=${userId}`, {method:"POST"}).then(() => { setConnected(false); setProfile(null); }); }} style={{ padding:"4px 9px", borderRadius:99, border:`1px solid ${C.danger}44`, background:`${C.danger}10`, color:C.danger, fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>Disconnect</button>
         </div>
       </div>
 

@@ -2015,7 +2015,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
             <StatCard icon="📊" label={`${yt("व्यूज़","व्ह्यूज",yt("व्यूज़","व्ह्यूज","Views"))} (${days}d)`} value={fmt(analytics?.total_views)}     sub={analytics?.is_mock ? "Demo data" : ""} color={C.teal} />
             <StatCard icon="➕" label={`${yt("सब्स","सदस्य","Subs")} (${days}d)`}  value={`+${fmt(analytics?.total_subs)}`} color={C.success} />
           </div>
-          <div style={{ background:"linear-gradient(135deg,rgba(124,58,237,0.12),rgba(99,102,241,0.08))", backdropFilter:"blur(16px)", border:"1px solid rgba(124,58,237,0.25)", borderRadius:"20px", padding:"20px", marginBottom:"20px", boxShadow:"0 0 40px rgba(124,58,237,0.1)" }}>
+          <div style={{ background:"rgba(255,255,255,0.03)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"20px", marginBottom:"20px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"16px", flexWrap:"wrap", gap:"6px" }}>
               <div>
                 <span style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.2px", textTransform:"uppercase", color:"#a78bfa" }}>📈 {yt("चैनल विश्लेषण","चॅनेल विश्लेषण","Channel Analytics")}</span>

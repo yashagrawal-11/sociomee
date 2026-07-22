@@ -81,6 +81,7 @@ function Tab({ label, active, onClick }) {
   );
 }
 
+
 // ─── Section wrapper ─────────────────────────────────────────────────
 function Section({ title, children }) {
   C = getC();
@@ -351,15 +352,15 @@ export default function ThreadsDashboard({ user, topic = "" }) {
       </div>
 
       {/* Stat cards */}
-      <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:16 }}>
-        <StatCard icon="👥" label="Followers"        value={fmt(profile?.followers)}              color="#000" />
+      <div className="threads-stat-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:16 }}>
+        <StatCard icon="👥" label="Followers"        value={fmt(profile?.followers)}              color={C.white} />
         <StatCard icon="👁️" label={`Views (${days}d)`} value={fmt(insights?.total_views)}       color={C.purple} />
         <StatCard icon="❤️" label={`Likes (${days}d)`} value={fmt(insights?.total_likes)}        color={C.rose} />
         <StatCard icon="💬" label="Eng. Rate"         value={`${insights?.engagement_rate ?? "—"}%`} color={C.teal} />
       </div>
 
-      {/* Tabs */}
-      <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16, overflowX:"auto" }}>
+      {/* Tabs — horizontal scroll, no wrap, matches YouTube pill row */}
+      <div style={{ display:"flex", gap:8, flexWrap:"nowrap", marginBottom:16, overflowX:"auto", WebkitOverflowScrolling:"touch", scrollbarWidth:"none", msOverflowStyle:"none", paddingBottom:2 }}>
         {[["analytics","Analytics"],["viral","Viral Predictor"],["audience","Audience"],["besttime","Best Time"],["benchmark","Benchmark"],["publish","Publish"],["schedule","Schedule"],["bulk","Bulk Schedule"]].map(([key, label]) => (
           <Tab key={key} label={label} active={tab === key} onClick={() => setTab(key)} />
         ))}
@@ -368,35 +369,46 @@ export default function ThreadsDashboard({ user, topic = "" }) {
       {/* ── Analytics Tab ── */}
       {tab === "analytics" && (
         <>
-          <Section title="📈 Engagement Over Time">
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14, flexWrap:"wrap", gap:6 }}>
-              <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-                {[["views","Views",C.purple],["likes","Likes",C.rose],["replies","Replies",C.teal],["reposts","Reposts",C.warn]].map(([k,l,col]) => (
-                  <button key={k} onClick={() => setChartMetric(k)} style={{ padding:"3px 10px", borderRadius:99, border:`1.5px solid ${chartMetric===k?col:C.hairline}`, background:chartMetric===k?`${col}18`:"transparent", color:chartMetric===k?col:C.muted, fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
-                ))}
+          <div style={{ background:"rgba(255,255,255,0.03)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:20, padding:20, marginBottom:16 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16, flexWrap:"wrap", gap:8 }}>
+              <div>
+                <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.2px", textTransform:"uppercase", color:C.purple }}>Thread Analytics</div>
+                <div style={{ fontSize:26, fontWeight:900, color:"#fff", marginTop:4, lineHeight:1 }}>
+                  {chartMetric==="views" ? fmt(insights?.total_views) : chartMetric==="likes" ? fmt(insights?.total_likes) : chartMetric==="replies" ? fmt(insights?.total_replies) : fmt(insights?.total_reposts)}
+                </div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginTop:2 }}>Last {days} days</div>
               </div>
-              <div style={{ display:"flex", gap:5 }}>
-                {[7,30,90].map(d => (
-                  <button key={d} onClick={() => setDays(d)} style={{ padding:"3px 9px", borderRadius:99, border:`1.5px solid ${days===d?C.teal:C.hairline}`, background:days===d?`${C.teal}18`:"transparent", color:days===d?C.teal:C.muted, fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>{d}d</button>
-                ))}
+              <div style={{ display:"flex", flexDirection:"column", gap:6, alignItems:"flex-end" }}>
+                <div style={{ display:"flex", gap:5, flexWrap:"wrap", justifyContent:"flex-end" }}>
+                  {[["views","Views",C.purple],["likes","Likes",C.rose],["replies","Replies",C.teal],["reposts","Reposts",C.warn]].map(([k,l,col]) => (
+                    <button key={k} onClick={() => setChartMetric(k)} style={{ padding:"4px 10px", borderRadius:8, border:`1px solid ${chartMetric===k?col:C.hairline}`, background:chartMetric===k?`${col}18`:"transparent", color:chartMetric===k?col:C.muted, fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
+                  ))}
+                </div>
+                <div style={{ display:"flex", gap:5 }}>
+                  {[7,30,90].map(d => (
+                    <button key={d} onClick={() => setDays(d)} style={{ padding:"4px 10px", borderRadius:8, border:`1px solid ${days===d?C.purple:C.hairline}`, background:days===d?`${C.purple}18`:"transparent", color:days===d?C.purple:C.muted, fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>{d}d</button>
+                  ))}
+                </div>
               </div>
             </div>
-            {insights?.chart_data?.length > 0
-              ? <ResponsiveContainer width="100%" height={180}>
-                  <LineChart data={insights.chart_data} margin={{ top:5, right:10, left:-20, bottom:0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={C.hairline} />
-                    <XAxis dataKey="date" tick={{ fontSize:9, fill:C.muted }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                    <YAxis tick={{ fontSize:9, fill:C.muted }} tickLine={false} axisLine={false} tickFormatter={fmt} />
-                    <Tooltip contentStyle={{ background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:10, fontSize:12 }} formatter={v => [fmt(v), chartMetric]} />
-                    <Line type="monotone" dataKey={chartMetric} stroke={chartMetric==="views"?C.purple:chartMetric==="likes"?C.rose:chartMetric==="replies"?C.teal:C.warn} strokeWidth={2.5} dot={false} activeDot={{ r:5, strokeWidth:0 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              : <p style={{ textAlign:"center", color:C.muted, fontSize:13, padding:"40px 0" }}>No data yet.</p>
-            }
-            {insights?.is_mock && <p style={{ textAlign:"center", fontSize:10, color:C.muted, marginTop:6 }}>⚠ Demo data — real data loads after threads_manage_insights is approved</p>}
-          </Section>
+            <div style={{ height:200 }}>
+              {insights?.chart_data?.length > 0
+                ? <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={insights.chart_data} margin={{ top:4, right:4, left:-28, bottom:0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                      <XAxis dataKey="date" hide={true} />
+                      <YAxis tick={{ fill:"rgba(255,255,255,0.25)", fontSize:9 }} axisLine={false} tickLine={false} tickFormatter={fmt} />
+                      <Tooltip contentStyle={{ background:"rgba(10,5,20,0.95)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:12, fontSize:11, boxShadow:"0 8px 32px rgba(0,0,0,0.4)" }} labelStyle={{ color:"rgba(255,255,255,0.6)" }} formatter={v => [fmt(v), chartMetric]} />
+                      <Line type="monotone" dataKey={chartMetric} stroke={chartMetric==="views"?C.purple:chartMetric==="likes"?C.rose:chartMetric==="replies"?C.teal:C.warn} strokeWidth={2.5} dot={false} activeDot={{ r:5, fill:chartMetric==="views"?C.purple:chartMetric==="likes"?C.rose:chartMetric==="replies"?C.teal:C.warn, stroke:"#fff", strokeWidth:2 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                : <p style={{ textAlign:"center", color:C.muted, fontSize:13, paddingTop:60 }}>No data yet.</p>
+              }
+            </div>
+            {insights?.is_mock && <p style={{ textAlign:"center", fontSize:10, color:C.muted, marginTop:8 }}>Demo data — real data loads after threads_manage_insights is approved</p>}
+          </div>
 
-          <Section title="🧵 Recent Threads">
+          <Section title="Recent Threads">
             {posts.length === 0
               ? <p style={{ textAlign:"center", color:C.muted, fontSize:13, padding:20 }}>No posts found.</p>
               : posts.map((p, i) => (
@@ -418,7 +430,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
 
       {/* ── Viral Predictor Tab ── */}
       {tab === "viral" && (
-        <Section title="🔥 Viral Post Predictor">
+        <Section title="Viral Post Predictor">
           <p style={{ fontSize:12.5, color:C.muted, marginBottom:14, lineHeight:1.6 }}>
             Enter your post idea or topic and our AI will predict how it'll perform — before you even post it.
           </p>
@@ -501,7 +513,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
       {/* ── Audience Tab ── */}
       {tab === "audience" && audience && (
         <>
-          <Section title="📍 Top Locations">
+          <Section title="Top Locations">
             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
               {audience.top_locations.map((l, i) => (
                 <div key={i} style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -515,7 +527,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
             </div>
           </Section>
 
-          <Section title="🎂 Age Groups">
+          <Section title="Age Groups">
             <ResponsiveContainer width="100%" height={140}>
               <BarChart data={audience.age_groups} margin={{ top:5, right:10, left:-20, bottom:0 }}>
                 <XAxis dataKey="group" tick={{ fontSize:11, fill:C.muted }} axisLine={false} tickLine={false} />
@@ -526,7 +538,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
             </ResponsiveContainer>
           </Section>
 
-          <Section title="⚡ Peak Activity Hours">
+          <Section title="Peak Activity Hours">
             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
               {audience.peak_hours.map((h, i) => (
                 <div key={i} style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -540,7 +552,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
             </div>
           </Section>
 
-          <Section title="👥 Gender Split">
+          <Section title="Gender Split">
             <div style={{ display:"flex", gap:12 }}>
               {[{label:"Male",val:audience.gender.male,col:C.purple},{label:"Female",val:audience.gender.female,col:C.rose}].map((g, i) => (
                 <div key={i} style={{ flex:1, background:`${g.col}12`, border:`1px solid ${g.col}33`, borderRadius:12, padding:"14px", textAlign:"center" }}>
@@ -558,14 +570,14 @@ export default function ThreadsDashboard({ user, topic = "" }) {
       {/* ── Best Time Tab ── */}
       {tab === "besttime" && bestTime && (
         <>
-          <Section title="🕐 Best Time to Post — Weekly Heatmap">
+          <Section title="Best Time to Post — Weekly Heatmap">
             <p style={{ fontSize:12, color:C.muted, marginBottom:14, lineHeight:1.6 }}>
               Darker = more audience activity. Post during peak hours for maximum reach.
             </p>
             <Heatmap data={bestTime.heatmap} />
           </Section>
 
-          <Section title="🏆 Top Time Slots (IST)">
+          <Section title="Top Time Slots (IST)">
             {bestTime.top_slots.map((s, i) => (
               <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:`1px solid ${C.hairline}` }}>
                 <div>
@@ -586,7 +598,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
 
       {/* ── Benchmark Tab ── */}
       {tab === "benchmark" && benchmark && (
-        <Section title="📈 How You Compare">
+        <Section title="How You Compare">
           <div style={{ display:"flex", gap:10, marginBottom:16 }}>
             <div style={{ flex:1, background:`${C.purple}12`, border:`1px solid ${C.purple}33`, borderRadius:12, padding:14, textAlign:"center" }}>
               <div style={{ fontSize:22, fontWeight:900, color:C.purple }}>{benchmark.your_tier}</div>
@@ -629,7 +641,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
 
       {/* ── Publish Tab ── */}
       {tab === "publish" && (
-        <Section title="✍️ Publish to Threads">
+        <Section title="️ Publish to Threads">
           <Publisher userId={userId} topic={topic} onPublished={() => setTimeout(load, 3000)} />
         </Section>
       )}
@@ -647,7 +659,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
       {tab === "schedule" && (
         <ThreadsScheduleTab userId={userId} />
       )}
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:767px){.threads-stat-grid{grid-template-columns:repeat(2,1fr) !important;gap:8px !important;}}`}</style>
     </div>
   );
 }
@@ -689,7 +701,7 @@ function ThreadsScheduleTab({ userId }) {
   const statusColor = (s) => s === "done" ? C.success : s === "error" ? C.rose : s === "sending" ? C.purple : C.muted;
 
   return (
-    <Section title="⏰ Schedule a Thread">
+    <Section title="Schedule a Thread">
       <div style={{ background: C.glass, border: `1.5px solid ${C.hairline}`, borderRadius: 14, padding: 16, marginBottom: 16 }}>
         <textarea value={text} onChange={e => setText(e.target.value)} placeholder="Write your Threads post... (max 500 chars)" maxLength={500}
           style={{ width: "100%", minHeight: 100, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${C.hairline}`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 13, fontFamily: "inherit", outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10 }} />
