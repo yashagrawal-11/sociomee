@@ -117,14 +117,14 @@ export default function SocioMeeCalendar({ user }) {
         <div style={{position:"absolute",bottom:0,left:0,right:0,height:"80px",background:"linear-gradient(to top,#0a0a0a,transparent)",zIndex:2,pointerEvents:"none"}}/>
         {/* Year + nav */}
         <div style={{padding:"20px 16px 10px",flexShrink:0,zIndex:3,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          {mob&&<button onClick={()=>setShowMonths(false)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",padding:"5px 10px",color:"rgba(255,255,255,0.6)",fontSize:"12px",cursor:"pointer",fontFamily:F}}>Done</button>}
+          {mob&&<button onClick={()=>setShowMonths(false)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",padding:"5px 10px",color:"rgba(255,255,255,0.6)",fontSize:"12px",cursor:"pointer",fontFamily:F,marginLeft:"52px"}}>Done</button>}
           <span style={{fontSize:"13px",fontWeight:"700",color:"rgba(255,255,255,0.25)",fontFamily:FH}}>{yr}</span>
-          <div style={{display:"flex",gap:"3px"}}>
-            <button className="nb" onClick={()=>setYr(y=>y-1)} style={{width:"20px",height:"20px",border:"none",background:"transparent",color:"rgba(255,255,255,0.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"color 0.15s"}}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          <div style={{display:"flex",gap:"6px"}}>
+            <button className="nb" onClick={()=>setYr(y=>y-1)} style={{width:"32px",height:"32px",borderRadius:"8px",border:"1px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.7)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <button className="nb" onClick={()=>setYr(y=>y+1)} style={{width:"20px",height:"20px",border:"none",background:"transparent",color:"rgba(255,255,255,0.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"color 0.15s"}}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            <button className="nb" onClick={()=>setYr(y=>y+1)} style={{width:"32px",height:"32px",borderRadius:"8px",border:"1px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.7)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
         </div>
