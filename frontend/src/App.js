@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
+import Onboarding from "./Onboarding";
 import YouTubeDashboard from "./YouTubeDashboard";
 import ThreadsDashboard from "./ThreadsDashboard";
 import InstagramDashboard from "./InstagramDashboard";
@@ -72,8 +73,8 @@ const DARK_THEME = {
   selectBg:"rgba(15,8,30,0.95)",
   pillBg:"rgba(255,255,255,0.06)",
   pageBg:"#0a0a0a",
-  blobA:"radial-gradient(circle,#2d1a5055,transparent 68%)",
-  blobB:"radial-gradient(circle,#2a081855,transparent 68%)",
+  blobA:"radial-gradient(circle,transparent,transparent 68%)",
+  blobB:"radial-gradient(circle,transparent,transparent 68%)",
   cardBorder:"rgba(167,139,250,0.15)",
   white:"#ede8ff",   success:"#34d399",
   warn:"#fbbf24",    danger:"#f87171",
@@ -2151,7 +2152,16 @@ export default function App() {
     { id:"discord",    label:"Discord",   color:"#5865F2", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg> },
   ];
 
-  if (authLoading) return <SkeletonScreen/>;
+  // Onboarding route - check BEFORE authLoading
+  if (window.location.pathname === "/app/onboarding" || window.location.pathname === "/onboarding") {
+    return <Onboarding/>;
+  }
+  // Don't show app skeleton on login/auth pages
+  if (authLoading) {
+    const p = window.location.pathname;
+    if (p === "/login" || p.startsWith("/auth/")) return null;
+    return <SkeletonScreen/>;
+  }
   return (
     <div style={{ minHeight:"100vh", background:"#0a0a0a", display:"flex", fontFamily:"'DM Sans','Syne',sans-serif", color:"#fff", overflowX:"clip", width:"100%", position:"relative" }}>
 
@@ -2172,7 +2182,7 @@ export default function App() {
 
         {/* Profile */}
         {isLoggedIn && (
-          <button onClick={()=>{ if(profilePanelOpen){ setProfilePanelOpen(false); setLangMenuOpen(false); } else setProfilePanelOpen(true); }} style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 16px",border:"none",background:profilePanelOpen?"rgba(124,58,237,0.1)":"transparent",cursor:"pointer",fontFamily:"inherit",width:"100%",textAlign:"left",flexShrink:0,transition:"all 0.15s",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+          <button onClick={()=>{ if(profilePanelOpen){ setProfilePanelOpen(false); setLangMenuOpen(false); } else setProfilePanelOpen(true); }} style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 16px",border:"none",background:profilePanelOpen?"rgba(255,255,255,0.06)":"transparent",cursor:"pointer",fontFamily:"inherit",width:"100%",textAlign:"left",flexShrink:0,transition:"all 0.15s",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
             {user?.picture
               ? <img src={user.picture} alt="" referrerPolicy="no-referrer" style={{width:"34px",height:"34px",borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
               : <div style={{width:"34px",height:"34px",borderRadius:"50%",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"13px",fontWeight:"800",color:"#fff",flexShrink:0}}>{(user?.email||"U")[0].toUpperCase()}</div>
@@ -2554,7 +2564,7 @@ export default function App() {
 
       {/* PROFILE SLIDE-UP OVERLAY */}
       {profilePanelOpen && <div onClick={()=>setProfilePanelOpen(false)} style={{position:"fixed",inset:0,zIndex:9998}}/>}
-      <div style={{position:"fixed",bottom:"60px",left:0,width:"220px",zIndex:9999,background:"rgba(10,8,20,0.98)",backdropFilter:"blur(24px)",border:"1px solid rgba(124,58,237,0.25)",borderRadius:"16px 16px 0 0",padding:"16px 14px 20px",transform:profilePanelOpen?"translateY(0)":"translateY(120%)",visibility:profilePanelOpen?"visible":"hidden",pointerEvents:profilePanelOpen?"all":"none",transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
+      <div style={{position:"fixed",bottom:"60px",left:0,width:"220px",zIndex:9999,background:"rgba(10,10,10,0.99)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px 16px 0 0",padding:"16px 14px 20px",transform:profilePanelOpen?"translateY(0)":"translateY(120%)",visibility:profilePanelOpen?"visible":"hidden",pointerEvents:profilePanelOpen?"all":"none",transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
         <div style={{width:"32px",height:"3px",borderRadius:"99px",background:"rgba(255,255,255,0.12)",margin:"0 auto 14px"}}/>
         <button onClick={()=>{setShowPlansPopup(true);setProfilePanelOpen(false);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");fetch(`${BASE}/credits/${user?.user_id}`).then(r=>r.ok?r.json():null).then(d=>{if(d)setCreditStatus(d);}).catch(()=>{});}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -2564,7 +2574,7 @@ export default function App() {
         <button onClick={()=>{setShowUsagePopup(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span style={{flex:1}}>Usage</span>
-          <span style={{fontSize:"11px",color:"#a78bfa",fontWeight:"700"}}>{creditStatus?.credits_remaining||0}/{creditStatus?.monthly_limit||20}</span>
+          <span style={{fontSize:"11px",color:"#a78bfa",fontWeight:"700"}}>{creditStatus?.credits_remaining||0}/{creditStatus?.monthly_limit||180}</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
         <button onClick={()=>{setChannelSettingsOpen(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
@@ -2694,7 +2704,7 @@ export default function App() {
             <div style={{background:"linear-gradient(135deg,rgba(124,58,237,0.15),rgba(255,61,143,0.08))",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"16px",padding:"20px",marginBottom:"16px"}}>
               <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"}}>Current Plan</div>
               <div style={{fontSize:"24px",fontWeight:"900",color:"#fff",marginBottom:"4px"}}>✦ {creditStatus?.plan_label||"Free"}</div>
-              <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>{creditStatus?.credits_remaining||0} of {creditStatus?.monthly_limit||20} credits remaining</div>
+              <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>{creditStatus?.credits_remaining||0} of {creditStatus?.monthly_limit||180} credits remaining</div>
               {creditStatus?.scheduled_downgrade_plan && (
                 <div style={{marginTop:"10px",fontSize:"11px",color:"rgba(251,191,36,0.9)",fontWeight:"600",background:"rgba(251,191,36,0.08)",border:"1px solid rgba(251,191,36,0.2)",borderRadius:"8px",padding:"6px 10px"}}>
                   ⏳ Downgrade to {creditStatus.scheduled_downgrade_plan.replace(/_/g," ").replace(/\w/g,c=>c.toUpperCase())} scheduled

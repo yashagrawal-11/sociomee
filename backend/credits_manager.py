@@ -20,6 +20,7 @@ from typing import Any, Dict, Optional
 
 # ── Plan config ───────────────────────────────────────────────────────
 PLAN_LIMITS: Dict[str, int] = {
+    "pro":              180,
     "free":             20,
     "pro_monthly":      180,
     "pro_annual":       180,

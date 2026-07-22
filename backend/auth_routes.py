@@ -23,30 +23,33 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 def get_or_create_social_user(provider: str, provider_id: str, email: str, name: str, picture: str = "") -> dict:
     """Create or retrieve a user from social OAuth login."""
-    import uuid, time
+    import uuid, time, json
     try:
-        from db import get_db
-        db = get_db()
-        users = db.get("users", {})
+        users_file = Path(__file__).parent / "data" / "users.json"
+        users = json.loads(users_file.read_text(encoding="utf-8")) if users_file.exists() else {}
         if email in users:
-            return users[email]
+            u = users[email]
+            u["is_new"] = False
+            return u
         for u in users.values():
             if u.get("provider") == provider and u.get("provider_id") == provider_id:
+                u["is_new"] = False
                 return u
         user_id = str(uuid.uuid4())
         new_user = {
             "user_id": user_id, "email": email, "name": name,
             "picture": picture, "provider": provider, "provider_id": provider_id,
             "plan": "free", "credits": 20, "created_at": int(time.time()),
-            "email_verified": True,
+            "email_verified": True, "is_new": True,
         }
-        db["users"][email] = new_user
+        users[email] = new_user
+        users_file.write_text(json.dumps(users, indent=2), encoding="utf-8")
         return new_user
     except Exception as e:
         import logging
         logging.getLogger("auth").error(f"get_or_create_social_user failed: {e}")
         return {"user_id": str(uuid.uuid4()), "email": email, "name": name,
-                "picture": picture, "provider": provider, "plan": "free", "credits": 20}
+                "picture": picture, "provider": provider, "plan": "free", "credits": 20, "is_new": True}
 
 
 
@@ -817,5 +820,21 @@ def delete_account(user: dict = Depends(get_current_user)):
         log.warning(f"delete_account: credits_data.json removal failed for {user_id}: {e}")
 
     log.info(f"Account deleted: user_id={user_id}")
-    return {"ok": True, "message": "Account deleted successfully."}
+    from fastapi import Response
+    response = Response(content='{"ok": true, "message": "Account deleted successfully."}', media_type="application/json")
+    response.delete_cookie("sociomee_session", path="/", samesite="lax")
+    return response
 
+
+@router.post("/check-email")
+def check_email(body: dict):
+    """Check if an email is already registered."""
+    email = body.get("email", "").strip().lower()
+    if not email:
+        return {"exists": False}
+    try:
+        users = _load_users()
+        exists = email in users
+        return {"exists": exists}
+    except Exception:
+        return {"exists": False}

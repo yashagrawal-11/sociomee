@@ -38,7 +38,7 @@ export function AuthCallback() {
       handleCallback(token)
         .then(() => {
           setStatus("success");
-          window.location.href = is_new === "true" ? "/onboarding" : "/app";
+          window.location.href = is_new === "true" ? "/app/onboarding" : "/app";
         })
         .catch(() => { setMsg("Callback failed."); setStatus("error"); });
     } else { setMsg(error || "No token received."); setStatus("error"); }
@@ -87,6 +87,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
   const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [globalAge, setGlobalAge] = useState(false);
   const [otp, setOtp] = useState("");
   const [newPw, setNewPw] = useState("");
   const [err, setErr] = useState("");
@@ -246,7 +247,8 @@ export default function LoginPage() {
 
         {step === "main" && (
           <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-            <button onClick={loginWithGoogle} style={{ width:"100%", padding:"14px", borderRadius:G.pill, border:G.border, background:G.bg, color:"#fff", fontWeight:"600", fontSize:"14px", cursor:"pointer", fontFamily:"inherit", backdropFilter:G.blur, display:"flex", alignItems:"center", justifyContent:"center", gap:"10px", transition:"all 0.15s" }}
+
+            <button onClick={()=>{ if(!globalAge){alert("Please confirm you are 18 or older to continue.");return;} loginWithGoogle(); }} style={{ width:"100%", padding:"14px", borderRadius:G.pill, border:G.border, background:G.bg, color:"#fff", fontWeight:"600", fontSize:"14px", cursor:"pointer", fontFamily:"inherit", backdropFilter:G.blur, display:"flex", alignItems:"center", justifyContent:"center", gap:"10px", transition:"all 0.15s" }}
               onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"}
               onMouseLeave={e => e.currentTarget.style.background=G.bg}
             >
@@ -254,20 +256,20 @@ export default function LoginPage() {
             </button>
 
             <div style={{ display:"flex", gap:"10px" }}>
-              <IconBtn onClick={loginWithGithub}><GithubIcon/></IconBtn>
-              <IconBtn onClick={() => window.location.href=`${BASE}/auth/facebook/login`}><FacebookIcon/></IconBtn>
-              <IconBtn onClick={() => setPhoneMode(true)}>
+              <IconBtn onClick={()=>{ if(!globalAge){alert("Please confirm you are 18 or older to continue.");return;} loginWithGithub(); }}><GithubIcon/></IconBtn>
+              <IconBtn onClick={()=>{ if(!globalAge){alert("Please confirm you are 18 or older to continue.");return;} window.location.href=`${BASE}/auth/facebook/login`; }}><FacebookIcon/></IconBtn>
+              <IconBtn onClick={()=>{ if(!globalAge){alert("Please confirm you are 18 or older to continue.");return;} setPhoneMode(true); }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               </IconBtn>
             </div>
             <div style={{ display:"flex", gap:"10px" }}>
-              <IconBtn onClick={()=>window.location.href=`${BASE}/auth/microsoft`}>
+              <IconBtn onClick={()=>{ if(!globalAge){alert("Please confirm you are 18 or older to continue.");return;} window.location.href=`${window.location.origin}/auth/microsoft`; }}>
                 <svg width="20" height="20" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
               </IconBtn>
-              <IconBtn onClick={()=>window.location.href=`${BASE}/auth/linkedin`}>
+              <IconBtn onClick={()=>{ if(!globalAge){alert("Please confirm you are 18 or older to continue.");return;} window.location.href=`${BASE}/auth/linkedin`; }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
               </IconBtn>
-              <IconBtn onClick={()=>window.location.href=`${BASE}/auth/pinterest/login`}>
+              <IconBtn onClick={()=>{ if(!globalAge){alert("Please confirm you are 18 or older to continue.");return;} window.location.href=`${BASE}/auth/pinterest/login`; }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="#e60023"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
               </IconBtn>
             </div>
@@ -279,6 +281,12 @@ export default function LoginPage() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
               Continue with Email
             </button>
+            <label onClick={()=>setGlobalAge(a=>!a)} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"10px 2px", cursor:"pointer", userSelect:"none", marginTop:"4px" }}>
+              <div style={{ width:"18px", height:"18px", borderRadius:"5px", border:`1.5px solid ${globalAge?"#7c3aed":"rgba(255,255,255,0.18)"}`, background:globalAge?"#7c3aed":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
+                {globalAge && <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+              <span style={{ fontSize:"11.5px", color:"rgba(255,255,255,0.35)", lineHeight:1.5 }}>I confirm I am <strong style={{color:"rgba(255,255,255,0.6)"}}>18 years or older</strong> and agree to the <a href="/terms" target="_blank" onClick={e=>e.stopPropagation()} style={{color:"rgba(167,139,250,0.7)",textDecoration:"none"}}>Terms</a> & <a href="/privacy-policy" target="_blank" onClick={e=>e.stopPropagation()} style={{color:"rgba(167,139,250,0.7)",textDecoration:"none"}}>Privacy Policy</a></span>
+            </label>
 
             <p style={{ textAlign:"center", fontSize:"11px", color:"rgba(255,255,255,0.2)", marginTop:"8px", lineHeight:1.6 }}>
               By continuing, you agree to our{" "}
@@ -320,7 +328,7 @@ export default function LoginPage() {
                 {inp(password, setPassword, "Create password", "password")}
                 {inp(confirmPw, setConfirmPw, "Confirm password", "password")}
                 <label style={{ display:"flex", alignItems:"center", gap:"10px", cursor:"pointer", padding:"4px 0" }}>
-                  <input type="checkbox" checked={ageConfirmed} onChange={e => setAgeConfirmed(e.target.checked)} style={{ width:"16px", height:"16px", accentColor:"#fff", cursor:"pointer" }}/>
+                  <input type="checkbox" checked={ageConfirmed} onChange={e => setAgeConfirmed(e.target.checked)} style={{ width:"16px", height:"16px", accentColor:"#6b7280", cursor:"pointer" }}/>
                   <span style={{ fontSize:"12px", color:"rgba(255,255,255,0.4)", lineHeight:1.5 }}>I confirm I am 18 years or older</span>
                 </label>
                 {err && <p style={{ color:"rgba(239,68,68,0.8)", fontSize:"12px", textAlign:"center", margin:0 }}>{err}</p>}

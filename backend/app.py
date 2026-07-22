@@ -2109,6 +2109,7 @@ async def linkedin_auth():
 
 @app.get("/auth/linkedin/callback")
 async def linkedin_callback(code: str = None, error: str = None):
+    from auth_routes import get_or_create_social_user, create_jwt_token
     from fastapi.responses import RedirectResponse
     import requests as _req
     if error or not code:
@@ -2142,8 +2143,8 @@ async def linkedin_callback(code: str = None, error: str = None):
             provider="linkedin", provider_id=sub,
             email=email, name=name, picture=picture
         )
-        jwt_token = create_access_token({"sub": user["user_id"], "email": email})
-        return RedirectResponse(f"https://sociomeeai.com/auth/social-callback?token={jwt_token}&provider=linkedin")
+        jwt_token = create_jwt_token({"sub": user["user_id"], "email": email})
+        return RedirectResponse(f"https://sociomeeai.com/auth/callback?token={jwt_token}&is_new=true")
     except Exception as e:
         import logging
         logging.getLogger("sociomee").error(f"LinkedIn OAuth error: {e}")
@@ -2195,13 +2196,15 @@ async def microsoft_callback(code: str = None, error: str = None):
         sub = user_data.get("id", "")
         if not email:
             return RedirectResponse("https://sociomeeai.com/login?error=microsoft_no_email")
-        from auth_routes import get_or_create_social_user
+        from auth_routes import get_or_create_social_user, create_jwt_token
         user = get_or_create_social_user(
             provider="microsoft", provider_id=sub,
             email=email, name=name, picture=""
         )
-        jwt_token = create_access_token({"sub": user["user_id"], "email": email})
-        return RedirectResponse(f"https://sociomeeai.com/auth/social-callback?token={jwt_token}&provider=microsoft")
+        is_new = user.get("is_new", False)
+        jwt_token = create_jwt_token({"sub": user["user_id"], "email": email})
+        frontend_url = os.getenv("FRONTEND_CALLBACK_URL", "https://sociomeeai.com/auth/callback")
+        return RedirectResponse(f"{frontend_url}?token={jwt_token}&is_new={'true' if is_new else 'false'}")
     except Exception as e:
         import logging
         logging.getLogger("sociomee").error(f"Microsoft OAuth error: {e}")
@@ -2251,8 +2254,8 @@ async def pinterest_callback(code: str = None, error: str = None, state: str = N
             provider="pinterest", provider_id=username,
             email=email, name=name, picture=picture
         )
-        jwt_token = create_access_token({"sub": user["user_id"], "email": email})
-        return RedirectResponse(f"https://sociomeeai.com/auth/social-callback?token={jwt_token}&provider=pinterest")
+        jwt_token = create_jwt_token({"sub": user["user_id"], "email": email})
+        return RedirectResponse(f"https://sociomeeai.com/auth/callback?token={jwt_token}&is_new={'true' if user.get('is_new') else 'false'}")
     except Exception as e:
         import logging
         logging.getLogger("sociomee").error(f"Pinterest OAuth error: {e}")
