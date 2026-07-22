@@ -2871,10 +2871,15 @@ export default function App() {
                       setIsListening(false);
                     };
                     rec.start();
-                  }} style={{ position:"absolute", right:"50px", top:"50%", transform:"translateY(-50%)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:isListening?"rgba(124,58,237,0.4)":"rgba(255,255,255,0.08)", border:"none", transition:"all 0.2s" }}>
+                  }} style={{ position:"absolute", right:"50px", top:"50%", transform:"translateY(-50%)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:isListening?"#7c3aed":"rgba(255,255,255,0.08)", border:"none", transition:"all 0.2s", boxShadow:isListening?"0 0 0 4px rgba(124,58,237,0.2)":"none" }}>
                     {isListening
-                      ? <svg width="14" height="14" viewBox="0 0 24 24" fill="#a78bfa" stroke="none"><circle cx="12" cy="12" r="6"><animate attributeName="r" values="6;10;6" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.4;1" dur="1s" repeatCount="indefinite"/></circle></svg>
-                      : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                      ? <svg width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="none">
+                          <rect x="3" y="8" width="3" height="8" rx="1.5"><animate attributeName="height" values="4;12;4" dur="0.8s" repeatCount="indefinite" begin="0s"/><animate attributeName="y" values="10;6;10" dur="0.8s" repeatCount="indefinite" begin="0s"/></rect>
+                          <rect x="8" y="5" width="3" height="14" rx="1.5"><animate attributeName="height" values="6;16;6" dur="0.8s" repeatCount="indefinite" begin="0.15s"/><animate attributeName="y" values="9;4;9" dur="0.8s" repeatCount="indefinite" begin="0.15s"/></rect>
+                          <rect x="13" y="7" width="3" height="10" rx="1.5"><animate attributeName="height" values="5;13;5" dur="0.8s" repeatCount="indefinite" begin="0.3s"/><animate attributeName="y" values="9.5;5.5;9.5" dur="0.8s" repeatCount="indefinite" begin="0.3s"/></rect>
+                          <rect x="18" y="9" width="3" height="6" rx="1.5"><animate attributeName="height" values="3;10;3" dur="0.8s" repeatCount="indefinite" begin="0.1s"/><animate attributeName="y" values="10.5;7;10.5" dur="0.8s" repeatCount="indefinite" begin="0.1s"/></rect>
+                        </svg>
+                      : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
                     }
                   </button>
                   <label title={videoFile?"Change file":(platform==="youtube"?"Attach video file":"Attach image file")} style={{ position:"absolute", right:"12px", top:"50%", transform:"translateY(-50%)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:videoFile?"rgba(124,58,237,0.3)":"rgba(255,255,255,0.08)" }}>
