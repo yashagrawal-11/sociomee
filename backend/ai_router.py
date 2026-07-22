@@ -410,11 +410,23 @@ Write ONLY the hook text, nothing else."""
         research_text = research.get("evidence_pack", "") if isinstance(research, dict) else ""
         persona_prompt_block = build_persona_prompt_block(persona_key, _req_tone, language)
         lang_lower = language.lower()
-        script_lang_map = {"bengali":"Bengali script (বাংলা)","tamil":"Tamil script (தமிழ்)","hindi":"Hindi Devanagari (हिंदी)","marathi":"Marathi Devanagari (मराठी)","telugu":"Telugu script (తెలుగు)","gujarati":"Gujarati script (ગુજરાતી)","kannada":"Kannada script (ಕನ್ನಡ)","malayalam":"Malayalam script (മലയാളം)","punjabi":"Punjabi Gurmukhi (ਪੰਜਾਬੀ)"}
-        hard_lang = script_lang_map.get(lang_lower, "")
+        LANG_SCRIPTS = {
+            "bengali": "Bengali (বাংলা লিপি)",
+            "tamil": "Tamil (தமிழ் எழுத்து)",
+            "hindi": "Hindi (हिंदी देवनागरी)",
+            "marathi": "Marathi (मराठी देवनागरी)",
+            "telugu": "Telugu (తెలుగు లిపి)",
+            "gujarati": "Gujarati (ગુજરાતી લિપિ)",
+            "kannada": "Kannada (ಕನ್ನಡ ಲಿಪಿ)",
+            "malayalam": "Malayalam (മലയാളം ലിപി)",
+            "punjabi": "Punjabi (ਪੰਜਾਬੀ ਗੁਰਮੁਖੀ)",
+        }
+        hard_lang = LANG_SCRIPTS.get(lang_lower, "")
         if hard_lang:
-            lang_override = "\n\nCRITICAL OVERRIDE — LANGUAGE: You MUST write the ENTIRE script in " + hard_lang + ". This overrides ALL other instructions. Do NOT use Hinglish, Roman script, or English for the main content. Every sentence must be in " + hard_lang + ". Persona style/voice still applies but the language MUST be " + hard_lang + "."
+            persona_prompt_block = "CREATOR VOICE: Clear, engaging, informative educator.\nSTYLE: Direct and conversational."
+            lang_override = "\n\nLANGUAGE = " + hard_lang + "\nWrite the COMPLETE script in " + hard_lang + " ONLY.\nDo NOT use Hinglish or Roman transliteration.\nAll sentences must be in native " + hard_lang + " script.\nOnly brand names (YouTube, Instagram) may be in English."
         else:
+            persona_prompt_block = build_persona_prompt_block(persona_key, _req_tone, language)
             lang_override = ""
         gemini_prompt = f"""You are writing a YouTube video script. Follow every instruction exactly.
 
