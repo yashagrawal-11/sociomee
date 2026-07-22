@@ -11,7 +11,7 @@ export default function YouTubeCallback() {
     const error = params.get("error");
     const uid   = sessionStorage.getItem("yt_connect_user_id") || "";
     if (error || !code) { setStatus("error"); setMsg(error || "No authorization code received."); return; }
-    fetch(`${BASE}/youtube/callback`, {
+    fetch(`${BASE}/youtube/connect`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, user_id: uid, redirect_uri: window.location.origin + "/youtube/callback" }),
