@@ -2848,7 +2848,7 @@ export default function App() {
                 <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>{t("keywordTopic")}</div>
                 <div style={{ position:"relative", marginBottom:videoFile?"8px":"20px" }}>
                   <input value={keyword} onChange={e=>setKeyword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-                    placeholder={videoFile ? "Enter keyword or video title for better results..." : t("keywordPlaceholder")}
+                    placeholder={videoFile ? "Enter keyword or video title for better results..." : "e.g. why every creator needs SocioMee AI"}
                     style={{ width:"100%", padding:"14px 92px 14px 22px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.25)", outline:"none", fontSize:"15px", color:"#fff", background:"rgba(255,255,255,0.05)", fontFamily:"inherit", boxSizing:"border-box", transition:"border 0.2s" }}
                     onFocus={e=>e.target.style.borderColor="#7c3aed"} onBlur={e=>e.target.style.borderColor="rgba(124,58,237,0.25)"}/>
                   <button type="button" title="Speak your keyword" onClick={()=>{
