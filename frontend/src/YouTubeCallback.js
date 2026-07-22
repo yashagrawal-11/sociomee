@@ -23,7 +23,7 @@ export default function YouTubeCallback() {
           const ch = data.channel_title || "";
           const subs = data.subscribers ? ` · ${Number(data.subscribers).toLocaleString()} subscribers` : "";
           setMsg(ch ? `Connected: ${ch}${subs}` : "");
-          setTimeout(() => { window.location.href = "/app/youtube"; }, 1800);
+          setTimeout(() => { window.location.href = "/app"; }, 1800);
         } else {
           setStatus("error");
           setMsg(data.detail || "Connection failed. Please try again.");
