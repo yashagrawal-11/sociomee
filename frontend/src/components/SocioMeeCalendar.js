@@ -14,7 +14,7 @@ export default function SocioMeeCalendar({ user }) {
   const plan = raw.toLowerCase().includes("premium")?"premium":raw.toLowerCase().includes("pro")?"pro":"free";
   const isPro = plan==="pro"||plan==="premium";
   const today = new Date();
-  const [yr,setYr] = useState(today.getFullYear());
+  const yr = today.getFullYear();
   const [mo,setMo] = useState(today.getMonth());
   const [fests,setFests] = useState([]);
   const [loading,setLoading] = useState(true);
@@ -119,14 +119,7 @@ export default function SocioMeeCalendar({ user }) {
         <div style={{padding:"20px 16px 10px",flexShrink:0,zIndex:3,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           {mob&&<button onClick={()=>setShowMonths(false)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",padding:"5px 10px",color:"rgba(255,255,255,0.6)",fontSize:"12px",cursor:"pointer",fontFamily:F,marginLeft:"52px"}}>Done</button>}
           <span style={{fontSize:"13px",fontWeight:"700",color:"rgba(255,255,255,0.25)",fontFamily:FH}}>{yr}</span>
-          <div style={{display:"flex",gap:"6px"}}>
-            <button className="nb" onClick={()=>setYr(y=>y-1)} style={{width:"32px",height:"32px",borderRadius:"8px",border:"1px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.7)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button className="nb" onClick={()=>setYr(y=>y+1)} style={{width:"32px",height:"32px",borderRadius:"8px",border:"1px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.7)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </div>
+
         </div>
         {/* Month scroll list */}
         <div ref={monthListRef} style={{flex:1,overflowY:"auto",padding:"40px 0",display:"flex",flexDirection:"column",gap:"2px"}}>
