@@ -378,10 +378,13 @@ Write ONLY the hook text, nothing else."""
     persona_data: Dict[str, Any] = {}
     try:
         persona_data = _get_persona(persona)
+        # Only let persona override language if user explicitly chose hinglish
+        # If user chose bengali/tamil/hindi/marathi/english — respect that choice
         if language == "hinglish":
             persona_lang = persona_data.get("language", "hinglish")
             if persona_lang == "english":
                 language = "english"
+        # else: user chose a specific language — keep it, persona style still applies
     except Exception as exc:
         print(f"[PIPELINE-DEBUG] persona_profiles FAILED: {exc}", flush=True); errors.append(f"persona_profiles: {exc}")
         _style_desc = _PERSONA_STYLES.get(str(persona).lower().strip(), _DEFAULT_STYLE)
@@ -463,7 +466,8 @@ STRUCTURE — write in this exact order with these labels:
 **OUTRO**
 [1 to 2 sentences closing in this creator's signature style.]
 
-Write ONLY the script. No meta-commentary, no preamble, no explanation outside the script itself."""
+Write ONLY the script. No meta-commentary, no preamble, no explanation outside the script itself.
+FINAL REMINDER: The ENTIRE output must be in {language} only. Not Hinglish. Not English. {language} only."""
 
         script = _vertex_generate(gemini_prompt, max_tokens=gen_max_tokens, temperature=0.85)
         if script:
