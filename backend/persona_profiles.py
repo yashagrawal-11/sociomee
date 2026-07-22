@@ -232,12 +232,12 @@ def build_persona_prompt_block(persona_key: str, tone: str, language: str = None
 
     lang_instruction = {
         "hinglish": "Write in natural spoken Hinglish using Roman script only — no Devanagari. Mix Hindi and English exactly as Indians actually speak in conversation.",
-        "hindi": "Write in pure Hindi using Roman script only — no Devanagari. Natural spoken Hindi, not overly formal.",
+        "hindi": "Write ENTIRELY in Hindi Devanagari script (हिंदी). Every word must be in Devanagari. Do NOT use Roman script for Hindi words. English technical terms are acceptable in Roman but all other content must be in हिंदी script.",
         "english": "Write in natural conversational English. Clear, direct, and accessible.",
-        "tamil": "Write in natural spoken Tamil using Roman script (Tanglish) — mix Tamil and English as Tamil speakers naturally do. No Tamil script.",
+        "tamil": "Write ENTIRELY in Tamil script (தமிழ்). Every word must be in Tamil script. Do NOT use Roman/English script for Tamil words. English technical terms are acceptable in Roman but all other content must be in தமிழ் script.",
         "telugu": "Write in natural spoken Telugu using Roman script — mix Telugu and English as Telugu speakers naturally do. No Telugu script.",
-        "marathi": "Write in natural spoken Marathi using Roman script — mix Marathi and Hindi/English as Marathis actually speak. No Devanagari.",
-        "bengali": "Write in natural spoken Bengali using Roman script — mix Bengali and English as Bengalis actually speak. No Bengali script.",
+        "marathi": "Write ENTIRELY in Marathi Devanagari script (मराठी). Every word must be in Devanagari. Do NOT use Roman script for Marathi words. English technical terms are acceptable in Roman but all other content must be in मराठी script.",
+        "bengali": "Write ENTIRELY in Bengali script (বাংলা). Every word must be in Bengali script. Do NOT use Roman/English script for Bengali words. English technical terms are acceptable in Roman but all other content must be in বাংলা script.",
         "gujarati": "Write in natural spoken Gujarati using Roman script — mix Gujarati and English as Gujaratis actually speak. No Gujarati script.",
         "punjabi": "Write in natural spoken Punjabi using Roman script — mix Punjabi and English as Punjabis actually speak. No Gurmukhi script.",
         "kannada": "Write in natural spoken Kannada using Roman script — mix Kannada and English as Kannadigas actually speak. No Kannada script.",
