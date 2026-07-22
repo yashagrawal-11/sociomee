@@ -604,7 +604,7 @@ def _generate_titles_with_scores(topic: str, persona: str, language: str) -> lis
 # redefine it here. A duplicate copy previously existed in this exact spot and
 # silently shadowed the real one, meaning fixes to the real function never applied
 # to any of this file's own usages. Single source of truth now.
-def _generate_yt_description(topic: str, hook: str, structure: dict, titles_with_score: list) -> str:
+def _generate_yt_description(topic: str, hook: str, structure: dict, titles_with_score: list, language: str = "hinglish") -> str:
     import requests as _r, re as _re, os as _os
     t = topic.strip(); tc = t.title()
     if not _check_topic_safety(t):
@@ -621,15 +621,16 @@ def _generate_yt_description(topic: str, hook: str, structure: dict, titles_with
         prompt = f"""Write a professional YouTube video description for:
 Topic: {t}
 Title: {best_title}
+Language: {language} — write ALL text in {language} only, no other language.
 
 Use EXACTLY this format (no markdown, no asterisks, plain text only):
 
 {best_title}
 
 ABOUT THIS VIDEO
-[Write 2-3 engaging sentences in Hinglish about what this video covers, why it matters, and what viewer will learn. Make it specific to {t}.]
+[Write 2-3 engaging sentences in {language} about what this video covers, why it matters, and what viewer will learn. Make it specific to {t}.]
 
-IS VIDEO MEIN AAP JANENGE
+IN THIS VIDEO
 - [Point 1 specific to {t}]
 - [Point 2 specific to {t}]
 - [Point 3 specific to {t}]
@@ -737,7 +738,7 @@ def _normalize(raw: dict, payload: FullContentRequest, platform: str = "youtube"
     best_score = tws[0]["seo_score"] if tws else 0
     yt_description = (yt.get("description") or _generate_yt_description(
         topic=raw.get("topic", payload.topic), hook=structure.get("hook",""),
-        structure=structure, titles_with_score=tws))
+        structure=structure, titles_with_score=tws, language=language))
     topic_str = raw.get("topic", payload.topic).strip()
     search_queries = yt.get("search_queries") or [
         f"{topic_str} analysis", f"{topic_str} explained", f"{topic_str} full story",

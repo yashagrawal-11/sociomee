@@ -414,6 +414,16 @@ TOPIC: {topic}
 
 SCRIPT LENGTH: {min_words} to {max_words} words
 
+LANGUAGE RULE (HIGHEST PRIORITY):
+- The ENTIRE script must be written in: {language}
+- If language is "bengali": write ALL content in Bengali script (বাংলা) only
+- If language is "hindi": write ALL content in Devanagari Hindi script only
+- If language is "hinglish": write in Roman script mix of Hindi+English
+- If language is "tamil": write in Tamil script only
+- If language is "marathi": write in Marathi (Devanagari) only
+- If language is "english": write in English only
+- Do NOT mix languages. Every sentence must be in the specified language.
+
 ABSOLUTE RULES:
 1. This script must be ENTIRELY and SPECIFICALLY about: {topic}
 2. Do NOT drift to loosely related topics unless directly explaining THIS topic
