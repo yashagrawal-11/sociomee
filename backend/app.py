@@ -144,6 +144,11 @@ try:
     from bug_routes import router as bug_router
 except Exception as e:
     log.warning("bug_routes failed: %s", e); bug_router = None
+try:
+    from feedback_routes import router as feedback_router
+    _HAS_FEEDBACK = True
+except Exception as e:
+    log.warning('feedback_routes failed: %s', e); _HAS_FEEDBACK = False; feedback_router = None
 # ── Instagram router ──────────────────────────────────────────────────
 try:
     from instagram_routes import router as instagram_router
@@ -331,6 +336,8 @@ try:
 except Exception as e:
     log.warning("facebook_pages_routes failed: %s", e)
 if bug_router: app.include_router(bug_router)
+if _HAS_FEEDBACK and feedback_router:
+    app.include_router(feedback_router)
 # WhatsApp router
 if _HAS_WA_ROUTES and whatsapp_router is not None:
     app.include_router(whatsapp_router)

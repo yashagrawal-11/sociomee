@@ -1629,6 +1629,7 @@ function ChannelSettingsModal({ user, onClose, BASE, onUpgrade }) {
   const [threadsStatus, setThreadsStatus] = useState(null);
   const [liStatus, setLiStatus] = useState(null);
   const [bugModal, setBugModal] = useState(false);
+
   const [bugText, setBugText] = useState("");
   const [bugImage, setBugImage] = useState(null);
   const [bugSending, setBugSending] = useState(false);
@@ -1778,7 +1779,7 @@ function ChannelSettingsModal({ user, onClose, BASE, onUpgrade }) {
         </>)}
       </div>
     </div>
-    {bugModal && (
+        {bugModal && (
       <div onClick={(e)=>{if(e.target===e.currentTarget){setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(12px)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
         <div style={{background:"#0f0a1a",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"20px",padding:"28px",width:"100%",maxWidth:"460px",position:"relative"}}>
           <button onClick={()=>{setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}} style={{position:"absolute",top:"16px",right:"16px",background:"none",border:"none",color:"rgba(255,255,255,0.4)",fontSize:"20px",cursor:"pointer",lineHeight:1}}>✕</button>
@@ -1881,6 +1882,11 @@ export default function App() {
   }, []);
   const [showPricing,  setShowPricing] = useState(false);
   const [bugModal, setBugModal] = useState(false);
+  const [feedbackModal, setFeedbackModal] = useState(false);
+  const [feedbackStep, setFeedbackStep] = useState(0);
+  const [feedbackAnswers, setFeedbackAnswers] = useState({});
+  const [feedbackDone, setFeedbackDone] = useState(false);
+  const [feedbackSending, setFeedbackSending] = useState(false);
   const [bugText, setBugText] = useState("");
   const [bugImage, setBugImage] = useState(null);
   const [bugSending, setBugSending] = useState(false);
@@ -2559,6 +2565,11 @@ export default function App() {
           <span style={{flex:1}}>Report a Bug</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
+        <button onClick={async()=>{const uid=user?.user_id||user?.id||"unknown";try{const r=await fetch(`/api/feedback/check?user_id=${uid}`);const d=await r.json();if(d.has_submitted){setFeedbackAnswers({});setFeedbackStep(0);setFeedbackDone(true);setFeedbackModal(true);setProfilePanelOpen(false);return;}}catch(e){}setFeedbackStep(0);setFeedbackAnswers({});setFeedbackDone(false);setFeedbackModal(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span style={{flex:1}}>Give Feedback</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
         <button onClick={()=>{setShowDeleteModal(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(239,68,68,0.8)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(239,68,68,0.08)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
           <span style={{flex:1}}>Delete Account</span>
@@ -3085,7 +3096,83 @@ export default function App() {
         </div>
       </div>
 
-      {bugModal && (
+      {feedbackModal && (
+      <div onClick={(e)=>{if(e.target===e.currentTarget){setFeedbackModal(false);}}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(14px)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
+        <div style={{background:"rgba(10,10,10,0.97)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"28px",width:"100%",maxWidth:"480px",position:"relative",boxShadow:"0 24px 60px rgba(0,0,0,0.6)"}}>
+          <button onClick={()=>setFeedbackModal(false)} style={{position:"absolute",top:"16px",right:"16px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"50%",width:"28px",height:"28px",color:"rgba(255,255,255,0.4)",fontSize:"14px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+
+          {feedbackDone ? (
+            <div style={{textAlign:"center",padding:"32px 16px"}}>
+              <style>{`
+                @keyframes fadeUp{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:translateY(0)}}
+                .fd-l1{animation:fadeUp 0.5s ease forwards;animation-delay:0.1s;opacity:0}
+                .fd-l2{animation:fadeUp 0.5s ease forwards;animation-delay:0.4s;opacity:0}
+                .fd-l3{animation:fadeUp 0.5s ease forwards;animation-delay:0.7s;opacity:0}
+                .fd-l4{animation:fadeUp 0.5s ease forwards;animation-delay:1.0s;opacity:0}
+                .fd-btn{animation:fadeUp 0.5s ease forwards;animation-delay:1.3s;opacity:0}
+              `}</style>
+              <div className="fd-l1" style={{fontSize:"18px",fontWeight:"800",color:"#fff",marginBottom:"10px",fontFamily:"Poppins,sans-serif"}}>+5 credits added to your account</div>
+              <div className="fd-l2" style={{fontSize:"13px",color:"rgba(255,255,255,0.55)",marginBottom:"6px",lineHeight:1.75}}>That took you two minutes. It helps us more than you think.</div>
+              <div className="fd-l3" style={{fontSize:"13px",color:"rgba(255,255,255,0.35)",marginBottom:"28px",lineHeight:1.75}}>We read every single response. Yours is already in the pile.</div>
+              <button className="fd-btn" onClick={()=>setFeedbackModal(false)} style={{padding:"12px 32px",borderRadius:"99px",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.12)",color:"#fff",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",letterSpacing:"0.3px"}}>Close</button>
+            </div>
+          ) : (
+            <>
+              <div style={{marginBottom:"20px"}}>
+                <div style={{fontSize:"16px",fontWeight:"800",color:"#fff",marginBottom:"4px",fontFamily:"Poppins,sans-serif"}}>Help us make SocioMee better</div>
+                <div style={{fontSize:"12px",color:"rgba(255,255,255,0.38)",lineHeight:1.6}}>No right or wrong answers here. Just tell us what you actually think. We read every single response.</div>
+              </div>
+
+              <div style={{display:"flex",gap:"4px",marginBottom:"24px"}}>
+                {[0,1,2,3].map(i=>(
+                  <div key={i} style={{flex:1,height:"3px",borderRadius:"99px",background:i<=feedbackStep?"rgba(255,255,255,0.7)":"rgba(255,255,255,0.1)",transition:"background 0.3s"}}/>
+                ))}
+              </div>
+
+
+
+              {feedbackStep===1 && (
+                <div>
+                  <div style={{fontSize:"14px",fontWeight:"700",color:"#fff",marginBottom:"16px",fontFamily:"Poppins,sans-serif"}}>What do you use SocioMee most for? <span style={{fontSize:"12px",color:"rgba(255,255,255,0.35)",fontWeight:"400"}}>(pick all that apply)</span></div>
+                  {["Generating content","Scheduling posts","YouTube analytics","Hashtag research","SocioMee Store tools","Just exploring"].map(opt=>(
+                    <button key={opt} onClick={()=>{const curr=feedbackAnswers.usage||[];const updated=curr.includes(opt)?curr.filter(x=>x!==opt):[...curr,opt];setFeedbackAnswers(p=>({...p,usage:updated}));}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 14px",borderRadius:"10px",border:`1px solid ${(feedbackAnswers.usage||[]).includes(opt)?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.06)"}`,background:(feedbackAnswers.usage||[]).includes(opt)?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.02)",color:"rgba(255,255,255,0.8)",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"6px",transition:"all 0.15s"}}>
+                      <div style={{width:"18px",height:"18px",borderRadius:"5px",border:`1px solid ${(feedbackAnswers.usage||[]).includes(opt)?"#fff":"rgba(255,255,255,0.2)"}`,background:(feedbackAnswers.usage||[]).includes(opt)?"rgba(255,255,255,0.15)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.15s"}}>
+                        {(feedbackAnswers.usage||[]).includes(opt) && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                      </div>
+                      {opt}
+                    </button>
+                  ))}
+                  <button onClick={()=>setFeedbackStep(2)} disabled={!(feedbackAnswers.usage||[]).length} style={{marginTop:"12px",width:"100%",padding:"11px",borderRadius:"10px",border:"1px solid rgba(255,255,255,0.1)",background:(feedbackAnswers.usage||[]).length?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.02)",color:(feedbackAnswers.usage||[]).length?"#fff":"rgba(255,255,255,0.25)",fontSize:"13px",fontWeight:"700",cursor:(feedbackAnswers.usage||[]).length?"pointer":"default",fontFamily:"inherit"}}>Continue</button>
+                </div>
+              )}
+
+              {feedbackStep===2 && (
+                <div>
+                  <div style={{fontSize:"14px",fontWeight:"700",color:"#fff",marginBottom:"16px",fontFamily:"Poppins,sans-serif"}}>What should we improve the most?</div>
+                  {["Content quality","More platform support","Faster generation","Better UI and design","Lower pricing","More store tools"].map(opt=>(
+                    <button key={opt} onClick={()=>setFeedbackAnswers(p=>({...p,improve:opt}))} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 14px",borderRadius:"10px",border:`1px solid ${feedbackAnswers.improve===opt?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.06)"}`,background:feedbackAnswers.improve===opt?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.02)",color:"rgba(255,255,255,0.8)",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"6px",transition:"all 0.15s"}}>
+                      <div style={{width:"16px",height:"16px",borderRadius:"50%",border:`1px solid ${feedbackAnswers.improve===opt?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.2)"}`,background:feedbackAnswers.improve===opt?"rgba(255,255,255,0.9)":"transparent",flexShrink:0}}/>
+                      {opt}
+                    </button>
+                  ))}
+                  <button onClick={()=>setFeedbackStep(3)} disabled={!feedbackAnswers.improve} style={{marginTop:"12px",width:"100%",padding:"11px",borderRadius:"10px",border:"1px solid rgba(255,255,255,0.1)",background:feedbackAnswers.improve?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.02)",color:feedbackAnswers.improve?"#fff":"rgba(255,255,255,0.25)",fontSize:"13px",fontWeight:"700",cursor:feedbackAnswers.improve?"pointer":"default",fontFamily:"inherit"}}>Continue</button>
+                </div>
+              )}
+
+              {feedbackStep===3 && (
+                <div>
+                  <div style={{fontSize:"14px",fontWeight:"700",color:"#fff",marginBottom:"6px",fontFamily:"Poppins,sans-serif"}}>Anything else you want us to know?</div>
+                  <div style={{fontSize:"12px",color:"rgba(255,255,255,0.35)",marginBottom:"14px"}}>Optional — but even one line helps us a lot.</div>
+                  <textarea value={feedbackAnswers.comment||""} onChange={e=>setFeedbackAnswers(p=>({...p,comment:e.target.value}))} placeholder="Write anything — a feature request, a frustration, a compliment..." rows={4} style={{width:"100%",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"12px",padding:"12px 14px",color:"#fff",fontSize:"13px",fontFamily:"inherit",resize:"none",outline:"none",lineHeight:1.6,marginBottom:"14px"}}/>
+                  <button disabled={feedbackSending} onClick={async()=>{setFeedbackSending(true);try{await fetch("/api/feedback/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rating:feedbackAnswers.rating,usage:feedbackAnswers.usage,improve:feedbackAnswers.improve,comment:feedbackAnswers.comment||"",user_email:user?.email||"unknown",user_id:user?.user_id||user?.id||"unknown"})});}catch(e){}setFeedbackSending(false);setFeedbackDone(true);}} style={{width:"100%",padding:"12px",borderRadius:"10px",border:"1px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.07)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>{feedbackSending?"Submitting...":"Submit & Earn 5 Credits"}</button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    )}
+    {bugModal && (
         <div onClick={(e)=>{if(e.target===e.currentTarget){setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(16px)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
           <div style={{background:"rgba(10,8,20,0.85)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"28px",width:"100%",maxWidth:"460px",position:"relative",boxShadow:"0 24px 60px rgba(0,0,0,0.6)"}}>
             <button onClick={()=>{setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}} style={{position:"absolute",top:"16px",right:"16px",background:"none",border:"none",color:"rgba(255,255,255,0.35)",fontSize:"18px",cursor:"pointer",lineHeight:1}}>✕</button>
@@ -3127,6 +3214,90 @@ export default function App() {
         />
       )}
 
+
+      {feedbackModal && (
+        <div onClick={(e)=>{if(e.target===e.currentTarget){setFeedbackModal(false);}}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(14px)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
+          <div style={{background:"rgba(10,10,10,0.97)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"28px",width:"100%",maxWidth:"480px",position:"relative",boxShadow:"0 24px 60px rgba(0,0,0,0.6)"}}>
+            <button onClick={()=>setFeedbackModal(false)} style={{position:"absolute",top:"16px",right:"16px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"50%",width:"28px",height:"28px",color:"rgba(255,255,255,0.4)",fontSize:"14px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+            {feedbackDone ? (
+              <div style={{textAlign:"center",padding:"32px 16px"}}>
+                <style>{`
+                  @keyframes fadeUp{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:translateY(0)}}
+                  .fd-l1{animation:fadeUp 0.5s ease forwards;animation-delay:0.1s;opacity:0}
+                  .fd-l2{animation:fadeUp 0.5s ease forwards;animation-delay:0.5s;opacity:0}
+                  .fd-l3{animation:fadeUp 0.5s ease forwards;animation-delay:0.9s;opacity:0}
+                  .fd-btn{animation:fadeUp 0.5s ease forwards;animation-delay:1.3s;opacity:0}
+                `}</style>
+                <div className="fd-l1" style={{fontSize:"18px",fontWeight:"800",color:"#fff",marginBottom:"10px",fontFamily:"Poppins,sans-serif"}}>+5 credits added to your account</div>
+                <div className="fd-l2" style={{fontSize:"13px",color:"rgba(255,255,255,0.55)",marginBottom:"6px",lineHeight:1.75}}>That took you two minutes. It helps us more than you think.</div>
+                <div className="fd-l3" style={{fontSize:"13px",color:"rgba(255,255,255,0.35)",marginBottom:"28px",lineHeight:1.75}}>We read every single response. Yours is already in the pile.</div>
+                <button className="fd-btn" onClick={()=>setFeedbackModal(false)} style={{padding:"12px 32px",borderRadius:"99px",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.12)",color:"#fff",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit"}}>Close</button>
+              </div>
+            ) : (
+              <>
+                <div style={{marginBottom:"20px"}}>
+                  <div style={{fontSize:"16px",fontWeight:"800",color:"#fff",marginBottom:"4px",fontFamily:"Poppins,sans-serif"}}>Help us make SocioMee better</div>
+                  <div style={{fontSize:"12px",color:"rgba(255,255,255,0.38)",lineHeight:1.6}}>No right or wrong answers here. Just tell us what you actually think. We read every single response.</div>
+                </div>
+                <div style={{display:"flex",gap:"4px",marginBottom:"24px"}}>
+                  {[0,1,2,3].map(i=>(
+                    <div key={i} style={{flex:1,height:"3px",borderRadius:"99px",background:i<=feedbackStep?"rgba(255,255,255,0.7)":"rgba(255,255,255,0.1)",transition:"background 0.3s"}}/>
+                  ))}
+                </div>
+                {feedbackStep===0 && (
+                  <div>
+                    <div style={{fontSize:"14px",fontWeight:"700",color:"#fff",marginBottom:"24px",fontFamily:"Poppins,sans-serif"}}>How would you rate SocioMee overall?</div>
+                    <div style={{display:"flex",gap:"12px",justifyContent:"center",marginBottom:"8px"}}>
+                      {["hmm","not bad","damn"].map((label,i)=>(
+                        <button key={i} onClick={()=>{setFeedbackAnswers(p=>({...p,rating:i+1}));setFeedbackStep(1);}} style={{flex:1,padding:"14px 10px",borderRadius:"99px",border:`1px solid ${feedbackAnswers.rating===i+1?"rgba(255,255,255,0.5)":"rgba(255,255,255,0.08)"}`,background:feedbackAnswers.rating===i+1?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.02)",color:feedbackAnswers.rating===i+1?"#fff":"rgba(255,255,255,0.6)",fontSize:"13px",fontWeight:"700",cursor:"pointer",transition:"all 0.15s",fontFamily:"inherit",letterSpacing:"0.5px"}}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {feedbackStep===1 && (
+                  <div>
+                    <div style={{fontSize:"14px",fontWeight:"700",color:"#fff",marginBottom:"16px",fontFamily:"Poppins,sans-serif"}}>What do you use SocioMee most for? <span style={{fontSize:"12px",color:"rgba(255,255,255,0.35)",fontWeight:"400"}}>(pick all that apply)</span></div>
+                    {["Generating content","Scheduling posts","YouTube analytics","Hashtag research","SocioMee Store tools","Just exploring"].map(opt=>(
+                      <button key={opt} onClick={()=>{const curr=feedbackAnswers.usage||[];const updated=curr.includes(opt)?curr.filter(x=>x!==opt):[...curr,opt];setFeedbackAnswers(p=>({...p,usage:updated}));}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 14px",borderRadius:"10px",border:`1px solid ${(feedbackAnswers.usage||[]).includes(opt)?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.06)"}`,background:(feedbackAnswers.usage||[]).includes(opt)?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.02)",color:"rgba(255,255,255,0.8)",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"6px",transition:"all 0.15s"}}>
+                        <div style={{width:"16px",height:"16px",borderRadius:"4px",border:`1px solid ${(feedbackAnswers.usage||[]).includes(opt)?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.2)"}`,background:(feedbackAnswers.usage||[]).includes(opt)?"rgba(255,255,255,0.9)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                          {(feedbackAnswers.usage||[]).includes(opt) && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                        </div>
+                        {opt}
+                      </button>
+                    ))}
+                    <button onClick={()=>setFeedbackStep(2)} disabled={!(feedbackAnswers.usage||[]).length} style={{marginTop:"12px",width:"100%",padding:"11px",borderRadius:"10px",border:"1px solid rgba(255,255,255,0.1)",background:(feedbackAnswers.usage||[]).length?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.02)",color:(feedbackAnswers.usage||[]).length?"#fff":"rgba(255,255,255,0.25)",fontSize:"13px",fontWeight:"700",cursor:(feedbackAnswers.usage||[]).length?"pointer":"default",fontFamily:"inherit"}}>Continue</button>
+                  </div>
+                )}
+                {feedbackStep===2 && (
+                  <div>
+                    <div style={{fontSize:"14px",fontWeight:"700",color:"#fff",marginBottom:"16px",fontFamily:"Poppins,sans-serif"}}>What should we improve the most?</div>
+                    {["Content quality","More platform support","Faster generation","Better UI and design","Lower pricing","More store tools"].map(opt=>(
+                      <button key={opt} onClick={()=>setFeedbackAnswers(p=>({...p,improve:opt}))} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 14px",borderRadius:"10px",border:`1px solid ${feedbackAnswers.improve===opt?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.06)"}`,background:feedbackAnswers.improve===opt?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.02)",color:"rgba(255,255,255,0.8)",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"6px",transition:"all 0.15s"}}>
+                        <div style={{width:"16px",height:"16px",borderRadius:"50%",border:`1px solid ${feedbackAnswers.improve===opt?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.2)"}`,background:feedbackAnswers.improve===opt?"rgba(255,255,255,0.9)":"transparent",flexShrink:0}}/>
+                        {opt}
+                      </button>
+                    ))}
+                    <button onClick={()=>setFeedbackStep(3)} disabled={!feedbackAnswers.improve} style={{marginTop:"12px",width:"100%",padding:"11px",borderRadius:"10px",border:"1px solid rgba(255,255,255,0.1)",background:feedbackAnswers.improve?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.02)",color:feedbackAnswers.improve?"#fff":"rgba(255,255,255,0.25)",fontSize:"13px",fontWeight:"700",cursor:feedbackAnswers.improve?"pointer":"default",fontFamily:"inherit"}}>Continue</button>
+                  </div>
+                )}
+                {feedbackStep===3 && (
+                  <div>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"6px"}}>
+                      <div style={{fontSize:"14px",fontWeight:"700",color:"#fff",fontFamily:"Poppins,sans-serif"}}>Anything else you want us to know?</div>
+                      <button onClick={async()=>{setFeedbackSending(true);try{await fetch("/api/feedback/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rating:feedbackAnswers.rating,usage:feedbackAnswers.usage,improve:feedbackAnswers.improve,comment:"",user_email:user?.email||"unknown",user_id:user?.user_id||user?.id||"unknown"})});}catch(e){}setFeedbackSending(false);setFeedbackDone(true);}} style={{fontSize:"12px",color:"rgba(255,255,255,0.35)",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",padding:"0",textDecoration:"underline"}}>Skip</button>
+                    </div>
+                    <div style={{fontSize:"12px",color:"rgba(255,255,255,0.35)",marginBottom:"14px"}}>Optional. But even one line helps.</div>
+                    <textarea value={feedbackAnswers.comment||""} onChange={e=>setFeedbackAnswers(p=>({...p,comment:e.target.value}))} placeholder="A feature request, a frustration, a compliment..." rows={4} style={{width:"100%",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"12px",padding:"12px 14px",color:"#fff",fontSize:"13px",fontFamily:"inherit",resize:"none",outline:"none",lineHeight:1.6,marginBottom:"14px"}}/>
+                    <button disabled={feedbackSending} onClick={async()=>{setFeedbackSending(true);try{await fetch("/api/feedback/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rating:feedbackAnswers.rating,usage:feedbackAnswers.usage,improve:feedbackAnswers.improve,comment:feedbackAnswers.comment||"",user_email:user?.email||"unknown",user_id:user?.user_id||user?.id||"unknown"})});}catch(e){}setFeedbackSending(false);setFeedbackDone(true);}} style={{width:"100%",padding:"12px",borderRadius:"10px",border:"1px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.07)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>{feedbackSending?"Submitting...":"Submit & Earn 5 Credits"}</button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800;900&family=Orbitron:wght@400;700;900&display=swap');
         .sm-plans-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
