@@ -145,6 +145,11 @@ try:
 except Exception as e:
     log.warning("bug_routes failed: %s", e); bug_router = None
 try:
+    from bio_routes import router as bio_router
+    _HAS_BIO = True
+except Exception as e:
+    log.warning("bio_routes failed: %s", e); _HAS_BIO = False; bio_router = None
+try:
     from feedback_routes import router as feedback_router
     _HAS_FEEDBACK = True
 except Exception as e:
@@ -336,6 +341,8 @@ try:
 except Exception as e:
     log.warning("facebook_pages_routes failed: %s", e)
 if bug_router: app.include_router(bug_router)
+if _HAS_BIO and bio_router:
+    app.include_router(bio_router)
 if _HAS_FEEDBACK and feedback_router:
     app.include_router(feedback_router)
 # WhatsApp router
