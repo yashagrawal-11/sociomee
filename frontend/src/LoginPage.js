@@ -53,7 +53,27 @@ export function AuthCallback() {
   );
 }
 
+function LoginSkeleton() {
+  return (
+    <div style={{minHeight:"100vh",background:"#000",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"12px",padding:"24px"}}>
+      <div style={{width:"44px",height:"44px",borderRadius:"50%",background:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)",backgroundSize:"200% 100%",animation:"sk-shimmer 1.4s infinite",marginBottom:"8px"}}/>
+      <div style={{width:"160px",height:"14px",borderRadius:"6px",background:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)",backgroundSize:"200% 100%",animation:"sk-shimmer 1.4s infinite"}}/>
+      <div style={{width:"320px",height:"48px",borderRadius:"99px",background:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)",backgroundSize:"200% 100%",animation:"sk-shimmer 1.4s infinite",marginTop:"16px"}}/>
+      <div style={{display:"flex",gap:"10px",marginTop:"4px"}}>
+        {[1,2,3].map(i=><div key={i} style={{width:"90px",height:"44px",borderRadius:"99px",background:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)",backgroundSize:"200% 100%",animation:"sk-shimmer 1.4s infinite"}}/>)}
+      </div>
+      <div style={{display:"flex",gap:"10px"}}>
+        {[1,2,3].map(i=><div key={i} style={{width:"90px",height:"44px",borderRadius:"99px",background:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)",backgroundSize:"200% 100%",animation:"sk-shimmer 1.4s infinite"}}/>)}
+      </div>
+      <div style={{width:"320px",height:"48px",borderRadius:"99px",background:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%)",backgroundSize:"200% 100%",animation:"sk-shimmer 1.4s infinite",marginTop:"4px"}}/>
+      <style>{`@keyframes sk-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+    </div>
+  );
+}
+
 export default function LoginPage() {
+  const [pageReady, setPageReady] = useState(false);
+  useEffect(() => { setTimeout(() => setPageReady(true), 300); }, []);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pending = params.get("pending");
