@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 router = APIRouter(prefix="/instagram", tags=["instagram"])
+from plan_limits import check_connect_limit
 
 IG_APP_ID       = os.getenv("IG_APP_ID", "")
 IG_APP_SECRET   = os.getenv("IG_APP_SECRET", "")
@@ -58,6 +59,11 @@ def _del_account(user_id: str):
 
 @router.get("/auth-url")
 async def get_auth_url(user_id: str):
+    data = _load()
+    current = 1 if data.get(str(user_id)) else 0
+    chk = check_connect_limit(user_id, current, "Instagram")
+    if not chk["allowed"]:
+        raise HTTPException(403, chk["reason"])
     if not IG_APP_ID:
         raise HTTPException(500, "IG_APP_ID not configured")
     url = (

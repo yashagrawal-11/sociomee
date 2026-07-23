@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 log = logging.getLogger(__name__)
+from plan_limits import check_connect_limit
 router = APIRouter(prefix="/linkedin", tags=["linkedin"])
 
 CLIENT_ID = os.getenv("LINKEDIN_CLIENT_ID", "")

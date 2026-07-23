@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from typing import List
 
 log    = logging.getLogger("telegram_routes")
+from plan_limits import check_connect_limit
 router = APIRouter(prefix="/telegram", tags=["telegram"])
 
 
@@ -40,6 +41,12 @@ class QuickMessageRequest(BaseModel):
 
 @router.get("/connect-link")
 def get_connect_link(user_id: str = Query(...)):
+    from telegram_connector import TelegramConnector
+    tc_check = TelegramConnector()
+    current = 1 if tc_check.is_connected(user_id) else 0
+    chk = check_connect_limit(user_id, current, "Telegram")
+    if not chk["allowed"]:
+        raise HTTPException(403, chk["reason"])
     tc = _tc()
     try:
         return tc.generate_connect_link(user_id)

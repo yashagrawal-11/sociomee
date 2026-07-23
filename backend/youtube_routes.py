@@ -27,6 +27,7 @@ from pydantic import BaseModel
 
 log = logging.getLogger("youtube_routes")
 
+from plan_limits import check_connect_limit
 router = APIRouter(prefix="/youtube", tags=["youtube"])
 
 
@@ -88,6 +89,12 @@ def get_youtube_auth_url(redirect_uri: str = Query(default="")):
 
 @router.post("/connect")
 async def youtube_connect_route(payload: YouTubeConnectPayload):
+    from youtube_connector import YouTubeConnector
+    ytc_check = YouTubeConnector()
+    current = 1 if ytc_check.is_connected(payload.user_id) else 0
+    chk = check_connect_limit(payload.user_id, current, "YouTube")
+    if not chk["allowed"]:
+        raise HTTPException(403, chk["reason"])
     """
     Exchange OAuth authorization code for YouTube tokens.
     Stores channel info and tokens tied to user_id.

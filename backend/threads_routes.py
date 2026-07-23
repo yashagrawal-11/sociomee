@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from plan_limits import check_connect_limit
 router = APIRouter(prefix="/threads", tags=["threads"])
 
 THREADS_APP_ID       = os.getenv("THREADS_APP_ID")
@@ -56,6 +57,11 @@ def _del_account(user_id: str):
 
 @router.get("/auth-url")
 async def get_auth_url(user_id: str):
+    data = _load()
+    current = 1 if data.get(str(user_id)) else 0
+    chk = check_connect_limit(user_id, current, "Threads")
+    if not chk["allowed"]:
+        raise HTTPException(403, chk["reason"])
     if not THREADS_APP_ID:
         raise HTTPException(500, "THREADS_APP_ID not configured")
     url = (

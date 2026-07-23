@@ -52,6 +52,12 @@ def _del(user_id: str):
 
 @router.get("/auth-url")
 async def get_auth_url(user_id: str):
+    from facebook_pages_routes import _load as fb_load
+    data = fb_load()
+    current = 1 if data.get(str(user_id)) else 0
+    chk = check_connect_limit(user_id, current, "Facebook")
+    if not chk["allowed"]:
+        raise HTTPException(403, chk["reason"])
     if not FB_APP_ID:
         raise HTTPException(500, "FB_PAGES_APP_ID not configured")
     url = (
