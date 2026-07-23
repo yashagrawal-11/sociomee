@@ -70,7 +70,7 @@ async def submit_feedback(request: Request):
     credits_awarded = False
     try:
         from credits_manager import add_credits
-        add_credits(user_id, 5, reason="feedback_reward")
+        add_credits(user_id, 5, email=user_email)
         credits_awarded = True
     except Exception as e:
         log.warning("Credits award failed: %s", e)
