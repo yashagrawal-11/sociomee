@@ -2567,7 +2567,7 @@ export default function App() {
 
       {/* PROFILE SLIDE-UP OVERLAY */}
       {profilePanelOpen && <div onClick={()=>setProfilePanelOpen(false)} style={{position:"fixed",inset:0,zIndex:9998}}/>}
-      <div style={{position:"fixed",bottom:"60px",left:0,width:"220px",zIndex:9999,background:"rgba(10,10,10,0.99)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px 16px 0 0",padding:"16px 14px 20px",transform:profilePanelOpen?"translateY(0)":"translateY(120%)",visibility:profilePanelOpen?"visible":"hidden",pointerEvents:profilePanelOpen?"all":"none",transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
+      <div className="profile-slide-panel" style={{position:"fixed",bottom:"60px",left:0,width:"220px",zIndex:9999,background:"rgba(10,10,10,0.99)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px 16px 0 0",padding:"16px 14px 20px",transform:profilePanelOpen?"translateY(0)":"translateY(120%)",visibility:profilePanelOpen?"visible":"hidden",pointerEvents:profilePanelOpen?"all":"none",transition:"transform 0.35s cubic-bezier(0.32,0.72,0,1)"}}>
         <div style={{width:"32px",height:"3px",borderRadius:"99px",background:"rgba(255,255,255,0.12)",margin:"0 auto 14px"}}/>
         <button onClick={()=>{setShowPlansPopup(true);setProfilePanelOpen(false);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");fetch(`${BASE}/credits/${user?.user_id}`).then(r=>r.ok?r.json():null).then(d=>{if(d)setCreditStatus(d);}).catch(()=>{});}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -3342,6 +3342,12 @@ export default function App() {
         *{box-sizing:border-box;margin:0;padding:0;}
         @keyframes shimmer{to{background-position:400px 0;}}
         @keyframes spin{to{transform:rotate(360deg);}}
+        @media (max-width: 767px) {
+          .profile-slide-panel {
+            bottom: 58px !important;
+            left: 8px !important;
+          }
+        }
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
         @keyframes floatA{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
         @keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(16px)}}
