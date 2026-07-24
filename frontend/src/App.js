@@ -2942,7 +2942,7 @@ export default function App() {
                   <div>
                     <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"8px" }}>{t("language")}</div>
                     <CustomSelect value={language} onChange={setLanguage} label={t("selectLanguage")} options={[{id:"hinglish",label:t("langHinglish")},{id:"hindi",label:t("langHindi")},{id:"english",label:t("langEnglish")},{id:"marathi",label:t("langMarathi")},{id:"tamil",label:t("langTamil")},{id:"bengali",label:t("langBengali")}]}/>
-                <CustomSelect value={niche} onChange={setNiche} label="Content Niche" options={[{id:"",label:"Auto-detect"},{id:"gaming",label:"Gaming"},{id:"tech",label:"Tech & AI"},{id:"finance",label:"Finance & Crypto"},{id:"lifestyle",label:"Lifestyle & Vlogs"},{id:"education",label:"Education"},{id:"fitness",label:"Fitness & Health"},{id:"food",label:"Food & Cooking"},{id:"travel",label:"Travel"},{id:"fashion",label:"Fashion & Beauty"},{id:"business",label:"Business & Startup"},{id:"motivation",label:"Motivation"},{id:"music",label:"Music & Entertainment"},{id:"sports",label:"Sports & Cricket"},{id:"news",label:"News & Current Affairs"}]}/>
+
                   </div>
                   <div>
                     <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"8px" }}>{t("formatLabel")}</div>
@@ -2963,6 +2963,15 @@ export default function App() {
                 </div>
 
                 {/* TONE - Pills desktop, Dropdown mobile */}
+                <div style={{ fontSize:"11px", fontWeight:"700", color:"rgba(255,255,255,0.3)", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"10px" }}>NICHE</div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"16px" }}>
+                  {[{id:"",label:"Auto"},{id:"gaming",label:"Gaming"},{id:"tech",label:"Tech & AI"},{id:"finance",label:"Finance"},{id:"lifestyle",label:"Lifestyle"},{id:"education",label:"Education"},{id:"fitness",label:"Fitness"},{id:"food",label:"Food"},{id:"travel",label:"Travel"},{id:"fashion",label:"Fashion"},{id:"business",label:"Business"},{id:"motivation",label:"Motivation"},{id:"music",label:"Music"},{id:"sports",label:"Sports"},{id:"news",label:"News"}].map(n=>(
+                    <button key={n.id} onClick={()=>setNiche(n.id)}
+                      style={{ padding:"6px 14px", borderRadius:"99px", border:`1px solid ${niche===n.id?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.08)"}`, background:niche===n.id?"rgba(255,255,255,0.1)":"transparent", color:niche===n.id?"#fff":"rgba(255,255,255,0.4)", fontSize:"12px", fontWeight:niche===n.id?"600":"400", cursor:"pointer", fontFamily:"'Poppins',sans-serif", transition:"all 0.15s" }}>
+                      {n.label}
+                    </button>
+                  ))}
+                </div>
                 <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>{t("toneLabel")}</div>
                 <div className="tone-pills" style={{ display:"flex", flexWrap:"wrap", gap:"8px", marginBottom:"16px" }}>
                   {[

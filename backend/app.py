@@ -477,6 +477,7 @@ class FullContentRequest(BaseModel):
     language: str = Field(default="hinglish", max_length=20)
     country: str = Field(default="in", max_length=10)
     platform: str = Field(default="youtube", max_length=30)
+    niche: str = Field(default="auto", max_length=50)
 
 class PlatformContentRequest(BaseModel):
     topic: str = Field(..., min_length=1, max_length=300)
@@ -948,7 +949,8 @@ def gen_full(request: Request, payload: FullContentRequest, user: dict = Depends
             _credit_cost = 10
         raw = _generate_full_content(topic=payload.topic.strip(), persona=payload.persona.strip().lower(),
                                      language=payload.language.strip().lower(), country=payload.country.strip().lower(),
-                                     plan=user.get("plan","free"), deep_research=_deep)
+                                     plan=user.get("plan","free"), deep_research=_deep,
+                                     niche=getattr(payload,"niche","auto") or "auto")
     except Exception as e:
         import logging
         logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)

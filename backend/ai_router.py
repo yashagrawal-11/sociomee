@@ -241,6 +241,7 @@ def generate_full_content(
     country:  str = "in",
     plan:     str = "free",
     deep_research: bool = None,
+    niche:    str = "auto",
 ) -> Dict[str, Any]:
     """
     Run the full 6-step evidence-first AI pipeline.
@@ -255,6 +256,7 @@ def generate_full_content(
     persona  = (persona  or "dhruvrathee").strip()
     language = (language or "hinglish").strip().lower()
     country  = (country  or "in").strip().lower()
+    niche    = (niche    or "auto").strip().lower()
     errors:  List[str] = []
 
     if not topic:
@@ -653,7 +655,7 @@ def _score_script(script: str) -> int:
 def _generate_via_deepseek(data: dict) -> dict:
     system = "You are a viral content expert who writes evidence-first, platform-native scripts."
     output = _gemini_generate(
-        system_prompt=system, user_prompt=_build_prompt(data),
+        system_prompt=system + (f"\n\nContent niche: {niche}. Tailor everything specifically for this niche." if niche and niche!="auto" else ""), user_prompt=_build_prompt(data),
         temperature=0.9, max_tokens=900,
     )
     return {"output": output, "model_used": "gemini"}
