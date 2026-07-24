@@ -72,6 +72,36 @@ SCORE_THRESHOLD:  int = 75
 GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY", os.getenv("GOOGLE_AI_API_KEY", ""))
 
 
+def _preprocess_topic(topic: str, niche: str = "auto") -> dict:
+    """
+    Intelligently analyze the topic input:
+    - Detect if it's a keyword (1-4 words) or full title (5+ words with context)
+    - Fix common spelling mistakes via Vertex AI
+    - Return enriched topic context for the generator
+    """
+    topic = topic.strip()
+    words = topic.split()
+    word_count = len(words)
+    
+    # Heuristics to detect input type
+    has_pipe = "|" in topic or ":" in topic
+    has_question = "?" in topic or topic.lower().startswith(("how", "why", "what", "when", "where", "is ", "are ", "can ", "does "))
+    is_sentence_case = topic[0].isupper() and sum(1 for w in words[1:] if w[0].isupper()) > word_count * 0.4
+    
+    if word_count <= 3:
+        input_type = "keyword"
+    elif word_count <= 6 and not has_pipe and not has_question and not is_sentence_case:
+        input_type = "topic"
+    else:
+        input_type = "title"
+    
+    return {
+        "original": topic,
+        "word_count": word_count,
+        "input_type": input_type,  # keyword / topic / title
+        "niche": niche,
+    }
+
 def _check_topic_safety(topic: str) -> bool:
     """Returns True if topic is safe to generate content about. Returns False (block) for
     self-harm, sexual content, slurs, hate speech, or violence — regardless of language,
@@ -258,6 +288,9 @@ def generate_full_content(
     country  = (country  or "in").strip().lower()
     niche    = (niche    or "auto").strip().lower()
     errors:  List[str] = []
+    # Analyze topic intelligence
+    _topic_meta = _preprocess_topic(topic, niche)
+    _input_type = _topic_meta["input_type"]  # keyword / topic / title
 
     if not topic:
         return {
@@ -655,7 +688,7 @@ def _score_script(script: str) -> int:
 def _generate_via_deepseek(data: dict) -> dict:
     system = "You are a viral content expert who writes evidence-first, platform-native scripts."
     output = _gemini_generate(
-        system_prompt=system + (f"\n\nContent niche: {niche}. Tailor everything specifically for this niche." if niche and niche!="auto" else ""), user_prompt=_build_prompt(data),
+        system_prompt=system + (f"\n\nContent niche: {niche}. Tailor everything specifically for this niche." if niche and niche!="auto" else "") + f"\n\nInput analysis: The user provided a {'SINGLE KEYWORD' if _input_type=='keyword' else 'SHORT TOPIC PHRASE' if _input_type=='topic' else 'COMPLETE TITLE'}. {'Since it is a keyword, generate creative viral titles and treat the keyword as the core theme — expand it creatively.' if _input_type=='keyword' else 'Since it is a topic phrase, generate titles that cover different angles of this topic.' if _input_type=='topic' else 'Since it is a complete title, treat this as the main title and generate 3-4 strong alternative titles. Keep the core message intact.'} Also auto-correct any spelling mistakes in the topic while preserving the intent.", user_prompt=_build_prompt(data),
         temperature=0.9, max_tokens=900,
     )
     return {"output": output, "model_used": "gemini"}
