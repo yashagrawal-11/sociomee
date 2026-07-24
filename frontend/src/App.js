@@ -1577,7 +1577,7 @@ function CustomSelect({ value, onChange, options, label, grid=false, centered=fa
   return (
     <div ref={ref} style={{ position:"relative", userSelect:"none" }}>
       <button onClick={() => setOpen(o => !o)} style={{
-        width:"100%", padding:"10px 14px", borderRadius:"12px",
+        width:"100%", padding:"10px 16px", borderRadius:"99px",
         border:`1px solid ${open ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)"}`,
         background: open ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
         color:"#fff", fontSize:"12px", fontFamily:"'Poppins',sans-serif", cursor:"pointer",
@@ -1838,11 +1838,11 @@ function PlanGate({ plan, required="pro", onUpgrade, children, toolName="" }) {
   if (allowed) return <div style={{width:"100%",height:"100%",display:"flex",flexDirection:"column"}}>{children}</div>;
   return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",minHeight:"60vh",fontFamily:"Poppins,sans-serif",padding:"40px 24px",textAlign:"center"}}>
-      <div style={{width:"64px",height:"64px",borderRadius:"16px",background:"rgba(124,58,237,0.12)",border:"1px solid rgba(124,58,237,0.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"28px",marginBottom:"20px"}}>🔒</div>
+      <div style={{width:"64px",height:"64px",borderRadius:"16px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"28px",marginBottom:"20px"}}>🔒</div>
       <h2 style={{fontSize:"20px",fontWeight:"800",color:"#fff",margin:"0 0 8px",fontFamily:"Poppins,sans-serif"}}>{toolName || "Pro Feature"}</h2>
       <p style={{fontSize:"14px",color:"rgba(255,255,255,0.45)",margin:"0 0 24px",lineHeight:1.7,maxWidth:"360px"}}>This tool is available on the Pro plan and above. Upgrade to unlock all SocioMee Store tools, YouTube uploads and full AI features.</p>
       <button onClick={onUpgrade}
-        onClick={()=>window.location.href="/pricing"} style={{padding:"12px 28px",borderRadius:"99px",border:"none",background:"linear-gradient(135deg,#7c3aed,#9b5cf6)",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif"}}>
+        onClick={()=>window.location.href="/pricing"} style={{padding:"12px 28px",borderRadius:"99px",border:"none",background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",fontSize:"14px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif"}}>
         Upgrade to Pro — ₹499/month
       </button>
       <p style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",marginTop:"12px",fontFamily:"Poppins,sans-serif"}}>Cancel anytime. Instant access after payment.</p>
@@ -1873,6 +1873,7 @@ export default function App() {
   const [tone,         setTone       ] = useState("casual");
   const [personality,  setPersonality] = useState("dhruvrathee");
   const [language,     setLanguage   ] = useState("hinglish");
+  const [niche,        setNiche      ] = useState("");
   const [formatType,   setFormatType ] = useState("long");
   const [result,       setResult     ] = useState(null);
   const [loading,      setLoading    ] = useState(false);
@@ -2119,7 +2120,7 @@ export default function App() {
 
   const sbBtn = (tab, label, icon) => (
     <button key={tab} onClick={()=>toggleTab(tab)}
-      style={{ display:"flex", alignItems:"center", gap:"10px", padding:"9px 12px", borderRadius:"8px", border:"none", borderLeft:activeTab===tab?"3px solid #7c3aed":"3px solid transparent", background:activeTab===tab?"rgba(124,58,237,0.12)":"transparent", color:activeTab===tab?"#c4b5fd":"rgba(255,255,255,0.4)", fontSize:"13px", fontWeight:"600", cursor:"pointer", fontFamily:"inherit", textAlign:"left", width:"100%", transition:"all 0.15s" }}
+      style={{ display:"flex", alignItems:"center", gap:"10px", padding:"9px 12px", borderRadius:"8px", border:"none", borderLeft:activeTab===tab?"3px solid rgba(255,255,255,0.4)":"3px solid transparent", background:activeTab===tab?"rgba(255,255,255,0.07)":"transparent", color:activeTab===tab?"#fff":"rgba(255,255,255,0.4)", fontSize:"13px", fontWeight:"600", cursor:"pointer", fontFamily:"inherit", textAlign:"left", width:"100%", transition:"all 0.15s" }}
       onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.05)";e.currentTarget.style.color="rgba(255,255,255,0.75)";}}
       onMouseLeave={e=>{e.currentTarget.style.background=activeTab===tab?"rgba(124,58,237,0.12)":"transparent";e.currentTarget.style.color=activeTab===tab?"#c4b5fd":"rgba(255,255,255,0.4)";}}>
       {icon}{label}
@@ -2165,7 +2166,7 @@ export default function App() {
             }
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:"12px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{user?.name||user?.email?.split("@")[0]||"User"}</div>
-              <div style={{fontSize:"10px",color:"#a78bfa",fontWeight:"600"}}>✦ {creditStatus?.plan_label||"Free"}</div>
+              <div style={{fontSize:"10px",color:"rgba(255,255,255,0.4)",fontWeight:"500"}}>✦ {creditStatus?.plan_label||"Free"}</div>
             </div>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" style={{transform:profilePanelOpen?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
@@ -2175,7 +2176,7 @@ export default function App() {
         <nav style={{flex:1,display:"flex",flexDirection:"column",padding:"8px 8px",gap:"1px",overflowY:"auto",overflowX:"hidden",scrollbarWidth:"none",msOverflowStyle:"none"}}>
 
           {/* Generate */}
-          <button onClick={()=>{setActiveTab("generate");setSidebarOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",padding:"9px 12px",borderRadius:"8px",border:"none",background:activeTab==="generate"?"rgba(124,58,237,0.15)":"transparent",color:activeTab==="generate"?"#c4b5fd":"rgba(255,255,255,0.45)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s",borderLeft:activeTab==="generate"?"3px solid #7c3aed":"3px solid transparent"}}>
+          <button onClick={()=>{setActiveTab("generate");setSidebarOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",padding:"9px 12px",borderRadius:"8px",border:"none",background:activeTab==="generate"?"rgba(255,255,255,0.07)":"transparent",color:activeTab==="generate"?"#fff":"rgba(255,255,255,0.45)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s",borderLeft:activeTab==="generate"?"3px solid rgba(255,255,255,0.4)":"3px solid transparent"}}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             Generate
           </button>
@@ -2233,7 +2234,7 @@ export default function App() {
                 {tab:"yt-ideas",label:t("dailyVideoIdeas"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>},
               ].map(item=>(
                 <button key={item.tab} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
-                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #7c3aed":"2px solid transparent",background:activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent",color:activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
+                  style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid rgba(255,255,255,0.4)":"2px solid transparent",background:activeTab===item.tab?"rgba(255,255,255,0.07)":"transparent",color:activeTab===item.tab?"#fff":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,0.75)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
                   onMouseLeave={e=>{e.currentTarget.style.color=activeTab===item.tab?"#c4b5fd":"rgba(255,255,255,0.4)";e.currentTarget.style.background=activeTab===item.tab?"rgba(124,58,237,0.12)":"transparent";}}>
                   {item.icon}{item.label}
@@ -2941,6 +2942,7 @@ export default function App() {
                   <div>
                     <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"8px" }}>{t("language")}</div>
                     <CustomSelect value={language} onChange={setLanguage} label={t("selectLanguage")} options={[{id:"hinglish",label:t("langHinglish")},{id:"hindi",label:t("langHindi")},{id:"english",label:t("langEnglish")},{id:"marathi",label:t("langMarathi")},{id:"tamil",label:t("langTamil")},{id:"bengali",label:t("langBengali")}]}/>
+                <CustomSelect value={niche} onChange={setNiche} label="Content Niche" options={[{id:"",label:"Auto-detect"},{id:"gaming",label:"Gaming"},{id:"tech",label:"Tech & AI"},{id:"finance",label:"Finance & Crypto"},{id:"lifestyle",label:"Lifestyle & Vlogs"},{id:"education",label:"Education"},{id:"fitness",label:"Fitness & Health"},{id:"food",label:"Food & Cooking"},{id:"travel",label:"Travel"},{id:"fashion",label:"Fashion & Beauty"},{id:"business",label:"Business & Startup"},{id:"motivation",label:"Motivation"},{id:"music",label:"Music & Entertainment"},{id:"sports",label:"Sports & Cricket"},{id:"news",label:"News & Current Affairs"}]}/>
                   </div>
                   <div>
                     <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"8px" }}>{t("formatLabel")}</div>
