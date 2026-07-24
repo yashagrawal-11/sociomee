@@ -2851,8 +2851,8 @@ export default function App() {
                 <div style={{ position:"relative", marginBottom:videoFile?"8px":"20px" }}>
                   <input value={keyword} onChange={e=>setKeyword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
                     placeholder={videoFile ? "Enter keyword or video title for better results..." : "e.g. why every creator needs SocioMee AI"}
-                    style={{ width:"100%", padding:"14px 92px 14px 22px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.25)", outline:"none", fontSize:"15px", color:"#fff", background:"rgba(255,255,255,0.05)", fontFamily:"inherit", boxSizing:"border-box", transition:"border 0.2s" }}
-                    onFocus={e=>e.target.style.borderColor="#7c3aed"} onBlur={e=>e.target.style.borderColor="rgba(124,58,237,0.25)"}/>
+                    style={{ width:"100%", padding:"14px 92px 14px 22px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", outline:"none", fontSize:"15px", color:"#fff", background:"rgba(255,255,255,0.05)", fontFamily:"'Poppins',sans-serif", boxSizing:"border-box", transition:"border 0.2s" }}
+                    onFocus={e=>e.target.style.borderColor="rgba(255,255,255,0.25)"} onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
                   <button type="button" title="Speak your keyword" onClick={()=>{
                     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                       alert("Voice input not supported in this browser. Try Chrome.");
