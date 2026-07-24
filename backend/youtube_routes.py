@@ -89,9 +89,8 @@ def get_youtube_auth_url(redirect_uri: str = Query(default="")):
 
 @router.post("/connect")
 async def youtube_connect_route(payload: YouTubeConnectPayload):
-    from youtube_connector import YouTubeConnector
-    ytc_check = YouTubeConnector()
-    current = 1 if ytc_check.is_connected(payload.user_id) else 0
+    import youtube_connect as _yc
+    current = 1 if _yc.is_connected(payload.user_id) else 0
     chk = check_connect_limit(payload.user_id, current, "YouTube")
     if not chk["allowed"]:
         raise HTTPException(403, chk["reason"])
@@ -106,7 +105,7 @@ async def youtube_connect_route(payload: YouTubeConnectPayload):
     ytc = _ytc()
 
     try:
-        result = ytc.exchange_code(
+        result = _yc.exchange_code(
             code         = payload.code,
             redirect_uri = payload.redirect_uri or os.getenv("YOUTUBE_REDIRECT_URI", ""),
         )
@@ -122,7 +121,7 @@ async def youtube_connect_route(payload: YouTubeConnectPayload):
     # Read user plan for channel limit enforcement
     from credits_manager import get_credit_status
     _user_plan = get_credit_status(payload.user_id).get("plan", "free")
-    _store_result = ytc.store_youtube_tokens(
+    _store_result = _yc.store_youtube_tokens(
         user_id       = payload.user_id,
         access_token  = result["access_token"],
         refresh_token = result["refresh_token"],

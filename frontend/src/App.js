@@ -991,7 +991,7 @@ const SEND_PLATFORMS = [
   { id:"threads",   label:"Threads",   color:"#ffffff", icon:"/icons/threads.png", supports:["threads","instagram"], comingSoon:true },
 ];
 
-function PlatformSendBar({ result, platform, user, videoFile, selectedTitle }) {
+function PlatformSendBar({ result, platform, user, videoFile, selectedTitle, selectedHashtags=[] }) {
   const userId = localStorage.getItem("sociomee_user_id") || user?.user_id || "";
   const [connections, setConnections] = useState({});
   const [sendStatus, setSendStatus] = useState({});
@@ -1057,6 +1057,7 @@ function PlatformSendBar({ result, platform, user, videoFile, selectedTitle }) {
         fd.append("privacy", "public");
         fd.append("language", "Hindi/English");
         fd.append("video", videoFile);
+        if (selectedHashtags?.length > 0) fd.append("custom_hashtags", selectedHashtags.join(" "));
         const r = await fetch(`${BASE}/youtube/upload/auto`, {method:"POST", body:fd, credentials:"include"});
         if(!r.ok) { const err = await r.json().catch(()=>({})); throw new Error(err.detail||"Upload failed"); }
         setSendStatus(s=>({...s, youtube:"sent"}));
@@ -1368,6 +1369,7 @@ function InlineDescEdit({ value, onChange, topic }) {
 }
 
 function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, onTitleSelect, videoFile, selectedTitle }) {
+  const [selectedHashtags, setSelectedHashtags] = useState([]);
   const [editedScript, setEditedScript] = useState("");
   const [editedDesc, setEditedDesc] = useState("");
   if (!result) return null;
@@ -1494,8 +1496,24 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
 
       {result.seo_hashtags?.length>0&&(
         <div style={{ marginBottom:"20px" }}>
-          <SectionHead icon="🔖" title="SEO Hashtags" copyText={result.seo_hashtags.join(" ")}/>
-          <div style={{ display:"flex",flexWrap:"wrap" }}>{result.seo_hashtags.map((h,i)=><Pill key={i} color={C.success}>{h}</Pill>)}</div>
+          <SectionHead icon="🔖" title="SEO Hashtags" copyText={(selectedHashtags.length>0?selectedHashtags:result.seo_hashtags).join(" ")}/>
+          <div style={{ display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"8px" }}>
+            {result.seo_hashtags.map((h,i)=>{
+              const sel = selectedHashtags.includes(h);
+              return (
+                <span key={i} onClick={()=>setSelectedHashtags(prev=>sel?prev.filter(x=>x!==h):[...prev,h])}
+                  style={{ display:"inline-block",padding:"5px 13px",borderRadius:"99px",fontSize:"12.5px",fontWeight:"600",
+                    background:sel?"rgba(52,211,153,0.12)":"rgba(52,211,153,0.06)",
+                    color:sel?"#34d399":"rgba(52,211,153,0.5)",
+                    border:`1.5px solid ${sel?"#34d399":"rgba(52,211,153,0.2)"}`,
+                    cursor:"pointer",transition:"all 0.15s",userSelect:"none",
+                    boxShadow:sel?"0 0 8px rgba(52,211,153,0.25)":"none" }}>
+                  {h}
+                </span>
+              );
+            })}
+          </div>
+          {selectedHashtags.length>0 && <div style={{ fontSize:10, color:"rgba(52,211,153,0.6)", fontFamily:"'Poppins',sans-serif" }}>{selectedHashtags.length} selected · click to deselect</div>}
         </div>
       )}
 
@@ -1514,7 +1532,7 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
       
       {platform==="youtube" && <ThumbnailStudio keyword={keyword} title={result.best_title||result.hook||keyword} isPro={isPro} onUpgradeClick={onUpgradeClick}/>}
       {result.credits!==undefined&&<p style={{ textAlign:"center",fontSize:"12px",color:C.muted,fontWeight:"600",marginTop:"20px" }}>💳 {result.credits} credits remaining this month</p>}
-      <PlatformSendBar result={result} platform={platform} user={user} videoFile={videoFile} selectedTitle={selectedTitle}/>
+      <PlatformSendBar result={result} platform={platform} user={user} videoFile={videoFile} selectedTitle={selectedTitle} selectedHashtags={selectedHashtags}/>
     </Card>
   );
 }

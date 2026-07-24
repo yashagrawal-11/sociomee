@@ -76,18 +76,25 @@ def get_best_upload_time():
 
 def _gemini_text(prompt, max_tokens=2048):
     try:
-        import google.generativeai as genai
-        k=os.getenv("GOOGLE_AI_API_KEY","")
-        if not k: return ""
-        genai.configure(api_key=k)
-        return genai.GenerativeModel("gemini-2.0-flash").generate_content(prompt,generation_config={"max_output_tokens":max_tokens,"temperature":0.8}).text.strip()
+        import sys, os as _os
+        sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+        from vertex_engine import generate as _vgen
+        return _vgen(prompt, max_tokens=max_tokens)
     except Exception as e:
-        log.warning("Gemini: %s",e); return ""
+        log.warning("Vertex: %s", e)
+        try:
+            import google.generativeai as genai
+            k=_os.getenv("GOOGLE_API_KEY", _os.getenv("GOOGLE_AI_API_KEY",""))
+            if not k: return ""
+            genai.configure(api_key=k)
+            return genai.GenerativeModel("gemini-2.0-flash").generate_content(prompt,generation_config={"max_output_tokens":max_tokens,"temperature":0.8}).text.strip()
+        except Exception as e2:
+            log.warning("Gemini fallback: %s", e2); return ""
 
 def _gemini_vision(prompt, images):
     try:
         import google.generativeai as genai, base64
-        k=os.getenv("GOOGLE_AI_API_KEY","")
+        k=os.getenv("GOOGLE_API_KEY", os.getenv("GOOGLE_AI_API_KEY",""))
         if not k: return ""
         genai.configure(api_key=k)
         parts=[]
@@ -251,6 +258,10 @@ async def rjob(job_id:str):
 async def rseo(user_id:str=Form(...),keyword:str=Form(...),video_type:str=Form(default="video"),language:str=Form(default="Hindi/English")):
     plan=_gplan(user_id)
     if plan=="free": raise HTTPException(403,"Requires Pro plan")
+    from credits_manager import use_credit, get_credit_status
+    if not use_credit(user_id, cost=5):
+        status = get_credit_status(user_id)
+        raise HTTPException(402, detail={"error":"no_credits","message":f"Not enough credits. You have {status.get('credits_remaining',0)} credits remaining."})
     return {"seo":gen_seo(keyword,video_type,language,True),"plan":plan}
 
 @router.post("/thumbnail")
@@ -271,13 +282,12 @@ async def rauto(user_id:str=Form(...),keyword:str=Form(...),video_type:str=Form(
     plan=_gplan(user_id)
     if plan=="free": raise HTTPException(403,detail={"error":"upgrade_required","message":"Requires Pro or Premium"})
     q=get_upload_status(user_id,plan)
-    if not q["can_upload"]: raise HTTPException(429,detail={"error":"quota_exceeded","message":"Monthly limit reached"})
     from credits_manager import use_credit, get_credit_status
     if not use_credit(user_id, cost=5):
         status = get_credit_status(user_id)
         raise HTTPException(402, detail={"error":"no_credits","message":f"Not enough credits. You have {status.get('credits_remaining',0)} credits remaining."})
     vb=await video.read()
-    if len(vb)>256*1024*1024: raise HTTPException(413,"Max 256 MB")
+    if len(vb)>4*1024*1024*1024: raise HTTPException(413,"Max 4 GB")
     isshort=video_type.lower()=="short"
     su=bt=None
     if schedule_type=="best": bt=get_best_upload_time(); su=bt["utc_iso"]

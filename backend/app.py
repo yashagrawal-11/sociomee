@@ -106,6 +106,7 @@ except Exception as _re:
 # ── YouTube upload router ────────────────────────────────────────────
 try:
     from youtube_upload import router as yt_upload_router
+    from youtube_seo_routes import router as yt_seo_router
     _HAS_YT_UPLOAD = True
 except Exception as e:
     log.warning("youtube_upload failed: %s", e); _HAS_YT_UPLOAD = False; yt_upload_router = None
@@ -327,6 +328,7 @@ if _HAS_REMINDERS and reminder_router:
 if _HAS_YT_ROUTES and yt_router is not None:
     app.include_router(yt_router)
     app.include_router(yt_upload_router)
+    app.include_router(yt_seo_router)
 
 # Threads router
 if _HAS_THREADS_ROUTES and threads_router is not None:

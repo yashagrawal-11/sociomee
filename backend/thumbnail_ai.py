@@ -33,6 +33,29 @@ def _parse_json(text: str) -> dict:
     return json.loads(clean)
 
 def _call_gemini(parts: list) -> str:
+    # Try Vertex AI first (uses $300 GCloud credits)
+    try:
+        import sys, os as _os
+        sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+        import vertexai
+        from vertexai.generative_models import GenerativeModel, Part, Image as VImage
+        if not getattr(_call_gemini, "_vertex_init", False):
+            vertexai.init(project="sociomee-auth", location="us-central1")
+            _call_gemini._vertex_init = True
+        model = GenerativeModel("gemini-2.5-flash")
+        vertex_parts = []
+        for p in parts:
+            if "inline_data" in p:
+                vertex_parts.append(Part.from_data(
+                    data=base64.b64decode(p["inline_data"]["data"]),
+                    mime_type=p["inline_data"]["mime_type"]
+                ))
+            else:
+                vertex_parts.append(p.get("text",""))
+        response = model.generate_content(vertex_parts)
+        return response.text.strip()
+    except Exception as ve:
+        log.warning("Vertex thumbnail failed, falling back: %s", ve)
     key = _get_key()
     r = httpx.post(
         f"{GEMINI_URL}?key={key}",
