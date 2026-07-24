@@ -1569,69 +1569,51 @@ function CustomSelect({ value, onChange, options, label, grid=false, centered=fa
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const selected = options.find(o => o.id === value);
-
   useEffect(() => {
     const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
-
   return (
     <div ref={ref} style={{ position:"relative", userSelect:"none" }}>
       <button onClick={() => setOpen(o => !o)} style={{
-        width:"100%", padding:"11px 16px", borderRadius:"99px",
-        border:`1.5px solid ${open ? "rgba(124,58,237,0.9)" : "rgba(124,58,237,0.3)"}`,
-        background: open ? "rgba(124,58,237,0.2)" : "rgba(124,58,237,0.08)",
-        backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)",
-        color:"#fff", fontSize:"13px", fontFamily:"inherit", cursor:"pointer",
-        display:"flex", alignItems:"center",
-        justifyContent: centered ? "center" : "space-between",
-        gap:"8px", boxShadow: open ? "0 0 20px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" : "inset 0 1px 0 rgba(255,255,255,0.05)",
-        transition:"all 0.2s", outline:"none"
+        width:"100%", padding:"10px 14px", borderRadius:"12px",
+        border:`1px solid ${open ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)"}`,
+        background: open ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
+        color:"#fff", fontSize:"12px", fontFamily:"'Poppins',sans-serif", cursor:"pointer",
+        display:"flex", alignItems:"center", justifyContent:"space-between",
+        gap:"8px", transition:"all 0.15s", outline:"none"
       }}>
-        {centered && <span style={{flex:1}}/>}
-        <span style={{ fontWeight:"600", color: selected ? "#fff" : "rgba(255,255,255,0.4)" }}>{selected?.label || label}</span>
-        {centered && <span style={{flex:1, display:"flex", justifyContent:"flex-end"}}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition:"transform 0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>
-        </span>}
-        {!centered && <>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition:"transform 0.2s", flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
-        </>}
+        <span style={{ fontWeight:"500", color: selected ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.3)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{selected?.label || label}</span>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition:"transform 0.2s", flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {open && (
         <div style={{
-          position:"absolute", top:"calc(100% + 8px)", left:0, right:0, zIndex:999,
-          background:"rgba(8,5,20,0.98)", border:"1px solid rgba(124,58,237,0.35)",
-          borderRadius:"16px", padding:"6px",
+          position:"absolute", top:"calc(100% + 6px)", left:0, right:0, zIndex:999,
+          background:"rgba(12,12,14,0.98)", border:"1px solid rgba(255,255,255,0.1)",
+          borderRadius:"14px", padding:"6px",
           backdropFilter:"blur(40px)", WebkitBackdropFilter:"blur(40px)",
-          boxShadow:"0 20px 60px rgba(0,0,0,0.9), 0 0 40px rgba(124,58,237,0.2), inset 0 1px 0 rgba(255,255,255,0.05)",
-          maxHeight:"280px", overflowY:"auto", scrollbarWidth:"none", msOverflowStyle:"none",
+          boxShadow:"0 20px 60px rgba(0,0,0,0.8)",
+          maxHeight:"260px", overflowY:"auto", scrollbarWidth:"none",
           display: grid ? "grid" : "block",
           gridTemplateColumns: grid ? "1fr 1fr" : "unset",
-          gap: grid ? "1px" : "0",
-          overflow: grid ? "hidden" : "auto",
+          gap: grid ? "2px" : "0",
         }}>
-          {options.map((opt, i) => {
+          {options.map((opt) => {
             const isActive = opt.id === value;
-            const isLastOdd = grid && i === options.length - 1 && options.length % 2 !== 0;
             return (
               <button key={opt.id} onClick={() => { onChange(opt.id); setOpen(false); }}
                 style={{
-                  display:"flex", alignItems:"center", justifyContent: grid ? "flex-start" : "space-between",
-                  width:"100%", padding: grid ? "10px 12px" : "9px 12px",
-                  border:"none", gridColumn: isLastOdd ? "1 / -1" : "auto",
-                  background: isActive ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.02)",
-                  color: isActive ? "#c4b5fd" : "rgba(255,255,255,0.65)",
-                  fontSize:"12.5px", fontWeight: isActive ? "700" : "500",
-                  cursor:"pointer", fontFamily:"inherit", textAlign:"left",
-                  borderLeft: grid ? "none" : isActive ? "2px solid #7c3aed" : "2px solid transparent",
-                  transition:"all 0.12s",
-                  borderRadius: grid ? "0" : "8px",
-                }}
-                onMouseEnter={e=>{ if(!isActive){ e.currentTarget.style.background="rgba(124,58,237,0.12)"; e.currentTarget.style.color="#fff"; }}}
-                onMouseLeave={e=>{ if(!isActive){ e.currentTarget.style.background="rgba(255,255,255,0.02)"; e.currentTarget.style.color="rgba(255,255,255,0.65)"; }}}>
-                <span>{opt.label}</span>
-                {!grid && isActive && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                  display:"flex", alignItems:"center", width:"100%",
+                  padding:"9px 12px", borderRadius:"10px", border:"none",
+                  background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
+                  color: isActive ? "#fff" : "rgba(255,255,255,0.5)",
+                  fontSize:"12px", fontWeight: isActive ? "600" : "400",
+                  cursor:"pointer", fontFamily:"'Poppins',sans-serif",
+                  textAlign:"left", transition:"all 0.1s",
+                }}>
+                <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{opt.label}</span>
+                {isActive && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>}
               </button>
             );
           })}
@@ -1640,6 +1622,7 @@ function CustomSelect({ value, onChange, options, label, grid=false, centered=fa
     </div>
   );
 }
+
 
 function ChannelSettingsModal({ user, onClose, BASE, onUpgrade }) {
   const userId = localStorage.getItem("sociomee_user_id") || user?.user_id || "";
@@ -2900,7 +2883,7 @@ export default function App() {
                       : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
                     }
                   </button>
-                  <label title={videoFile?"Change file":(platform==="youtube"?"Attach video file":"Attach image file")} style={{ position:"absolute", right:"12px", top:"50%", transform:"translateY(-50%)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:videoFile?"rgba(124,58,237,0.3)":"rgba(255,255,255,0.08)" }}>
+                  <label title={videoFile?"Change file":(platform==="youtube"?"Attach video file":"Attach image file")} style={{ position:"absolute", right:"12px", top:"50%", transform:"translateY(-50%)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:videoFile?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.08)" }}>
                     {videoFile
                       ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                       : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -2915,10 +2898,16 @@ export default function App() {
                   </label>
                 </div>
                 {videoFile&&(
-                  <div style={{ display:"flex",alignItems:"center",gap:"8px",marginBottom:"12px",padding:"8px 16px",borderRadius:"99px",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.2)" }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2"/><polygon points="10,8 16,12 10,16"/></svg>
-                    <span style={{ fontSize:"12px",color:"#a78bfa",fontWeight:"600",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{videoFile.name}</span>
-                    <button onClick={()=>setVideoFile(null)} style={{ background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,0.4)",fontSize:"18px",lineHeight:1,padding:"0 2px" }}>x</button>
+                  <div style={{ marginBottom:"12px", borderRadius:"14px", overflow:"hidden", border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.02)", position:"relative" }}>
+                    {videoFile.type?.startsWith("video/") ? (
+                      <video src={URL.createObjectURL(videoFile)} style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block" }} muted playsInline/>
+                    ) : (
+                      <img src={URL.createObjectURL(videoFile)} alt="" style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block" }}/>
+                    )}
+                    <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"8px 12px", background:"linear-gradient(transparent,rgba(0,0,0,0.7))", display:"flex", alignItems:"center", gap:"8px" }}>
+                      <span style={{ fontSize:"11px",color:"rgba(255,255,255,0.7)",fontWeight:"500",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Poppins',sans-serif" }}>{videoFile.name}</span>
+                      <button onClick={()=>setVideoFile(null)} style={{ background:"rgba(255,255,255,0.1)",border:"none",cursor:"pointer",color:"rgba(255,255,255,0.6)",fontSize:"14px",lineHeight:1,padding:"2px 6px",borderRadius:"4px" }}>✕</button>
+                    </div>
                   </div>
                 )}
                 <div style={{ display:"flex",alignItems:"center",gap:"10px",marginBottom:"20px" }}>
@@ -2975,17 +2964,17 @@ export default function App() {
                 <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>{t("toneLabel")}</div>
                 <div className="tone-pills" style={{ display:"flex", flexWrap:"wrap", gap:"8px", marginBottom:"16px" }}>
                   {[
-                    {id:"bold",label:t("toneBold"),emoji:"🔥"},{id:"funny",label:t("toneFunny"),emoji:"😂"},
-                    {id:"emotional",label:t("toneEmotional"),emoji:"💖"},{id:"informative",label:t("toneInformative"),emoji:"📚"},
-                    {id:"aggressive",label:t("toneAggressive"),emoji:""},{id:"sales",label:t("toneSales"),emoji:"💸"},
-                    {id:"dramatic",label:t("toneDramatic"),emoji:"🎭"},{id:"casual",label:t("toneCasual"),emoji:"😎"},
-                    {id:"motivational",label:t("toneMotivational"),emoji:"🚀"},{id:"storytelling",label:t("toneStorytelling"),emoji:"📖"},
-                    {id:"educational",label:t("toneEducational"),emoji:"🎓"},{id:"trending",label:t("toneTrending"),emoji:"📈"},
-                    {id:"cinematic",label:t("toneCinematic"),emoji:"🎬"},
+                    {id:"bold",label:t("toneBold")},{id:"funny",label:t("toneFunny")},
+                    {id:"emotional",label:t("toneEmotional")},{id:"informative",label:t("toneInformative")},
+                    {id:"aggressive",label:t("toneAggressive")},{id:"sales",label:t("toneSales")},
+                    {id:"dramatic",label:t("toneDramatic")},{id:"casual",label:t("toneCasual")},
+                    {id:"motivational",label:t("toneMotivational")},{id:"storytelling",label:t("toneStorytelling")},
+                    {id:"educational",label:t("toneEducational")},{id:"trending",label:t("toneTrending")},
+                    {id:"cinematic",label:t("toneCinematic")},
                   ].map(tn=>(
                     <button key={tn.id} onClick={()=>setTone(tn.id)}
-                      style={{ padding:"7px 14px", borderRadius:"99px", border:`1.5px solid ${tone===tn.id?"rgba(124,58,237,0.7)":"rgba(255,255,255,0.1)"}`, background:tone===tn.id?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)", color:tone===tn.id?"#c4b5fd":"rgba(255,255,255,0.6)", fontSize:"12px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", boxShadow:tone===tn.id?"0 0 10px rgba(124,58,237,0.3)":"none" }}>
-                      {tn.emoji} {tn.label}
+                      style={{ padding:"7px 14px", borderRadius:"99px", border:`1px solid ${tone===tn.id?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.08)"}`, background:tone===tn.id?"rgba(255,255,255,0.1)":"transparent", color:tone===tn.id?"#fff":"rgba(255,255,255,0.4)", fontSize:"12px", fontWeight:tone===tn.id?"700":"500", cursor:"pointer", fontFamily:"'Poppins',sans-serif", transition:"all 0.15s" }}>
+                      {tn.label}
                     </button>
                   ))}
                 </div>
@@ -3009,8 +2998,8 @@ export default function App() {
 
                 {/* Persona info line */}
                 {selPersona && (
-                  <div style={{ fontSize:"12px", color:"rgba(255,255,255,0.35)", marginBottom:"16px", fontWeight:"600" }}>
-                    <span style={{ color:"#a78bfa", fontWeight:"700" }}>{selPersona.flag} {selPersona.label}</span>
+                  <div style={{ fontSize:"11px", color:"rgba(255,255,255,0.3)", marginBottom:"16px", fontWeight:"500", fontFamily:"'Poppins',sans-serif" }}>
+                    <span style={{ color:"rgba(255,255,255,0.5)", fontWeight:"600" }}>{selPersona.label}</span>
                     {" · "}{language.charAt(0).toUpperCase()+language.slice(1)}{" · "+t("autoSelected")}
                   </div>
                 )}
@@ -3027,7 +3016,7 @@ export default function App() {
                 {/* Generate Button - Glass style */}
                 <button onClick={handleSubmit} disabled={loading||!keyword.trim()}
                   className="gen-btn"
-                  style={{ width:"100%", padding:"16px", borderRadius:"99px", border:"1.5px solid rgba(124,58,237,0.6)", background:loading||!keyword.trim()?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.15)", backdropFilter:"blur(16px)", color:"#fff", fontWeight:"800", fontSize:"15px", cursor:"pointer", fontFamily:"inherit", boxShadow:loading||!keyword.trim()?"none":"0 0 24px rgba(124,58,237,0.5),0 0 60px rgba(124,58,237,0.2)", transition:"all 0.3s", opacity:loading||!keyword.trim()?0.5:1, letterSpacing:"1px" }}>
+                  style={{ width:"100%", padding:"16px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", backdropFilter:"blur(16px)", color:"#fff", fontWeight:"700", fontSize:"15px", cursor:loading||!keyword.trim()?"not-allowed":"pointer", fontFamily:"'Poppins',sans-serif", transition:"all 0.3s", opacity:loading||!keyword.trim()?0.4:1, letterSpacing:"0.5px" }}>
                   {loading ? (
                     <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"10px" }}>
                       <span style={{ width:"16px", height:"16px", borderRadius:"50%", border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#fff", animation:"spin 0.7s linear infinite", display:"inline-block" }}/>
@@ -3342,6 +3331,7 @@ export default function App() {
         *{box-sizing:border-box;margin:0;padding:0;}
         @keyframes shimmer{to{background-position:400px 0;}}
         @keyframes spin{to{transform:rotate(360deg);}}
+        .gen-btn:hover:not(:disabled){ border-color:rgba(124,58,237,0.7)!important; background:rgba(124,58,237,0.15)!important; box-shadow:0 0 24px rgba(124,58,237,0.5),0 0 60px rgba(124,58,237,0.2)!important; }
         @media (max-width: 767px) {
           .profile-slide-panel {
             bottom: 58px !important;
