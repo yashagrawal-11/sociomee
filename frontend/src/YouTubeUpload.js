@@ -211,6 +211,9 @@ ${videoUrl?`<div class="section">
 function FullSEOPanel({ seo, prediction, videoUrl, compact=false }) {
   const C = getC();
   const [copied, setCopied] = useState("");
+  const [editedFields, setEditedFields] = useState({});
+  const getField = (key, fallback) => editedFields[key] !== undefined ? editedFields[key] : fallback;
+  const setField = (key, val) => setEditedFields(prev => ({...prev, [key]: val}));
   const copy = (text, key) => { navigator.clipboard.writeText(String(text||"")); setCopied(key); setTimeout(()=>setCopied(""),2000); };
   if (!seo) return null;
 
@@ -228,7 +231,7 @@ function FullSEOPanel({ seo, prediction, videoUrl, compact=false }) {
     <div style={{ background:"rgba(255,255,255,0.02)", border:`1px solid rgba(255,255,255,0.07)`, borderRadius:"14px", padding:"22px 20px", marginTop:"12px" }}>
       {/* Header + PDF */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"10px" }}>
-        <span style={{ fontSize:"10px", fontWeight:"900", color:C.purple, textTransform:"uppercase", letterSpacing:"1px" }}>AI SEO Pack</span>
+        <span style={{ fontSize:"10px", fontWeight:"700", color:C.muted, textTransform:"uppercase", letterSpacing:"1.2px", fontFamily:"'Poppins',sans-serif" }}>AI SEO Pack</span>
         <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
           {seo.seo_score && <SEOScore score={seo.seo_score} />}
           <button onClick={()=>downloadSEOPdf(mergedSeo, videoUrl)}
@@ -240,14 +243,14 @@ function FullSEOPanel({ seo, prediction, videoUrl, compact=false }) {
 
       {seo.why_viral && (
         <div style={{ background:"rgba(255,255,255,0.02)", border:`1px solid rgba(255,255,255,0.07)`, borderRadius:"8px", padding:"8px 10px", marginBottom:"10px", fontSize:"11px", color:C.ink }}>
-          <strong style={{color:C.success, fontStyle:"normal"}}>Why it'll go viral:</strong> <em>{seo.why_viral}</em>
+          {seo.why_viral}
         </div>
       )}
 
       {/* Title */}
       <div style={{ marginBottom:"10px" }}>
-        <div style={row}><span style={lbl}>Viral Title</span>{copyBtn(seo.title,"title")}</div>
-        <div style={{ fontSize:"15px", fontWeight:"800", color:C.ink, lineHeight:1.5 }}>{seo.title}</div>
+        <div style={row}><span style={lbl}>Viral Title</span><div style={{display:"flex",gap:4}}>{copyBtn(getField("title", seo.title||""),"title")}<span style={{fontSize:"9px",padding:"1px 8px",borderRadius:"5px",border:"1px solid rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.3)",fontFamily:"'Poppins',sans-serif",fontSize:9}}>Edit</span></div></div>
+        <input value={getField("title", seo.title||"")} onChange={e=>setField("title",e.target.value)} style={{ fontSize:14, fontWeight:700, color:"#fff", width:"100%", background:"transparent", border:"none", borderBottom:"1px solid rgba(255,255,255,0.08)", outline:"none", padding:"4px 0 6px 0", fontFamily:"'Poppins',sans-serif", cursor:"text" }}/>
         {(seo.best_title_alternatives||[]).length>0 && (
           <div style={{ marginTop:"5px" }}>
             {seo.best_title_alternatives.map((t,i) => <div key={i} style={{ fontSize:"11px", color:C.slate, padding:"2px 0", borderBottom:`1px solid ${C.hairline}` }}>→ {t}</div>)}
@@ -257,39 +260,36 @@ function FullSEOPanel({ seo, prediction, videoUrl, compact=false }) {
 
       {seo.hook && (
         <div style={{ background:"rgba(255,255,255,0.02)", border:`1px solid rgba(255,255,255,0.07)`, borderRadius:"8px", padding:"8px 10px", marginBottom:"10px" }}>
-          <div style={{ fontSize:"9px", fontWeight:"800", color:C.rose, marginBottom:"3px", textTransform:"uppercase", letterSpacing:"1px" }}>Opening Hook — First 15 Seconds</div>
-          <div style={{ fontSize:"13px", color:C.ink, fontStyle:"italic", lineHeight:1.7 }}>"{seo.hook}"</div>
+          <div style={{ fontSize:"9.5px", fontWeight:700, color:"rgba(255,255,255,0.3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"1.4px", fontFamily:"'Poppins',sans-serif" }}>Opening Hook — First 15 Seconds</div>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,0.7)", lineHeight:1.7 }}>{seo.hook}</div>
         </div>
       )}
 
       {seo.thumbnail_idea && (
         <div style={{ background:"rgba(255,255,255,0.02)", border:`1px solid rgba(255,255,255,0.07)`, borderRadius:"8px", padding:"8px 10px", marginBottom:"10px" }}>
-          <div style={{ fontSize:"9px", fontWeight:"800", color:C.warn, marginBottom:"3px", textTransform:"uppercase", letterSpacing:"1px" }}>Thumbnail Idea</div>
+          <div style={{ fontSize:"9.5px", fontWeight:700, color:"rgba(255,255,255,0.3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"1.4px", fontFamily:"'Poppins',sans-serif" }}>Thumbnail Idea</div>
           <div style={{ fontSize:"13px", color:C.ink, lineHeight:1.7 }}>{seo.thumbnail_idea}</div>
         </div>
       )}
 
       {/* Description */}
       <div style={{ marginBottom:"10px" }}>
-        <div style={row}><span style={lbl}>Full Description</span>{copyBtn(seo.description,"desc")}</div>
-        <div style={{ fontSize:"12px", color:C.slate, lineHeight:1.9, maxHeight:compact?"80px":"160px", overflowY:"auto", position:"relative", whiteSpace:"pre-wrap", background:"rgba(255,255,255,0.02)", borderRadius:"8px", padding:"12px 14px", scrollbarWidth:"thin", scrollbarColor:"rgba(255,255,255,0.15) transparent" }}>
-          {seo.description}
-          
-        </div>
+        <div style={row}><span style={lbl}>Full Description</span>{copyBtn(getField("description", seo.description||""),"desc")}</div>
+        <textarea value={getField("description", seo.description||"")} onChange={e=>setField("description",e.target.value)} rows={compact?4:14} style={{ fontSize:12, color:"rgba(255,255,255,0.6)", lineHeight:1.9, width:"100%", boxSizing:"border-box", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10, padding:"12px 14px", resize:"none", outline:"none", fontFamily:"'Poppins',sans-serif" }}/>
       </div>
 
       {/* Tags */}
       <div style={{ marginBottom:"10px" }}>
         <div style={row}><span style={lbl}>Tags ({(seo.tags||[]).length})</span>{copyBtn((seo.tags||[]).join(", "),"tags")}</div>
         <div style={{ display:"flex", flexWrap:"wrap", gap:"5px" }}>
-          {(seo.tags||[]).map((tag,i) => <span key={i} style={{ padding:"2px 7px", borderRadius:"99px", background:`${C.purple}12`, color:C.purple, fontSize:"10px", fontWeight:"600" }}>{tag}</span>)}
+          {(seo.tags||[]).map((tag,i) => <span key={i} style={{ padding:"2px 7px", borderRadius:"99px", background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"10px", fontWeight:"600" }}>{tag}</span>)}
         </div>
       </div>
 
       {(seo.hashtags||[]).length>0 && (
         <div style={{ marginBottom:"10px" }}>
           <div style={row}><span style={lbl}>Hashtags</span>{copyBtn((seo.hashtags||[]).join(" "),"hash")}</div>
-          <div style={{ fontSize:"12px", color:C.teal, fontWeight:"700" }}>{seo.hashtags.join(" ")}</div>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,0.5)", fontWeight:600, lineHeight:1.8, fontFamily:"'Poppins',sans-serif" }}>{seo.hashtags.join(" ")}</div>
         </div>
       )}
 
@@ -297,7 +297,7 @@ function FullSEOPanel({ seo, prediction, videoUrl, compact=false }) {
         <div style={{ marginBottom:"10px" }}>
           <div style={{ ...lbl, marginBottom:"5px", display:"block" }}>Search Queries People Use</div>
           <div style={{ display:"flex", flexWrap:"wrap", gap:"5px" }}>
-            {seo.queries.map((q,i) => <span key={i} style={{ padding:"2px 7px", borderRadius:"99px", background:`${C.teal}12`, color:C.teal, fontSize:"10px", fontWeight:"600" }}>{q}</span>)}
+            {seo.queries.map((q,i) => <span key={i} style={{ padding:"2px 7px", borderRadius:"99px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", color:"rgba(255,255,255,0.45)", fontSize:12, fontWeight:500 }}>{q}</span>)}
           </div>
         </div>
       )}
@@ -312,7 +312,7 @@ function FullSEOPanel({ seo, prediction, videoUrl, compact=false }) {
       {/* SocioMee Predicts */}
       {prediction && (
         <div style={{ background:"rgba(255,255,255,0.02)", border:`1px solid rgba(255,255,255,0.07)`, borderRadius:"10px", padding:"12px" }}>
-          <div style={{ fontSize:"10px", fontWeight:"900", color:C.purple, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"3px" }}>SocioMee Predicts</div>
+          <div style={{ fontSize:"9.5px", fontWeight:"700", color:C.muted, textTransform:"uppercase", letterSpacing:"1.2px", marginBottom:"3px", fontFamily:"'Poppins',sans-serif" }}>SocioMee Predicts</div>
           <div style={{ fontSize:"10px", color:C.muted, marginBottom:"10px" }}>Based on AI analysis of your topic, niche, and Indian YouTube trends</div>
 
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"6px", marginBottom:"8px" }}>
@@ -339,9 +339,9 @@ function FullSEOPanel({ seo, prediction, videoUrl, compact=false }) {
           </div>
 
           {prediction.growth_tip && (
-            <div style={{ background:`${C.success}10`, border:`1px solid ${C.success}25`, borderRadius:"8px", padding:"8px 10px" }}>
-              <div style={{ fontSize:"9px", fontWeight:"800", color:C.success, marginBottom:"2px", textTransform:"uppercase" }}>SocioMee Recommends</div>
-              <div style={{ fontSize:"11px", color:C.ink }}>{prediction.growth_tip}</div>
+            <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"8px", padding:"8px 10px" }}>
+              <div style={{ fontSize:"9.5px", fontWeight:700, color:"rgba(255,255,255,0.3)", marginBottom:4, textTransform:"uppercase", letterSpacing:"1.4px", fontFamily:"'Poppins',sans-serif" }}>SocioMee Recommends</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.7)", lineHeight:1.7 }}>{prediction.growth_tip}</div>
             </div>
           )}
         </div>
@@ -389,22 +389,23 @@ function VideoCard({ item, index, onUpdate, onRemove, bestTime }) {
       {item.jobId && item.jobStatus!=="done" && item.jobStatus!=="error" && (
         <div style={{ marginBottom:"10px" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"4px" }}>
-            <Spinner size={14} color={C.purple} />
-            <span style={{ fontSize:"11px", color:C.purple, fontWeight:"700" }}>{item.jobMessage||"Processing…"}</span>
+            <Spinner size={14} color="rgba(255,255,255,0.5)" />
+            <span style={{ fontSize:"11px", color:C.muted, fontWeight:"600", fontFamily:"'Poppins',sans-serif" }}>{item.jobMessage||"Processing…"}</span>
           </div>
           <div style={{ height:"4px", background:C.hairline, borderRadius:"99px", overflow:"hidden" }}>
-            <div style={{ height:"100%", width:`${item.jobProgress||0}%`, background:`linear-gradient(90deg,${C.purple},${C.rose})`, borderRadius:"99px", transition:"width 0.5s" }} />
+            <div style={{ height:"100%", width:`${item.jobProgress||0}%`, background:"rgba(255,255,255,0.4)", borderRadius:"99px", transition:"width 0.5s" }} />
           </div>
         </div>
       )}
 
       {item.jobStatus==="done" && item.jobResult && (
         <div style={{ background:`${C.success}10`, border:`1px solid ${C.success}30`, borderRadius:"10px", padding:"10px 12px", marginBottom:"8px" }}>
-          <div style={{ fontSize:"12px", fontWeight:"800", color:C.success, marginBottom:"4px" }}>Uploaded Successfully!</div>
+          <div style={{ fontSize:"12px", fontWeight:"600", color:"rgba(255,255,255,0.6)", marginBottom:"6px", fontFamily:"'Poppins',sans-serif" }}>Uploaded Successfully</div>
           <div style={{ fontSize:"11px", color:C.ink, marginBottom:"6px" }}>{item.jobResult.title}</div>
           <a href={item.jobResult.video_url} target="_blank" rel="noreferrer"
-            style={{ display:"inline-flex", alignItems:"center", gap:"4px", padding:"6px 14px", borderRadius:"8px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,80,80,0.35)", color:"#ff6b6b", fontWeight:"800", fontSize:"11px", textDecoration:"none" }}>
-            ▶ View on YouTube
+            style={{ display:"inline-flex", alignItems:"center", gap:"8px", padding:"8px 16px", borderRadius:"10px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.1)", color:"#fff", fontWeight:"600", fontSize:"12px", textDecoration:"none", fontFamily:"'Poppins',sans-serif" }}>
+            <img src="/icons/youtube.png" alt="YT" style={{ width:18, height:18, objectFit:"contain", flexShrink:0 }}/>
+            View on YouTube
           </a>
         </div>
       )}
@@ -421,7 +422,7 @@ function VideoCard({ item, index, onUpdate, onRemove, bestTime }) {
             <input value={item.keyword} onChange={e=>onUpdate(index,{keyword:e.target.value})} placeholder="Keyword for AI SEO *"
               style={{ flex:1, padding:"9px 12px", borderRadius:"10px", border:`1.5px solid ${C.hairline}`, background:C.inputBg, color:C.ink, fontSize:"12px", fontFamily:"'Poppins',sans-serif", outline:"none" }} />
             <button onClick={generateSEO} disabled={genLoading||!item.keyword.trim()}
-              style={{ padding:"9px 12px", borderRadius:"10px", border:"none", background:!item.keyword.trim()?C.hairline:`${C.purple}22`, color:!item.keyword.trim()?C.muted:C.purple, fontWeight:"800", fontSize:"11px", cursor:!item.keyword.trim()?"not-allowed":"pointer", fontFamily:"'Poppins',sans-serif", display:"flex", alignItems:"center", gap:"4px" }}>
+              style={{ padding:"9px 12px", borderRadius:"10px", border:"none", background:"rgba(255,255,255,0.04)", color:!item.keyword.trim()?C.muted:C.ink, fontWeight:"800", fontSize:"11px", cursor:!item.keyword.trim()?"not-allowed":"pointer", fontFamily:"'Poppins',sans-serif", display:"flex", alignItems:"center", gap:"4px" }}>
               {genLoading?<Spinner size={12} color={C.purple}/>:"✦"} SEO
             </button>
           </div>
@@ -447,7 +448,7 @@ function VideoCard({ item, index, onUpdate, onRemove, bestTime }) {
           <div style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>
             {[["now","Now"],["best",`Best${bestTime?" ("+bestTime.ist_label.split(" ").slice(0,2).join(" ")+")":`"`}`]].map(([v,l]) => (
               <button key={v} onClick={()=>onUpdate(index,{scheduleType:v})}
-                style={{ padding:"5px 10px", borderRadius:"8px", border:`1.5px solid ${item.scheduleType===v?C.purple:C.hairline}`, background:item.scheduleType===v?`${C.purple}15`:C.glass, color:item.scheduleType===v?C.purple:C.muted, fontWeight:"700", fontSize:"10.5px", cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>
+                style={{ padding:"5px 10px", borderRadius:"8px", border:`1px solid ${item.scheduleType===v?"rgba(255,255,255,0.15)":C.hairline}`, background:item.scheduleType===v?"rgba(255,255,255,0.06)":C.glass, color:item.scheduleType===v?C.ink:C.muted, fontWeight:"700", fontSize:"10.5px", cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>
                 {l}
               </button>
             ))}
@@ -566,11 +567,11 @@ function BulkUpload({ userId, plan, quota, setQuota, bestTime }) {
         <div onDrop={e=>{e.preventDefault();setDragOver(false);addFiles(e.dataTransfer.files);}}
           onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)}
           onClick={()=>fileRef.current?.click()}
-          style={{ border:`2px dashed ${dragOver?C.yt:C.purple}55`, borderRadius:"16px", padding:"24px", textAlign:"center", cursor:"pointer", background:dragOver?`${C.yt}08`:`${C.purple}04`, transition:"all 0.2s", marginBottom:"18px" }}>
+          style={{ borderRadius:"18px", padding:"40px 24px", textAlign:"center", cursor:"pointer", background:dragOver?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.02)", border:`1px solid ${dragOver?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.07)"}`, transition:"all 0.2s", marginBottom:"18px" }}>
           <input ref={fileRef} type="file" accept="video/*" multiple style={{ display:"none" }} onChange={e=>addFiles(e.target.files)} />
-          <div style={{ fontSize:"28px", marginBottom:"6px" }}>📹</div>
-          <div style={{ fontSize:"14px", fontWeight:"800", color:C.ink }}>{yt("वीडियो यहाँ छोड़ें या क्लिक करें","व्हिडिओ येथे टाका किंवा क्लिक करा","Drop videos here or click to select")}</div>
-          <div style={{ fontSize:"11px", color:C.muted, marginTop:"4px" }}>Select multiple videos · MP4, MOV, AVI · Max 4 GB each</div>
+          <div style={{ width:48, height:48, borderRadius:14, background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px", fontSize:22 }}>+</div>
+          <div style={{ fontSize:"14px", fontWeight:"600", color:C.ink, fontFamily:"'Poppins',sans-serif", marginBottom:6 }}>Drop your videos here</div>
+          <div style={{ fontSize:"11px", color:C.muted, fontFamily:"'Poppins',sans-serif" }}>MP4, MOV, AVI · Max 4 GB each</div>
         </div>
       )}
 
@@ -769,7 +770,7 @@ function ThumbnailAnalyzer({ userId }) {
           {result.mode==="compare"&&result.analysis.winner&&<div style={{ background:`${C.success}12`, border:`1px solid ${C.success}44`, borderRadius:"10px", padding:"10px 12px", marginBottom:"12px" }}><div style={{ fontSize:"13px", fontWeight:"900", color:C.success }}>🏆 Thumbnail {result.analysis.winner} wins!</div><div style={{ fontSize:"11px", color:C.ink, marginTop:"3px" }}>{result.analysis.winner_reason}</div></div>}
           {result.mode==="single"&&<><div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"12px" }}><span style={{ fontSize:"13px", fontWeight:"900", color:C.ink }}>Analysis Result</span><ScoreRing score={result.analysis.ctr_score}/></div>{prev1&&<img src={prev1} style={{ width:"100%", maxHeight:"100px", objectFit:"cover", borderRadius:"8px", marginBottom:"10px" }} alt="thumbnail"/>}</>}
           {[{label:"✅ Strengths",items:result.analysis.strengths,col:C.success},{label:"❌ Weaknesses",items:result.analysis.weaknesses,col:C.danger},{label:"Improvements",items:result.analysis.improvements,col:C.purple}].map(({label,items,col})=>items?.filter(Boolean).length>0&&<div key={label} style={{ marginBottom:"10px" }}><div style={{ fontSize:"10px", fontWeight:"700", color:col, marginBottom:"4px", textTransform:"uppercase" }}>{label}</div>{items.filter(Boolean).map((item,i)=><div key={i} style={{ fontSize:"11.5px", color:C.ink, padding:"2px 0" }}>• {item}</div>)}</div>)}
-          {result.analysis.overall&&<div style={{ background:`${C.purple}08`, borderRadius:"10px", padding:"10px", marginTop:"8px", fontSize:"12px", color:C.ink, fontStyle:"italic" }}>{result.analysis.overall}</div>}
+          {result.analysis.overall&&<div style={{ background:`${C.purple}08`, borderRadius:"10px", padding:"10px", marginTop:"8px", fontSize:"12px", color:C.ink, fontStyle:"normal" }}>{result.analysis.overall}</div>}
         </div>
       )}
     </div>
@@ -803,10 +804,10 @@ export default function YouTubeUpload({ user }) {
 
   return (
     <div style={{ fontFamily:"'DM Sans',sans-serif", paddingBottom:"20px" }}>
-      <div style={{ display:"flex", gap:"4px", marginBottom:"16px", background:`${C.purple}08`, borderRadius:"12px", padding:"4px" }}>
+      <div style={{ display:"flex", gap:"4px", marginBottom:"16px", background:"rgba(255,255,255,0.02)", borderRadius:"12px", padding:"4px", border:"1px solid rgba(255,255,255,0.06)" }}>
         {[["upload","Bulk Upload"],["history","History"],["seo","SEO AI"],["thumb","Thumbnail"]].map(([id,label]) => (
           <button key={id} onClick={()=>setActiveTab(id)}
-            style={{ flex:1, padding:"8px 4px", borderRadius:"9px", border:"none", background:activeTab===id?C.glass:"transparent", color:activeTab===id?C.purple:C.muted, fontWeight:activeTab===id?"800":"600", fontSize:"11px", cursor:"pointer", fontFamily:"'Poppins',sans-serif", transition:"all 0.15s", boxShadow:activeTab===id?"0 1px 4px rgba(0,0,0,0.08)":"none" }}>
+            style={{ flex:1, padding:"8px 4px", borderRadius:"9px", border:"none", background:activeTab===id?"rgba(255,255,255,0.07)":"transparent", color:activeTab===id?"#fff":C.muted, fontWeight:activeTab===id?"700":"500", fontSize:"11px", cursor:"pointer", fontFamily:"'Poppins',sans-serif", transition:"all 0.15s" }}>
             {label}
           </button>
         ))}

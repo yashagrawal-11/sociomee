@@ -167,13 +167,13 @@ function getUpcomingFestivals() {
     { name:"Karva Chauth",nameHi:"करवा चौथ",nameMr:"करवा चौथ",      date:"2026-10-17", emoji:"🌕", color:"#ffd700", topics:["Karva Chauth makeup","Karva Chauth outfit","Thali decoration ideas","Karva Chauth vlog","Sargi recipes"] },
     { name:"Dhanteras",nameHi:"धनतेरस",nameMr:"धनत्रयोदशी",         date:"2026-10-28", emoji:"🪙", color:"#ffd700", topics:["Dhanteras shopping guide","What to buy on Dhanteras","Gold vs silver Dhanteras","Dhanteras puja vidhi"] },
     { name:"Diwali",nameHi:"दीवाली",nameMr:"दिवाळी",            date:"2026-10-29", emoji:"🪔", color:"#ff9500", topics:["Diwali decoration ideas","Diwali outfit 2026","Diwali sweets recipe","Diwali vlog","Diwali rangoli","Diwali puja"] },
-    { name:"Bhai Dooj",nameHi:"भाई दूज",nameMr:"भाऊबीज",         date:"2026-10-31", emoji:"❤️", color:"#e91e63", topics:["Bhai Dooj gift ideas","Brother sister vlog","Bhai Dooj celebration","Tilak ceremony"] },
+    { name:"Bhai Dooj",nameHi:"भाई दूज",nameMr:"भाऊबीज",         date:"2026-10-31", emoji:"", color:"#e91e63", topics:["Bhai Dooj gift ideas","Brother sister vlog","Bhai Dooj celebration","Tilak ceremony"] },
     { name:"Chhath Puja",nameHi:"छठ पूजा",nameMr:"छठ पूजा",       date:"2026-11-02", emoji:"☀️", color:"#ff9500", topics:["Chhath Puja vlog","Thekua recipe","Arghya ghat celebration","Chhath Puja traditions","Sunrise prayer"] },
     { name:"Guru Nanak Jayanti",nameHi:"गुरु नानक जयंती",nameMr:"गुरु नानक जयंती",date:"2026-11-14", emoji:"🙏", color:"#ff9500", topics:["Gurpurab special","Gurbani shabads","Langar recipes","Sikh traditions","Waheguru shabad"] },
     { name:"Christmas",nameHi:"क्रिसमस",nameMr:"नाताळ",         date:`${y}-12-25`, emoji:"🎄", color:"#00c853", topics:["Christmas decoration India","Christmas gift ideas","Christmas recipes","Christmas vlog","Secret Santa ideas"] },
     { name:"New Year",nameHi:"नया साल",nameMr:"नवीन वर्ष",          date:`${y+1}-01-01`, emoji:"🎆", color:"#7c3aed", topics:["New Year resolutions 2027","New Year party ideas","Best of 2026 recap","New Year countdown vlog","Goals 2027"] },
     { name:"Republic Day",nameHi:"गणतंत्र दिवस",nameMr:"प्रजासत्ताक दिन",      date:`${y}-01-26`, emoji:"🇮🇳", color:"#ff9500", topics:["Republic Day special","India constitution facts","Patriotic songs","26 January parade","Republic Day speech"] },
-    { name:"Valentine's Day",nameHi:"वैलेंटाइन डे",nameMr:"वॅलेंटाईन डे",   date:`${y}-02-14`, emoji:"❤️", color:"#e91e63", topics:["Valentine's Day gifts India","Valentine's vlog","Date ideas India","Valentine's makeup","Couple goals"] },
+    { name:"Valentine's Day",nameHi:"वैलेंटाइन डे",nameMr:"वॅलेंटाईन डे",   date:`${y}-02-14`, emoji:"", color:"#e91e63", topics:["Valentine's Day gifts India","Valentine's vlog","Date ideas India","Valentine's makeup","Couple goals"] },
   ];
   return festivals.map(f => {
     const d = new Date(f.date);
@@ -200,11 +200,10 @@ function calcMilestones(currentSubs, dailyGrowth) {
 // ── COMPONENTS ────────────────────────────────────────────────────────
 function StatCard({ icon, label, value, sub, color }) {
   return (
-    <div style={{ background:"rgba(255,255,255,0.04)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"16px", padding:"18px 20px", flex:1, minWidth:"120px" }}>
-      <div style={{ fontSize:"22px", marginBottom:"6px" }}>{icon}</div>
-      <div style={{ fontSize:"22px", fontWeight:"900", color:color||C.purple, letterSpacing:"-1px", lineHeight:1 }}>{value}</div>
-      <div style={{ fontSize:"11px", fontWeight:"700", color:C.muted, marginTop:"4px", textTransform:"uppercase", letterSpacing:"0.8px" }}>{label}</div>
-      {sub && <div style={{ fontSize:"11px", color:C.success, fontWeight:"600", marginTop:"2px" }}>{sub}</div>}
+    <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"16px", padding:"18px 20px", flex:1, minWidth:"120px" }}>
+      <div style={{ fontSize:"22px", fontWeight:"900", color:color||"#fff", letterSpacing:"-1px", lineHeight:1 }}>{value}</div>
+      <div style={{ fontSize:"10px", fontWeight:"600", color:"rgba(255,255,255,0.3)", marginTop:"6px", textTransform:"uppercase", letterSpacing:"1px", fontFamily:"'Poppins',sans-serif" }}>{label}</div>
+      {sub && <div style={{ fontSize:"10px", color:"rgba(255,255,255,0.3)", fontWeight:"600", marginTop:"2px", fontFamily:"'Poppins',sans-serif" }}>{sub}</div>}
     </div>
   );
 }
@@ -283,9 +282,9 @@ function GrowthPrediction({ prediction, topic }) {
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"10px", marginBottom:"14px" }}>
         {[
-          { icon:"👁️", label:"Est. Views",    val:fmt(estimated_views) },
-          { icon:"➕", label:"Est. New Subs", val:`+${fmt(estimated_subs)}` },
-          { icon:"📈", label:"Growth",         val:`+${growth_pct}%` },
+          { icon:"", label:"Est. Views",    val:fmt(estimated_views) },
+          { icon:"", label:"Est. New Subs", val:`+${fmt(estimated_subs)}` },
+          { icon:"", label:"Growth",         val:`+${growth_pct}%` },
         ].map((s, i) => (
           <div key={i} style={{ background:C.glass, borderRadius:"10px", padding:"10px", textAlign:"center" }}>
             <div style={{ fontSize:"18px" }}>{s.icon}</div>
@@ -367,12 +366,12 @@ function TopVideos({ videos }) {
   function scoreColor(s) { return s>=75?"#22c55e":s>=50?"#f59e0b":"#ef4444"; }
   function aiTip(v, i) {
     const eng = parseFloat(getEng(v));
-    if (i===0) return "⚡ Your best performer — replicate this format immediately for guaranteed growth";
-    if (eng>5) return "🔥 High engagement — your audience loves this style, double down on it";
-    if (eng<1) return "📌 Low engagement — add stronger hook in first 5 seconds and a clear CTA";
-    if (v.comments > v.likes*0.1) return "💬 Great comment ratio — ask more questions to boost discussion";
-    if (i<=2) return "✅ Top performer — use similar title structure and thumbnail style again";
-    return "📈 Upload a follow-up on this topic — audience showed interest, strike while hot";
+    if (i===0) return "Your best performer — replicate this format immediately for guaranteed growth";
+    if (eng>5) return "High engagement — your audience loves this style, double down on it";
+    if (eng<1) return "Low engagement — add stronger hook in first 5 seconds and a clear CTA";
+    if (v.comments > v.likes*0.1) return "Great comment ratio — ask more questions to boost discussion";
+    if (i<=2) return "Top performer — use similar title structure and thumbnail style again";
+    return "Upload a follow-up on this topic — audience showed interest, strike while hot";
   }
   return (
     <div>
@@ -420,7 +419,7 @@ function TopVideos({ videos }) {
                     const commentRate = v.views>0?+(v.comments/v.views*100).toFixed(2):0;
                     const engRate = +eng;
                     const perfScore = Math.round(v.views/maxViews*100);
-                    const aiTip = engRate>5?"🔥 Top performer! Replicate this video format immediately.":engRate>2?"💡 Good engagement. Add stronger end screen CTA to boost subs.":likeRate>5?"👍 Good like ratio but low comments. Ask questions in video.":"📌 Low engagement. Improve thumbnail & hook in first 5 seconds.";
+                    const aiTip = engRate>5?"🔥 Top performer! Replicate this video format immediately.":engRate>2?"💡 Good engagement. Add stronger end screen CTA to boost subs.":likeRate>5?"👍 Good like ratio but low comments. Ask questions in video.":"Low engagement. Improve thumbnail & hook in first 5 seconds.";
                     
                     const donuts = [
                       {
@@ -831,6 +830,9 @@ function SEOTab({ userId, channel, C }) {
     setScoreLoad(false);
   };
 
+  const [copiedKey, setCopiedKey] = useState("");
+  const copyText = (text, key) => { navigator.clipboard.writeText(String(text||"")); setCopiedKey(key); setTimeout(()=>setCopiedKey(""), 2000); };
+  const CopyBtn = ({text, id}) => <button onClick={()=>copyText(text,id)} style={{ padding:"3px 10px", borderRadius:6, border:"1px solid rgba(255,255,255,0.08)", background:copiedKey===id?"rgba(52,211,153,0.1)":"transparent", color:copiedKey===id?"#34d399":C.muted, fontSize:10, cursor:"pointer", fontFamily:"'Poppins',sans-serif", flexShrink:0, transition:"all 0.2s" }}>{copiedKey===id?"Copied":"Copy"}</button>;
   const sc = n => n >= 75 ? "#34d399" : n >= 50 ? "#fbbf24" : "#f87171";
   const card = { background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"16px 18px", marginBottom:12 };
   const lbl = { fontSize:"9.5px", fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:10, display:"block", fontFamily:"'Poppins',sans-serif" };
@@ -923,19 +925,25 @@ function SEOTab({ userId, channel, C }) {
               {results.titles?.map((t,i) => (
                 <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 12px", background:"rgba(255,255,255,0.02)", borderRadius:10, border:"1px solid rgba(255,255,255,0.06)" }}>
                   <span style={{ fontSize:12, color:C.ink, flex:1, lineHeight:1.5 }}>{t}</span>
-                  <button onClick={()=>navigator.clipboard.writeText(t)} style={{ padding:"3px 10px", borderRadius:6, border:"1px solid rgba(255,255,255,0.08)", background:"transparent", color:C.muted, fontSize:10, cursor:"pointer", fontFamily:"'Poppins',sans-serif", marginLeft:10, flexShrink:0 }}>Copy</button>
+    <CopyBtn text={t} id={`title-${i}`} />
                 </div>
               ))}
             </div>
 
-            <span style={lbl}>Related Keywords</span>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+              <span style={{...lbl, marginBottom:0}}>Related Keywords</span>
+              <CopyBtn text={(results.related_keywords||[]).join(", ")} id="rel-kw" />
+            </div>
             <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:14 }}>
               {results.related_keywords?.map((r,i) => (
                 <span key={i} onClick={()=>setKeyword(r)} style={{ padding:"4px 10px", borderRadius:99, background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", color:C.slate, fontSize:11, cursor:"pointer" }}>{r}</span>
               ))}
             </div>
 
-            <span style={lbl}>Tags</span>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+              <span style={{...lbl, marginBottom:0}}>Tags</span>
+              <CopyBtn text={(results.tags||[]).join(", ")} id="tags" />
+            </div>
             <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:14 }}>
               {results.tags?.map((t,i) => (
                 <span key={i} style={{ padding:"4px 10px", borderRadius:99, background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", color:C.muted, fontSize:11 }}>{t}</span>
@@ -1280,7 +1288,7 @@ function CompetitorTab({ userId, C }) {
               <button onClick={()=>!saved.find(s=>s.name===competitor.name)&&setSaved(p=>[...p,competitor])} style={{padding:"8px 16px",borderRadius:99,border:`1.5px solid ${C.hairline}`,background:"rgba(255,255,255,0.04)",color:C.muted,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>{saved.find(s=>s.name===competitor.name)?"✓ Tracked":"+ Track"}</button>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
-              {[{icon:"👥",label:yt("सब्सक्राइबर","सदस्य","Subscribers"),val:fmtC(competitor.subscribers),color:"#ff0000"},{icon:"👁️",label:yt("कुल व्यूज़","एकूण व्ह्यूज","Total Views"),val:fmtC(competitor.total_views),color:"#a78bfa"},{icon:"",label:yt("औसत व्यूज़","सरासरी व्ह्यूज","Avg Views"),val:fmtC(competitor.avg_views),color:"#22d3ee"},{icon:"❤️",label:yt("एंगेजमेंट","एंगेजमेंट",yt("एंगेजमेंट","एंगेजमेंट","Engagement")),val:`${competitor.engagement_rate}%`,color:engColor(competitor.engagement_rate)}].map(({icon,label,val,color})=>(
+              {[{icon:"",label:yt("सब्सक्राइबर","सदस्य","Subscribers"),val:fmtC(competitor.subscribers),color:"#ff0000"},{icon:"",label:yt("कुल व्यूज़","एकूण व्ह्यूज","Total Views"),val:fmtC(competitor.total_views),color:"#a78bfa"},{icon:"",label:yt("औसत व्यूज़","सरासरी व्ह्यूज","Avg Views"),val:fmtC(competitor.avg_views),color:"#22d3ee"},{icon:"",label:yt("एंगेजमेंट","एंगेजमेंट",yt("एंगेजमेंट","एंगेजमेंट","Engagement")),val:`${competitor.engagement_rate}%`,color:engColor(competitor.engagement_rate)}].map(({icon,label,val,color})=>(
                 <div key={label} style={{textAlign:"center",padding:"14px 8px",background:`${color}10`,borderRadius:12,border:`1px solid ${color}25`}}>
                   <div style={{fontSize:18}}>{icon}</div>
                   <div style={{fontSize:18,fontWeight:900,color,marginTop:6}}>{val}</div>
@@ -1630,129 +1638,170 @@ function VideoIdeasTab({ userId, channel, C }) {
   );
 }
 
-function VideoCommentRow({ video, userId, C }) {
-  C = getThemeC();
-  const [comments, setComments] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const [filter, setFilter] = useState("all");
-  const [order, setOrder] = useState("time");
-  const [copied, setCopied] = useState(null);
-
-  async function load(ord) {
-    setLoading(true);
-    try {
-      const r = await fetch(`${BASE}/youtube/comments/${userId}?video_id=${video.video_id}&order=${ord||order}&max_results=50`);
-      const d = await r.json();
-      setComments(d.comments || []);
-      setLoaded(true);
-    } catch(e) {}
-    setLoading(false);
-  }
-
-  function toggle() {
-    setExpanded(e => {
-      if (!e && !loaded) load(order);
-      return !e;
-    });
-  }
-
-  function copyText(text, id) {
-    navigator.clipboard.writeText(text.replace(/<[^>]+>/g,""));
-    setCopied(id); setTimeout(()=>setCopied(null),2000);
-  }
-
-  const filtered = filter==="all" ? comments : comments.filter(c => filter==="replied"?c.replied:!c.replied);
-  const repliedCount = comments.filter(c=>c.replied).length;
-  const unrepliedCount = comments.filter(c=>!c.replied).length;
-
-  return (
-    <div style={{ background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:"14px", overflow:"hidden", marginBottom:"10px" }}>
-      {/* Video row header */}
-      <div onClick={toggle} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", cursor:"pointer" }}>
-        {video.thumbnail && <img src={video.thumbnail} alt="" style={{ width:"64px", height:"36px", borderRadius:"6px", objectFit:"cover", flexShrink:0 }}/>}
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ fontSize:"12px", fontWeight:"700", color:C.ink, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{video.title}</div>
-          <div style={{ fontSize:"9px", color:C.muted, marginTop:"2px" }}>{video.published_at}</div>
-        </div>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" style={{ flexShrink:0, transform:expanded?"rotate(180deg)":"rotate(0deg)", transition:"transform 0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-
-      {/* Comments section */}
-      {expanded && (
-        <div style={{ borderTop:`1px solid ${C.hairline}`, padding:"12px 14px" }}>
-          {/* Controls */}
-          <div style={{ display:"flex", gap:"6px", marginBottom:"10px", flexWrap:"wrap" }}>
-            {[["time","Newest"],["relevance","Top"]].map(([v,l])=>(
-              <button key={v} onClick={()=>{ setOrder(v); load(v); }}
-                style={{ padding:"4px 10px", borderRadius:"8px", border:`1px solid ${order===v?C.purple:C.hairline}`, background:order===v?`${C.purple}20`:"transparent", color:order===v?C.purple:C.muted, fontSize:"10px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
-            ))}
-            {loaded && <>
-              {[["all",`All (${comments.length})`],["unreplied",`Unreplied (${unrepliedCount})`],["replied",`Replied (${repliedCount})`]].map(([v,l])=>(
-                <button key={v} onClick={()=>setFilter(v)}
-                  style={{ padding:"4px 10px", borderRadius:"8px", border:`1px solid ${filter===v?C.purple:C.hairline}`, background:filter===v?`${C.purple}20`:"transparent", color:filter===v?C.purple:C.muted, fontSize:"10px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
-              ))}
-            </>}
-          </div>
-
-          {loading && <div style={{ textAlign:"center", padding:"20px", color:C.muted, fontSize:"12px" }}>Loading comments...</div>}
-          {!loading && loaded && filtered.length === 0 && <div style={{ textAlign:"center", padding:"20px", color:C.muted, fontSize:"12px" }}>No comments found.</div>}
-
-          {!loading && filtered.map(cm => (
-            <div key={cm.comment_id} style={{ background:`${C.glass}`, border:`1px solid ${cm.replied?"#22c55e22":C.hairline}`, borderRadius:"10px", padding:"10px 12px", marginBottom:"8px" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"6px" }}>
-                {cm.avatar
-                  ? <img src={cm.avatar} alt="" style={{ width:"26px", height:"26px", borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
-                  : <div style={{ width:"26px", height:"26px", borderRadius:"50%", background:`${C.purple}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", fontWeight:"800", color:C.purple, flexShrink:0 }}>{cm.author?.charAt(0)}</div>
-                }
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:"11px", fontWeight:"700", color:C.ink }}>{cm.author}</div>
-                  <div style={{ fontSize:"9px", color:C.muted }}>{cm.date}</div>
-                </div>
-                <div style={{ display:"flex", gap:"5px", alignItems:"center", flexShrink:0 }}>
-                  {cm.likes > 0 && <span style={{ fontSize:"9px", color:C.muted }}>👍 {cm.likes}</span>}
-                  {cm.replied
-                    ? <span style={{ fontSize:"9px", fontWeight:"700", color:"#22c55e", background:"#22c55e15", padding:"2px 6px", borderRadius:"99px" }}>✓ Replied</span>
-                    : <span style={{ fontSize:"9px", fontWeight:"700", color:"#ef4444", background:"#ef444415", padding:"2px 6px", borderRadius:"99px" }}>Unreplied</span>
-                  }
-                  <button onClick={()=>copyText(cm.text, cm.comment_id)}
-                    style={{ padding:"3px 7px", borderRadius:"5px", background:copied===cm.comment_id?"#22c55e20":C.glass, border:`1px solid ${copied===cm.comment_id?"#22c55e44":C.hairline}`, color:copied===cm.comment_id?"#22c55e":C.muted, fontSize:"9px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit" }}>
-                    {copied===cm.comment_id?"✓":"Copy"}
-                  </button>
-                </div>
-              </div>
-              <div style={{ fontSize:"12px", color:C.ink, lineHeight:1.6, whiteSpace:"pre-wrap" }}>{cm.text}</div>
-              {cm.reply_count > 0 && <div style={{ marginTop:"4px", fontSize:"9px", color:C.muted }}>💬 {cm.reply_count} replies</div>}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function SentimentTab({ userId, channel, C }) {
   C = getThemeC();
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [allComments, setAllComments] = useState([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [filter, setFilter] = useState("unreplied");
+  const [copiedId, setCopiedId] = useState(null);
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
-    fetch(`${BASE}/youtube/channel-videos/${userId}?max_results=20`, { headers: authHeaders() })
-      .then(r=>r.json())
-      .then(d=>{ console.log("channel-videos:", d); setVideos(d.videos||[]); setLoading(false); })
-      .catch(e=>{ console.error("channel-videos error:", e); setLoading(false); });
-
+    fetch(`${BASE}/youtube/all-videos/${userId}?max_results=50`, { headers: authHeaders() })
+      .then(r => r.json())
+      .then(d => { setVideos(d.videos || []); setLoading(false); })
+      .catch(() => setLoading(false));
   }, [userId]);
 
-  if (loading) return <div style={{ textAlign:"center", padding:"40px", color:C.muted, fontSize:"13px" }}>Loading videos...</div>;
-  if (!videos.length) return <div style={{ textAlign:"center", padding:"40px", color:C.muted, fontSize:"13px" }}>No videos found.</div>;
+  useEffect(() => {
+    if (!videos.length) return;
+    setLoadingComments(true);
+    setAllComments([]);
+    // Load comments from first 10 videos
+    const top = videos.slice(0, 10);
+    Promise.all(top.map(v =>
+      fetch(`${BASE}/youtube/comments/${userId}?video_id=${v.video_id}&order=time&max_results=20`)
+        .then(r => r.json())
+        .then(d => (d.comments || []).map(c => ({ ...c, video })))
+        .catch(() => [])
+    )).then(results => {
+      const flat = results.flat();
+      setAllComments(flat);
+      setLoadingComments(false);
+    });
+  }, [videos]);
+
+  const filtered = filter === "unreplied"
+    ? allComments.filter(c => !c.replied)
+    : filter === "replied"
+    ? allComments.filter(c => c.replied)
+    : allComments;
+
+  const current = filtered[activeIdx];
+  const video = current?.video;
+
+  const decodeHTML = (str) => {
+    if (!str) return "";
+    return str
+      .replace(/<[^>]+>/g, "")
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&nbsp;/g, " ")
+      .replace(/&#\d+;/g, c => String.fromCharCode(c.match(/\d+/)[0]));
+  };
+  const fmtDate = (d) => {
+    if (!d) return "";
+    try {
+      const date = new Date(d);
+      const now = new Date();
+      const diff = Math.floor((now - date) / 1000);
+      if (diff < 60) return "just now";
+      if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+      if (diff < 2592000) return `${Math.floor(diff/86400)}d ago`;
+      if (diff < 31536000) return `${Math.floor(diff/2592000)}mo ago`;
+      return `${Math.floor(diff/31536000)}y ago`;
+    } catch { return d?.slice(0,10) || ""; }
+  };
+  const copy = (text, id) => {
+    navigator.clipboard.writeText(decodeHTML(text||""));
+    setCopiedId(id); setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const card = { background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"16px 18px", marginBottom:12 };
+  const lbl = { fontSize:"9.5px", fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", fontFamily:"'Poppins',sans-serif" };
+
+  if (loading) return <div style={{ textAlign:"center", padding:"40px", color:"rgba(255,255,255,0.3)", fontSize:13 }}>Loading videos...</div>;
+  if (!videos.length) return <div style={{ textAlign:"center", padding:"40px", color:"rgba(255,255,255,0.3)", fontSize:13 }}>No videos found.</div>;
 
   return (
-    <div>
-      <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1px", textTransform:"uppercase", color:C.muted, marginBottom:"14px" }}>💬 Comments — Click a video to expand</div>
-      {videos.map(v => <VideoCommentRow key={v.video_id} video={v} userId={userId} C={C}/>)}
+    <div style={{ fontFamily:"'Poppins',sans-serif" }}>
+      {/* Filter pills */}
+      <div style={{ display:"flex", gap:6, marginBottom:14 }}>
+        {[["unreplied","Unanswered"],["replied","Answered"],["all","All"]].map(([v,l]) => (
+          <button key={v} onClick={()=>{ setFilter(v); setActiveIdx(0); }}
+            style={{ padding:"5px 14px", borderRadius:99, border:`1px solid ${filter===v?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.07)"}`, background:filter===v?"rgba(255,255,255,0.06)":"transparent", color:filter===v?"#fff":"rgba(255,255,255,0.3)", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>
+            {l} {filter===v&&!loadingComments?`(${filtered.length})`:""}
+          </button>
+        ))}
+      </div>
+
+      {loadingComments && (
+        <div style={{ ...card, textAlign:"center", padding:32, color:"rgba(255,255,255,0.3)", fontSize:12 }}>Loading comments...</div>
+      )}
+
+      {!loadingComments && filtered.length === 0 && (
+        <div style={{ ...card, textAlign:"center", padding:32, color:"rgba(255,255,255,0.3)", fontSize:12 }}>
+          {filter === "unreplied" ? "All comments answered!" : "No comments found."}
+        </div>
+      )}
+
+      {!loadingComments && filtered.length > 0 && current && (
+        <>
+          {/* Main comment card */}
+          <div style={card}>
+            <div style={{ display:"flex", gap:14, alignItems:"flex-start" }}>
+              {/* Comment content */}
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
+                  {current.avatar
+                    ? <img src={current.avatar} alt="" style={{ width:32, height:32, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
+                    : <div style={{ width:32, height:32, borderRadius:"50%", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"rgba(255,255,255,0.4)", flexShrink:0 }}>{current.author?.charAt(0)}</div>
+                  }
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{current.author}</div>
+                    <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)", marginTop:1, fontFamily:"'Poppins',sans-serif" }}>{fmtDate(current.date)}</div>
+                  </div>
+                  {current.likes > 0 && <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>{current.likes} likes</span>}
+                  <button onClick={()=>copy(current.text, current.comment_id)}
+                    style={{ padding:"3px 10px", borderRadius:6, border:`1px solid ${copiedId===current.comment_id?"rgba(52,211,153,0.3)":"rgba(255,255,255,0.08)"}`, background:copiedId===current.comment_id?"rgba(52,211,153,0.08)":"transparent", color:copiedId===current.comment_id?"#34d399":"rgba(255,255,255,0.3)", fontSize:10, cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>
+                    {copiedId===current.comment_id?"Copied":"Copy"}
+                  </button>
+                </div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,0.85)", lineHeight:1.7, whiteSpace:"pre-wrap", marginBottom:10 }}>{decodeHTML(current.text)}</div>
+                {current.reply_count > 0 && <div style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>{current.reply_count} replies</div>}
+              </div>
+
+              {/* Video thumbnail */}
+              {video && (
+                <div style={{ flexShrink:0, width:100 }}>
+                  <img src={video.thumbnail} alt="" style={{ width:100, height:56, borderRadius:8, objectFit:"cover", display:"block" }}/>
+                  <div style={{ fontSize:9, color:"rgba(255,255,255,0.3)", marginTop:4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:100 }}>{video.title}</div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+            <button onClick={()=>setActiveIdx(i=>Math.max(0,i-1))} disabled={activeIdx===0}
+              style={{ padding:"6px 16px", borderRadius:99, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:activeIdx===0?"rgba(255,255,255,0.2)":"#fff", fontSize:11, fontWeight:700, cursor:activeIdx===0?"not-allowed":"pointer", fontFamily:"'Poppins',sans-serif" }}>
+              Previous
+            </button>
+            <div style={{ display:"flex", gap:5, alignItems:"center" }}>
+              {filtered.slice(Math.max(0,activeIdx-4), Math.min(filtered.length, activeIdx+5)).map((_,i) => {
+                const idx = Math.max(0,activeIdx-4)+i;
+                return <div key={idx} onClick={()=>setActiveIdx(idx)} style={{ width:idx===activeIdx?20:6, height:6, borderRadius:99, background:idx===activeIdx?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.15)", cursor:"pointer", transition:"all 0.2s" }}/>;
+              })}
+            </div>
+            <button onClick={()=>setActiveIdx(i=>Math.min(filtered.length-1,i+1))} disabled={activeIdx===filtered.length-1}
+              style={{ padding:"6px 16px", borderRadius:99, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:activeIdx===filtered.length-1?"rgba(255,255,255,0.2)":"#fff", fontSize:11, fontWeight:700, cursor:activeIdx===filtered.length-1?"not-allowed":"pointer", fontFamily:"'Poppins',sans-serif" }}>
+              Next
+            </button>
+          </div>
+
+          {/* Comment counter */}
+          <div style={{ textAlign:"center", fontSize:10, color:"rgba(255,255,255,0.25)", fontFamily:"'Poppins',sans-serif" }}>
+            {activeIdx+1} of {filtered.length} {filter==="unreplied"?"unanswered":""}  comments
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -1985,12 +2034,12 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
                 fetch(`${BASE}/youtube/auth-url?redirect_uri=${encodeURIComponent(window.location.origin+"/youtube/callback")}`)
                   .then(r=>r.json()).then(d=>{ if(d.url) window.location.href=d.url; });
               }
-            }} title="Add YouTube channel" style={{ width:"26px", height:"26px", borderRadius:"50%", border:`1px solid ${C.purple}44`, background:C.purple+"15", color:C.purple, fontSize:"16px", fontWeight:"700", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>+</button>
+            }} title="Add YouTube channel" style={{ width:"26px", height:"26px", borderRadius:"50%", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.6)", fontSize:"16px", fontWeight:"700", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>+</button>
             <button className="yt-disconnect-btn" onClick={() => { if (window.confirm("Disconnect this channel?")) { fetch(`${BASE}/youtube/disconnect-channel/${userId}?channel_id=${activeChannelId}`, {method:"DELETE"}).then(() => { if (allChannels.length <= 1) { setConnected(false); setChannel(null); } else { load(); } }); } }} style={{ padding:"4px 9px", borderRadius:"99px", border:`1px solid ${C.danger}44`, background:C.danger+"10", color:C.danger, fontSize:"10px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit" }}>{yt("डिस्कनेक्ट","डिस्कनेक्ट","Disconnect")}</button>
           </div>
         </div>
         {channelMenuOpen && allChannels.length > 1 && (
-          <div style={{ position:"absolute", top:"calc(100% + 4px)", left:0, right:0, zIndex:9999, background:"rgba(12,12,20,0.99)", border:`1px solid ${C.purple}44`, borderRadius:"12px", padding:"6px", boxShadow:"0 16px 48px rgba(0,0,0,0.6)", backdropFilter:"blur(20px)" }}>
+          <div style={{ position:"absolute", top:"calc(100% + 4px)", left:0, right:0, zIndex:9999, background:"rgba(12,12,20,0.99)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"12px", padding:"6px", boxShadow:"0 16px 48px rgba(0,0,0,0.6)", backdropFilter:"blur(20px)" }}>
             {allChannels.map(ch => (
               <div key={ch.channel_id} onClick={async () => {
                 if (ch.channel_id === activeChannelId) { setChannelMenuOpen(false); return; }
@@ -1999,7 +2048,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
                 setChannelMenuOpen(false);
                 setChannel(null); setAnalytics(null); setVideos([]);
                 setTimeout(() => load(), 100);
-              }} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"8px 10px", borderRadius:"8px", cursor:"pointer", background:ch.channel_id===activeChannelId?C.purple+"22":"transparent", border:ch.channel_id===activeChannelId?`1px solid ${C.purple}44`:"1px solid transparent", marginBottom:"3px" }}>
+              }} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"8px 10px", borderRadius:"8px", cursor:"pointer", background:ch.channel_id===activeChannelId?"rgba(255,255,255,0.06)":"transparent", border:ch.channel_id===activeChannelId?"1px solid rgba(255,255,255,0.12)":"1px solid transparent", marginBottom:"3px" }}>
                 {ch.thumbnail_url
                   ? <img src={ch.thumbnail_url} alt="" style={{ width:"30px", height:"30px", borderRadius:"50%", objectFit:"cover" }}/>
                   : <div style={{ width:"30px", height:"30px", borderRadius:"50%", background:`linear-gradient(135deg,${C.yt},#cc0000)`, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:"13px", fontWeight:"900" }}>{ch.channel_title?.charAt(0)}</div>
@@ -2008,12 +2057,12 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
                   <div style={{ fontSize:"11px", fontWeight:"700", color:C.ink, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{ch.channel_title}</div>
                   <div style={{ fontSize:"9px", color:C.muted }}>{fmt(ch.subscribers)} {yt("सब्स","सदस्य","subs")} · {fmt(ch.video_count)} {yt("वीडियो","व्हिडिओ","videos")}</div>
                 </div>
-                {ch.channel_id===activeChannelId && <span style={{ fontSize:"10px", color:C.purple, fontWeight:"800" }}>✓</span>}
+                {ch.channel_id===activeChannelId && <span style={{ fontSize:"10px", color:"rgba(255,255,255,0.6)", fontWeight:"700" }}>✓</span>}
               </div>
             ))}
             <div style={{ borderTop:`1px solid ${C.hairline}`, marginTop:"4px", paddingTop:"6px", textAlign:"center" }}>
               <span style={{ fontSize:"9px", color:C.muted }}>{allChannels.length} / {(()=>{const p=(user?.plan||"free"); return p.startsWith("premium")?7:p.startsWith("pro")?3:1;})()} channels · </span>
-              <span style={{ fontSize:"9px", color:C.purple, cursor:"pointer", fontWeight:"700" }}>Upgrade plan</span>
+              <span style={{ fontSize:"9px", color:"rgba(255,255,255,0.4)", cursor:"pointer", fontWeight:"700" }}>Upgrade plan</span>
             </div>
           </div>
         )}
@@ -2034,7 +2083,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
 
           ["sentiment",yt("कमेंट्स","टिप्पण्या","Comments")],
         ].map(([key, label]) => (
-          <button key={key} onClick={() => setActiveTab(key)} style={{ padding:"8px 16px", borderRadius:"99px", border:`1.5px solid ${activeTab===key ? "rgba(124,58,237,0.7)" : "rgba(124,58,237,0.18)"}`, background:activeTab===key ? "rgba(124,58,237,0.18)" : C.glass, backdropFilter:"blur(10px)", color:activeTab===key ? "#a78bfa" : C.muted, fontWeight:"800", fontSize:"12px", cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap", boxShadow:activeTab===key ? "0 0 16px rgba(124,58,237,0.4)" : "none", transition:"all 0.2s" }}>
+          <button key={key} onClick={() => setActiveTab(key)} style={{ padding:"8px 16px", borderRadius:"99px", border:`1px solid ${activeTab===key ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.07)"}`, background:activeTab===key ? "rgba(255,255,255,0.08)" : "transparent", color:activeTab===key ? "#fff" : "rgba(255,255,255,0.35)", fontWeight:activeTab===key?"700":"500", fontSize:"12px", cursor:"pointer", fontFamily:"'Poppins',sans-serif", whiteSpace:"nowrap", transition:"all 0.2s" }}>
             {label}
           </button>
         ))}
@@ -2044,15 +2093,15 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
       {activeTab === "analytics" && (
         <>
           <div className="yt-stat-grid" style={{ display:"flex", gap:"10px", flexWrap:"wrap", marginBottom:"20px" }}>
-            <StatCard icon="👥" label={yt("सब्सक्राइबर","सदस्य","Subscribers")}        value={fmt(channel?.subscribers)}       color={C.yt} />
-            <StatCard icon="👁️" label={yt("कुल व्यूज़","एकूण व्ह्यूज","Total Views")}        value={fmt(channel?.total_views)}       color={C.purple} />
+            <StatCard icon="" label={yt("सब्सक्राइबर","सदस्य","Subscribers")}        value={fmt(channel?.subscribers)}       color={C.yt} />
+            <StatCard icon="" label={yt("कुल व्यूज़","एकूण व्ह्यूज","Total Views")}        value={fmt(channel?.total_views)}       color="#fff" />
             <StatCard icon="" label={`${yt("व्यूज़","व्ह्यूज",yt("व्यूज़","व्ह्यूज","Views"))} (${days}d)`} value={fmt(analytics?.total_views)}     sub={analytics?.is_mock ? "Demo data" : ""} color={C.teal} />
-            <StatCard icon="➕" label={`${yt("सब्स","सदस्य","Subs")} (${days}d)`}  value={`+${fmt(analytics?.total_subs)}`} color={C.success} />
+            <StatCard icon="" label={`${yt("सब्स","सदस्य","Subs")} (${days}d)`}  value={`+${fmt(analytics?.total_subs)}`} color={C.success} />
           </div>
           <div style={{ background:"rgba(255,255,255,0.03)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"20px", marginBottom:"20px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"16px", flexWrap:"wrap", gap:"6px" }}>
               <div>
-                <span style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.2px", textTransform:"uppercase", color:"#a78bfa" }}>📈 {yt("चैनल विश्लेषण","चॅनेल विश्लेषण","Channel Analytics")}</span>
+                <span style={{ fontSize:"9.5px", fontWeight:"700", letterSpacing:"1.3px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", fontFamily:"'Poppins',sans-serif" }}>{yt("चैनल विश्लेषण","चॅनेल विश्लेषण","Channel Analytics")}</span>
                 <div style={{ fontSize:"22px", fontWeight:"900", color:"#fff", marginTop:"4px" }}>{activeChart==="views"?fmt(analytics?.total_views||0):fmt(analytics?.total_subs||0)}</div>
                 <div style={{ fontSize:"11px", color:"rgba(255,255,255,0.4)" }}>{yt("पिछले","मागील","Last")} {days} {yt("दिन","दिवस","days")}</div>
               </div>
@@ -2084,7 +2133,7 @@ export default function YouTubeDashboard({ user, topic = "", initialTab = "analy
               {label:"Watch Time",value:(analytics?.chart_data?Math.round(analytics.chart_data.reduce((a,r)=>a+(r.minutes||0),0)/60):0)+"h",sub:"Total minutes",color:"#f59e0b",icon:"⏱"},
               {label:"Avg Daily",value:analytics?.chart_data?Math.round(analytics.chart_data.reduce((a,r)=>a+(r.views||0),0)/(analytics.chart_data.length||1)):0,sub:"Views per day",color:"#7c3aed",icon:""},
               {label:"Best Day",value:analytics?.chart_data?.length?analytics.chart_data.reduce((a,b)=>a.views>b.views?a:b).date?.slice(5):"—",sub:"Highest views",color:"#34d399",icon:"🚀"},
-              {label:"New Subs",value:"+"+(analytics?.total_subs||0),sub:"This period",color:"#ff6eb5",icon:"📈"},
+              {label:"New Subs",value:"+"+(analytics?.total_subs||0),sub:"This period",color:"#ff6eb5",icon:""},
             ].map((s,i)=>(
               <div key={i} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"12px",padding:"10px 8px"}}>
                 <div style={{fontSize:"8px",fontWeight:"700",color:"rgba(255,255,255,0.35)",textTransform:"uppercase",letterSpacing:"0.8px",marginBottom:"4px"}}>{s.label}</div>
