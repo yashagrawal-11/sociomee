@@ -2786,40 +2786,40 @@ export default function App() {
 
       {/* MAIN CONTENT */}
       {activeTab==="notes" && isLoggedIn && (
-        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Notes" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeNotes onSendToGenerator={()=>setActiveTab("generate")} user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="cloud" && isLoggedIn && (
-        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Cloud" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeCloud user={user} onUpgradeClick={()=>window.location.href="/pricing?from=app"}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="calendar" && isLoggedIn && (
-        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <SocioMeeCalendar user={user}/>
         </div>
       )}
       {activeTab==="share" && isLoggedIn && (
-        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Share" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeShare user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="pixel" && isLoggedIn && (
-        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Pixel" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeePixel user={user} creditStatus={creditStatus}/>
           </PlanGate>
         </div>
       )}
       {activeTab==="pdf" && isLoggedIn && (
-        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100 }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100 }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee PDF" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeePDF onSendToGenerator={(text)=>setActiveTab("generate")} user={user} creditStatus={creditStatus}/>
           </PlanGate>
@@ -3110,7 +3110,7 @@ export default function App() {
       {activeTab==="yt-ideas"     && isLoggedIn && <DailyVideoIdeas/>}
       {activeTab==="screenrecorder" && isLoggedIn && <ScreenRecorder user={user} creditStatus={creditStatus}/>}
       {activeTab==="convert" && isLoggedIn && (
-        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"auto", position:"fixed", top:0, left:window.innerWidth<=767?0:"220px", right:0, bottom:0, zIndex:100, background:"#0a0a0a" }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", flexDirection:"column", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100, background:"#0a0a0a" }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Convert" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeConvert user={user} creditStatus={creditStatus}/>
           </PlanGate>
@@ -3347,6 +3347,9 @@ export default function App() {
           .profile-slide-panel {
             bottom: 58px !important;
             left: 8px !important;
+          }
+          .app-fullscreen-panel {
+            left: 0 !important;
           }
         }
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
