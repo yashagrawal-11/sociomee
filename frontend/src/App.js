@@ -2825,7 +2825,7 @@ export default function App() {
           </PlanGate>
         </div>
       )}
-      <div id="main-content" style={{ marginLeft:"220px", flex:1, padding:"48px 32px 80px", minHeight:"100vh", overflowX:"hidden", display:(activeTab==="notes"||activeTab==="pdf"||activeTab==="pixel"||activeTab==="share"||activeTab==="cloud"||activeTab==="calendar")?"none":"block" }}>
+      <div id="main-content" style={{ marginLeft:"220px", flex:1, padding:"48px 32px 80px", minHeight:"100vh", overflowX:"hidden", display:(activeTab==="notes"||activeTab==="pdf"||activeTab==="pixel"||activeTab==="share"||activeTab==="cloud"||activeTab==="calendar"||activeTab==="convert")?"none":"block" }}>
         <div style={{ maxWidth:"860px", margin:"0 auto" }}>
 
           <div style={{ marginBottom:"28px" }}>
