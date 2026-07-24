@@ -2825,7 +2825,7 @@ export default function App() {
           </PlanGate>
         </div>
       )}
-      <div id="main-content" style={{ marginLeft:"220px", flex:1, padding:"48px 32px 80px", minHeight:"100vh", overflowX:"hidden", display:(activeTab==="notes"||activeTab==="pdf"||activeTab==="pixel"||activeTab==="share"||activeTab==="cloud"||activeTab==="calendar"||activeTab==="convert")?"none":"block" }}>
+      <div id="main-content" style={{ marginLeft:"220px", flex:1, padding:"48px 32px 80px", minHeight:"100vh", overflowX:"hidden", display:(activeTab==="notes"||activeTab==="pdf"||activeTab==="pixel"||activeTab==="share"||activeTab==="cloud"||activeTab==="calendar")?"none":"block" }}>
         <div style={{ maxWidth:"860px", margin:"0 auto" }}>
 
           <div style={{ marginBottom:"28px" }}>
@@ -3110,7 +3110,7 @@ export default function App() {
       {activeTab==="yt-ideas"     && isLoggedIn && <DailyVideoIdeas/>}
       {activeTab==="screenrecorder" && isLoggedIn && <ScreenRecorder user={user} creditStatus={creditStatus}/>}
       {activeTab==="convert" && isLoggedIn && (
-        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"hidden", display:"flex", flexDirection:"column", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100, background:"#0a0a0a" }}>
+        <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"auto", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100, background:"#0a0a0a" }}>
           <PlanGate plan={user?.plan||"free"} required="pro" toolName="SocioMee Convert" onUpgrade={()=>window.location.href="/pricing?from=app"}>
           <SocioMeeConvert user={user} creditStatus={creditStatus}/>
           </PlanGate>

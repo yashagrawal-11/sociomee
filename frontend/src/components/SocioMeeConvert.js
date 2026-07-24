@@ -188,16 +188,16 @@ export default function SocioMeeConvert({ user, creditStatus }) {
 
       {/* Format picker bottom sheet */}
       {showPicker && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", zIndex:400, display:"flex", flexDirection:"column", justifyContent:"flex-end" }} onClick={()=>setShowPicker(false)}>
-          <div style={{ background:"#111", borderRadius:"20px 20px 0 0", padding:"16px 16px 32px", maxHeight:"75vh", overflowY:"auto" }} onClick={e=>e.stopPropagation()}>
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.65)", zIndex:400, display:"flex", flexDirection:"column", justifyContent:mob?"flex-end":"center", alignItems:mob?"stretch":"flex-end", paddingRight:mob?0:"20px" }} onClick={()=>setShowPicker(false)}>
+          <div style={{ background:"rgba(14,14,16,0.98)", backdropFilter:"blur(24px)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:mob?"20px 20px 0 0":"16px", padding:"16px 16px 28px", maxHeight:"75vh", overflowY:"auto", width:mob?"100%":"280px", marginTop:mob?0:"60px" }} onClick={e=>e.stopPropagation()}>
             <div style={{ width:"36px", height:"3px", background:"rgba(255,255,255,0.15)", borderRadius:"99px", margin:"0 auto 20px" }}/>
             {GROUPS.map(g=>(
               <div key={g.label}>
-                <p style={{ fontSize:"9px", fontWeight:"700", color:"rgba(255,255,255,0.25)", letterSpacing:"1.5px", textTransform:"uppercase", margin:"16px 0 8px", fontFamily:F }}>{g.label}</p>
+                <p style={{ fontSize:"9px", fontWeight:"600", color:"rgba(255,255,255,0.2)", letterSpacing:"1.5px", textTransform:"uppercase", margin:"14px 0 6px", fontFamily:F }}>{g.label}</p>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:"6px" }}>
                   {g.items.map(item=>(
                     <button key={item.id} onClick={()=>{ setActive(item.id); setFiles([]); setResult(null); setError(""); setShowPicker(false); }}
-                      style={{ padding:"7px 14px", borderRadius:"99px", border:`1px solid ${active===item.id?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.08)"}`, background:active===item.id?"rgba(255,255,255,0.1)":"transparent", color:active===item.id?"#fff":C.muted, fontSize:"12px", cursor:"pointer", fontFamily:F, display:"flex", alignItems:"center", gap:"4px" }}>
+                      style={{ padding:"7px 14px", borderRadius:"99px", border:`1px solid ${active===item.id?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.06)"}`, background:active===item.id?"rgba(255,255,255,0.06)":"transparent", color:active===item.id?"rgba(255,255,255,0.85)":"rgba(255,255,255,0.3)", fontSize:"12px", cursor:"pointer", fontFamily:F, display:"flex", alignItems:"center", gap:"4px" }}>
                       {item.label}
                       {item.pp && <span style={{ fontSize:"9px", color:"rgba(167,139,250,0.8)" }}>Pro+</span>}
                     </button>
