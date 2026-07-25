@@ -362,7 +362,7 @@ function Scheduler({ userId, boards, onPublished }) {
         {loading ? "Scheduling..." : "Schedule Pin"}
       </button>
       {err && <p style={{ fontSize:12, color:C.danger, fontWeight:600, marginTop:8 }}>⚠ {err}</p>}
-    </>
+    </div>
   );
 }
 
