@@ -612,9 +612,36 @@ export default function InstagramDashboard({ user, topic = "" }) {
                 </div>
               )}
 
-              <div style={{ fontSize:12.5, color:C.slate, lineHeight:1.7 }}>
-                <div><strong>Best time to post:</strong> {prediction.best_post_time}</div>
-                <div><strong>Tip:</strong> {prediction.tip}</div>
+              {prediction.hook_suggestions?.length > 0 && (
+                <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, padding:20, marginBottom:14 }}>
+                  <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:C.muted, marginBottom:14 }}>Suggested Hooks</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    {prediction.hook_suggestions.map((h, i) => (
+                      <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 14px" }}>
+                        <span style={{ fontSize:12.5, color:"#f5f5f7", fontWeight:600, lineHeight:1.5, flex:1 }}>{h}</span>
+                        <div style={{ display:"flex", gap:6, marginLeft:10, flexShrink:0 }}>
+                          <button onClick={() => navigator.clipboard.writeText(h)} style={{ padding:"4px 10px", borderRadius:7, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(255,255,255,0.4)", fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Copy</button>
+                          <button onClick={() => window.dispatchEvent(new CustomEvent("sociomee:generate", { detail:{ content:h, platform:"instagram" } }))} style={{ padding:"4px 10px", borderRadius:7, border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.06)", color:"#f5f5f7", fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Generate</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, padding:20 }}>
+                <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:C.muted, marginBottom:14 }}>Post Strategy</div>
+                {prediction.best_post_time && (
+                  <div style={{ marginBottom:12 }}>
+                    <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:8 }}>Best Time to Post</div>
+                    <span style={{ display:"inline-block", padding:"6px 16px", borderRadius:99, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)", color:"#f5f5f7", fontSize:12.5, fontWeight:700 }}>{prediction.best_post_time}</span>
+                  </div>
+                )}
+                {prediction.tip && (
+                  <div>
+                    <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:8 }}>AI Tip</div>
+                    <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.6)", lineHeight:1.7, background:"rgba(255,255,255,0.03)", borderRadius:10, padding:"10px 14px", borderLeft:"2px solid rgba(255,255,255,0.15)" }}>{prediction.tip}</div>
+                  </div>
+                )}
               </div>
             </>
           )}

@@ -479,73 +479,62 @@ PIN_FORMATS = {
 
 @router.get("/predict")
 async def predict_viral(user_id: str, topic: str = "", pin_format: str = "static"):
+    from credits_manager import use_credit, get_credit_status
+    if not use_credit(user_id, cost=5):
+        status = get_credit_status(user_id)
+        raise HTTPException(402, detail={"error":"no_credits","message":f"Not enough credits. {status.get('credits_remaining',0)} remaining."})
+
     acc = _get_account(user_id)
-    if not acc:
-        raise HTTPException(404, "Pinterest not connected")
+    followers = acc.get("followers", 500) if acc else 500
+    fmt_info = PIN_FORMATS.get(pin_format, PIN_FORMATS["static"])
 
-    followers   = acc.get("followers", 500)
-    topic_lower = topic.lower()
-    fmt         = PIN_FORMATS.get(pin_format, PIN_FORMATS["static"])
+    try:
+        from vertex_engine import generate
+        prompt = f"""You are a Pinterest viral content expert for Indian creators in 2026.
+Analyze this {pin_format} pin idea for viral potential: "{topic}"
+Creator has {followers} followers.
 
-    if followers >= 50_000:  base = 50
-    elif followers >= 10_000: base = 40
-    elif followers >= 1_000:  base = 30
-    elif followers >= 100:    base = 20
-    else:                     base = 15
+Return ONLY valid JSON:
+{{"virality_score":68,"pin_format":"{fmt_info['label']}","format_tip":"{fmt_info['tip']}","recommendation":"one sentence on viral potential","hook_detected":["how to","free"],"pin_title_suggestions":["rewritten title 1 with stronger hook","rewritten title 2 keyword-rich","rewritten title 3 with number"],"estimated_impressions":12000,"estimated_saves":480,"estimated_clicks":240,"estimated_outbound":90,"estimated_follows":18,"best_post_time":"Saturday 8-10 PM IST","tip":"one actionable tip specific to THIS pin idea","breakdown":{{"hook_strength":65,"audience_reach":45,"content_format":70,"timing_potential":75}},"next_milestone":{{"target":1000,"months":4}}}}
 
-    hook_bonus     = min(sum(v for k, v in VIRAL_HOOKS.items() if k in topic_lower), 35)
-    length_bonus   = 8 if 40 <= len(topic) <= 100 else (4 if len(topic) < 40 else 2)
-    question_bonus = 5 if "?" in topic else 0
-    number_bonus   = 6 if any(c.isdigit() for c in topic) else 0
-    format_bonus   = int(fmt["multiplier"] * 8)
-    virality       = min(base + hook_bonus + length_bonus + question_bonus + number_bonus + format_bonus, 98)
+Rules:
+- virality_score 0-100 based on keyword strength, saves potential, topic relevance
+- pin_title_suggestions must be 3 rewritten versions of the exact pin idea optimized for Pinterest SEO
+- estimates realistic for {followers} followers
+- Pinterest impressions are typically 5-15x follower count for good content"""
+        import re as _re, json as _json
+        raw = generate(prompt, max_tokens=1500)
+        m = _re.search(r'\{{[\s\S]*\}}', raw)
+        data = _json.loads(m.group()) if m else {}
+    except Exception:
+        data = {}
 
-    reach_mult    = fmt["multiplier"] * (1 + (virality / 100) * 4)
-    est_impressions = int(followers * reach_mult * random.uniform(3, 8))
-    est_saves     = int(est_impressions * random.uniform(0.04, 0.10))
-    est_clicks    = int(est_impressions * random.uniform(0.02, 0.06))
-    est_outbound  = int(est_impressions * random.uniform(0.01, 0.03))
-    est_follows   = int(est_impressions * random.uniform(0.002, 0.008))
+    if not data.get("virality_score"):
+        topic_lower = topic.lower()
+        hook_bonus = min(sum(v for k,v in VIRAL_HOOKS.items() if k in topic_lower), 35)
+        virality = min((30 if followers>=1000 else 20) + hook_bonus + (6 if any(c.isdigit() for c in topic) else 0), 98)
+        reach_mult = fmt_info["multiplier"] * (1+(virality/100)*4)
+        est_imp = int(followers * reach_mult * 5)
+        data = {
+            "virality_score": virality, "pin_format": fmt_info["label"], "format_tip": fmt_info["tip"],
+            "recommendation": "Add keywords and numbers to your title to boost saves and impressions.",
+            "hook_detected": [k for k in VIRAL_HOOKS if k in topic_lower],
+            "pin_title_suggestions": [f"How to {topic} (Free Guide)", f"10 Ways to {topic}", f"{topic} — Step by Step"],
+            "estimated_impressions": est_imp, "estimated_saves": int(est_imp*0.06),
+            "estimated_clicks": int(est_imp*0.03), "estimated_outbound": int(est_imp*0.015),
+            "estimated_follows": int(est_imp*0.004),
+            "best_post_time": random.choice(BEST_TIMES), "tip": random.choice(PIN_TIPS),
+            "breakdown": {"hook_strength": min(hook_bonus*3,100), "audience_reach": min(int(followers/100),100), "content_format": int(fmt_info["multiplier"]*75), "timing_potential": 75},
+            "next_milestone": None,
+        }
 
-    next_target = next((m for m in [100,500,1000,5000,10000,50000,100000] if m > followers), None)
-    months_to   = None
-    if next_target:
-        monthly   = max(est_follows * 4, 5)
-        months_to = min(math.ceil((next_target - followers) / monthly), 36)
+    if not data.get("next_milestone"):
+        next_target = next((m for m in [100,500,1000,5000,10000,50000,100000] if m > followers), None)
+        if next_target:
+            monthly = max(data.get("estimated_follows",5)*4, 5)
+            data["next_milestone"] = {"target": next_target, "months": min(__import__("math").ceil((next_target-followers)/monthly),36)}
 
-    if virality >= 70:
-        rec = "🔥 Strong viral potential! Post as an Idea Pin and add to your top 3 boards."
-    elif virality >= 50:
-        rec = f"📈 Good topic. Try as a {fmt['label']} with keyword-rich description."
-    else:
-        rec = "💡 Add 'How to', 'Free', or numbers to your title to boost saves."
-
-    return {
-        "virality_score":      virality,
-        "pin_format":          fmt["label"],
-        "format_tip":          fmt["tip"],
-        "estimated_impressions": est_impressions,
-        "estimated_saves":     est_saves,
-        "estimated_clicks":    est_clicks,
-        "estimated_outbound":  est_outbound,
-        "estimated_follows":   est_follows,
-        "next_milestone":      {"target": next_target, "months": months_to} if next_target else None,
-        "recommendation":      rec,
-        "best_post_time":      random.choice(BEST_TIMES),
-        "tip":                 random.choice(PIN_TIPS),
-        "breakdown": {
-            "hook_strength":    min(hook_bonus * 3, 100),
-            "audience_reach":   min(int(followers / 100), 100),
-            "content_format":   min(format_bonus * 4, 100),
-            "timing_potential": 80,
-        },
-        "hook_detected": [k for k in VIRAL_HOOKS if k in topic_lower],
-    }
-
-
-# ══════════════════════════════════════════════════════════════════════
-# AUDIENCE INSIGHTS
-# ══════════════════════════════════════════════════════════════════════
+    return data
 
 @router.get("/audience")
 async def get_audience(user_id: str):

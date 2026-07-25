@@ -503,77 +503,63 @@ IG_TIPS = [
 
 @router.get("/predict")
 async def predict_viral(user_id: str, topic: str = "", content_format: str = "reel"):
+    from credits_manager import use_credit, get_credit_status
+    if not use_credit(user_id, cost=5):
+        status = get_credit_status(user_id)
+        raise HTTPException(402, detail={"error":"no_credits","message":f"Not enough credits. {status.get('credits_remaining',0)} remaining."})
+
     acc = _get_account(user_id)
-    if not acc:
-        raise HTTPException(404, "Instagram not connected")
-    followers   = acc.get("followers", 1000)
-    topic_lower = topic.lower()
-    fmt         = CONTENT_FORMATS.get(content_format, CONTENT_FORMATS["reel"])
+    followers = acc.get("followers", 1000) if acc else 1000
+    fmt_info = CONTENT_FORMATS.get(content_format, CONTENT_FORMATS["reel"])
 
-    if followers >= 100_000: base = 52
-    elif followers >= 10_000: base = 42
-    elif followers >= 1_000:  base = 32
-    else:                     base = 22
+    try:
+        from vertex_engine import generate
+        prompt = f"""You are an Instagram viral content expert for Indian creators in 2026.
+Analyze this {content_format} idea for viral potential: "{topic}"
+Creator has {followers} followers.
 
-    hook_bonus     = min(sum(v for k, v in VIRAL_HOOKS.items() if k in topic_lower), 35)
-    length_bonus   = 8 if 60 <= len(topic) <= 160 else (4 if len(topic) < 60 else 2)
-    question_bonus = 6 if "?" in topic else 0
-    emoji_bonus    = 6 if any(ord(c) > 127 for c in topic) else 0
-    format_bonus   = int(fmt["multiplier"] * 8)
-    virality       = min(base + hook_bonus + length_bonus + question_bonus + emoji_bonus + format_bonus, 98)
+Return ONLY valid JSON:
+{{"virality_score":72,"content_format":"{fmt_info['label']}","format_tip":"{fmt_info['tip']}","recommendation":"one sentence on viral potential","hook_detected":["pov","question"],"hook_suggestions":["rewritten version 1 with stronger hook","rewritten version 2 with different angle","rewritten version 3 as personal story"],"estimated_reach":8500,"estimated_likes":640,"estimated_saves":180,"estimated_comments":45,"estimated_shares":28,"estimated_follows":22,"estimated_plays":null,"best_post_time":"7-9 PM IST (prime reels hour)","tip":"one actionable tip specific to THIS post","breakdown":{{"hook_strength":70,"audience_reach":50,"content_format":75,"timing_potential":80}},"next_milestone":{{"target":5000,"months":3}}}}
 
-    reach_mult      = fmt["multiplier"] * (1 + (virality / 100) * 3.5)
-    est_reach       = int(followers * reach_mult * random.uniform(1.5, 2.5))
-    est_impressions = int(est_reach * 1.4)
-    est_likes       = int(est_reach * random.uniform(0.05, 0.12))
-    est_comments    = int(est_reach * random.uniform(0.01, 0.03))
-    est_saves       = int(est_reach * random.uniform(0.02, 0.06))
-    est_shares      = int(est_reach * random.uniform(0.008, 0.025))
-    est_follows     = int(est_reach * random.uniform(0.004, 0.015))
-    est_plays       = int(est_reach * random.uniform(1.8, 3.2)) if content_format == "reel" else None
+Rules:
+- virality_score 0-100 based on hook quality, topic relevance, format fit
+- hook_suggestions must be 3 rewritten versions of the exact idea, not generic advice
+- estimated_plays only for reels, null for other formats
+- estimates realistic for {followers} followers"""
+        import re as _re, json as _json
+        raw = generate(prompt, max_tokens=1500)
+        m = _re.search(r'\{{[\s\S]*\}}', raw)
+        data = _json.loads(m.group()) if m else {}
+    except Exception:
+        data = {}
 
-    next_target = next((m for m in [500,1000,5000,10000,50000,100000,500000,1000000] if m > followers), None)
-    months_to   = None
-    if next_target:
-        monthly   = max(est_follows * 4, 10)
-        months_to = min(math.ceil((next_target - followers) / monthly), 36)
+    if not data.get("virality_score"):
+        topic_lower = topic.lower()
+        hook_bonus = min(sum(v for k,v in VIRAL_HOOKS.items() if k in topic_lower), 35)
+        virality = min((32 if followers>=1000 else 22) + hook_bonus + (8 if 60<=len(topic)<=160 else 4), 98)
+        reach_mult = fmt_info["multiplier"] * (1+(virality/100)*3.5)
+        est_reach = int(followers * reach_mult * 2.0)
+        data = {
+            "virality_score": virality, "content_format": fmt_info["label"], "format_tip": fmt_info["tip"],
+            "recommendation": "Add a strong hook and post at 7-9 PM IST for maximum reach.",
+            "hook_detected": [k for k in VIRAL_HOOKS if k in topic_lower],
+            "hook_suggestions": [f"POV: {topic}", f"Nobody talks about {topic}", f"Real talk: {topic}?"],
+            "estimated_reach": est_reach, "estimated_likes": int(est_reach*0.07),
+            "estimated_saves": int(est_reach*0.03), "estimated_comments": int(est_reach*0.015),
+            "estimated_shares": int(est_reach*0.01), "estimated_follows": int(est_reach*0.007),
+            "estimated_plays": int(est_reach*2.5) if content_format=="reel" else None,
+            "best_post_time": random.choice(BEST_TIMES), "tip": random.choice(TIPS),
+            "breakdown": {"hook_strength": min(hook_bonus*3,100), "audience_reach": min(int(followers/1000),100), "content_format": int(fmt_info["multiplier"]*75), "timing_potential": 75},
+            "next_milestone": None,
+        }
 
-    if virality >= 70:
-        rec = "🔥 High viral potential! Post at peak hours and reply to every comment in the first 30 min."
-    elif virality >= 50:
-        rec = f"📈 Good topic. Posting as a {fmt['label']} will maximize reach. Add a stronger hook."
-    else:
-        rec = "💡 Add 'POV:', 'Real talk:' or 'Nobody talks about' to boost discoverability."
+    if not data.get("next_milestone"):
+        next_target = next((m for m in [500,1000,5000,10000,50000,100000,500000,1000000] if m > followers), None)
+        if next_target:
+            monthly = max(data.get("estimated_follows",10)*4, 10)
+            data["next_milestone"] = {"target": next_target, "months": min(__import__("math").ceil((next_target-followers)/monthly),36)}
 
-    return {
-        "virality_score":        virality,
-        "content_format":        fmt["label"],
-        "format_tip":            fmt["tip"],
-        "estimated_reach":       est_reach,
-        "estimated_impressions": est_impressions,
-        "estimated_likes":       est_likes,
-        "estimated_comments":    est_comments,
-        "estimated_saves":       est_saves,
-        "estimated_shares":      est_shares,
-        "estimated_follows":     est_follows,
-        "estimated_plays":       est_plays,
-        "next_milestone":        {"target": next_target, "months": months_to} if next_target else None,
-        "recommendation":        rec,
-        "best_post_time":        random.choice(["6–8 PM IST", "7–9 PM IST", "12–2 PM IST", "8–10 AM IST"]),
-        "tip":                   random.choice(IG_TIPS),
-        "breakdown": {
-            "hook_strength":    min(hook_bonus * 3, 100),
-            "audience_reach":   min(int(followers / 1000), 100),
-            "content_format":   min(format_bonus * 4, 100),
-            "timing_potential": 78,
-        },
-        "hook_detected": [k for k in VIRAL_HOOKS if k in topic_lower],
-    }
-
-
-# ══════════════════════════════════════════════════════════════════════
-# AUDIENCE INSIGHTS
-# ══════════════════════════════════════════════════════════════════════
+    return data
 
 @router.get("/audience")
 async def get_audience(user_id: str):
