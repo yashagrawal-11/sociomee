@@ -354,68 +354,99 @@ TIPS = [
 ]
 
 
+@router.get("/trending-topics")
+async def threads_trending_topics(user_id: str):
+    from credits_manager import use_credit, get_credit_status
+    if not use_credit(user_id, cost=2):
+        status = get_credit_status(user_id)
+        raise HTTPException(402, detail={"error":"no_credits","message":f"Not enough credits. {status.get('credits_remaining',0)} remaining."})
+    try:
+        from vertex_engine import generate
+        prompt = """You are a Threads (Meta) viral content analyst for Indian creators in 2026.
+Return ONLY a valid JSON array of 8 trending topics on Threads right now:
+[{"topic":"topic name","category":"Tech/Lifestyle/Finance/Creator/etc","momentum":"rising/viral/stable","why_trending":"one sentence","hook_ideas":["hook1","hook2"]}]
+Focus on what Indian English/Hinglish creators are posting about. Mix personal growth, creator economy, hot takes, finance, tech."""
+        raw = generate(prompt, max_tokens=1200)
+        import re as _re, json as _json
+        m = _re.search(r'\[[\s\S]*\]', raw)
+        topics = _json.loads(m.group()) if m else []
+    except Exception:
+        topics = []
+    if not topics:
+        topics = [
+            {"topic":"AI is replacing creators","category":"Tech","momentum":"viral","why_trending":"Every creator is scared and sharing takes","hook_ideas":["Hot take: AI will not replace you but lazy creators will replace themselves","POV: you outsourced your creativity to ChatGPT"]},
+            {"topic":"Creator burnout is real","category":"Creator","momentum":"rising","why_trending":"Authenticity trend post-pandemic","hook_ideas":["Real talk: I almost quit social media last month","Nobody talks about the dark side of going viral"]},
+            {"topic":"Side hustle to full-time","category":"Finance","momentum":"stable","why_trending":"Young Indians leaving 9-5 jobs","hook_ideas":["How I replaced my salary in 8 months (no fluff)","Stop asking for permission to chase your goals"]},
+        ]
+    return {"trending": topics}
+
+
 @router.get("/predict")
 async def predict_viral(user_id: str, topic: str = ""):
+    from credits_manager import use_credit, get_credit_status
+    if not use_credit(user_id, cost=5):
+        status = get_credit_status(user_id)
+        raise HTTPException(402, detail={"error":"no_credits","message":f"Not enough credits. {status.get('credits_remaining',0)} remaining."})
+
     acc = _get_account(user_id)
-    if not acc:
-        raise HTTPException(404, "Threads not connected")
+    followers = acc.get("followers", 1000) if acc else 1000
 
-    followers   = acc.get("followers", 1000)
-    topic_lower = topic.lower()
+    try:
+        from vertex_engine import generate
+        prompt = f"""You are a Threads (Meta) viral content expert for Indian creators in 2026.
+Analyze this post idea for viral potential: "{topic}"
+Creator has {followers} followers.
 
-    # Base from follower tier
-    if followers >= 100_000: base = 55
-    elif followers >= 10_000: base = 45
-    elif followers >= 1_000:  base = 35
-    else:                     base = 25
+Return ONLY valid JSON:
+{{"virality_score":72,"recommendation":"one sentence on viral potential and what to improve","hook_detected":["hot take","question"],"hook_suggestions":["rewritten version 1 of the post with stronger hook","rewritten version 2 with different angle","rewritten version 3 as a personal story"],"estimated_views":4200,"estimated_likes":310,"estimated_replies":88,"estimated_follows":24,"best_post_time":"7-9 PM IST (evening wind-down)","tip":"one actionable tip to improve this specific post","breakdown":{{"hook_strength":65,"audience_reach":45,"content_format":70,"timing_potential":75}},"next_milestone":{{"target":5000,"months":3}}}}
 
-    hook_bonus     = min(sum(v for k, v in VIRAL_HOOKS.items() if k in topic_lower), 35)
-    length_bonus   = 8 if 80 <= len(topic) <= 180 else (4 if len(topic) < 80 else 2)
-    question_bonus = 7 if "?" in topic else 0
-    emoji_bonus    = 5 if any(ord(c) > 127 for c in topic) else 0
-    virality       = min(base + hook_bonus + length_bonus + question_bonus + emoji_bonus, 98)
+Rules:
+- virality_score 0-100 based on hook quality, topic relevance, engagement potential
+- hook_suggestions must be 3 rewritten versions of the exact post idea, not generic advice
+- estimated_views realistic for {followers} followers at this virality score
+- best_post_time specific IST time window
+- tip must be specific to THIS post, not generic"""
+        import re as _re, json as _json
+        raw = generate(prompt, max_tokens=1500)
+        m = _re.search(r'\{[\s\S]*\}', raw)
+        data = _json.loads(m.group()) if m else {}
+    except Exception:
+        data = {}
 
-    reach_mult  = 1 + (virality / 100) * 4
-    est_views   = int(followers * reach_mult * random.uniform(1.8, 2.8))
-    est_likes   = int(est_views * random.uniform(0.04, 0.09))
-    est_replies = int(est_views * random.uniform(0.01, 0.025))
-    est_reposts = int(est_views * random.uniform(0.006, 0.015))
-    est_quotes  = int(est_views * random.uniform(0.002, 0.008))
-    est_follows = int(est_views * random.uniform(0.003, 0.012))
+    # Fallback math if Vertex fails
+    if not data.get("virality_score"):
+        topic_lower = topic.lower()
+        hook_bonus  = min(sum(v for k, v in VIRAL_HOOKS.items() if k in topic_lower), 35)
+        length_bonus   = 8 if 80 <= len(topic) <= 180 else (4 if len(topic) < 80 else 2)
+        question_bonus = 7 if "?" in topic else 0
+        virality    = min((35 if followers >= 1000 else 25) + hook_bonus + length_bonus + question_bonus, 98)
+        reach_mult  = 1 + (virality / 100) * 4
+        est_views   = int(followers * reach_mult * random.uniform(1.8, 2.8))
+        data = {
+            "virality_score": virality,
+            "recommendation": "Add a bold hook and end with a question to drive replies.",
+            "hook_detected": [k for k in VIRAL_HOOKS if k in topic_lower],
+            "hook_suggestions": [
+                f"Hot take: {topic}",
+                f"Nobody talks about this — {topic}",
+                f"Real talk: {topic}?",
+            ],
+            "estimated_views": est_views,
+            "estimated_likes": int(est_views * 0.06),
+            "estimated_replies": int(est_views * 0.015),
+            "estimated_follows": int(est_views * 0.007),
+            "best_post_time": random.choice(BEST_TIMES),
+            "tip": random.choice(TIPS),
+            "breakdown": {"hook_strength": min(hook_bonus*3,100), "audience_reach": min(int(followers/1000),100), "content_format": min((length_bonus+question_bonus)*5,100), "timing_potential": 75},
+            "next_milestone": None,
+        }
 
     next_target = next((m for m in [500,1000,5000,10000,50000,100000,500000,1000000] if m > followers), None)
-    months_to   = None
-    if next_target:
-        monthly = max(est_follows * 4, 10)
-        months_to = min(math.ceil((next_target - followers) / monthly), 36)
+    if next_target and not data.get("next_milestone"):
+        monthly = max(data.get("estimated_follows",10) * 4, 10)
+        data["next_milestone"] = {"target": next_target, "months": min(math.ceil((next_target-followers)/monthly),36)}
 
-    if virality >= 70:
-        rec = "🔥 Strong viral potential. Post during peak hours and reply to every comment in the first 30 min."
-    elif virality >= 50:
-        rec = "📈 Solid topic. Add a personal story or strong opinion to boost engagement."
-    else:
-        rec = "💡 Add a hook ('Hot take:', 'POV:', 'Real talk:') and end with a question to drive replies."
-
-    return {
-        "virality_score":    virality,
-        "estimated_views":   est_views,
-        "estimated_likes":   est_likes,
-        "estimated_replies": est_replies,
-        "estimated_reposts": est_reposts,
-        "estimated_quotes":  est_quotes,
-        "estimated_follows": est_follows,
-        "next_milestone":    {"target": next_target, "months": months_to} if next_target else None,
-        "recommendation":    rec,
-        "best_post_time":    random.choice(BEST_TIMES),
-        "tip":               random.choice(TIPS),
-        "breakdown": {
-            "hook_strength":    min(hook_bonus * 3, 100),
-            "audience_reach":   min(int(followers / 1000), 100),
-            "content_format":   min((length_bonus + question_bonus + emoji_bonus) * 5, 100),
-            "timing_potential": 75,
-        },
-        "hook_detected": [k for k in VIRAL_HOOKS if k in topic_lower],
-    }
+    return data
 
 
 # ══════════════════════════════════════════════════════════════════════

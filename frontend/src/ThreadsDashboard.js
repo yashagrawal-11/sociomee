@@ -232,8 +232,11 @@ export default function ThreadsDashboard({ user, topic = "" }) {
   const [connecting, setConnecting] = useState(false);
   const [days,       setDays      ] = useState(30);
   const [chartMetric,setChartMetric] = useState("views");
-  const [predTopic,  setPredTopic ] = useState(topic || "");
-  const [predLoading,setPredLoading] = useState(false);
+  const [predTopic,    setPredTopic   ] = useState(topic || "");
+  const [predLoading,  setPredLoading ] = useState(false);
+  const [predTrending, setPredTrending] = useState([]);
+  const [trendLoading, setTrendLoading] = useState(false);
+  const [trendLoaded,  setTrendLoaded  ] = useState(false);
 
   const load = useCallback(async () => {
     const _t0 = Date.now();
@@ -278,10 +281,23 @@ export default function ThreadsDashboard({ user, topic = "" }) {
     setPredLoading(true);
     try {
       const r = await fetch(`${BASE}/threads/predict?user_id=${userId}&topic=${encodeURIComponent(predTopic)}`);
-      setPrediction(await r.json());
+      const d = await r.json();
+      if (d.detail?.error === "no_credits") { alert("Not enough credits to analyze. Please top up."); return; }
+      setPrediction(d);
     } catch (e) {
       console.error(e);
     } finally { setPredLoading(false); }
+  };
+
+  const loadTrending = async () => {
+    if (trendLoaded) return;
+    setTrendLoading(true);
+    try {
+      const r = await fetch(`${BASE}/threads/trending-topics?user_id=${userId}`);
+      const d = await r.json();
+      if (d.trending) { setPredTrending(d.trending); setTrendLoaded(true); }
+    } catch (e) { console.error(e); }
+    finally { setTrendLoading(false); }
   };
 
   const handleConnect = async () => {
@@ -429,84 +445,163 @@ export default function ThreadsDashboard({ user, topic = "" }) {
 
       {/* ── Viral Predictor Tab ── */}
       {tab === "viral" && (
-        <Section title="Viral Post Predictor">
-          <p style={{ fontSize:12.5, color:C.muted, marginBottom:14, lineHeight:1.6 }}>
-            Enter your post idea or topic and our AI will predict how it'll perform — before you even post it.
-          </p>
-          <div style={{ display:"flex", gap:8, marginBottom:16 }}>
-            <input value={predTopic} onChange={e => setPredTopic(e.target.value)} placeholder="e.g. Hot take: most creators are faking their growth numbers..." style={{ flex:1, padding:"10px 14px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none" }} onKeyDown={e => e.key === "Enter" && runPrediction()} />
-            <button onClick={runPrediction} disabled={predLoading || !predTopic.trim()} style={{ padding:"10px 20px", borderRadius:10, border:"none", background:`linear-gradient(135deg,${C.purple},${C.rose})`, color:"#fff", fontWeight:800, fontSize:12.5, cursor: predLoading ? "not-allowed" : "pointer", fontFamily:"inherit", opacity: predLoading ? 0.7 : 1 }}>
-              {predLoading ? "…" : "Predict"}
-            </button>
+        <div>
+          {/* Trending Topics */}
+          <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, padding:20, marginBottom:14 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+              <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:C.muted }}>Trending on Threads</div>
+              <button onClick={loadTrending} disabled={trendLoading} style={{ padding:"5px 14px", borderRadius:99, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(255,255,255,0.5)", fontSize:10, fontWeight:700, cursor:trendLoading?"not-allowed":"pointer", fontFamily:"inherit", opacity:trendLoading?0.5:1 }}>
+                {trendLoading ? "Loading..." : trendLoaded ? "Refresh" : "Load Trends"}
+              </button>
+            </div>
+            {!trendLoaded && !trendLoading && (
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.25)", textAlign:"center", padding:"16px 0" }}>Click Load Trends to see what is viral on Threads right now (2 credits)</div>
+            )}
+            {trendLoading && (
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {[1,2,3].map(i => <div key={i} style={{ height:52, borderRadius:10, background:"rgba(255,255,255,0.04)", animation:"skpulse 1.4s ease-in-out infinite" }} />)}
+              </div>
+            )}
+            {trendLoaded && predTrending.length > 0 && (
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {predTrending.map((t, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12, background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:10, padding:"10px 14px", cursor:"pointer" }}
+                    onClick={() => setPredTopic(t.hook_ideas?.[0] || t.topic)}>
+                    <div style={{ fontSize:13, fontWeight:800, color:"rgba(255,255,255,0.15)", width:18, textAlign:"center", flexShrink:0 }}>{i+1}</div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:12.5, fontWeight:700, color:"#f5f5f7", marginBottom:2 }}>{t.topic}</div>
+                      <div style={{ fontSize:10, color:"rgba(255,255,255,0.3)", fontWeight:600 }}>{t.category} · {t.momentum}</div>
+                    </div>
+                    <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.25)", textTransform:"uppercase", letterSpacing:"0.8px", flexShrink:0 }}>Use</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Input card */}
+          <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, padding:20, marginBottom:14 }}>
+            <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:C.muted, marginBottom:14 }}>Analyze Post Idea</div>
+            <div style={{ fontSize:12, color:"rgba(255,255,255,0.3)", marginBottom:12, lineHeight:1.6 }}>
+              Paste your post idea or topic. AI scores viral potential, rewrites your hook, and tells you the best time to post. (5 credits)
+            </div>
+            <textarea
+              value={predTopic}
+              onChange={e => setPredTopic(e.target.value.slice(0, 500))}
+              placeholder="e.g. Hot take: most creators are faking their growth numbers..."
+              rows={3}
+              style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${C.hairline}`, background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:13, fontFamily:"inherit", resize:"vertical", outline:"none", boxSizing:"border-box", lineHeight:1.7 }}
+              onKeyDown={e => e.key === "Enter" && e.metaKey && runPrediction()}
+            />
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:10 }}>
+              <span style={{ fontSize:11, color:"rgba(255,255,255,0.25)", fontWeight:600 }}>{500 - predTopic.length} chars left</span>
+              <button onClick={runPrediction} disabled={predLoading || !predTopic.trim()} style={{ padding:"10px 28px", borderRadius:99, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.06)", color:"#f5f5f7", fontWeight:800, fontSize:12, cursor: predLoading || !predTopic.trim() ? "not-allowed" : "pointer", fontFamily:"inherit", opacity: predLoading || !predTopic.trim() ? 0.4 : 1, letterSpacing:"0.3px", transition:"all 0.15s" }}>
+                {predLoading ? "Analyzing..." : "Predict Virality"}
+              </button>
+            </div>
           </div>
 
           {prediction && (
             <>
-              {/* Score + key metrics */}
-              <div style={{ display:"flex", gap:14, alignItems:"center", marginBottom:16, flexWrap:"wrap" }}>
-                <ViralRing score={prediction.virality_score} />
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:C.ink, marginBottom:8 }}>{prediction.recommendation}</div>
-                  {prediction.hook_detected?.length > 0 && (
-                    <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-                      {prediction.hook_detected.map((h, i) => (
-                        <span key={i} style={{ padding:"2px 8px", borderRadius:99, background:`${C.success}18`, color:C.success, fontSize:10, fontWeight:700, border:`1px solid ${C.success}33` }}>✓ "{h}"</span>
-                      ))}
-                    </div>
-                  )}
+              {/* Score + recommendation */}
+              <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, padding:20, marginBottom:14 }}>
+                <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:C.muted, marginBottom:16 }}>Virality Score</div>
+                <div style={{ display:"flex", gap:20, alignItems:"center", flexWrap:"wrap" }}>
+                  <ViralRing score={prediction.virality_score} />
+                  <div style={{ flex:1, minWidth:160 }}>
+                    <div style={{ fontSize:13.5, fontWeight:700, color:"#f5f5f7", lineHeight:1.6, marginBottom:10 }}>{prediction.recommendation}</div>
+                    {prediction.hook_detected?.length > 0 && (
+                      <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
+                        {prediction.hook_detected.map((h, i) => (
+                          <span key={i} style={{ padding:"3px 10px", borderRadius:99, background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.6)", fontSize:10, fontWeight:700, border:"1px solid rgba(255,255,255,0.1)" }}>Hook detected: {h}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Estimated stats */}
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, marginBottom:16 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:14 }}>
                 {[
-                  { icon:"👁️", label:"Est. Views",   val:fmt(prediction.estimated_views) },
-                  { icon:"❤️", label:"Est. Likes",   val:fmt(prediction.estimated_likes) },
-                  { icon:"💬", label:"Est. Replies", val:fmt(prediction.estimated_replies) },
-                  { icon:"👥", label:"Est. Follows", val:`+${fmt(prediction.estimated_follows)}` },
+                  { label:"Est. Views",   val:fmt(prediction.estimated_views) },
+                  { label:"Est. Likes",   val:fmt(prediction.estimated_likes) },
+                  { label:"Est. Replies", val:fmt(prediction.estimated_replies) },
+                  { label:"Est. Follows", val:`+${fmt(prediction.estimated_follows)}` },
                 ].map((s, i) => (
-                  <div key={i} style={{ background:`${C.purple}0D`, border:`1px solid ${C.hairline}`, borderRadius:10, padding:"10px 8px", textAlign:"center" }}>
-                    <div style={{ fontSize:18 }}>{s.icon}</div>
-                    <div style={{ fontSize:15, fontWeight:900, color:C.ink }}>{s.val}</div>
-                    <div style={{ fontSize:9, color:C.muted, fontWeight:600, marginTop:2 }}>{s.label}</div>
+                  <div key={i} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"14px 10px", textAlign:"center" }}>
+                    <div style={{ fontSize:20, fontWeight:900, color:"#f5f5f7", letterSpacing:"-0.5px", lineHeight:1 }}>{s.val}</div>
+                    <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginTop:6 }}>{s.label}</div>
                   </div>
                 ))}
               </div>
 
-              {/* Breakdown radar */}
+              {/* Score breakdown bars */}
               {prediction.breakdown && (
-                <div style={{ marginBottom:16 }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:C.muted, marginBottom:8 }}>SCORE BREAKDOWN</div>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <RadarChart data={[
-                      { subject:"Hook",     value:prediction.breakdown.hook_strength },
-                      { subject:"Audience", value:prediction.breakdown.audience_reach },
-                      { subject:"Format",   value:prediction.breakdown.content_format },
-                      { subject:"Timing",   value:prediction.breakdown.timing_potential },
-                    ]}>
-                      <PolarGrid stroke={C.hairline} />
-                      <PolarAngleAxis dataKey="subject" tick={{ fontSize:10, fill:C.muted }} />
-                      <PolarRadiusAxis domain={[0,100]} tick={false} axisLine={false} />
-                      <Radar dataKey="value" stroke={C.purple} fill={C.purple} fillOpacity={0.25} strokeWidth={2} />
-                    </RadarChart>
-                  </ResponsiveContainer>
+                <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, padding:20, marginBottom:14 }}>
+                  <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:C.muted, marginBottom:16 }}>Score Breakdown</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                    {[
+                      { label:"Hook Strength",      val:prediction.breakdown.hook_strength },
+                      { label:"Audience Reach",     val:prediction.breakdown.audience_reach },
+                      { label:"Content Format",     val:prediction.breakdown.content_format },
+                      { label:"Timing Potential",   val:prediction.breakdown.timing_potential },
+                    ].map(({ label, val }) => {
+                      const col = val >= 70 ? C.success : val >= 50 ? C.warn : C.muted;
+                      return (
+                        <div key={label}>
+                          <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"rgba(255,255,255,0.5)", fontWeight:700, marginBottom:5 }}>
+                            <span>{label}</span><span style={{ color:col, fontWeight:800 }}>{val}</span>
+                          </div>
+                          <div style={{ height:5, background:"rgba(255,255,255,0.06)", borderRadius:99, overflow:"hidden" }}>
+                            <div style={{ height:"100%", width:`${val}%`, background:col, borderRadius:99, transition:"width 0.6s ease" }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
-              {/* Next milestone */}
-              {prediction.next_milestone && (
-                <div style={{ background:`${C.success}12`, border:`1px solid ${C.success}33`, borderRadius:10, padding:"10px 14px", marginBottom:12, fontSize:13, color:C.slate }}>
-                  🏆 At this pace → <strong style={{ color:C.success }}>{fmt(prediction.next_milestone.target)} followers</strong> in ~{prediction.next_milestone.months} month{prediction.next_milestone.months !== 1 ? "s" : ""}
+              {/* Hook suggestions */}
+              {prediction.hook_suggestions?.length > 0 && (
+                <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, padding:20, marginBottom:14 }}>
+                  <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:C.muted, marginBottom:14 }}>Suggested Hooks</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    {prediction.hook_suggestions.map((h, i) => (
+                      <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 14px" }}>
+                        <span style={{ fontSize:12.5, color:"#f5f5f7", fontWeight:600, lineHeight:1.5, flex:1 }}>{h}</span>
+                        <button onClick={() => navigator.clipboard.writeText(h)} style={{ marginLeft:10, padding:"4px 10px", borderRadius:7, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(255,255,255,0.4)", fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"inherit", flexShrink:0 }}>Copy</button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              <div style={{ fontSize:12.5, color:C.slate, lineHeight:1.7 }}>
-                <div>🕐 <strong>Best time to post:</strong> {prediction.best_post_time}</div>
-                <div>✍️ <strong>Tip:</strong> {prediction.tip}</div>
+              {/* Best time + tip */}
+              <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, padding:20, marginBottom:14 }}>
+                <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:C.muted, marginBottom:14 }}>Post Strategy</div>
+                {prediction.best_post_time && (
+                  <div style={{ marginBottom:12 }}>
+                    <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:8 }}>Best Time to Post</div>
+                    <span style={{ display:"inline-block", padding:"6px 16px", borderRadius:99, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)", color:"#f5f5f7", fontSize:12.5, fontWeight:700 }}>{prediction.best_post_time}</span>
+                  </div>
+                )}
+                {prediction.tip && (
+                  <div>
+                    <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:8 }}>AI Tip</div>
+                    <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.6)", lineHeight:1.7, background:"rgba(255,255,255,0.03)", borderRadius:10, padding:"10px 14px", borderLeft:"2px solid rgba(255,255,255,0.15)" }}>{prediction.tip}</div>
+                  </div>
+                )}
+                {prediction.next_milestone && (
+                  <div style={{ marginTop:12, background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 14px", fontSize:12.5, color:"rgba(255,255,255,0.6)" }}>
+                    At this pace you could hit <strong style={{ color:"#f5f5f7" }}>{fmt(prediction.next_milestone.target)} followers</strong> in {prediction.next_milestone.months} month{prediction.next_milestone.months !== 1 ? "s" : ""}
+                  </div>
+                )}
               </div>
             </>
           )}
-        </Section>
+        </div>
       )}
 
       {/* ── Audience Tab ── */}
