@@ -172,6 +172,7 @@ function Publisher({ userId, topic, onPublished }) {
   const [imgPreview, setPreview]  = useState("");
   const [imgLoading, setImgLoad]  = useState(false);
   const [replyCtrl, setReplyCtrl] = useState("everyone");
+  const [replyOpen,  setReplyOpen ] = useState(false);
   const rem = 500 - text.length;
 
   const handleImage = async (file) => {
@@ -236,13 +237,18 @@ function Publisher({ userId, topic, onPublished }) {
           }
         </label>
         <div style={{ position:"relative" }}>
-          <select value={replyCtrl} onChange={e => setReplyCtrl(e.target.value)}
-            style={{ appearance:"none", WebkitAppearance:"none", padding:"6px 28px 6px 12px", borderRadius:99, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:"rgba(255,255,255,0.45)", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", outline:"none" }}>
-            <option value="everyone">Anyone can reply</option>
-            <option value="accounts_you_follow">Following only</option>
-            <option value="mentioned_only">Mentioned only</option>
-          </select>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }}><polyline points="6 9 12 15 18 9"/></svg>
+          <button onClick={() => setReplyOpen(o => !o)} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:99, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:"rgba(255,255,255,0.45)", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>
+            {["everyone","accounts_you_follow","mentioned_only"].find(v=>v===replyCtrl)==="everyone"?"Anyone can reply":replyCtrl==="accounts_you_follow"?"Following only":"Mentioned only"}
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" style={{ transform:replyOpen?"rotate(180deg)":"none", transition:"transform 0.15s" }}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {replyOpen && (
+            <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, zIndex:99, background:"rgba(18,18,18,0.97)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:12, backdropFilter:"blur(20px)", padding:4, minWidth:160, boxShadow:"0 8px 32px rgba(0,0,0,0.5)" }}>
+              {[["everyone","Anyone can reply"],["accounts_you_follow","Following only"],["mentioned_only","Mentioned only"]].map(([val,label]) => (
+                <button key={val} onClick={() => { setReplyCtrl(val); setReplyOpen(false); }} style={{ display:"block", width:"100%", textAlign:"left", padding:"8px 12px", borderRadius:8, border:"none", background:replyCtrl===val?"rgba(255,255,255,0.08)":"transparent", color:replyCtrl===val?"#f5f5f7":"rgba(255,255,255,0.5)", fontSize:11.5, fontWeight:replyCtrl===val?700:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.1s" }}>{label}</button>
+              ))}
+            </div>
+          )}
+        </div>
         </div>
         <span style={{ fontSize:11, color: rem < 50 ? C.danger : "rgba(255,255,255,0.2)", fontWeight:600, marginLeft:"auto" }}>{rem}</span>
         <button onClick={publish} disabled={loading || !text.trim()} style={{ padding:"8px 20px", borderRadius:99, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.06)", color:"#f5f5f7", fontWeight:800, fontSize:12, cursor: loading || !text.trim() ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:6, opacity: loading || !text.trim() ? 0.4 : 1, transition:"all 0.15s" }}>
@@ -813,6 +819,11 @@ function ThreadsScheduleTab({ userId }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+  const [schedImg, setSchedImg]       = useState("");
+  const [schedImgPrev, setSchedImgPrev] = useState("");
+  const [schedImgLoad, setSchedImgLoad] = useState(false);
+  const [schedReply, setSchedReply]   = useState("everyone");
+  const [schedReplyOpen, setSchedReplyOpen] = useState(false);
 
   const loadJobs = () => {
     fetch(`${BASE}/threads/scheduled?user_id=${userId}`)
@@ -852,6 +863,31 @@ function ThreadsScheduleTab({ userId }) {
         </div>
         <div style={{ marginBottom: 12 }}>
           <ThreadsTimePicker value={when} onChange={setWhen} />
+        </div>
+        {schedImgPrev && (
+          <div style={{ position:"relative", marginBottom:10, display:"inline-block" }}>
+            <img src={schedImgPrev} alt="" style={{ maxHeight:120, maxWidth:"100%", borderRadius:10, border:"1px solid rgba(255,255,255,0.1)" }} />
+            <button onClick={() => { setSchedImg(""); setSchedImgPrev(""); }} style={{ position:"absolute", top:4, right:4, width:20, height:20, borderRadius:"50%", border:"none", background:"rgba(0,0,0,0.7)", color:"#fff", fontSize:11, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>x</button>
+          </div>
+        )}
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
+          <label style={{ width:32, height:32, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", cursor: schedImgLoad ? "not-allowed" : "pointer", flexShrink:0 }} title="Attach image">
+            <input type="file" accept="image/*" style={{ display:"none" }} disabled={schedImgLoad} onChange={async e => { const f=e.target.files[0]; if(!f) return; setSchedImgLoad(true); const fd=new FormData(); fd.append("file",f); try { const r=await fetch(BASE+"/threads/upload-media?user_id="+userId,{method:"POST",body:fd}); const d=await r.json(); if(d.url){setSchedImg(d.url);setSchedImgPrev(URL.createObjectURL(f));} } catch(ex){} finally{setSchedImgLoad(false);} }} />
+            {schedImgLoad ? <div style={{ width:14,height:14,borderRadius:"50%",border:"2px solid rgba(255,255,255,0.1)",borderTopColor:"rgba(255,255,255,0.5)",animation:"spin 0.7s linear infinite" }}/> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
+          </label>
+          <div style={{ position:"relative" }}>
+            <button onClick={() => setSchedReplyOpen(o=>!o)} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:99, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:"rgba(255,255,255,0.45)", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>
+              {schedReply==="everyone"?"Anyone can reply":schedReply==="accounts_you_follow"?"Following only":"Mentioned only"}
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" style={{ transform:schedReplyOpen?"rotate(180deg)":"none",transition:"transform 0.15s" }}><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            {schedReplyOpen && (
+              <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, zIndex:99, background:"rgba(18,18,18,0.97)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:12, backdropFilter:"blur(20px)", padding:4, minWidth:160, boxShadow:"0 8px 32px rgba(0,0,0,0.5)" }}>
+                {[["everyone","Anyone can reply"],["accounts_you_follow","Following only"],["mentioned_only","Mentioned only"]].map(([val,label]) => (
+                  <button key={val} onClick={() => { setSchedReply(val); setSchedReplyOpen(false); }} style={{ display:"block", width:"100%", textAlign:"left", padding:"8px 12px", borderRadius:8, border:"none", background:schedReply===val?"rgba(255,255,255,0.08)":"transparent", color:schedReply===val?"#f5f5f7":"rgba(255,255,255,0.5)", fontSize:11.5, fontWeight:schedReply===val?700:500, cursor:"pointer", fontFamily:"inherit" }}>{label}</button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         <button onClick={schedule} disabled={loading || !text.trim() || !when}
           style={{ width: "100%", padding: 12, borderRadius: 99, border: "none", background: (loading || !text.trim() || !when) ? "rgba(255,255,255,0.08)" : C.purple, color: "#fff", fontWeight: 800, fontSize: 13, cursor: (loading || !text.trim() || !when) ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
