@@ -84,7 +84,7 @@ function StatCard({ icon, label, value, color, sub }) {
 function Tab({ label, active, onClick }) {
   C = getC();
   return (
-    <button onClick={onClick} style={{ padding:"7px 14px", borderRadius:99, border:`1.5px solid ${active ? C.pink : C.hairline}`, background:active ? `${C.pink}18` : "transparent", color:active ? C.pink : C.muted, fontWeight:700, fontSize:11.5, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}>
+    <button onClick={onClick} style={{ padding:"7px 14px", borderRadius:99, border:`1.5px solid ${active ? "rgba(255,255,255,0.25)" : C.hairline}`, background:active ? "rgba(255,255,255,0.08)" : "transparent", color:active ? "#f5f5f7" : C.muted, fontWeight:700, fontSize:11.5, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}>
       {label}
     </button>
   );
@@ -359,11 +359,11 @@ export default function InstagramDashboard({ user, topic = "" }) {
 
       {/* Stat cards */}
       <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16 }}>
-        <StatCard icon="👥" label="Followers"      value={fmt(profile?.followers)}                      color={C.pink} />
-        <StatCard icon="👁️" label={`Reach (${days}d)`}  value={fmt(insights?.total_reach)}             color={C.purple} />
-        <StatCard icon="📊" label={`Impr. (${days}d)`}  value={fmt(insights?.total_impressions)}        color={C.orange} />
-        <StatCard icon="💾" label="Saves"          value={fmt(insights?.total_saves)}                   color={C.success} />
-        <StatCard icon="💬" label="Eng. Rate"      value={`${insights?.engagement_rate ?? "—"}%`}       color={C.teal} />
+        <StatCard label="Followers" value={fmt(profile?.followers)} />
+        <StatCard label={`Reach (${days}d)`} value={fmt(insights?.total_reach)} />
+        <StatCard label={`Impr. (${days}d)`} value={fmt(insights?.total_impressions)} />
+        <StatCard label="Saves" value={fmt(insights?.total_saves)} />
+        <StatCard label="Eng. Rate" value={`${insights?.engagement_rate ?? "—"}%`} />
       </div>
 
       {/* Tabs */}
@@ -442,8 +442,8 @@ export default function InstagramDashboard({ user, topic = "" }) {
       {tab === "reels" && reels && (
         <>
           <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16 }}>
-            <StatCard icon="▶️" label="Avg Plays"   value={fmt(reels.avg_plays)} color={C.pink} />
-            <StatCard icon="💫" label="Avg Eng Rate" value={`${reels.avg_eng}%`}  color={C.purple} />
+            <StatCard label="Avg Plays" value={fmt(reels.avg_plays)} />
+            <StatCard label="Avg Eng Rate" value={`${reels.avg_eng}%`} />
           </div>
 
           <Section title="🎬 Reels Performance">
@@ -486,9 +486,9 @@ export default function InstagramDashboard({ user, topic = "" }) {
       {tab === "stories" && stories && (
         <>
           <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16 }}>
-            <StatCard icon="👁️"  label="Avg Views"     value={fmt(stories.avg_views)}    color={C.pink} />
-            <StatCard icon="🚪" label="Avg Exit Rate"  value={`${stories.avg_exit_rate}%`} color={C.orange} />
-            <StatCard icon="🏆" label="Best Type"      value={stories.best_type}           color={C.success} />
+            <StatCard label="Avg Views" value={fmt(stories.avg_views)} />
+            <StatCard label="Avg Exit Rate" value={`${stories.avg_exit_rate}%`} />
+            <StatCard label="Best Type" value={stories.best_type} />
           </div>
 
           <Section title="📱 Story Performance This Week">
