@@ -372,16 +372,16 @@ function AICaption({ userId, onUseCaption }) {
 
       <div style={{ display:"flex", gap:"8px", marginBottom:"12px" }}>
         <select value={platformType} onChange={e=>setPlatformType(e.target.value)}
-          style={{ flex:1, padding:"8px 10px", borderRadius:"10px", border:`1.5px solid ${C.hairline}`, background:C.inputBg, color:C.ink, fontSize:"12px", fontFamily:"inherit" }}>
-          <option value="channel">📢 Channel</option>
-          <option value="group">👥 Group</option>
-          <option value="personal">👤 Personal</option>
+          style={{ flex:1, padding:"8px 10px", borderRadius:"10px", border:`1.5px solid ${C.hairline}`, background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:"12px", fontFamily:"inherit", outline:"none" }}>
+          <option value="channel">Channel</option>
+          <option value="group">Group</option>
+          <option value="personal">Personal</option>
         </select>
         <select value={language} onChange={e=>setLanguage(e.target.value)}
-          style={{ flex:1, padding:"8px 10px", borderRadius:"10px", border:`1.5px solid ${C.hairline}`, background:C.inputBg, color:C.ink, fontSize:"12px", fontFamily:"inherit" }}>
-          <option value="Hindi/English">🇮🇳 Hinglish</option>
+          style={{ flex:1, padding:"8px 10px", borderRadius:"10px", border:`1.5px solid ${C.hairline}`, background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:"12px", fontFamily:"inherit", outline:"none" }}>
+          <option value="Hindi/English">Hinglish</option>
           <option value="Hindi">हिंदी</option>
-          <option value="English">🌍 English</option>
+          <option value="English">English</option>
           <option value="Marathi">मराठी</option>
           <option value="Tamil">தமிழ்</option>
         </select>
@@ -401,7 +401,7 @@ function AICaption({ userId, onUseCaption }) {
           {/* Hook */}
           {result.hook && (
             <div style={{ background:`${C.warn}10`, border:`1px solid ${C.warn}25`, borderRadius:"8px", padding:"8px 10px", marginBottom:"10px" }}>
-              <div style={{ fontSize:"9px", fontWeight:"800", color:C.warn, marginBottom:"3px", textTransform:"uppercase" }}>🎣 Viral Hook</div>
+              <div style={{ fontSize:"9px", fontWeight:"800", color:C.warn, marginBottom:"3px", textTransform:"uppercase" }}>Viral Hook</div>
               <div style={{ fontSize:"12px", color:C.ink, fontWeight:"600" }}>{result.hook}</div>
             </div>
           )}
@@ -410,7 +410,7 @@ function AICaption({ userId, onUseCaption }) {
           {result.caption && (
             <div style={{ marginBottom:"10px" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"5px" }}>
-                <span style={{ fontSize:"9px", fontWeight:"800", color:C.muted, textTransform:"uppercase", letterSpacing:"1px" }}>📝 Full Caption</span>
+                <span style={{ fontSize:"9px", fontWeight:"800", color:C.muted, textTransform:"uppercase", letterSpacing:"1px" }}>Full Caption</span>
                 <div style={{ display:"flex", gap:"6px" }}>
                   <button onClick={()=>copy(result.caption,"cap")}
                     style={{ fontSize:"9px", padding:"2px 8px", borderRadius:"5px", border:`1px solid ${C.hairline}`, background:"transparent", color:copied==="cap"?C.success:C.muted, cursor:"pointer", fontFamily:"inherit" }}>

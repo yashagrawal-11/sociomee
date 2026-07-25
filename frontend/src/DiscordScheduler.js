@@ -214,7 +214,7 @@ export default function DiscordScheduler({ user }) {
       <div style={{ display: "flex", gap: 8, marginBottom: 14, overflowX: "auto", paddingBottom: 2 }}>
         {guilds.map(g => (
           <button key={g.guild_id} onClick={() => setActiveGuild(g)}
-            style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 999, border: `1.5px solid ${activeGuild?.guild_id === g.guild_id ? DC : C.hairline}`, background: activeGuild?.guild_id === g.guild_id ? `linear-gradient(135deg,${DC},#4752c4)` : C.glass, color: activeGuild?.guild_id === g.guild_id ? "#fff" : C.muted, fontWeight: 700, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+            style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 999, border: `1.5px solid ${activeGuild?.guild_id === g.guild_id ? "rgba(255,255,255,0.25)" : C.hairline}`, background: activeGuild?.guild_id === g.guild_id ? "rgba(255,255,255,0.08)" : C.glass, color: activeGuild?.guild_id === g.guild_id ? "#f5f5f7" : C.muted, fontWeight: 700, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
             <DiscordIcon size={12} />{g.guild_name}
           </button>
         ))}
@@ -252,7 +252,7 @@ export default function DiscordScheduler({ user }) {
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {activeGuild.channels.map(c => (
                   <button key={c.id} onClick={() => setActiveChan(c)}
-                    style={{ padding: "7px 14px", borderRadius: 999, border: `1.5px solid ${activeChan?.id === c.id ? DC : C.hairline}`, background: activeChan?.id === c.id ? `${DC}18` : C.glass, color: activeChan?.id === c.id ? DC : C.muted, fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+                    style={{ padding: "7px 14px", borderRadius: 999, border: `1.5px solid ${activeChan?.id === c.id ? "rgba(255,255,255,0.25)" : C.hairline}`, background: activeChan?.id === c.id ? "rgba(255,255,255,0.08)" : C.glass, color: activeChan?.id === c.id ? "#f5f5f7" : C.muted, fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
                     #{c.name}
                   </button>
                 ))}
@@ -267,20 +267,24 @@ export default function DiscordScheduler({ user }) {
             <textarea value={content} onChange={e => setContent(e.target.value)}
               placeholder="Write your Discord message… supports markdown **bold**, *italic*, `code`"
               rows={5}
-              style={{ width: "100%", padding: "11px 13px", borderRadius: 10, border: `1.5px solid ${DC}33`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 13, fontFamily: "inherit", outline: "none", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6 }} />
+              style={{ width: "100%", padding: "11px 13px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 13, fontFamily: "inherit", outline: "none", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6 }} />
 
-            <input value={imageUrl} onChange={e => setImageUrl(e.target.value)}
-              placeholder="Image URL (optional)"
-              style={{ width: "100%", padding: "10px 13px", borderRadius: 10, border: `1px solid ${C.hairline}`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 12.5, fontFamily: "inherit", outline: "none", marginTop: 8, boxSizing: "border-box" }} />
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:8, marginBottom:0 }}>
+              <label style={{ width:32, height:32, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0 }} title="Add image URL">
+                <input type="text" style={{ display:"none" }} />
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </label>
+              <input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="Image URL (optional)" style={{ flex:1, padding:"8px 12px", borderRadius:10, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:"#f5f5f7", fontSize:12, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
+            </div>
 
             <div style={{ display: "flex", gap: 6, marginTop: 12, marginBottom: 12 }}>
               {[["now", "Send Now"], ["custom", "Schedule"]].map(([v, l]) => (
                 <button key={v} onClick={() => setSchedType(v)}
-                  style={{ padding: "8px 18px", borderRadius: 999, border: `1.5px solid ${schedType === v ? DC : C.hairline}`, background: schedType === v ? `linear-gradient(135deg,${DC},#4752c4)` : C.glass, color: schedType === v ? "#fff" : C.muted, fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit", boxShadow: schedType === v ? `0 2px 10px ${DC}44` : "none" }}>
+                  style={{ padding: "8px 18px", borderRadius: 999, border: `1.5px solid ${schedType === v ? "rgba(255,255,255,0.25)" : C.hairline}`, background: schedType === v ? "rgba(255,255,255,0.08)" : C.glass, color: schedType === v ? "#f5f5f7" : C.muted, fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
                   {l}
                 </button>
               ))}
-            <a href="/pricing" style={{ display:"inline-flex", alignItems:"center", padding:"8px 16px", borderRadius:999, border:`1.5px solid ${DC}44`, background:`${DC}10`, color:DC, fontWeight:700, fontSize:12, textDecoration:"none", whiteSpace:"nowrap" }}>Bulk Schedule ✶ — Pro+</a>
+            <a href="/pricing" style={{ display:"inline-flex", alignItems:"center", padding:"8px 16px", borderRadius:999, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:"rgba(255,255,255,0.5)", fontWeight:700, fontSize:12, textDecoration:"none", whiteSpace:"nowrap" }}>Bulk Schedule ✶ — Pro+</a>
             </div>
 
             {schedType === "custom" && (
@@ -309,7 +313,7 @@ export default function DiscordScheduler({ user }) {
             )}
 
             <button onClick={send} disabled={sending || (!content.trim() && !imageUrl.trim()) || !activeChan}
-              style={{ width: "100%", padding: "14px", borderRadius: 999, border: "none", background: (sending || (!content.trim() && !imageUrl.trim()) || !activeChan) ? "rgba(255,255,255,0.08)" : `linear-gradient(135deg,${DC},#4752c4)`, color: "#fff", fontWeight: 800, fontSize: 14, cursor: (sending || (!content.trim() && !imageUrl.trim()) || !activeChan) ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: (sending || (!content.trim() && !imageUrl.trim()) || !activeChan) ? "none" : `0 4px 20px ${DC}44` }}>
+              style={{ width: "100%", padding: "14px", borderRadius: 999, border: "none", background: (sending || (!content.trim() && !imageUrl.trim()) || !activeChan) ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.08)", color: "#f5f5f7", fontWeight: 800, fontSize: 13, cursor: (sending || (!content.trim() && !imageUrl.trim()) || !activeChan) ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "1px solid rgba(255,255,255,0.12)", opacity: (sending || (!content.trim() && !imageUrl.trim()) || !activeChan) ? 0.4 : 1, transition: "all 0.15s" }}>
               {sending ? <><Spinner size={16} />Sending…</> : <><DiscordIcon size={16} />{schedType === "custom" ? "Schedule Post" : "Send to Discord"}</>}
             </button>
           </div>
@@ -361,7 +365,7 @@ function DCMiniCalendar({ value, onChange }) {
             style={{
               aspectRatio:"1", borderRadius:8, border:"none", fontSize:12, fontFamily:"inherit",
               cursor:isPast(d) ? "not-allowed" : "pointer",
-              background:isSelected(d) ? "#5865F2" : "transparent",
+              background:isSelected(d) ? "rgba(255,255,255,0.15)" : "transparent",
               color:isPast(d) ? C_.muted : (isSelected(d) ? "#fff" : C_.ink),
               fontWeight:isSelected(d) ? 700 : 500,
               opacity:isPast(d) ? 0.35 : 1,
