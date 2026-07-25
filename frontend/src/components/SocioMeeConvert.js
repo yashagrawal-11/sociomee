@@ -189,7 +189,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
       {/* Format picker bottom sheet */}
       {showPicker && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.65)", zIndex:400, display:"flex", flexDirection:"column", justifyContent:mob?"flex-end":"center", alignItems:mob?"stretch":"flex-end", paddingRight:mob?0:"20px" }} onClick={()=>setShowPicker(false)}>
-          <div style={{ background:"rgba(14,14,16,0.98)", backdropFilter:"blur(24px)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:mob?"20px 20px 0 0":"16px", padding:"16px 16px 28px", maxHeight:"75vh", overflowY:"auto", width:mob?"100%":"280px", marginTop:mob?0:"60px" }} onClick={e=>e.stopPropagation()}>
+          <div className="convert-picker" style={{ background:"rgb(13,13,15)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:mob?"20px 20px 0 0":"16px", padding:"16px 16px 28px", maxHeight:"75vh", overflowY:"auto", width:mob?"100%":"280px", marginTop:mob?0:"60px" }} onClick={e=>e.stopPropagation()}>
             <div style={{ width:"36px", height:"3px", background:"rgba(255,255,255,0.15)", borderRadius:"99px", margin:"0 auto 20px" }}/>
             {GROUPS.map(g=>(
               <div key={g.label}>
@@ -283,7 +283,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
       </div>
 
       <input ref={fileRef} type="file" accept={conv.accept} multiple={conv.multi} style={{ display:"none" }} onChange={e=>handleFiles(e.target.files)}/>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}} .convert-picker{background:rgb(13,13,15)!important;color:#fff!important;} .convert-picker div,.convert-picker p,.convert-picker button{background-color:transparent!important;} .convert-picker *{box-sizing:border-box;}`}</style>
     </div>
   );
 }

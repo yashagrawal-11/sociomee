@@ -59,13 +59,12 @@ function ThreadsIcon({ size = 20, color = "#000" }) {
 }
 
 // ─── Stat Card ────────────────────────────────────────────────────────
-function StatCard({ icon, label, value, color, sub }) {
+function StatCard({ label, value, sub }) {
   C = getC();
   return (
-    <div style={{ background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:16, padding:"16px 18px", flex:1, minWidth:110, textAlign:"center" }}>
-      <div style={{ fontSize:20, marginBottom:4 }}>{icon}</div>
-      <div style={{ fontSize:22, fontWeight:900, color: color || C.purple, letterSpacing:"-0.5px", lineHeight:1 }}>{value}</div>
-      <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px", marginTop:4 }}>{label}</div>
+    <div style={{ background:"rgba(255,255,255,0.02)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"16px 18px", flex:1, minWidth:110, textAlign:"center" }}>
+      <div style={{ fontSize:22, fontWeight:900, color:"#f5f5f7", letterSpacing:"-0.5px", lineHeight:1 }}>{value}</div>
+      <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginTop:6 }}>{label}</div>
       {sub && <div style={{ fontSize:10, color:C.success, fontWeight:600, marginTop:2 }}>{sub}</div>}
     </div>
   );
@@ -75,7 +74,7 @@ function StatCard({ icon, label, value, color, sub }) {
 function Tab({ label, active, onClick }) {
   C = getC();
   return (
-    <button onClick={onClick} style={{ padding:"8px 16px", borderRadius:99, border:`1.5px solid ${active ? C.purple : C.hairline}`, background:active ? `${C.purple}18` : "transparent", color:active ? C.purple : C.muted, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}>
+    <button onClick={onClick} style={{ padding:"8px 16px", borderRadius:99, border:`1.5px solid ${active ? "rgba(255,255,255,0.25)" : C.hairline}`, background:active ? "rgba(255,255,255,0.08)" : "transparent", color:active ? "#f5f5f7" : C.muted, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}>
       {label}
     </button>
   );
@@ -353,10 +352,10 @@ export default function ThreadsDashboard({ user, topic = "" }) {
 
       {/* Stat cards */}
       <div className="threads-stat-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:16 }}>
-        <StatCard icon="👥" label="Followers"        value={fmt(profile?.followers)}              color={C.white} />
-        <StatCard icon="👁️" label={`Views (${days}d)`} value={fmt(insights?.total_views)}       color={C.purple} />
-        <StatCard icon="❤️" label={`Likes (${days}d)`} value={fmt(insights?.total_likes)}        color={C.rose} />
-        <StatCard icon="💬" label="Eng. Rate"         value={`${insights?.engagement_rate ?? "—"}%`} color={C.teal} />
+        <StatCard label="Followers" value={fmt(profile?.followers)} />
+        <StatCard label={`Views (${days}d)`} value={fmt(insights?.total_views)} />
+        <StatCard label={`Likes (${days}d)`} value={fmt(insights?.total_likes)} />
+        <StatCard label="Eng. Rate" value={`${insights?.engagement_rate ?? "—"}%`} />
       </div>
 
       {/* Tabs — horizontal scroll, no wrap, matches YouTube pill row */}
@@ -372,7 +371,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
           <div style={{ background:"rgba(255,255,255,0.03)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:20, padding:20, marginBottom:16 }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16, flexWrap:"wrap", gap:8 }}>
               <div>
-                <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.2px", textTransform:"uppercase", color:C.purple }}>Thread Analytics</div>
+                <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.2px", textTransform:"uppercase", color:C.muted }}>Thread Analytics</div>
                 <div style={{ fontSize:26, fontWeight:900, color:"#fff", marginTop:4, lineHeight:1 }}>
                   {chartMetric==="views" ? fmt(insights?.total_views) : chartMetric==="likes" ? fmt(insights?.total_likes) : chartMetric==="replies" ? fmt(insights?.total_replies) : fmt(insights?.total_reposts)}
                 </div>
