@@ -352,10 +352,10 @@ function Scheduler({ userId, boards, onPublished }) {
         <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
           <MiniCalendar value={when} onChange={setWhen} />
           <div style={{ display:"flex", flexDirection:"column", gap:8, justifyContent:"center" }}>
-          <div style={{ display:"flex", flexDirection:"column", gap:8, justifyContent:"center" }}>
             <TimePicker value={when} onChange={setWhen} />
           </div>
-          {when && <p style={{ fontSize:12, color:"#34d399", fontWeight:600, margin:0 }}>Scheduled for {when.toLocaleString()}</p>}
+        </div>
+        {when && <p style={{ fontSize:12, color:"#34d399", fontWeight:600, margin:0 }}>Scheduled for {when.toLocaleString()}</p>}
       </div>
 
       <button onClick={schedule} disabled={loading} style={{ width:"100%", padding:"12px", borderRadius:99, border:"1px solid rgba(255,255,255,0.12)", background:loading?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.08)", color:"#fff", fontWeight:800, fontSize:13, cursor:loading?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:8, opacity:loading?0.5:1, transition:"all 0.15s" }}>
