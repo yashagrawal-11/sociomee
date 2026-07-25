@@ -4,7 +4,8 @@ Handles OAuth, analytics, insights, viral prediction, and publishing.
 Storage: JSON files (same pattern as youtube_routes.py)
 """
 
-import os, json, random, math, httpx
+import os, json, random, math, httpx, uuid, shutil
+from fastapi import UploadFile, File, Form
 from datetime import datetime, timedelta
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, Request, Query
@@ -571,6 +572,23 @@ async def get_benchmark(user_id: str):
 # PUBLISH
 # ══════════════════════════════════════════════════════════════════════
 
+@router.post("/upload-media")
+async def upload_media(user_id: str, file: UploadFile = File(...)):
+    acc = _get_account(user_id)
+    if not acc:
+        raise HTTPException(404, "Threads not connected")
+    allowed = ["image/jpeg","image/jpg","image/png","image/gif","image/webp"]
+    if file.content_type not in allowed:
+        raise HTTPException(400, f"Unsupported type: {file.content_type}")
+    ext = file.filename.rsplit(".",1)[-1].lower() if "." in file.filename else "jpg"
+    fname = f"{uuid.uuid4().hex}.{ext}"
+    dest = f"/var/www/sociomee/uploads/threads/{fname}"
+    with open(dest, "wb") as f_out:
+        shutil.copyfileobj(file.file, f_out)
+    public_url = f"https://sociomeeai.com/uploads/threads/{fname}"
+    return {"url": public_url, "filename": fname}
+
+
 @router.post("/publish")
 async def publish(user_id: str, request: Request):
     try:
@@ -581,7 +599,9 @@ async def publish(user_id: str, request: Request):
     if not acc:
         raise HTTPException(404, "Threads not connected")
 
-    text = payload.get("text", "").strip()
+    text          = payload.get("text", "").strip()
+    image_url     = payload.get("image_url", "").strip()
+    reply_control = payload.get("reply_control", "everyone")
     if not text:
         raise HTTPException(400, "text is required")
     if len(text) > 500:
@@ -590,10 +610,16 @@ async def publish(user_id: str, request: Request):
     token       = acc["access_token"]
     threads_uid = acc["threads_uid"]
 
+    params = {"access_token": token, "text": text, "reply_control": reply_control}
+    if image_url:
+        params["media_type"] = "IMAGE"
+        params["image_url"]  = image_url
+    else:
+        params["media_type"] = "TEXT"
     async with httpx.AsyncClient(timeout=30.0) as client:
         cr = await client.post(
             f"https://graph.threads.net/v1.0/{threads_uid}/threads",
-            params={"media_type": "TEXT", "text": text, "access_token": token},
+            params=params,
         )
     if cr.status_code != 200:
         raise HTTPException(400, f"Create failed: {cr.text}")

@@ -164,11 +164,29 @@ function Heatmap({ data }) {
 // ─── Publisher ────────────────────────────────────────────────────────
 function Publisher({ userId, topic, onPublished }) {
   C = getC();
-  const [text, setText]     = useState(topic ? topic.slice(0, 450) : "");
-  const [loading, setLoad]  = useState(false);
-  const [result, setResult] = useState(null);
-  const [err, setErr]       = useState("");
+  const [text, setText]           = useState(topic ? topic.slice(0, 450) : "");
+  const [loading, setLoad]        = useState(false);
+  const [result, setResult]       = useState(null);
+  const [err, setErr]             = useState("");
+  const [imageUrl, setImageUrl]   = useState("");
+  const [imgPreview, setPreview]  = useState("");
+  const [imgLoading, setImgLoad]  = useState(false);
+  const [replyCtrl, setReplyCtrl] = useState("everyone");
   const rem = 500 - text.length;
+
+  const handleImage = async (file) => {
+    if (!file) return;
+    setImgLoad(true); setErr("");
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const r = await fetch(`${BASE}/threads/upload-media?user_id=${userId}`, { method:"POST", body:fd });
+      const d = await r.json();
+      if (d.url) { setImageUrl(d.url); setPreview(URL.createObjectURL(file)); }
+      else setErr(d.detail || "Image upload failed.");
+    } catch (e) { setErr(e.message || "Upload error."); }
+    finally { setImgLoad(false); }
+  };
 
   const publish = async () => {
     if (!text.trim()) { setErr("Write something first."); return; }
@@ -176,7 +194,7 @@ function Publisher({ userId, topic, onPublished }) {
     try {
       const r = await fetch(`${BASE}/threads/publish?user_id=${userId}`, {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, image_url: imageUrl, reply_control: replyCtrl }),
       });
       const d = await r.json();
       if (d.success) { setResult(d); onPublished?.(); }
@@ -188,26 +206,51 @@ function Publisher({ userId, topic, onPublished }) {
 
   if (result) return (
     <div style={{ textAlign:"center", padding:"24px 0" }}>
-      <div style={{ fontSize:40, marginBottom:8 }}>🎉</div>
       <p style={{ fontSize:14, fontWeight:700, color:C.success, marginBottom:8 }}>Posted to Threads!</p>
-      {result.url && <a href={result.url} target="_blank" rel="noreferrer" style={{ fontSize:12, color:C.purple, fontWeight:600 }}>View on Threads →</a>}
+      {result.url && <a href={result.url} target="_blank" rel="noreferrer" style={{ fontSize:12, color:"rgba(255,255,255,0.5)", fontWeight:600 }}>View on Threads</a>}
       <br />
-      <button onClick={() => { setResult(null); setText(""); }} style={{ marginTop:12, padding:"8px 20px", borderRadius:99, border:"none", background:C.purple, color:C.white, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>Post Another</button>
+      <button onClick={() => { setResult(null); setText(""); setImageUrl(""); setPreview(""); }} style={{ marginTop:12, padding:"8px 20px", borderRadius:99, border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.06)", color:"#fff", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>Post Another</button>
     </div>
   );
 
   return (
     <>
       <textarea value={text} onChange={e => setText(e.target.value.slice(0, 500))} placeholder="Write your Threads post... (max 500 chars)" rows={4}
-        style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13.5, lineHeight:1.7, fontFamily:"inherit", resize:"vertical", outline:"none", boxSizing:"border-box" }} />
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:8 }}>
-        <span style={{ fontSize:11.5, color: rem < 50 ? C.danger : C.muted, fontWeight:600 }}>{rem} chars left</span>
-        <button onClick={publish} disabled={loading || !text.trim()} style={{ padding:"9px 22px", borderRadius:99, border:"none", background:`linear-gradient(135deg,#000,#333)`, color:"#fff", fontWeight:800, fontSize:12.5, cursor: loading || !text.trim() ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:7, opacity: loading || !text.trim() ? 0.6 : 1 }}>
-          <ThreadsIcon size={14} color="#fff" />
-          {loading ? "Posting…" : "Post to Threads"}
+        style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:"1.5px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:13.5, lineHeight:1.7, fontFamily:"inherit", resize:"vertical", outline:"none", boxSizing:"border-box" }} />
+
+      {/* Image preview */}
+      {imgPreview && (
+        <div style={{ position:"relative", marginTop:8, display:"inline-block" }}>
+          <img src={imgPreview} alt="" style={{ maxHeight:160, maxWidth:"100%", borderRadius:10, border:"1px solid rgba(255,255,255,0.1)" }} />
+          <button onClick={() => { setImageUrl(""); setPreview(""); }} style={{ position:"absolute", top:4, right:4, width:22, height:22, borderRadius:"50%", border:"none", background:"rgba(0,0,0,0.7)", color:"#fff", fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>x</button>
+        </div>
+      )}
+
+      {/* Toolbar row */}
+      <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:10 }}>
+        <label style={{ width:32, height:32, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", cursor: imgLoading ? "not-allowed" : "pointer", flexShrink:0, transition:"all 0.15s" }} title="Attach image">
+          <input type="file" accept="image/*" style={{ display:"none" }} disabled={imgLoading} onChange={e => handleImage(e.target.files[0])} />
+          {imgLoading
+            ? <div style={{ width:14, height:14, borderRadius:"50%", border:"2px solid rgba(255,255,255,0.1)", borderTopColor:"rgba(255,255,255,0.5)", animation:"spin 0.7s linear infinite" }} />
+            : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          }
+        </label>
+        <div style={{ position:"relative" }}>
+          <select value={replyCtrl} onChange={e => setReplyCtrl(e.target.value)}
+            style={{ appearance:"none", WebkitAppearance:"none", padding:"6px 28px 6px 12px", borderRadius:99, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:"rgba(255,255,255,0.45)", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", outline:"none" }}>
+            <option value="everyone">Anyone can reply</option>
+            <option value="accounts_you_follow">Following only</option>
+            <option value="mentioned_only">Mentioned only</option>
+          </select>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }}><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <span style={{ fontSize:11, color: rem < 50 ? C.danger : "rgba(255,255,255,0.2)", fontWeight:600, marginLeft:"auto" }}>{rem}</span>
+        <button onClick={publish} disabled={loading || !text.trim()} style={{ padding:"8px 20px", borderRadius:99, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.06)", color:"#f5f5f7", fontWeight:800, fontSize:12, cursor: loading || !text.trim() ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:6, opacity: loading || !text.trim() ? 0.4 : 1, transition:"all 0.15s" }}>
+          <ThreadsIcon size={13} color="#fff" />
+          {loading ? "Posting..." : "Post to Threads"}
         </button>
       </div>
-      {err && <p style={{ fontSize:12, color:C.danger, fontWeight:600, marginTop:8 }}>⚠ {err}</p>}
+      {err && <p style={{ fontSize:12, color:C.danger, fontWeight:600, marginTop:8 }}>{err}</p>}
     </>
   );
 }
