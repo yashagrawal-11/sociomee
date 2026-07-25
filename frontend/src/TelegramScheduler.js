@@ -371,20 +371,32 @@ function AICaption({ userId, onUseCaption }) {
         style={{ width:"100%", padding:"11px 14px", borderRadius:"12px", border:`1.5px solid ${C.hairline}`, background:C.inputBg, color:C.ink, fontSize:"13px", fontFamily:"inherit", outline:"none", boxSizing:"border-box", marginBottom:"10px" }} />
 
       <div style={{ display:"flex", gap:"8px", marginBottom:"12px" }}>
-        <select value={platformType} onChange={e=>setPlatformType(e.target.value)}
-          style={{ flex:1, padding:"8px 10px", borderRadius:"10px", border:`1.5px solid ${C.hairline}`, background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:"12px", fontFamily:"inherit", outline:"none" }}>
-          <option value="channel">Channel</option>
-          <option value="group">Group</option>
-          <option value="personal">Personal</option>
-        </select>
-        <select value={language} onChange={e=>setLanguage(e.target.value)}
-          style={{ flex:1, padding:"8px 10px", borderRadius:"10px", border:`1.5px solid ${C.hairline}`, background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:"12px", fontFamily:"inherit", outline:"none" }}>
-          <option value="Hindi/English">Hinglish</option>
-          <option value="Hindi">हिंदी</option>
-          <option value="English">English</option>
-          <option value="Marathi">मराठी</option>
-          <option value="Tamil">தமிழ்</option>
-        </select>
+        <div style={{ flex:1, position:"relative" }}>
+          <button onClick={()=>setPlatOpen(o=>!o)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"8px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:12, fontFamily:"inherit", cursor:"pointer" }}>
+            <span>{{channel:"Channel",group:"Group",personal:"Personal"}[platformType]||platformType}</span>
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" style={{ transform:platOpen?"rotate(180deg)":"none", transition:"transform 0.15s" }}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {platOpen && (
+            <div style={{ position:"absolute", top:"calc(100% + 4px)", left:0, right:0, zIndex:99, background:"rgba(18,18,18,0.97)", border:`1px solid ${C.hairline}`, borderRadius:10, backdropFilter:"blur(20px)", padding:4, boxShadow:"0 8px 32px rgba(0,0,0,0.5)" }}>
+              {[["channel","Channel"],["group","Group"],["personal","Personal"]].map(([v,l])=>(
+                <button key={v} onClick={()=>{setPlatformType(v);setPlatOpen(false);}} style={{ display:"block", width:"100%", textAlign:"left", padding:"8px 12px", borderRadius:7, border:"none", background:platformType===v?"rgba(255,255,255,0.08)":"transparent", color:platformType===v?"#f5f5f7":"rgba(255,255,255,0.5)", fontSize:12, fontWeight:platformType===v?700:500, cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{ flex:1, position:"relative" }}>
+          <button onClick={()=>setLangOpen(o=>!o)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"8px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:12, fontFamily:"inherit", cursor:"pointer" }}>
+            <span>{{"Hindi/English":"Hinglish","Hindi":"Hindi","English":"English","Marathi":"Marathi","Tamil":"Tamil"}[language]||language}</span>
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" style={{ transform:langOpen?"rotate(180deg)":"none", transition:"transform 0.15s" }}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {langOpen && (
+            <div style={{ position:"absolute", top:"calc(100% + 4px)", left:0, right:0, zIndex:99, background:"rgba(18,18,18,0.97)", border:`1px solid ${C.hairline}`, borderRadius:10, backdropFilter:"blur(20px)", padding:4, boxShadow:"0 8px 32px rgba(0,0,0,0.5)" }}>
+              {[["Hindi/English","Hinglish"],["Hindi","Hindi"],["English","English"],["Marathi","Marathi"],["Tamil","Tamil"]].map(([v,l])=>(
+                <button key={v} onClick={()=>{setLanguage(v);setLangOpen(false);}} style={{ display:"block", width:"100%", textAlign:"left", padding:"8px 12px", borderRadius:7, border:"none", background:language===v?"rgba(255,255,255,0.08)":"transparent", color:language===v?"#f5f5f7":"rgba(255,255,255,0.5)", fontSize:12, fontWeight:language===v?700:500, cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {error && <div style={{ background:`${C.danger}12`, border:`1px solid ${C.danger}44`, borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:C.danger }}>{error}</div>}

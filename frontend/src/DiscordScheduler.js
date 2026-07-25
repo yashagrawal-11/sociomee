@@ -284,7 +284,7 @@ export default function DiscordScheduler({ user }) {
                   {l}
                 </button>
               ))}
-            <a href="/pricing" style={{ display:"inline-flex", alignItems:"center", padding:"8px 16px", borderRadius:999, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:"rgba(255,255,255,0.5)", fontWeight:700, fontSize:12, textDecoration:"none", whiteSpace:"nowrap" }}>Bulk Schedule ✶ — Pro+</a>
+            <span style={{ padding:"8px 16px", borderRadius:99, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:"rgba(255,255,255,0.3)", fontWeight:600, fontSize:12, whiteSpace:"nowrap", cursor:"default" }}>Bulk Schedule</span>
             </div>
 
             {schedType === "custom" && (
