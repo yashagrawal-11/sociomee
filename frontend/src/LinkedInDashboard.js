@@ -101,7 +101,7 @@ function LinkedInDashboard({ user }) {
         <div style={{ display:"flex", gap:6, marginBottom:14 }}>
           {[["post","Post"],["bulk","Bulk Schedule"]].map(([v,l]) => (
             <button key={v} onClick={()=>setLiTab(v)}
-              style={{ padding:"8px 18px", borderRadius:99, border:`1.5px solid ${liTab===v?"rgba(10,102,194,0.5)":"rgba(255,255,255,0.08)"}`, background:liTab===v?"rgba(10,102,194,0.12)":"transparent", color:liTab===v?"#4da3ff":"rgba(255,255,255,0.4)", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
+              style={{ padding:"8px 18px", borderRadius:99, border:`1.5px solid ${liTab===v?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.08)"}`, background:liTab===v?"rgba(255,255,255,0.08)":"transparent", color:liTab===v?"#f5f5f7":"rgba(255,255,255,0.4)", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
           ))}
         </div>
         {liTab === "bulk" && (
