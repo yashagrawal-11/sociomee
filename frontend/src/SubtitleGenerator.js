@@ -110,7 +110,7 @@ export default function SubtitleGenerator({ user }) {
   };
   const copySrt = () => { navigator.clipboard.writeText(result?.srt||""); setCopiedSrt(true); setTimeout(()=>setCopiedSrt(false),2000); };
 
-  const P = "#7c3aed", R = "#ff3d8f";
+  const P = "rgba(255,255,255,0.15)", R = "#ff3d8f";
   const hairline = "rgba(167,139,250,0.15)";
 
   const statusLabels = {
@@ -124,9 +124,9 @@ export default function SubtitleGenerator({ user }) {
 
       {/* Header */}
       <div style={{marginBottom:"24px"}}>
-        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",border:"1.5px solid rgba(124,58,237,0.45)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px",boxShadow:"0 0 16px rgba(124,58,237,0.2)"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",border:"1.5px solid rgba(255,255,255,0.25)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px",boxShadow:"0 0 16px rgba(255,255,255,0.08)"}}>
           <span>🎬</span>
-          <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"#a78bfa"}}>{st("AI सबटाइटल जनरेटर","AI उपशीर्षक जनरेटर","AI வசன ஜெனரேட்டர்","AI সাবটাইটেল জেনারেটর","AI Subtitle Generator")}</span>
+          <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)"}}>{st("AI सबटाइटल जनरेटर","AI उपशीर्षक जनरेटर","AI வசன ஜெனரேட்டர்","AI সাবটাইটেল জেনারেটর","AI Subtitle Generator")}</span>
         </div>
         <h2 style={{fontSize:"22px",fontWeight:"700",color:"#fff",fontFamily:"'Orbitron',sans-serif",letterSpacing:"2px",textTransform:"uppercase",marginBottom:"6px"}}>{st("सबटाइटल्स","उपशीर्षके","வசனங்கள்","সাবটাইটেল","SUBTITLES")}</h2>
         <p style={{fontSize:"13px",color:"rgba(255,255,255,0.35)"}}>{st("वीडियो अपलोड करें | YouTube, CapCut & Premiere के लिए SRT सबटाइटल पाएं","व्हिडिओ अपलोड करा | YouTube, CapCut & Premiere साठी SRT उपशीर्षके मिळवा","வீடியோவை பதிவேற்றுங்கள் | YouTube, CapCut & Premiere க்கு SRT வசனங்கள் பெறுங்கள்","ভিডিও আপলোড করুন | YouTube, CapCut & Premiere এর জন্য SRT সাবটাইটেল পান","Upload your video | get subtitles as SRT file ready for YouTube, CapCut & Premiere.")}</p>
@@ -137,17 +137,17 @@ export default function SubtitleGenerator({ user }) {
         <div onDragOver={e=>{e.preventDefault();setDrag(true);}} onDragLeave={()=>setDrag(false)}
           onDrop={e=>{e.preventDefault();setDrag(false);handleFile(e.dataTransfer.files[0]);}}
           onClick={()=>fileRef.current?.click()}
-          style={{border:`2px dashed ${drag?"#7c3aed":"rgba(124,58,237,0.35)"}`,borderRadius:"18px",padding:"60px 20px",textAlign:"center",cursor:"pointer",background:drag?"rgba(124,58,237,0.08)":"rgba(255,255,255,0.02)",transition:"all 0.2s"}}>
+          style={{border:`2px dashed ${drag?"rgba(255,255,255,0.15)":"rgba(124,58,237,0.35)"}`,borderRadius:"18px",padding:"60px 20px",textAlign:"center",cursor:"pointer",background:drag?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.02)",transition:"all 0.2s"}}>
           <input ref={fileRef} type="file" accept="video/*,audio/*" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])}/>
           <div style={{fontSize:"48px",marginBottom:"16px"}}>🎙️</div>
-          <p style={{color:"#a78bfa",fontWeight:"700",fontSize:"16px",marginBottom:"8px"}}>{st("वीडियो/ऑडियो यहाँ क्लिक या ड्रैग करें","व्हिडिओ/ऑडिओ येथे क्लिक किंवा ड्रॅग करा","வீடியோ/ஆடியோவை இங்கே கிளிக் அல்லது இழுக்கவும்","ভিডিও/অডিও এখানে ক্লিক বা ড্র্যাগ করুন","Click or drag video/audio here")}</p>
+          <p style={{color:"rgba(255,255,255,0.5)",fontWeight:"700",fontSize:"16px",marginBottom:"8px"}}>{st("वीडियो/ऑडियो यहाँ क्लिक या ड्रैग करें","व्हिडिओ/ऑडिओ येथे क्लिक किंवा ड्रॅग करा","வீடியோ/ஆடியோவை இங்கே கிளிக் அல்லது இழுக்கவும்","ভিডিও/অডিও এখানে ক্লিক বা ড্র্যাগ করুন","Click or drag video/audio here")}</p>
           <p style={{color:"rgba(255,255,255,0.25)",fontSize:"13px",marginBottom:"4px"}}>MP4, MOV, WebM, MP3, WAV · Max 500MB</p>
           <p style={{color:"rgba(255,255,255,0.15)",fontSize:"12px"}}>Perfect for documentaries, podcasts, vlogs</p>
         </div>
       ) : (
         <>
           {/* File info */}
-          <div style={{background:"rgba(124,58,237,0.08)",border:`1.5px solid ${hairline}`,borderRadius:"14px",padding:"16px 20px",marginBottom:"16px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:"10px"}}>
+          <div style={{background:"rgba(255,255,255,0.04)",border:`1.5px solid ${hairline}`,borderRadius:"14px",padding:"16px 20px",marginBottom:"16px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:"10px"}}>
             <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
               <span style={{fontSize:"28px"}}>🎬</span>
               <div>
@@ -167,7 +167,7 @@ export default function SubtitleGenerator({ user }) {
               <div style={{display:"flex",gap:"8px"}}>
                 {LANGS.map(l => (
                   <button key={l.code} onClick={()=>setLang(l.code)}
-                    style={{padding:"9px 20px",borderRadius:"99px",cursor:"pointer",fontFamily:"inherit",fontWeight:"700",fontSize:"13px",transition:"all 0.3s",border:`1.5px solid rgba(124,58,237,${lang===l.code?"0.7":"0.2"})`,background:lang===l.code?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",color:"#fff",boxShadow:lang===l.code?"0 0 20px rgba(124,58,237,0.6),0 0 40px rgba(124,58,237,0.3)":"none"}}>
+                    style={{padding:"9px 20px",borderRadius:"99px",cursor:"pointer",fontFamily:"inherit",fontWeight:"700",fontSize:"13px",transition:"all 0.3s",border:`1.5px solid rgba(124,58,237,${lang===l.code?"0.7":"0.2"})`,background:lang===l.code?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",color:"#fff",boxShadow:lang===l.code?"0 0 20px rgba(124,58,237,0.6),0 0 40px rgba(255,255,255,0.12)":"none"}}>
                     {l.label}
                   </button>
                 ))}
@@ -180,13 +180,13 @@ export default function SubtitleGenerator({ user }) {
             <div style={{background:"rgba(255,255,255,0.04)",border:`1px solid ${hairline}`,borderRadius:"14px",padding:"20px",marginBottom:"16px"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}}>
                 <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                  <div style={{width:"18px",height:"18px",borderRadius:"50%",border:`2px solid rgba(124,58,237,0.3)`,borderTopColor:"#ff3d8f",animation:"spin 0.7s linear infinite",flexShrink:0}}/>
+                  <div style={{width:"18px",height:"18px",borderRadius:"50%",border:`2px solid rgba(255,255,255,0.12)`,borderTopColor:"#ff3d8f",animation:"spin 0.7s linear infinite",flexShrink:0}}/>
                   <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.7)"}}>{statusLabels[status]}</span>
                 </div>
-                <span style={{fontSize:"12px",color:"#a78bfa",fontWeight:"700"}}>{progress}%</span>
+                <span style={{fontSize:"12px",color:"rgba(255,255,255,0.5)",fontWeight:"700"}}>{progress}%</span>
               </div>
               <div style={{height:"6px",borderRadius:"99px",background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
-                <div style={{height:"100%",width:`${progress}%`,borderRadius:"99px",background:"linear-gradient(90deg,#7c3aed,#ff3d8f)",transition:"width 0.5s ease",boxShadow:"0 0 16px rgba(124,58,237,0.8),0 0 32px rgba(255,61,143,0.4)"}}/>
+                <div style={{height:"100%",width:`${progress}%`,borderRadius:"99px",background:"linear-gradient(90deg,rgba(255,255,255,0.15),#ff3d8f)",transition:"width 0.5s ease",boxShadow:"0 0 16px rgba(124,58,237,0.8),0 0 32px rgba(255,61,143,0.4)"}}/>
               </div>
               {status === "processing" && <p style={{fontSize:"11px",color:"rgba(255,255,255,0.2)",marginTop:"10px",textAlign:"center"}}>AssemblyAI is transcribing your video with AI… usually takes 1-3 minutes</p>}
             </div>
@@ -208,12 +208,12 @@ export default function SubtitleGenerator({ user }) {
               {/* Tab toggle */}
               <div style={{display:"flex",gap:"8px",marginBottom:"14px"}}>
                 <button onClick={()=>setShowEn(false)}
-                  style={{padding:"8px 20px",borderRadius:"99px",border:`1.5px solid rgba(124,58,237,${!showEn?"0.7":"0.2"})`,background:!showEn?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"700",fontSize:"12px",cursor:"pointer",fontFamily:"inherit",boxShadow:!showEn?"0 0 18px rgba(124,58,237,0.5)":"none",transition:"all 0.3s"}}>
+                  style={{padding:"8px 20px",borderRadius:"99px",border:`1.5px solid rgba(124,58,237,${!showEn?"0.7":"0.2"})`,background:!showEn?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"700",fontSize:"12px",cursor:"pointer",fontFamily:"inherit",boxShadow:!showEn?"0 0 18px rgba(124,58,237,0.5)":"none",transition:"all 0.3s"}}>
                   Original
                 </button>
                 {result?.srt_en && (
                   <button onClick={()=>setShowEn(true)}
-                    style={{padding:"8px 20px",borderRadius:"99px",border:`1.5px solid rgba(124,58,237,${showEn?"0.7":"0.2"})`,background:showEn?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"700",fontSize:"12px",cursor:"pointer",fontFamily:"inherit",boxShadow:showEn?"0 0 18px rgba(124,58,237,0.5)":"none",transition:"all 0.3s"}}>
+                    style={{padding:"8px 20px",borderRadius:"99px",border:`1.5px solid rgba(124,58,237,${showEn?"0.7":"0.2"})`,background:showEn?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"700",fontSize:"12px",cursor:"pointer",fontFamily:"inherit",boxShadow:showEn?"0 0 18px rgba(124,58,237,0.5)":"none",transition:"all 0.3s"}}>
                     🌐 English Translation
                   </button>
                 )}
@@ -223,7 +223,7 @@ export default function SubtitleGenerator({ user }) {
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"10px",marginBottom:"16px"}}>
                 <button onClick={showEn ? downloadSrtEn : downloadSrt}
                   className="subtitle-glow-btn"
-                  style={{padding:"12px",borderRadius:"12px",border:"1.5px solid rgba(124,58,237,0.5)",background:"rgba(124,58,237,0.1)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",boxShadow:"0 0 14px rgba(124,58,237,0.3)",transition:"all 0.3s"}}>
+                  style={{padding:"12px",borderRadius:"12px",border:"1.5px solid rgba(255,255,255,0.25)",background:"rgba(255,255,255,0.04)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",boxShadow:"0 0 14px rgba(255,255,255,0.12)",transition:"all 0.3s"}}>
                   {st("⬇ डाउनलोड करें .srt","⬇ डाउनलोड करा .srt","⬇ பதிவிறக்கு .srt","⬇ ডাউনলোড করুন .srt","⬇ Download .srt")}
                 </button>
                 <button onClick={showEn ? copySrtEn : copySrt}
@@ -253,7 +253,7 @@ export default function SubtitleGenerator({ user }) {
               </div>
 
               <button onClick={()=>{setFile(null);setStatus("idle");setResult(null);setProgress(0);}}
-                style={{width:"100%",padding:"12px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.35)",background:"rgba(124,58,237,0.08)",color:"#a78bfa",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+                style={{width:"100%",padding:"12px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.5)",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
                 {st("+ और बनाएं","+ आणखी तयार करा","+ மேலும் உருவாக்கு","+ আরও তৈরি করুন","+ Generate Another")}
               </button>
             </>
@@ -264,7 +264,7 @@ export default function SubtitleGenerator({ user }) {
             <button onClick={generate} disabled={!file}
               className="subtitle-btn"
               className="subtitle-glow-btn"
-            style={{width:"100%",padding:"15px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.5)",background:"rgba(124,58,237,0.1)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"15px",cursor:"pointer",fontFamily:"inherit",boxShadow:"0 0 16px rgba(124,58,237,0.3)",transition:"all 0.3s"}}>
+            style={{width:"100%",padding:"15px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",background:"rgba(255,255,255,0.04)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"15px",cursor:"pointer",fontFamily:"inherit",boxShadow:"0 0 16px rgba(255,255,255,0.12)",transition:"all 0.3s"}}>
               {st("🎬 सबटाइटल बनाएं","🎬 उपशीर्षके तयार करा","🎬 வசனங்கள் உருவாக்கு","🎬 সাবটাইটেল তৈরি করুন","🎬 Generate Subtitles")}
             </button>
           )}
@@ -274,7 +274,7 @@ export default function SubtitleGenerator({ user }) {
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         .subtitle-btn:hover, .subtitle-glow-btn:hover {
-          background: rgba(124,58,237,0.2) !important;
+          background: rgba(255,255,255,0.08) !important;
           border-color: rgba(124,58,237,1) !important;
           box-shadow: 0 0 28px rgba(124,58,237,0.8), 0 0 60px rgba(124,58,237,0.4) !important;
           transform: translateY(-2px) !important;

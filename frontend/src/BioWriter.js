@@ -133,7 +133,7 @@ export default function BioWriter({ user }) {
   const [error,       setError      ] = useState("");
   const batchRef = useRef(0);
 
-  const P = "#7c3aed";
+  const P = "rgba(255,255,255,0.15)";
 
   const togglePlatform = (p) => setPlatforms(prev => prev.includes(p) ? prev.filter(x=>x!==p) : [...prev,p]);
 
@@ -199,7 +199,7 @@ export default function BioWriter({ user }) {
     padding:"7px 14px", borderRadius:"99px", cursor:"pointer",
     fontFamily:"inherit", fontWeight:"700", fontSize:"12px", transition:"all 0.2s",
     border:`1.5px solid rgba(124,58,237,${active?"0.7":"0.2"})`,
-    background:active?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)",
+    background:active?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",
     color:"#fff", boxShadow:active?"0 0 14px rgba(124,58,237,0.4)":"none",
   });
 
@@ -214,9 +214,9 @@ export default function BioWriter({ user }) {
     <div style={{fontFamily:"'DM Sans','Syne',sans-serif"}}>
       {/* Header */}
       <div style={{marginBottom:"24px"}}>
-        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",border:"1.5px solid rgba(124,58,237,0.45)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",border:"1.5px solid rgba(255,255,255,0.25)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px"}}>
           <span>✍️</span>
-          <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"#a78bfa"}}>Bio Writer</span>
+          <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)"}}>Bio Writer</span>
         </div>
         <h2 style={{fontSize:"22px",fontWeight:"700",color:"#fff",fontFamily:"'Orbitron',sans-serif",letterSpacing:"2px",textTransform:"uppercase",marginBottom:"6px"}}>BIO WRITER</h2>
         <p style={{fontSize:"13px",color:"rgba(255,255,255,0.35)"}}>{bt("details डालें | 4 तरह के बायो पाएं","माहिती टाका | 4 बायो","விவரங்கள் | 4 வகை பயோ","তথ্য দিন | ৪ বায়ো","Enter details | Get 4 bios instantly — 6 unique variations")}</p>
@@ -227,8 +227,8 @@ export default function BioWriter({ user }) {
         <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",marginBottom:"8px"}}>{bt("आपका नाम","तुमचे नाव","உங்கள் பெயர்","আপনার নাম","YOUR NAME")}</div>
         <input value={name} onChange={e=>{setName(e.target.value);setError("");}}
           placeholder="e.g. Yash Agrawal"
-          style={{width:"100%",padding:"12px 18px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.25)",outline:"none",fontSize:"14px",color:"#fff",background:"rgba(255,255,255,0.05)",backdropFilter:"blur(8px)",fontFamily:"inherit",boxSizing:"border-box",transition:"border 0.2s"}}
-          onFocus={e=>{e.target.style.border=`1.5px solid ${P}`;e.target.style.boxShadow=`0 0 0 3px rgba(124,58,237,0.12)`;}}
+          style={{width:"100%",padding:"12px 18px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",outline:"none",fontSize:"14px",color:"#fff",background:"rgba(255,255,255,0.05)",backdropFilter:"blur(8px)",fontFamily:"inherit",boxSizing:"border-box",transition:"border 0.2s"}}
+          onFocus={e=>{e.target.style.border=`1.5px solid ${P}`;e.target.style.boxShadow=`0 0 0 3px rgba(255,255,255,0.06)`;}}
           onBlur={e=>{e.target.style.border="1.5px solid rgba(124,58,237,0.25)";e.target.style.boxShadow="none";}}
         />
       </div>
@@ -265,7 +265,7 @@ export default function BioWriter({ user }) {
             </div>
             <input value={brand} onChange={e=>setBrand(e.target.value)}
               placeholder="e.g. SocioMee, boat.nirvana"
-              style={{width:"100%",padding:"10px 16px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.25)",outline:"none",fontSize:"13px",color:"#fff",background:"rgba(255,255,255,0.05)",fontFamily:"inherit",boxSizing:"border-box"}}
+              style={{width:"100%",padding:"10px 16px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",outline:"none",fontSize:"13px",color:"#fff",background:"rgba(255,255,255,0.05)",fontFamily:"inherit",boxSizing:"border-box"}}
             />
           </div>
         </div>
@@ -282,7 +282,7 @@ export default function BioWriter({ user }) {
         {niche==="Other" && (
           <input value={customNiche} onChange={e=>setCustomNiche(e.target.value)}
             placeholder="Enter your niche..."
-            style={{width:"100%",padding:"10px 16px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.25)",outline:"none",fontSize:"13px",color:"#fff",background:"rgba(255,255,255,0.05)",fontFamily:"inherit",boxSizing:"border-box",marginTop:"6px"}}
+            style={{width:"100%",padding:"10px 16px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",outline:"none",fontSize:"13px",color:"#fff",background:"rgba(255,255,255,0.05)",fontFamily:"inherit",boxSizing:"border-box",marginTop:"6px"}}
           />
         )}
       </div>
@@ -305,8 +305,8 @@ export default function BioWriter({ user }) {
         </div>
         <input value={achievement} onChange={e=>setAchievement(e.target.value)}
           placeholder="e.g. 100K subscribers, Shark Tank S1, Award winner..."
-          style={{width:"100%",padding:"12px 18px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.25)",outline:"none",fontSize:"14px",color:"#fff",background:"rgba(255,255,255,0.05)",backdropFilter:"blur(8px)",fontFamily:"inherit",boxSizing:"border-box",transition:"border 0.2s"}}
-          onFocus={e=>{e.target.style.border=`1.5px solid ${P}`;e.target.style.boxShadow=`0 0 0 3px rgba(124,58,237,0.12)`;}}
+          style={{width:"100%",padding:"12px 18px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",outline:"none",fontSize:"14px",color:"#fff",background:"rgba(255,255,255,0.05)",backdropFilter:"blur(8px)",fontFamily:"inherit",boxSizing:"border-box",transition:"border 0.2s"}}
+          onFocus={e=>{e.target.style.border=`1.5px solid ${P}`;e.target.style.boxShadow=`0 0 0 3px rgba(255,255,255,0.06)`;}}
           onBlur={e=>{e.target.style.border="1.5px solid rgba(124,58,237,0.25)";e.target.style.boxShadow="none";}}
         />
       </div>
@@ -327,7 +327,7 @@ export default function BioWriter({ user }) {
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
           {AESTHETIC_COMBOS.map(e=>(
             <button key={e} onClick={()=>setAesthetic(e)}
-              style={{padding:"8px 12px",borderRadius:"12px",cursor:"pointer",fontFamily:"inherit",fontSize:e==="none"?"11px":"16px",fontWeight:e==="none"?"700":"400",transition:"all 0.2s",border:`1.5px solid ${aesthetic===e?"rgba(124,58,237,0.7)":"rgba(124,58,237,0.2)"}`,background:aesthetic===e?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)",color:"#fff",boxShadow:aesthetic===e?"0 0 14px rgba(124,58,237,0.4)":"none"}}>
+              style={{padding:"8px 12px",borderRadius:"12px",cursor:"pointer",fontFamily:"inherit",fontSize:e==="none"?"11px":"16px",fontWeight:e==="none"?"700":"400",transition:"all 0.2s",border:`1.5px solid ${aesthetic===e?"rgba(124,58,237,0.7)":"rgba(255,255,255,0.08)"}`,background:aesthetic===e?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",color:"#fff",boxShadow:aesthetic===e?"0 0 14px rgba(124,58,237,0.4)":"none"}}>
               {e==="none"?"None":e}
             </button>
           ))}
@@ -339,7 +339,7 @@ export default function BioWriter({ user }) {
       {/* Generate button */}
       <button onClick={()=>generate(false)} disabled={loading||!name.trim()}
         className="bio-gen-btn"
-        style={{width:"100%",padding:"14px",borderRadius:"99px",border:`1.5px solid rgba(124,58,237,${loading||!name.trim()?"0.2":"0.6"})`,background:loading||!name.trim()?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.12)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading||!name.trim()?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading||!name.trim()?"none":"0 0 16px rgba(124,58,237,0.3)",transition:"all 0.3s",marginBottom:"20px",opacity:loading||!name.trim()?0.5:1}}>
+        style={{width:"100%",padding:"14px",borderRadius:"99px",border:`1.5px solid rgba(124,58,237,${loading||!name.trim()?"0.2":"0.6"})`,background:loading||!name.trim()?"rgba(124,58,237,0.05)":"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading||!name.trim()?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading||!name.trim()?"none":"0 0 16px rgba(255,255,255,0.12)",transition:"all 0.3s",marginBottom:"20px",opacity:loading||!name.trim()?0.5:1}}>
         {loading?(
           <span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"8px"}}>
             <span style={{width:"14px",height:"14px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.3)",borderTopColor:"#fff",animation:"spin 0.7s linear infinite",display:"inline-block"}}/>
@@ -352,11 +352,11 @@ export default function BioWriter({ user }) {
       {bios && (
         <div style={{display:"flex",flexDirection:"column",gap:"14px"}}>
           {BIO_TYPES.map(b=>(
-            <div key={b.key} style={{background:"rgba(124,58,237,0.06)",border:`1.5px solid ${copied===b.key?"rgba(52,211,153,0.4)":"rgba(124,58,237,0.2)"}`,borderRadius:"14px",padding:"16px 18px",transition:"all 0.2s"}}>
+            <div key={b.key} style={{background:"rgba(124,58,237,0.06)",border:`1.5px solid ${copied===b.key?"rgba(52,211,153,0.4)":"rgba(255,255,255,0.08)"}`,borderRadius:"14px",padding:"16px 18px",transition:"all 0.2s"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
-                <span style={{fontSize:"12px",fontWeight:"800",color:"#a78bfa"}}>{b.label}</span>
+                <span style={{fontSize:"12px",fontWeight:"800",color:"rgba(255,255,255,0.5)"}}>{b.label}</span>
                 <button onClick={()=>copy(bios[b.key],b.key)}
-                  style={{padding:"5px 14px",borderRadius:"99px",border:`1.5px solid ${copied===b.key?"rgba(52,211,153,0.5)":"rgba(124,58,237,0.3)"}`,background:copied===b.key?"rgba(52,211,153,0.1)":"rgba(124,58,237,0.08)",color:copied===b.key?"#34d399":"#a78bfa",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>
+                  style={{padding:"5px 14px",borderRadius:"99px",border:`1.5px solid ${copied===b.key?"rgba(52,211,153,0.5)":"rgba(255,255,255,0.12)"}`,background:copied===b.key?"rgba(52,211,153,0.1)":"rgba(255,255,255,0.04)",color:copied===b.key?"#34d399":"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>
                   {copied===b.key?"✓ Copied!":"Copy"}
                 </button>
               </div>
@@ -366,7 +366,7 @@ export default function BioWriter({ user }) {
           <div style={{display:"flex",alignItems:"center",gap:"8px",justifyContent:"center"}}>
             <span style={{fontSize:"11px",color:"rgba(255,255,255,0.3)"}}>Variation {batchRef.current+1}/6</span>
             <button onClick={()=>generate(true)}
-              style={{padding:"11px 24px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.3)",background:"rgba(124,58,237,0.08)",color:"#a78bfa",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+              style={{padding:"11px 24px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.5)",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
               ↻ {bt("अगला वर्शन","पुढील आवृत्ती","அடுத்த பதிப்பு","পরবর্তী সংস্করণ","Next Variation")}
             </button>
           </div>
@@ -376,7 +376,7 @@ export default function BioWriter({ user }) {
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         .bio-gen-btn:hover:not(:disabled){
-          background:rgba(124,58,237,0.2) !important;
+          background:rgba(255,255,255,0.08) !important;
           border-color:rgba(124,58,237,1) !important;
           box-shadow:0 0 28px rgba(124,58,237,0.8),0 0 60px rgba(124,58,237,0.4) !important;
           transform:translateY(-2px) !important;

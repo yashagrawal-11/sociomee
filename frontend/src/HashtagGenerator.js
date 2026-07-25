@@ -23,16 +23,16 @@ const BTN = {
   active: {
     padding:"9px 14px", borderRadius:"99px", cursor:"pointer",
     fontFamily:"inherit", fontWeight:"700", fontSize:"12px",
-    border:"1.5px solid rgba(124,58,237,0.8)",
-    background:"rgba(124,58,237,0.15)", backdropFilter:"blur(16px)",
-    color:"#fff", boxShadow:"0 0 20px rgba(124,58,237,0.7),0 0 40px rgba(124,58,237,0.3)",
+    border:"1.5px solid rgba(255,255,255,0.25)",
+    background:"rgba(255,255,255,0.06)", backdropFilter:"blur(16px)",
+    color:"#fff", boxShadow:"0 0 20px rgba(124,58,237,0.7),0 0 40px rgba(255,255,255,0.12)",
     transition:"all 0.3s", display:"flex", alignItems:"center",
     justifyContent:"center", width:"100%",
   },
   inactive: {
     padding:"9px 14px", borderRadius:"99px", cursor:"pointer",
     fontFamily:"inherit", fontWeight:"600", fontSize:"12px",
-    border:"1.5px solid rgba(124,58,237,0.2)",
+    border:"1.5px solid rgba(255,255,255,0.08)",
     background:"rgba(255,255,255,0.04)", backdropFilter:"blur(16px)",
     color:"rgba(255,255,255,0.5)", transition:"all 0.3s",
     display:"flex", alignItems:"center", justifyContent:"center", width:"100%",
@@ -81,9 +81,9 @@ export default function HashtagGenerator({ user }) {
 
       {/* Header */}
       <div style={{marginBottom:"24px"}}>
-        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",border:"1.5px solid rgba(124,58,237,0.45)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px",boxShadow:"0 0 16px rgba(124,58,237,0.2)"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",border:"1.5px solid rgba(255,255,255,0.25)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px",boxShadow:"0 0 16px rgba(255,255,255,0.08)"}}>
           <span>🏷️</span>
-          <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"#a78bfa"}}>{ht("हैशटैग जनरेटर","हॅशटॅग जनरेटर","ஹேஷ்டேக் ஜெனரேட்டர்","হ্যাশট্যাগ জেনারেটর","Hashtag Generator")}</span>
+          <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)"}}>{ht("हैशटैग जनरेटर","हॅशटॅग जनरेटर","ஹேஷ்டேக் ஜெனரேட்டர்","হ্যাশট্যাগ জেনারেটর","Hashtag Generator")}</span>
         </div>
         <h2 style={{fontSize:"22px",fontWeight:"700",color:"#fff",fontFamily:"'Orbitron',sans-serif",letterSpacing:"2px",textTransform:"uppercase",marginBottom:"6px"}}>{ht("हैशटैग्स","हॅशटॅग्स","ஹேஷ்டேக்கள்","হ্যাশট্যাগ","HASHTAGS")}</h2>
         <p style={{fontSize:"13px",color:"rgba(255,255,255,0.35)"}}>{ht("अपना टॉपिक डालें | रियल ट्रेंडिंग हैशटैग पाएं","तुमचा विषय टाका | रियल ट्रेंडिंग हॅशटॅग मिळवा","உங்கள் தலைப்பை உள்ளிடுங்கள் | ரியல் டிரெண்டிங் ஹேஷ்டேக்கள் பெறுங்கள்","আপনার বিষয় লিখুন | রিয়েল ট্রেন্ডিং হ্যাশট্যাগ পান","Enter your topic | get real trending hashtags scraped live for your platform.")}</p>
@@ -110,13 +110,13 @@ export default function HashtagGenerator({ user }) {
           <input value={keyword} onChange={e=>{setKeyword(e.target.value);setError("");}}
             onKeyDown={e=>e.key==="Enter"&&generate()}
             placeholder="e.g. reels, cricket, skincare..."
-            style={{flex:1,minWidth:0,padding:"11px 16px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.25)",outline:"none",fontSize:"13px",fontWeight:"500",color:"#fff",background:"rgba(255,255,255,0.05)",backdropFilter:"blur(8px)",fontFamily:"inherit",transition:"border 0.2s,box-shadow 0.2s",boxSizing:"border-box"}}
-            onFocus={e=>{e.target.style.border="1.5px solid #7c3aed";e.target.style.boxShadow="0 0 0 3px rgba(124,58,237,0.12)";}}
+            style={{flex:1,minWidth:0,padding:"11px 16px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",outline:"none",fontSize:"13px",fontWeight:"500",color:"#fff",background:"rgba(255,255,255,0.05)",backdropFilter:"blur(8px)",fontFamily:"inherit",transition:"border 0.2s,box-shadow 0.2s",boxSizing:"border-box"}}
+            onFocus={e=>{e.target.style.border="1.5px solid rgba(255,255,255,0.15)";e.target.style.boxShadow="0 0 0 3px rgba(255,255,255,0.06)";}}
             onBlur={e=>{e.target.style.border="1.5px solid rgba(124,58,237,0.25)";e.target.style.boxShadow="none";}}
           />
           <button onClick={generate} disabled={loading||!keyword.trim()}
             className="glow-btn"
-            style={{padding:"11px 16px",borderRadius:"99px",border:`1.5px solid ${loading||!keyword.trim()?"rgba(124,58,237,0.2)":"rgba(124,58,237,0.6)"}`,background:loading||!keyword.trim()?"rgba(124,58,237,0.08)":"rgba(124,58,237,0.12)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"13px",cursor:loading||!keyword.trim()?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading||!keyword.trim()?"none":"0 0 16px rgba(124,58,237,0.4)",transition:"all 0.3s",whiteSpace:"nowrap",flexShrink:0}}>
+            style={{padding:"11px 16px",borderRadius:"99px",border:`1.5px solid ${loading||!keyword.trim()?"rgba(255,255,255,0.08)":"rgba(124,58,237,0.6)"}`,background:loading||!keyword.trim()?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"13px",cursor:loading||!keyword.trim()?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading||!keyword.trim()?"none":"0 0 16px rgba(124,58,237,0.4)",transition:"all 0.3s",whiteSpace:"nowrap",flexShrink:0}}>
             {loading?(
               <span style={{display:"flex",alignItems:"center",gap:"8px"}}>
                 <span style={{width:"14px",height:"14px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.3)",borderTopColor:"#fff",animation:"spin 0.7s linear infinite",display:"inline-block"}}/>
@@ -140,7 +140,7 @@ export default function HashtagGenerator({ user }) {
               <span style={{fontSize:"10px",background:"rgba(52,211,153,0.15)",color:"#34d399",padding:"3px 10px",borderRadius:"99px",fontWeight:"700",border:"1px solid rgba(52,211,153,0.3)"}}>● Live Trending</span>
             </div>
             <button onClick={copyAll}
-              style={{padding:"8px 20px",borderRadius:"99px",border:`1.5px solid ${copied?"rgba(52,211,153,0.4)":"rgba(124,58,237,0.5)"}`,background:copied?"rgba(52,211,153,0.1)":"rgba(124,58,237,0.1)",backdropFilter:"blur(16px)",color:copied?"#34d399":"#fff",fontWeight:"700",fontSize:"12px",cursor:"pointer",fontFamily:"inherit",boxShadow:copied?"none":"0 0 14px rgba(124,58,237,0.35)",transition:"all 0.3s"}}>
+              style={{padding:"8px 20px",borderRadius:"99px",border:`1.5px solid ${copied?"rgba(52,211,153,0.4)":"rgba(124,58,237,0.5)"}`,background:copied?"rgba(52,211,153,0.1)":"rgba(255,255,255,0.04)",backdropFilter:"blur(16px)",color:copied?"#34d399":"#fff",fontWeight:"700",fontSize:"12px",cursor:"pointer",fontFamily:"inherit",boxShadow:copied?"none":"0 0 14px rgba(124,58,237,0.35)",transition:"all 0.3s"}}>
               {copied?ht("✓ कॉपी हो गया!","✓ कॉपी झाले!","✓ நகலெடுக்கப்பட்டது!","✓ কপি হয়েছে!","✓ Copied All!"):ht("📋 सब कॉपी करें","📋 सर्व कॉपी करा","📋 அனைத்தையும் நகலெடு","📋 সব কপি করুন","📋 Copy All")}
             </button>
           </div>
@@ -152,9 +152,9 @@ export default function HashtagGenerator({ user }) {
               const isCopied = copiedTag===tag;
               return (
                 <button key={i} onClick={()=>copyOne(tag)} title="Click to copy"
-                  style={{padding:"8px 16px",borderRadius:"99px",border:`1.5px solid ${isCopied?"rgba(52,211,153,0.5)":"rgba(124,58,237,0.35)"}`,background:isCopied?"rgba(52,211,153,0.12)":"rgba(124,58,237,0.08)",color:isCopied?"#34d399":"#c4b5fd",fontWeight:"600",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}
-                  onMouseEnter={e=>{if(!isCopied){e.currentTarget.style.background="rgba(124,58,237,0.2)";e.currentTarget.style.boxShadow="0 0 12px rgba(124,58,237,0.3)";}}}
-                  onMouseLeave={e=>{if(!isCopied){e.currentTarget.style.background="rgba(124,58,237,0.08)";e.currentTarget.style.boxShadow="none";}}}>
+                  style={{padding:"8px 16px",borderRadius:"99px",border:`1.5px solid ${isCopied?"rgba(52,211,153,0.5)":"rgba(124,58,237,0.35)"}`,background:isCopied?"rgba(52,211,153,0.12)":"rgba(255,255,255,0.04)",color:isCopied?"#34d399":"#c4b5fd",fontWeight:"600",fontSize:"13px",cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}
+                  onMouseEnter={e=>{if(!isCopied){e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.boxShadow="0 0 12px rgba(255,255,255,0.12)";}}}
+                  onMouseLeave={e=>{if(!isCopied){e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.boxShadow="none";}}}>
                   {isCopied?"✓ ":""}{h}
                 </button>
               );
@@ -174,7 +174,7 @@ export default function HashtagGenerator({ user }) {
       <style>{`
   @keyframes spin{to{transform:rotate(360deg)}}
   .glow-btn:hover:not(:disabled){
-    background:rgba(124,58,237,0.2) !important;
+    background:rgba(255,255,255,0.08) !important;
     border-color:rgba(124,58,237,1) !important;
     box-shadow:0 0 28px rgba(124,58,237,0.8),0 0 60px rgba(124,58,237,0.4) !important;
     transform:translateY(-2px) !important;

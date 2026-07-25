@@ -49,18 +49,18 @@ function LangDropdown({ value, onChange, exclude }) {
   return (
     <div ref={ref} style={{position:"relative",zIndex:open?9999:1,flex:1}}>
       <button onClick={() => setOpen(o => !o)}
-        style={{width:"100%",padding:"12px 18px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.25)",outline:"none",fontSize:"14px",fontWeight:"700",color:"#fff",background:"rgba(255,255,255,0.06)",cursor:"pointer",boxSizing:"border-box",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(10px)",transition:"border 0.2s"}}
+        style={{width:"100%",padding:"12px 18px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",outline:"none",fontSize:"14px",fontWeight:"700",color:"#fff",background:"rgba(255,255,255,0.06)",cursor:"pointer",boxSizing:"border-box",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(10px)",transition:"border 0.2s"}}
         onMouseEnter={e=>{e.currentTarget.style.border="1.5px solid rgba(124,58,237,0.5)";}}
         onMouseLeave={e=>{e.currentTarget.style.border="1.5px solid rgba(124,58,237,0.25)";}}>
         <span>{selected.label} <span style={{fontSize:"12px",opacity:0.6,marginLeft:"4px"}}>{selected.name}</span></span>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="rgba(124,58,237,0.8)" style={{transform:open?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><path d="M7 10l5 5 5-5z"/></svg>
       </button>
       {open && (
-        <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,right:0,background:"rgba(15,10,30,0.97)",border:"1.5px solid rgba(124,58,237,0.3)",borderRadius:"16px",overflow:"hidden",backdropFilter:"blur(20px)",boxShadow:"0 8px 32px rgba(0,0,0,0.6)",zIndex:9999}}>
+        <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,right:0,background:"rgba(15,10,30,0.97)",border:"1.5px solid rgba(255,255,255,0.12)",borderRadius:"16px",overflow:"hidden",backdropFilter:"blur(20px)",boxShadow:"0 8px 32px rgba(0,0,0,0.6)",zIndex:9999}}>
           {opts.map((o,i) => (
             <button key={o.code} onClick={()=>{onChange(o.code);setOpen(false);}}
-              style={{width:"100%",padding:"11px 18px",border:"none",background:o.code===value?"rgba(124,58,237,0.2)":"transparent",color:o.code===value?"#a78bfa":"rgba(255,255,255,0.75)",fontSize:"13px",fontWeight:o.code===value?"700":"500",cursor:"pointer",fontFamily:"inherit",textAlign:"left",borderBottom:i<opts.length-1?"1px solid rgba(255,255,255,0.05)":"none",transition:"background 0.15s"}}
-              onMouseEnter={e=>{if(o.code!==value)e.currentTarget.style.background="rgba(124,58,237,0.1)";}}
+              style={{width:"100%",padding:"11px 18px",border:"none",background:o.code===value?"rgba(255,255,255,0.08)":"transparent",color:o.code===value?"rgba(255,255,255,0.5)":"rgba(255,255,255,0.75)",fontSize:"13px",fontWeight:o.code===value?"700":"500",cursor:"pointer",fontFamily:"inherit",textAlign:"left",borderBottom:i<opts.length-1?"1px solid rgba(255,255,255,0.05)":"none",transition:"background 0.15s"}}
+              onMouseEnter={e=>{if(o.code!==value)e.currentTarget.style.background="rgba(255,255,255,0.04)";}}
               onMouseLeave={e=>{if(o.code!==value)e.currentTarget.style.background="transparent";}}>
               <span style={{fontWeight:"700"}}>{o.label}</span>
               <span style={{fontSize:"11px",opacity:0.5,marginLeft:"8px"}}>{o.name}</span>
@@ -86,7 +86,7 @@ export default function Translator({ user }) {
   const recognitionRef = useRef(null);
 
   const wordCount = t => t.trim() ? t.trim().split(/\s+/).length : 0;
-  const P = "#7c3aed", R = "#ff3d8f";
+  const P = "rgba(255,255,255,0.15)", R = "#ff3d8f";
   const hairline = "rgba(167,139,250,0.15)";
 
   const doTranslate = useCallback(async (text, src, tgt) => {
@@ -180,9 +180,9 @@ export default function Translator({ user }) {
 
       {/* Header */}
       <div style={{marginBottom:"24px"}}>
-        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",border:"1.5px solid rgba(124,58,237,0.45)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px",boxShadow:"0 0 16px rgba(124,58,237,0.2),inset 0 1px 0 rgba(255,255,255,0.08)"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",border:"1.5px solid rgba(255,255,255,0.25)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px",boxShadow:"0 0 16px rgba(255,255,255,0.08),inset 0 1px 0 rgba(255,255,255,0.08)"}}>
           <span style={{fontSize:"13px"}}>🌐</span>
-          <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"#a78bfa"}}>
+          <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)"}}>
   {(()=>{const l=localStorage.getItem("sociomee_lang")||"en";return l==="hi"?"स्क्रिप्ट अनुवादक":l==="mr"?"स्क्रिप्ट अनुवादक":l==="ta"?"ஸ்கிரிப்ட் மொழிபெயர்ப்பாளர்":l==="bn"?"স্ক্রিপ্ট অনুবাদক":"Script Translator";})()}
 </span>
         </div>
@@ -198,9 +198,9 @@ export default function Translator({ user }) {
       <div style={{display:"flex",alignItems:"center",gap:"12px",marginBottom:"16px"}}>
         <LangDropdown value={sourceLang} onChange={setSourceLang} exclude={targetLang} />
         <button onClick={swap}
-          style={{width:"44px",height:"44px",borderRadius:"50%",border:"1.5px solid rgba(124,58,237,0.3)",background:"rgba(124,58,237,0.08)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.2s",color:"#a78bfa"}}
-          onMouseEnter={e=>{e.currentTarget.style.background="rgba(124,58,237,0.2)";e.currentTarget.style.borderColor="rgba(124,58,237,0.6)";}}
-          onMouseLeave={e=>{e.currentTarget.style.background="rgba(124,58,237,0.08)";e.currentTarget.style.borderColor="rgba(124,58,237,0.3)";}}>
+          style={{width:"44px",height:"44px",borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.04)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.2s",color:"rgba(255,255,255,0.5)"}}
+          onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.borderColor="rgba(124,58,237,0.6)";}}
+          onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
           </svg>
@@ -226,9 +226,9 @@ export default function Translator({ user }) {
               {/* MIC BUTTON */}
               <button onClick={startVoice}
                 title={listening?"Stop":"Speak to translate"}
-                style={{width:"36px",height:"36px",borderRadius:"50%",border:`1.5px solid ${listening?"#ff3d8f":"rgba(124,58,237,0.5)"}`,background:listening?"rgba(255,61,143,0.15)":"rgba(124,58,237,0.1)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,position:"relative",transition:"all 0.2s",boxShadow:listening?"0 0 14px rgba(255,61,143,0.5)":"0 0 8px rgba(124,58,237,0.25)"}}>
+                style={{width:"36px",height:"36px",borderRadius:"50%",border:`1.5px solid ${listening?"#ff3d8f":"rgba(124,58,237,0.5)"}`,background:listening?"rgba(255,61,143,0.15)":"rgba(255,255,255,0.04)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,position:"relative",transition:"all 0.2s",boxShadow:listening?"0 0 14px rgba(255,61,143,0.5)":"0 0 8px rgba(124,58,237,0.25)"}}>
                 {listening && <span style={{position:"absolute",inset:"-5px",borderRadius:"50%",border:"2px solid rgba(255,61,143,0.5)",animation:"ripple 1.2s ease-out infinite"}}/>}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={listening?"#ff3d8f":"#a78bfa"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={listening?"#ff3d8f":"rgba(255,255,255,0.5)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                   <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
                   <line x1="12" y1="19" x2="12" y2="23"/>
@@ -249,7 +249,7 @@ export default function Translator({ user }) {
           <div ref={outputRef} style={{...taStyle,overflowY:"auto",cursor:"default",whiteSpace:"pre-wrap",wordBreak:"break-word",color:outputText?"#ede8ff":"rgba(255,255,255,0.2)"}}>
             {loading ? (
               <span style={{color:"rgba(255,255,255,0.25)",fontSize:"15px",display:"flex",alignItems:"center",gap:"10px"}}>
-                <span style={{display:"inline-block",width:"16px",height:"16px",borderRadius:"50%",border:`2px solid rgba(124,58,237,0.3)`,borderTopColor:P,animation:"spin 0.7s linear infinite",flexShrink:0}}/>
+                <span style={{display:"inline-block",width:"16px",height:"16px",borderRadius:"50%",border:`2px solid rgba(255,255,255,0.12)`,borderTopColor:P,animation:"spin 0.7s linear infinite",flexShrink:0}}/>
                 Translating…
               </span>
             ) : outputText ? outputText : "Translation"}
@@ -259,7 +259,7 @@ export default function Translator({ user }) {
               {outputText && !loading ? `${wordCount(outputText).toLocaleString()} words` : ""}
             </span>
             {outputText && !loading && (
-              <button onClick={copy} style={{fontSize:"12px",fontWeight:"700",color:copied?"#34d399":"#a78bfa",background:copied?"rgba(52,211,153,0.1)":"rgba(124,58,237,0.1)",border:`1px solid ${copied?"rgba(52,211,153,0.3)":"rgba(124,58,237,0.25)"}`,cursor:"pointer",fontFamily:"inherit",padding:"5px 14px",borderRadius:"8px",transition:"all 0.2s"}}>
+              <button onClick={copy} style={{fontSize:"12px",fontWeight:"700",color:copied?"#34d399":"rgba(255,255,255,0.5)",background:copied?"rgba(52,211,153,0.1)":"rgba(255,255,255,0.04)",border:`1px solid ${copied?"rgba(52,211,153,0.3)":"rgba(124,58,237,0.25)"}`,cursor:"pointer",fontFamily:"inherit",padding:"5px 14px",borderRadius:"8px",transition:"all 0.2s"}}>
                 {copied?"✓ Copied!":"📋 Copy"}
               </button>
             )}

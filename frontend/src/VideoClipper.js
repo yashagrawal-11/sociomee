@@ -201,7 +201,7 @@ export default function VideoClipper({ user }) {
     }
   };
 
-  const P = "#7c3aed", R = "#ff3d8f";
+  const P = "rgba(255,255,255,0.15)", R = "#ff3d8f";
   const hairline = "rgba(167,139,250,0.15)";
   const clipLen = endTime - startTime;
 
@@ -217,9 +217,9 @@ export default function VideoClipper({ user }) {
     <div style={{fontFamily:"'DM Sans','Syne',sans-serif"}}>
       {/* Header */}
       <div style={{marginBottom:"24px"}}>
-        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",border:"1.5px solid rgba(124,58,237,0.45)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px",boxShadow:"0 0 16px rgba(124,58,237,0.2)"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",border:"1.5px solid rgba(255,255,255,0.25)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px",boxShadow:"0 0 16px rgba(255,255,255,0.08)"}}>
           <span>✂️</span>
-          <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"#a78bfa"}}>{vt("वीडियो क्लिपर","व्हिडिओ क्लिपर","வீடியோ கிளிப்பர்","ভিডিও ক্লিপার","Video Clipper")}</span>
+          <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)"}}>{vt("वीडियो क्लिपर","व्हिडिओ क्लिपर","வீடியோ கிளிப்பர்","ভিডিও ক্লিপার","Video Clipper")}</span>
         </div>
         <h2 style={{fontSize:"22px",fontWeight:"700",color:"#fff",fontFamily:"'Orbitron',sans-serif",letterSpacing:"2px",textTransform:"uppercase",marginBottom:"6px"}}>{vt("वीडियो क्लिपर","व्हिडिओ क्लिपर","வீடியோ கிளிப்பர்","ভিডিও ক্লিপার","VIDEO CLIPPER")}</h2>
         <p style={{fontSize:"13px",color:"rgba(255,255,255,0.35)"}}>{vt("वीडियो चुनें, हैंडल खींचें, क्लिप डाउनलोड करें","व्हिडिओ निवडा, ट्रिम करा, डाउनलोड करा","வீடியோ தேர்ந்தெடுங்கள், ட்ரிம் செய்யுங்கள்","ভিডিও বেছে নিন, ট্রিম করুন","Select video, drag handles to trim, download clip.")}</p>
@@ -230,10 +230,10 @@ export default function VideoClipper({ user }) {
         <div onDragOver={e=>{e.preventDefault();setDrag(true);}} onDragLeave={()=>setDrag(false)}
           onDrop={e=>{e.preventDefault();setDrag(false);handleFile(e.dataTransfer.files[0]);}}
           onClick={()=>fileRef.current?.click()}
-          style={{border:`2px dashed ${drag?"#7c3aed":"rgba(124,58,237,0.35)"}`,borderRadius:"18px",padding:"60px 20px",textAlign:"center",cursor:"pointer",background:drag?"rgba(124,58,237,0.08)":"rgba(255,255,255,0.02)",transition:"all 0.2s"}}>
+          style={{border:`2px dashed ${drag?"rgba(255,255,255,0.15)":"rgba(124,58,237,0.35)"}`,borderRadius:"18px",padding:"60px 20px",textAlign:"center",cursor:"pointer",background:drag?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.02)",transition:"all 0.2s"}}>
           <input ref={fileRef} type="file" accept="video/*" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])}/>
           <div style={{fontSize:"48px",marginBottom:"16px"}}>🎬</div>
-          <p style={{color:"#a78bfa",fontWeight:"700",fontSize:"16px",marginBottom:"8px"}}>{vt("वीडियो यहाँ क्लिक या ड्रैग करें","व्हिडिओ येथे क्लिक किंवा ड्रॅग करा","வீடியோவை இங்கே கிளிக் செய்யுங்கள்","ভিডিও এখানে ক্লিক করুন","Click or drag a video here")}</p>
+          <p style={{color:"rgba(255,255,255,0.5)",fontWeight:"700",fontSize:"16px",marginBottom:"8px"}}>{vt("वीडियो यहाँ क्लिक या ड्रैग करें","व्हिडिओ येथे क्लिक किंवा ड्रॅग करा","வீடியோவை இங்கே கிளிக் செய்யுங்கள்","ভিডিও এখানে ক্লিক করুন","Click or drag a video here")}</p>
           <p style={{color:"rgba(255,255,255,0.25)",fontSize:"13px"}}>MP4, MOV, WebM · Max 500MB</p>
         </div>
       ) : (
@@ -260,7 +260,7 @@ export default function VideoClipper({ user }) {
               <div style={{display:"flex",gap:"4px",flexWrap:"wrap"}}>
                 {SPEEDS.map(s=>(
                   <button key={s} onClick={()=>setSpeed(s)}
-                    style={{padding:"4px 8px",borderRadius:"6px",border:`1px solid ${speed===s?"rgba(124,58,237,0.6)":"rgba(255,255,255,0.1)"}`,background:speed===s?"rgba(124,58,237,0.2)":"transparent",color:speed===s?"#a78bfa":"rgba(255,255,255,0.4)",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>
+                    style={{padding:"4px 8px",borderRadius:"6px",border:`1px solid ${speed===s?"rgba(124,58,237,0.6)":"rgba(255,255,255,0.1)"}`,background:speed===s?"rgba(255,255,255,0.08)":"transparent",color:speed===s?"rgba(255,255,255,0.5)":"rgba(255,255,255,0.4)",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>
                     {s}x
                   </button>
                 ))}
@@ -282,7 +282,7 @@ export default function VideoClipper({ user }) {
             <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
               {RATIOS.map(r=>(
                 <button key={r.id} onClick={()=>setAspectRatio(r.id)}
-                  style={{padding:"6px 12px",borderRadius:"8px",border:`1px solid ${aspectRatio===r.id?"rgba(124,58,237,0.6)":"rgba(255,255,255,0.1)"}`,background:aspectRatio===r.id?"rgba(124,58,237,0.15)":"transparent",color:aspectRatio===r.id?"#a78bfa":"rgba(255,255,255,0.4)",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+                  style={{padding:"6px 12px",borderRadius:"8px",border:`1px solid ${aspectRatio===r.id?"rgba(124,58,237,0.6)":"rgba(255,255,255,0.1)"}`,background:aspectRatio===r.id?"rgba(255,255,255,0.06)":"transparent",color:aspectRatio===r.id?"rgba(255,255,255,0.5)":"rgba(255,255,255,0.4)",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
                   {r.label}
                 </button>
               ))}
@@ -293,11 +293,11 @@ export default function VideoClipper({ user }) {
           <div style={{background:"rgba(255,255,255,0.04)",border:`1.5px solid ${hairline}`,borderRadius:"14px",padding:"20px",marginBottom:"16px"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}}>
               <span style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.3)",letterSpacing:"1px",textTransform:"uppercase"}}>Timeline</span>
-              <span style={{fontSize:"12px",fontWeight:"700",color:"#a78bfa"}}>{fmt(startTime)} → {fmt(endTime)} · {clipLen.toFixed(1)}s {clipLen>60?"⚠️>60s":""}</span>
+              <span style={{fontSize:"12px",fontWeight:"700",color:"rgba(255,255,255,0.5)"}}>{fmt(startTime)} → {fmt(endTime)} · {clipLen.toFixed(1)}s {clipLen>60?"⚠️>60s":""}</span>
             </div>
             <div ref={timelineRef} onClick={handleTimelineClick}
               style={{position:"relative",height:"52px",borderRadius:"10px",background:"rgba(255,255,255,0.06)",cursor:"pointer",userSelect:"none",overflow:"visible",marginBottom:"8px"}}>
-              <div style={{position:"absolute",top:0,bottom:0,left:`${(startTime/duration)*100}%`,width:`${((endTime-startTime)/duration)*100}%`,background:"rgba(124,58,237,0.3)",border:`2px solid ${P}`}}/>
+              <div style={{position:"absolute",top:0,bottom:0,left:`${(startTime/duration)*100}%`,width:`${((endTime-startTime)/duration)*100}%`,background:"rgba(255,255,255,0.12)",border:`2px solid ${P}`}}/>
               {Array.from({length:40}).map((_,i)=>(
                 <div key={i} style={{position:"absolute",bottom:"8px",left:`${(i/40)*100}%`,width:"2px",height:`${12+Math.sin(i*0.8)*10}px`,background:"rgba(167,139,250,0.3)",borderRadius:"1px",transform:"translateX(-50%)"}}/>
               ))}
@@ -333,7 +333,7 @@ export default function VideoClipper({ user }) {
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"8px"}}>
               <span style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.3)",letterSpacing:"1px",textTransform:"uppercase"}}>📌 {vt("मल्टीपल क्लिप्स","मल्टिपल क्लिप","பல கிளிப்கள்","একাধিক ক্লিপ","Multiple Clips")} ({clips.length}/5)</span>
               <button onClick={addClipMark} disabled={clips.length>=5}
-                style={{padding:"6px 12px",borderRadius:"8px",border:"1px solid rgba(124,58,237,0.4)",background:"rgba(124,58,237,0.1)",color:"#a78bfa",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",opacity:clips.length>=5?0.4:1}}>
+                style={{padding:"6px 12px",borderRadius:"8px",border:"1px solid rgba(124,58,237,0.4)",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",opacity:clips.length>=5?0.4:1}}>
                 + {vt("क्लिप मार्क करें","क्लिप मार्क करा","கிளிப் குறி","ক্লিপ মার্ক","Mark Current Clip")}
               </button>
             </div>
@@ -343,7 +343,7 @@ export default function VideoClipper({ user }) {
                   <div key={c.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"10px",background:"rgba(255,61,143,0.06)",border:"1px solid rgba(255,61,143,0.2)"}}>
                     <span style={{fontSize:"12px",fontWeight:"600",color:"rgba(255,255,255,0.7)"}}>Clip {i+1}: {fmt(c.start)} → {fmt(c.end)} ({(c.end-c.start).toFixed(1)}s)</span>
                     <div style={{display:"flex",gap:"6px"}}>
-                      <button onClick={()=>{setStartTime(c.start);setEndTime(c.end);}} style={{fontSize:"10px",color:"#a78bfa",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Load</button>
+                      <button onClick={()=>{setStartTime(c.start);setEndTime(c.end);}} style={{fontSize:"10px",color:"rgba(255,255,255,0.5)",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Load</button>
                       <button onClick={()=>removeClip(c.id)} style={{fontSize:"10px",color:"#f87171",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>✕</button>
                     </div>
                   </div>
@@ -368,7 +368,7 @@ export default function VideoClipper({ user }) {
             <div style={{background:"rgba(255,255,255,0.04)",border:`1px solid ${hairline}`,borderRadius:"12px",padding:"16px",marginBottom:"16px"}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:"8px"}}>
                 <span style={{fontSize:"12px",fontWeight:"700",color:"rgba(255,255,255,0.6)"}}>⚙ {vt("प्रोसेसिंग…","प्रक्रिया…","செயலாக்கம்…","প্রক্রিয়াকরণ…","Processing clip…")}</span>
-                <span style={{fontSize:"12px",color:"#a78bfa",fontWeight:"700"}}>{Math.round(progress)}%</span>
+                <span style={{fontSize:"12px",color:"rgba(255,255,255,0.5)",fontWeight:"700"}}>{Math.round(progress)}%</span>
               </div>
               <div style={{height:"6px",borderRadius:"99px",background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
                 <div style={{height:"100%",width:`${progress}%`,borderRadius:"99px",background:`linear-gradient(90deg,${P},${R})`,transition:"width 0.3s",boxShadow:`0 0 16px rgba(124,58,237,0.8)`}}/>
@@ -391,7 +391,7 @@ export default function VideoClipper({ user }) {
           {/* Main trim button */}
           <button onClick={trimAllClips} disabled={trimming||clipLen<0.5}
             className="trim-btn"
-            style={{width:"100%",padding:"15px",borderRadius:"99px",border:`1.5px solid rgba(124,58,237,${trimming||clipLen<0.5?"0.2":"0.5"})`,background:trimming||clipLen<0.5?"rgba(124,58,237,0.08)":"rgba(124,58,237,0.12)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"15px",cursor:trimming||clipLen<0.5?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:trimming?"none":"0 0 16px rgba(124,58,237,0.3)",transition:"all 0.3s"}}>
+            style={{width:"100%",padding:"15px",borderRadius:"99px",border:`1.5px solid rgba(124,58,237,${trimming||clipLen<0.5?"0.2":"0.5"})`,background:trimming||clipLen<0.5?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"15px",cursor:trimming||clipLen<0.5?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:trimming?"none":"0 0 16px rgba(255,255,255,0.12)",transition:"all 0.3s"}}>
             {trimming?`⚙ ${vt("प्रोसेसिंग…","प्रक्रिया…","செயலாக்கம்…","প্রক্রিয়াকরণ…","Processing…")} ${Math.round(progress)}%`:
               clips.length>0?`✂️ ${vt("सभी क्लिप्स डाउनलोड करें","सर्व क्लिप्स डाउनलोड करा","அனைத்து கிளிப்களையும் பதிவிறக்கு","সব ক্লিপ ডাউনলোড করুন","Download All Clips")} (${clips.length})`:
               `✂️ ${vt("ट्रिम करें","ट्रिम करा","ட்ரிம் செய்","ট্রিম করুন","Trim & Download")} (${clipLen.toFixed(1)}s)`}
@@ -406,7 +406,7 @@ export default function VideoClipper({ user }) {
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         .trim-btn:hover:not(:disabled){
-          background:rgba(124,58,237,0.2) !important;
+          background:rgba(255,255,255,0.08) !important;
           border-color:rgba(124,58,237,1) !important;
           box-shadow:0 0 28px rgba(124,58,237,0.8),0 0 60px rgba(124,58,237,0.4) !important;
           transform:translateY(-2px) !important;
