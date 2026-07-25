@@ -249,7 +249,6 @@ function Publisher({ userId, topic, onPublished }) {
             </div>
           )}
         </div>
-        </div>
         <span style={{ fontSize:11, color: rem < 50 ? C.danger : "rgba(255,255,255,0.2)", fontWeight:600, marginLeft:"auto" }}>{rem}</span>
         <button onClick={publish} disabled={loading || !text.trim()} style={{ padding:"8px 20px", borderRadius:99, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.06)", color:"#f5f5f7", fontWeight:800, fontSize:12, cursor: loading || !text.trim() ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:6, opacity: loading || !text.trim() ? 0.4 : 1, transition:"all 0.15s" }}>
           <ThreadsIcon size={13} color="#fff" />
