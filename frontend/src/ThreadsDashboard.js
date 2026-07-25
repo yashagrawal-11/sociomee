@@ -44,7 +44,7 @@ function fmt(n) {
 function Spinner() {
   return (
     <div style={{ display:"flex", justifyContent:"center", padding:"48px" }}>
-      <div style={{ width:36, height:36, borderRadius:"50%", border:`3px solid ${C.purple}22`, borderTopColor:C.purple, animation:"spin 0.7s linear infinite" }} />
+      <div style={{ width:36, height:36, borderRadius:"50%", border:"3px solid rgba(255,255,255,0.06)", borderTopColor:"rgba(255,255,255,0.3)", animation:"spin 0.7s linear infinite" }} />
       <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
     </div>
   );
@@ -284,6 +284,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
       const d = await r.json();
       if (d.detail?.error === "no_credits") { alert("Not enough credits to analyze. Please top up."); return; }
       setPrediction(d);
+      fetch(`${BASE}/credits/${userId}`).then(r=>r.json()).then(cr=>{ window.dispatchEvent(new CustomEvent("sociomee-credits-updated", { detail:{ plan:cr.plan||"free", plan_label:cr.plan_label||"Free", credits_remaining:cr.credits_remaining??cr.credits??0, credits:cr.credits_remaining??cr.credits??0, monthly_limit:cr.monthly_limit??180, next_reset:cr.next_reset||"" } })); }).catch(()=>{});
     } catch (e) {
       console.error(e);
     } finally { setPredLoading(false); }
@@ -296,6 +297,7 @@ export default function ThreadsDashboard({ user, topic = "" }) {
       const r = await fetch(`${BASE}/threads/trending-topics?user_id=${userId}`);
       const d = await r.json();
       if (d.trending) { setPredTrending(d.trending); setTrendLoaded(true); }
+      fetch(`${BASE}/credits/${userId}`).then(r=>r.json()).then(cr=>{ window.dispatchEvent(new CustomEvent("sociomee-credits-updated", { detail:{ plan:cr.plan||"free", plan_label:cr.plan_label||"Free", credits_remaining:cr.credits_remaining??cr.credits??0, credits:cr.credits_remaining??cr.credits??0, monthly_limit:cr.monthly_limit??180, next_reset:cr.next_reset||"" } })); }).catch(()=>{});
     } catch (e) { console.error(e); }
     finally { setTrendLoading(false); }
   };
@@ -571,7 +573,10 @@ export default function ThreadsDashboard({ user, topic = "" }) {
                     {prediction.hook_suggestions.map((h, i) => (
                       <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 14px" }}>
                         <span style={{ fontSize:12.5, color:"#f5f5f7", fontWeight:600, lineHeight:1.5, flex:1 }}>{h}</span>
-                        <button onClick={() => navigator.clipboard.writeText(h)} style={{ marginLeft:10, padding:"4px 10px", borderRadius:7, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(255,255,255,0.4)", fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"inherit", flexShrink:0 }}>Copy</button>
+                        <div style={{ display:"flex", gap:6, marginLeft:10, flexShrink:0 }}>
+                          <button onClick={() => navigator.clipboard.writeText(h)} style={{ padding:"4px 10px", borderRadius:7, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(255,255,255,0.4)", fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Copy</button>
+                          <button onClick={() => window.dispatchEvent(new CustomEvent("sociomee:generate", { detail:{ content:h, platform:"threads" } }))} style={{ padding:"4px 10px", borderRadius:7, border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.06)", color:"#f5f5f7", fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Generate</button>
+                        </div>
                       </div>
                     ))}
                   </div>

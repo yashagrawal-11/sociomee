@@ -980,7 +980,7 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
     _check_email_verified(user)
     if not _check_topic_safety(topic):
         raise HTTPException(400, "This topic cannot be generated. SocioMee does not create content involving self-harm, sexual content, slurs, hate speech, or violence.")
-    err = _check_credits(user["user_id"])
+    err = _check_credits(user["user_id"], cost=3 if p == "threads" else 10)
     if err: return err
     try:
         if p == "youtube":
