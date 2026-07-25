@@ -789,6 +789,20 @@ def _normalize(raw: dict, payload: FullContentRequest, platform: str = "youtube"
 @app.get("/")
 def home(): return {"message": "SocioMee API v3 🚀", "status": "ok"}
 
+
+@app.get("/proxy-image")
+async def proxy_image(url: str):
+    """Proxy external images to avoid CORS/referrer blocking (Facebook CDN etc)"""
+    import httpx
+    from fastapi.responses import Response
+    try:
+        async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
+            r = await client.get(url, headers={"User-Agent":"Mozilla/5.0","Referer":"https://www.instagram.com/"})
+        ct = r.headers.get("content-type","image/jpeg")
+        return Response(content=r.content, media_type=ct, headers={"Cache-Control":"public,max-age=3600","Access-Control-Allow-Origin":"*"})
+    except Exception as e:
+        return Response(status_code=404)
+
 @app.get("/health")
 def health(): return {"status": "ok"}
 

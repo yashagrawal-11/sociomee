@@ -42,6 +42,8 @@ export default function FacebookDashboard({ user }) {
   const [insLoad,    setInsLoad   ] = useState(false);
   const [text,       setText      ] = useState("");
   const [imgUrl,     setImgUrl    ] = useState("");
+  const [imgPreview, setImgPreview] = useState("");
+  const [imgLoading, setImgLoading] = useState(false);
   const [posting,    setPosting   ] = useState(false);
   const [postResult, setPostResult] = useState(null);
   const [postErr,    setPostErr   ] = useState("");
@@ -103,6 +105,18 @@ export default function FacebookDashboard({ user }) {
     await fetch(`${BASE}/facebook/select-page`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({user_id:userId, page_id:page.id}) });
     setStatus(s => ({...s, selected_page:page}));
     setPageModal(false);
+  };
+
+  const handleFBImageUpload = async (file) => {
+    if (!file) return;
+    setImgLoading(true);
+    const fd = new FormData(); fd.append("file", file);
+    try {
+      const r = await fetch(`${BASE}/threads/upload-media?user_id=${userId}`, {method:"POST",body:fd});
+      const d = await r.json();
+      if (d.url) { setImgUrl(d.url); setImgPreview(URL.createObjectURL(file)); }
+    } catch(e) {}
+    setImgLoading(false);
   };
 
   const handlePost = async () => {
@@ -172,7 +186,7 @@ export default function FacebookDashboard({ user }) {
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"10px 14px", marginBottom:14, gap:8 }}>
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           {page?.picture?.data?.url
-            ? <img src={page.picture.data.url} alt="" style={{ width:36, height:36, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
+            ? <img src={`https://sociomeeai.com/api/proxy-image?url=${encodeURIComponent(page.picture.data.url)}`} alt="" referrerPolicy="no-referrer" style={{ width:36, height:36, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
             : <div style={{ width:36, height:36, borderRadius:"50%", background:"rgba(24,119,242,0.15)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 <img src="/icons/facebook.png" style={{ width:20, height:20, objectFit:"contain" }} alt=""/>
               </div>
@@ -253,8 +267,16 @@ export default function FacebookDashboard({ user }) {
           <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:C.muted }}>Create Post</div>
           <textarea value={text} onChange={e => setText(e.target.value)} placeholder={`Write something for ${page?.name || "your Page"}…`} rows={5}
             style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:"1.5px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box", resize:"vertical", lineHeight:1.6 }}/>
-          <input value={imgUrl} onChange={e => setImgUrl(e.target.value)} placeholder="Image URL (optional)"
-            style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:"1.5px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:12.5, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }}/>
+          {imgPreview && (
+            <div style={{ position:"relative", display:"inline-block", marginBottom:4 }}>
+              <img src={imgPreview} alt="" style={{ maxHeight:140, maxWidth:"100%", borderRadius:10, border:"1px solid rgba(255,255,255,0.1)" }}/>
+              <button onClick={() => { setImgUrl(""); setImgPreview(""); }} style={{ position:"absolute", top:4, right:4, width:20, height:20, borderRadius:"50%", border:"none", background:"rgba(0,0,0,0.7)", color:"#fff", fontSize:11, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>x</button>
+            </div>
+          )}
+          <label style={{ width:32, height:32, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", display:"inline-flex", alignItems:"center", justifyContent:"center", cursor:imgLoading?"not-allowed":"pointer" }} title="Attach image">
+            <input type="file" accept="image/*" style={{ display:"none" }} disabled={imgLoading} onChange={e => handleFBImageUpload(e.target.files[0])} />
+            {imgLoading ? <div style={{ width:14, height:14, borderRadius:"50%", border:"2px solid rgba(255,255,255,0.1)", borderTopColor:"rgba(255,255,255,0.5)", animation:"spin 0.7s linear infinite" }}/> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
+          </label>
           {postErr && <div style={{ background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:10, padding:"10px 14px", fontSize:12, color:C.danger }}>{postErr}</div>}
           {postResult && (
             <div style={{ background:"rgba(34,197,94,0.06)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:10, padding:"12px 14px" }}>

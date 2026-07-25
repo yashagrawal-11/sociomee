@@ -342,7 +342,7 @@ export default function InstagramDashboard({ user, topic = "" }) {
       {/* Profile header */}
       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, background:"rgba(255,255,255,0.02)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"10px 12px", flexWrap:"nowrap", minWidth:0 }}>
         {profile?.profile_pic
-          ? <img src={profile.profile_pic} alt="" referrerPolicy="no-referrer" crossOrigin="anonymous" style={{ width:34, height:34, borderRadius:"50%", objectFit:"cover", flexShrink:0, border:"2px solid transparent", backgroundImage:C.ig, backgroundOrigin:"border-box" }} />
+          ? <img src={`https://sociomeeai.com/api/proxy-image?url=${encodeURIComponent(profile.profile_pic)}`} alt="" style={{ width:34, height:34, borderRadius:"50%", objectFit:"cover", flexShrink:0, border:"2px solid transparent", backgroundImage:C.ig, backgroundOrigin:"border-box" }} />
           : <div style={{ width:34, height:34, borderRadius:"50%", background:C.ig, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><IGIcon size={18} /></div>
         }
         <div style={{ flex:1, minWidth:0 }}>
