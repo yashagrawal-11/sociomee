@@ -419,8 +419,10 @@ function FacebookScheduleTab({ userId, BASE, pageName }) {
       <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:C_.muted, marginBottom:14 }}>Schedule Post{pageName?` to ${pageName}`:""}</div>
       <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Write something for your Page…" rows={5}
         style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${C_.hairline}`, background:"rgba(255,255,255,0.03)", color:C_.ink, fontSize:13, fontFamily:"inherit", outline:"none", resize:"vertical", boxSizing:"border-box", marginBottom:10, lineHeight:1.6 }}/>
-      <input value={imgUrl} onChange={e=>setImgUrl(e.target.value)} placeholder="Image URL (optional)"
-        style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:`1.5px solid ${C_.hairline}`, background:"rgba(255,255,255,0.03)", color:C_.ink, fontSize:12.5, fontFamily:"inherit", outline:"none", boxSizing:"border-box", marginBottom:12 }}/>
+      <label style={{ width:32, height:32, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", display:"inline-flex", alignItems:"center", justifyContent:"center", cursor:"pointer", marginBottom:12 }} title="Attach image">
+        <input type="file" accept="image/*" style={{ display:"none" }} onChange={async e => { const f=e.target.files[0]; if(!f) return; const fd=new FormData(); fd.append("file",f); try { const r=await fetch(BASE+"/threads/upload-media?user_id="+userId,{method:"POST",body:fd}); const d=await r.json(); if(d.url) setImgUrl(d.url); } catch(ex){} }} />
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </label>
       <div style={{ marginBottom:12 }}><FBMiniCalendar value={when} onChange={setWhen}/></div>
       <div style={{ marginBottom:12 }}><FBTimePicker value={when} onChange={setWhen}/></div>
       <button onClick={schedule} disabled={loading||!text.trim()||!when}
