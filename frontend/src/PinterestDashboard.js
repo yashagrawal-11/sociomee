@@ -220,48 +220,47 @@ function TimePicker({ value, onChange }) {
 
 function Scheduler({ userId, boards, onPublished }) {
   C = getC();
-  const [title,    setTitle   ] = useState("");
-  const [desc,     setDesc    ] = useState("");
-  const [imgB64,   setImgB64  ] = useState("");
-  const [imgCtype, setImgCtype] = useState("");
+  const [title,      setTitle     ] = useState("");
+  const [desc,       setDesc      ] = useState("");
+  const [imgB64,     setImgB64    ] = useState("");
+  const [imgCtype,   setImgCtype  ] = useState("");
   const [imgPreview, setImgPreview] = useState("");
-  const [link,     setLink    ] = useState("https://sociomeeai.com");
-  const [boardId,  setBoardId ] = useState(boards[0]?.id || "");
-  const [when,     setWhen    ] = useState(null);
-  const [dragOver, setDragOver] = useState(false);
-  const [loading,  setLoad    ] = useState(false);
-  const [done,     setDone    ] = useState(false);
-  const [err,      setErr     ] = useState("");
+  const [imgLoading, setImgLoading] = useState(false);
+  const [link,       setLink      ] = useState("https://sociomeeai.com");
+  const [boardId,    setBoardId   ] = useState(boards[0]?.id || "");
+  const [boardOpen,  setBoardOpen ] = useState(false);
+  const [when,       setWhen      ] = useState(null);
+  const [loading,    setLoad      ] = useState(false);
+  const [done,       setDone      ] = useState(false);
+  const [err,        setErr       ] = useState("");
+
+  const selectedBoard = boards.find(b => b.id === boardId);
 
   const handleFile = (file) => {
     if (!file || !file.type.startsWith("image/")) { setErr("Please select an image file."); return; }
-    setErr("");
+    setErr(""); setImgLoading(true);
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result;
-      const base64 = result.split(",")[1];
-      setImgB64(base64);
+      setImgB64(result.split(",")[1]);
       setImgCtype(file.type);
       setImgPreview(result);
+      setImgLoading(false);
     };
     reader.readAsDataURL(file);
   };
 
   const schedule = async () => {
-    if (!title.trim()) { setErr("Title is required."); return; }
-    if (!imgB64)        { setErr("Please upload an image."); return; }
-    if (!boardId)        { setErr("Select a board."); return; }
-    if (!when)            { setErr("Pick a date and time."); return; }
+    if (!title.trim())      { setErr("Title is required."); return; }
+    if (!imgB64)            { setErr("Please upload an image."); return; }
+    if (!boardId)           { setErr("Select a board."); return; }
+    if (!when)              { setErr("Pick a date and time."); return; }
     if (when <= new Date()) { setErr("Pick a time in the future."); return; }
     setLoad(true); setErr("");
     try {
       const r = await fetch(`${BASE}/pinterest/publish?user_id=${userId}`, {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          title, description: desc, board_id: boardId, link,
-          image_base64: imgB64, image_content_type: imgCtype,
-          scheduled_at: when.toISOString(),
-        }),
+        body: JSON.stringify({ title, description: desc, board_id: boardId, link, image_base64: imgB64, image_content_type: imgCtype, scheduled_at: when.toISOString() }),
       });
       const d = await r.json();
       if (d.success) { setDone(true); onPublished?.(); }
@@ -272,79 +271,95 @@ function Scheduler({ userId, boards, onPublished }) {
 
   if (done) return (
     <div style={{ textAlign:"center", padding:"24px 0" }}>
-      <div style={{ fontSize:40, marginBottom:8 }}>✅</div>
       <p style={{ fontSize:14, fontWeight:700, color:C.success, marginBottom:8 }}>Scheduled successfully!</p>
       <p style={{ fontSize:12, color:C.muted, marginBottom:12 }}>Your pin will publish on {when.toLocaleString()}</p>
       <button onClick={() => { setDone(false); setTitle(""); setDesc(""); setImgB64(""); setImgPreview(""); setWhen(null); }}
-        style={{ padding:"8px 20px", borderRadius:99, border:"none", background:C.red, color:"#fff", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>Schedule Another</button>
-      </div>
+        style={{ padding:"8px 20px", borderRadius:99, border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.06)", color:"#fff", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>Schedule Another</button>
+    </div>
   );
 
   return (
-    <>
-      <div
-        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
-        onClick={() => document.getElementById("pin-sched-file").click()}
-        style={{
-          border:`2px dashed ${dragOver ? C.red : C.hairline}`, borderRadius:14, padding: imgPreview ? 0 : 32,
-          textAlign:"center", cursor:"pointer", marginBottom:14, background:dragOver ? "rgba(230,0,35,0.05)" : C.glass,
-          overflow:"hidden", transition:"all 0.15s",
-        }}>
-        <input id="pin-sched-file" type="file" accept="image/*" style={{ display:"none" }}
-          onChange={e => handleFile(e.target.files[0])} />
+    <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+      <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)" }}>Schedule a Pin</div>
+
+      {/* Title */}
+      <div>
+        <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:6 }}>Pin Title</div>
+        <input value={title} onChange={e => setTitle(e.target.value.slice(0, 100))} placeholder="10 Content Ideas for Creators..."
+          style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
+      </div>
+
+      {/* Board custom dropdown */}
+      <div>
+        <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:6 }}>Board</div>
+        <div style={{ position:"relative" }}>
+          <button onClick={() => setBoardOpen(o=>!o)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:13, fontFamily:"inherit", cursor:"pointer", textAlign:"left" }}>
+            <span>{selectedBoard?.name || "Select a board"}</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" style={{ transform:boardOpen?"rotate(180deg)":"none", transition:"transform 0.15s", flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {boardOpen && (
+            <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, right:0, zIndex:99, background:"rgba(18,18,18,0.97)", border:`1px solid ${C.hairline}`, borderRadius:12, backdropFilter:"blur(20px)", padding:4, boxShadow:"0 8px 32px rgba(0,0,0,0.5)", maxHeight:200, overflowY:"auto" }}>
+              {boards.length === 0
+                ? <div style={{ padding:"10px 14px", fontSize:12, color:C.muted }}>No boards found</div>
+                : boards.map(b => (
+                  <button key={b.id} onClick={() => { setBoardId(b.id); setBoardOpen(false); }} style={{ display:"block", width:"100%", textAlign:"left", padding:"9px 14px", borderRadius:8, border:"none", background:boardId===b.id?"rgba(255,255,255,0.08)":"transparent", color:boardId===b.id?"#f5f5f7":"rgba(255,255,255,0.55)", fontSize:13, fontWeight:boardId===b.id?700:500, cursor:"pointer", fontFamily:"inherit" }}>{b.name}</button>
+                ))
+              }
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Image upload */}
+      <div>
+        <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:6 }}>Image (vertical 2:3 ratio recommended)</div>
         {imgPreview ? (
-          <img src={imgPreview} alt="Preview" style={{ width:"100%", maxHeight:280, objectFit:"contain", display:"block" }} />
+          <div style={{ position:"relative", display:"inline-block" }}>
+            <img src={imgPreview} alt="" style={{ maxHeight:180, maxWidth:"100%", borderRadius:10, border:`1px solid ${C.hairline}`, display:"block" }} />
+            <button onClick={() => { setImgB64(""); setImgCtype(""); setImgPreview(""); }} style={{ position:"absolute", top:6, right:6, width:22, height:22, borderRadius:"50%", border:"none", background:"rgba(0,0,0,0.7)", color:"#fff", fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>x</button>
+          </div>
         ) : (
-          <>
-            <div style={{ fontSize:32, marginBottom:8 }}>📤</div>
-            <p style={{ fontSize:13, fontWeight:600, color:C.ink, margin:0 }}>Drag and drop an image, or click to browse</p>
-            <p style={{ fontSize:11, color:C.muted, marginTop:4 }}>Vertical 2:3 ratio recommended</p>
-          </>
+          <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, border:`1.5px dashed ${C.hairline}`, background:"rgba(255,255,255,0.02)", cursor:imgLoading?"not-allowed":"pointer" }}>
+            <input type="file" accept="image/*" style={{ display:"none" }} disabled={imgLoading} onChange={e => handleFile(e.target.files[0])} />
+            <div style={{ width:32, height:32, borderRadius:"50%", border:`1px solid ${C.hairline}`, background:"rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              {imgLoading
+                ? <div style={{ width:14, height:14, borderRadius:"50%", border:"2px solid rgba(255,255,255,0.1)", borderTopColor:"rgba(255,255,255,0.5)", animation:"spin 0.7s linear infinite" }}/>
+                : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              }
+            </div>
+            <span style={{ fontSize:12, color:"rgba(255,255,255,0.3)" }}>{imgLoading ? "Processing..." : "Click to upload pin image"}</span>
+          </label>
         )}
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
-        <div>
-          <label style={{ fontSize:11, fontWeight:700, color:C.muted, display:"block", marginBottom:5 }}>PIN TITLE *</label>
-          <input value={title} onChange={e => setTitle(e.target.value.slice(0, 100))} placeholder="10 Content Ideas for Creators..."
-            style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
-        </div>
-        <div>
-          <label style={{ fontSize:11, fontWeight:700, color:C.muted, display:"block", marginBottom:5 }}>BOARD *</label>
-          <select value={boardId} onChange={e => setBoardId(e.target.value)}
-            style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }}>
-            {boards.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-            {boards.length === 0 && <option value="">No boards found</option>}
-          </select>
-        </div>
-      </div>
-
-      <div style={{ marginBottom:10 }}>
-        <label style={{ fontSize:11, fontWeight:700, color:C.muted, display:"block", marginBottom:5 }}>DESCRIPTION</label>
+      {/* Description */}
+      <div>
+        <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:6 }}>Description</div>
         <textarea value={desc} onChange={e => setDesc(e.target.value.slice(0, 500))} placeholder="Add keywords for Pinterest SEO..." rows={3}
-          style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", resize:"vertical", boxSizing:"border-box" }} />
+          style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", resize:"vertical", boxSizing:"border-box", lineHeight:1.6 }} />
       </div>
 
-      <div style={{ marginBottom:14 }}>
-        <label style={{ fontSize:11, fontWeight:700, color:C.muted, display:"block", marginBottom:5 }}>DESTINATION LINK</label>
+      {/* Destination link */}
+      <div>
+        <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:6 }}>Destination Link</div>
         <input value={link} onChange={e => setLink(e.target.value)} placeholder="https://your-website.com"
-          style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
+          style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
       </div>
 
-      <label style={{ fontSize:11, fontWeight:700, color:C.muted, display:"block", marginBottom:8 }}>WHEN TO PUBLISH *</label>
-      <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:14 }}>
-        <MiniCalendar value={when} onChange={setWhen} />
-        <div style={{ display:"flex", flexDirection:"column", gap:8, justifyContent:"center" }}>
-          <TimePicker value={when} onChange={setWhen} />
+      {/* When to publish */}
+      <div>
+        <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:8 }}>When to Publish</div>
+        <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
+          <MiniCalendar value={when} onChange={setWhen} />
+          <div style={{ display:"flex", flexDirection:"column", gap:8, justifyContent:"center" }}>
+            <TimePicker value={when} onChange={setWhen} />
           {when && <p style={{ fontSize:12, color:C.success, fontWeight:600, margin:0 }}>Scheduled for {when.toLocaleString()}</p>}
         </div>
       </div>
 
-      <button onClick={schedule} disabled={loading} style={{ width:"100%", padding:"12px", borderRadius:99, border:"none", background:C.red, color:"#fff", fontWeight:800, fontSize:14, cursor:loading ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:8, opacity:loading ? 0.7 : 1 }}>
-        <PinterestIcon size={16} />
-        {loading ? "Scheduling…" : "Schedule Pin"}
+      <button onClick={schedule} disabled={loading} style={{ width:"100%", padding:"12px", borderRadius:99, border:"1px solid rgba(255,255,255,0.12)", background:loading?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.08)", color:"#fff", fontWeight:800, fontSize:13, cursor:loading?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:8, opacity:loading?0.5:1, transition:"all 0.15s" }}>
+        <PinterestIcon size={15} />
+        {loading ? "Scheduling..." : "Schedule Pin"}
       </button>
       {err && <p style={{ fontSize:12, color:C.danger, fontWeight:600, marginTop:8 }}>⚠ {err}</p>}
     </>
