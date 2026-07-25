@@ -24,7 +24,7 @@ function getC() {
 
 const Spinner = ({ size=20, color }) => {
   const C = getC();
-  return <div style={{ width:size, height:size, borderRadius:"50%", border:`2.5px solid ${(color||C.tg)}22`, borderTopColor:color||C.tg, animation:"spin 0.7s linear infinite", display:"inline-block", flexShrink:0 }} />;
+  return <div style={{ width:size, height:size, borderRadius:"50%", border:`2.5px solid ${color||"rgba(255,255,255,0.15)"}`, borderTopColor:color||"rgba(255,255,255,0.6)", animation:"spin 0.7s linear infinite", display:"inline-block", flexShrink:0 }} />;
 };
 
 function TGIcon({ size=16, color="#fff" }) {
@@ -115,7 +115,7 @@ function ComposePost({ userId, onSent, prefillText }) {
       <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:14 }}>Compose Post</div>
 
       <div style={{ position:"relative", marginBottom:"10px" }}>
-        <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Write your Telegram post… supports <b>bold</b>, <i>italic</i>, <a href='url'>link</a>" rows={5}
+        <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Write your Telegram post..." rows={5}
           style={{ width:"100%", padding:"12px 14px", borderRadius:"12px", border:`1.5px solid ${C.hairline}`, background:C.inputBg, color:C.ink, fontSize:"13px", fontFamily:"inherit", outline:"none", boxSizing:"border-box", resize:"vertical", lineHeight:1.6 }} />
         <div style={{ position:"absolute", bottom:"8px", right:"10px", fontSize:"10px", color:text.length>3600?C.danger:C.muted }}>{text.length}/4096</div>
       </div>
@@ -129,7 +129,7 @@ function ComposePost({ userId, onSent, prefillText }) {
           <span style={{ fontSize:11, color:"rgba(255,255,255,0.25)", fontWeight:500 }}>Attach image, video or GIF (max 50 MB)</span>
         </div>
       ) : (
-        <div style={{ background:C.glass, border:`1.5px solid ${C.tg}44`, borderRadius:"12px", padding:"12px", marginBottom:"12px", position:"relative" }}>
+        <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"12px", padding:"12px", marginBottom:"12px", position:"relative" }}>
           <button onClick={removeMedia} style={{ position:"absolute", top:"8px", right:"8px", background:`${C.danger}22`, border:"none", color:C.danger, width:"22px", height:"22px", borderRadius:"50%", cursor:"pointer", fontSize:"11px" }}>✕</button>
           <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px" }}>
             <span style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.4)", letterSpacing:"0.5px" }}>{mediaIcon[mediaType]||"DOC"}</span>
@@ -255,7 +255,7 @@ function BulkPost({ userId, onSent }) {
       <div onDrop={e=>{e.preventDefault();setDragOver(false);addFiles(e.dataTransfer.files);}}
         onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)}
         onClick={()=>fileRef.current?.click()}
-        style={{ border:`2px dashed ${dragOver?C.tg:C.hairline}`, borderRadius:"14px", padding:"20px", textAlign:"center", cursor:"pointer", background:dragOver?`${C.tg}08`:`${C.tg}04`, marginBottom:"14px", transition:"all 0.2s" }}>
+        style={{ border:`2px dashed ${dragOver?"rgba(255,255,255,0.25)":C.hairline}`, borderRadius:"14px", padding:"20px", textAlign:"center", cursor:"pointer", background:dragOver?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.02)", marginBottom:"14px", transition:"all 0.2s" }}>
         <input ref={fileRef} type="file" accept="image/*,video/*,.gif" multiple style={{ display:"none" }} onChange={e=>addFiles(e.target.files)} />
         <div style={{ fontSize:"24px", marginBottom:"6px" }}>📎</div>
         <div style={{ fontSize:"13px", fontWeight:"800", color:C.ink }}>Drop files here or click</div>
@@ -272,7 +272,7 @@ function BulkPost({ userId, onSent }) {
             <div style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>
               {[["now","Send Now"],["custom","Custom Time"]].map(([v,l]) => (
                 <button key={v} onClick={()=>setGlobalSched(v)}
-                  style={{ padding:"6px 14px", borderRadius:"9px", border:`1.5px solid ${globalSched===v?C.tg:C.hairline}`, background:globalSched===v?`${C.tg}15`:C.glass, color:globalSched===v?C.tg:C.muted, fontWeight:"700", fontSize:"11px", cursor:"pointer", fontFamily:"inherit" }}>
+                  style={{ padding:"6px 14px", borderRadius:"9px", border:`1.5px solid ${globalSched===v?"rgba(255,255,255,0.25)":C.hairline}`, background:globalSched===v?"rgba(255,255,255,0.08)":C.glass, color:globalSched===v?"#f5f5f7":C.muted, fontWeight:"700", fontSize:"11px", cursor:"pointer", fontFamily:"inherit" }}>
                   {l}
                 </button>
               ))}
@@ -294,7 +294,7 @@ function BulkPost({ userId, onSent }) {
               {sending?<><Spinner size={14} color="white"/>Sending…</>:<><TGIcon size={14}/>Send All ({items.filter(it=>it.status!=="done").length} items)</>}
             </button>
             {doneCount===items.length && items.length>0 && (
-              <button onClick={reset} style={{ flex:1, padding:"11px", borderRadius:"11px", border:`1.5px solid ${C.tg}44`, background:"transparent", color:C.tg, fontWeight:"700", fontSize:"12px", cursor:"pointer", fontFamily:"inherit" }}>
+              <button onClick={reset} style={{ flex:1, padding:"11px", borderRadius:"11px", border:"1px solid rgba(255,255,255,0.12)", background:"transparent", color:"rgba(255,255,255,0.5)", fontWeight:"700", fontSize:"12px", cursor:"pointer", fontFamily:"inherit" }}>
                 + New Batch
               </button>
             )}
@@ -302,14 +302,14 @@ function BulkPost({ userId, onSent }) {
 
           {/* Item cards */}
           {items.map((it, i) => (
-            <div key={i} style={{ background:C.glass, border:`1.5px solid ${it.status==="done"?C.success:it.status==="error"?C.danger:it.status==="sending"?C.tg:C.hairline}`, borderRadius:"14px", padding:"14px", marginBottom:"10px" }}>
+            <div key={i} style={{ background:C.glass, border:`1.5px solid ${it.status==="done"?C.success:it.status==="error"?C.danger:it.status==="sending"?"rgba(255,255,255,0.25)":C.hairline}`, borderRadius:"14px", padding:"14px", marginBottom:"10px" }}>
               <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"8px" }}>
                 <span style={{ fontSize:"18px" }}>{it.status==="done"?"✅":it.status==="error"?"❌":it.status==="sending"?"📤":mediaIcon[it.mediaType]||"📄"}</span>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:"12px", fontWeight:"700", color:C.ink, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{it.file.name}</div>
                   <div style={{ fontSize:"10px", color:C.muted }}>{(it.file.size/1024/1024).toFixed(1)} MB · {it.mediaType}</div>
                 </div>
-                {it.status==="sending" && <Spinner size={16} color={C.tg} />}
+                {it.status==="sending" && <Spinner size={16} color="rgba(255,255,255,0.6)" />}
                 {!it.status && <button onClick={()=>removeItem(i)} style={{ background:"none", border:"none", color:C.danger, fontSize:"14px", cursor:"pointer" }}>✕</button>}
               </div>
 
@@ -400,8 +400,8 @@ function AICaption({ userId, onUseCaption }) {
       </button>
 
       {result && (
-        <div style={{ background:`${C.tg}08`, border:`1.5px solid ${C.tg}33`, borderRadius:"12px", padding:"14px" }}>
-          <div style={{ fontSize:"10px", fontWeight:"900", color:C.tg, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"10px" }}>AI Caption Pack</div>
+        <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"12px", padding:"14px" }}>
+          <div style={{ fontSize:"10px", fontWeight:"900", color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"1px", marginBottom:"10px" }}>AI Caption Pack</div>
 
           {/* Hook */}
           {result.hook && (
@@ -422,7 +422,7 @@ function AICaption({ userId, onUseCaption }) {
                     {copied==="cap"?"✓ Copied":"Copy"}
                   </button>
                   <button onClick={()=>onUseCaption(result.caption)}
-                    style={{ fontSize:"9px", padding:"2px 10px", borderRadius:"5px", border:"none", background:`${C.tg}22`, color:C.tg, cursor:"pointer", fontFamily:"inherit", fontWeight:"700" }}>
+                    style={{ fontSize:"9px", padding:"2px 10px", borderRadius:"5px", border:"none", background:"rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.6)", cursor:"pointer", fontFamily:"inherit", fontWeight:"700" }}>
                     Use in Compose →
                   </button>
                 </div>
@@ -444,7 +444,7 @@ function AICaption({ userId, onUseCaption }) {
                 </button>
               </div>
               <div style={{ display:"flex", flexWrap:"wrap", gap:"4px" }}>
-                {result.hashtags.map((h,i) => <span key={i} style={{ padding:"3px 9px", borderRadius:"99px", background:`${C.tg}12`, color:C.tg, fontSize:"11px", fontWeight:"600" }}>{h}</span>)}
+                {result.hashtags.map((h,i) => <span key={i} style={{ padding:"3px 9px", borderRadius:"99px", background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.55)", fontSize:"11px", fontWeight:"600" }}>{h}</span>)}
               </div>
             </div>
           )}
@@ -525,7 +525,7 @@ function PostsHistory({ userId, refreshKey }) {
       <div style={{ width:"100%", maxWidth:"420px", display:"flex", flexDirection:"column", gap:12 }}>
         <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
         <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
-          <div style={{ width:44,height:44,borderRadius:"50%",background:"rgba(42,171,238,0.1)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0 }}/>
+          <div style={{ width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0 }}/>
           <div style={{ flex:1, display:"flex", flexDirection:"column", gap:6 }}>
             <div style={{ width:"40%",height:12,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
             <div style={{ width:"25%",height:10,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
@@ -561,7 +561,7 @@ function PostsHistory({ userId, refreshKey }) {
             </div>
             <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", alignItems:"center" }}>
               <span style={{ fontSize:"9px", fontWeight:"800", color:col, padding:"2px 7px", borderRadius:"99px", background:`${col}15`, border:`1px solid ${col}33`, textTransform:"uppercase" }}>{job.status}</span>
-              {job.media_type&&job.media_type!=="none"&&<span style={{ fontSize:"10px", color:C.tg, fontWeight:"700" }}>{mediaIcon[job.media_type]} {job.media_type}</span>}
+              {job.media_type&&job.media_type!=="none"&&<span style={{ fontSize:"10px", color:"rgba(255,255,255,0.5)", fontWeight:"700" }}>{mediaIcon[job.media_type]} {job.media_type}</span>}
               {ist&&<span style={{ fontSize:"10px", color:C.warn, fontWeight:"700" }}>⏰ {ist} IST</span>}
               {job.sent_at&&<span style={{ fontSize:"10px", color:C.muted }}>{timeAgo(job.sent_at)}</span>}
               {!job.sent_at&&job.created_at&&<span style={{ fontSize:"10px", color:C.muted }}>{timeAgo(job.created_at)}</span>}
@@ -587,7 +587,7 @@ function PostsHistory({ userId, refreshKey }) {
         <button onClick={load} style={{ fontSize:"11px", padding:"4px 12px", borderRadius:"8px", border:`1px solid ${C.hairline}`, background:"transparent", color:C.muted, cursor:"pointer", fontFamily:"inherit" }}>↺ Refresh</button>
       </div>
       {scheduled.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.warn, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px" }}>Scheduled ({scheduled.length})</div>{scheduled.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
-      {sending.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.tg, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:scheduled.length?"12px":"0" }}>📤 Sending ({sending.length})</div>{sending.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
+      {sending.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:scheduled.length?"12px":"0" }}>📤 Sending ({sending.length})</div>{sending.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
       {done.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.success, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:(scheduled.length||sending.length)?"12px":"0" }}>✅ Sent ({done.length})</div>{done.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
       {failed.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.danger, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:"12px" }}>❌ Failed ({failed.length})</div>{failed.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
     </div>
@@ -654,7 +654,7 @@ export default function TelegramScheduler({ user }) {
       <div style={{ width:"100%", maxWidth:"420px", display:"flex", flexDirection:"column", gap:12 }}>
         <style>{`@keyframes skpulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
         <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
-          <div style={{ width:44,height:44,borderRadius:"50%",background:"rgba(42,171,238,0.1)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0 }}/>
+          <div style={{ width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite",flexShrink:0 }}/>
           <div style={{ flex:1, display:"flex", flexDirection:"column", gap:6 }}>
             <div style={{ width:"40%",height:12,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
             <div style={{ width:"25%",height:10,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"skpulse 1.4s ease-in-out infinite" }}/>
@@ -668,19 +668,19 @@ export default function TelegramScheduler({ user }) {
   if (tgStatus==="disconnected") return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"32px 24px" }}>
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"16px", textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%" }}>
-      <div style={{ width:"64px", height:"64px", borderRadius:"50%", background:"rgba(42,171,238,0.12)", border:"2px solid rgba(42,171,238,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ width:"64px", height:"64px", borderRadius:"50%", background:"rgba(255,255,255,0.06)", border:"2px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
         <TGIcon size={28} color="#2aabee"/>
       </div>
       <h3 style={{ fontSize:"16px", fontWeight:"900", color:C.ink, margin:0 }}>Connect Telegram</h3>
       <p style={{ fontSize:"12.5px", color:C.muted, lineHeight:1.6, maxWidth:"280px", margin:0 }}>Schedule and send posts with images, videos, GIFs to your Telegram.</p>
       {!connectLink?(
-        <button onClick={handleConnect} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"12px 24px", borderRadius:"12px", border:"none", background:"linear-gradient(135deg,#2aabee,#1a8ac0)", color:"white", fontWeight:"800", fontSize:"14px", cursor:"pointer", fontFamily:"inherit" }}>
+        <button onClick={handleConnect} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"12px 24px", borderRadius:"12px", border:"none", background:"rgba(255,255,255,0.08)", color:"#fff", fontWeight:"800", fontSize:"14px", cursor:"pointer", fontFamily:"inherit" }}>
           <TGIcon size={16}/> Connect Telegram
         </button>
       ):(
-        <div style={{ background:"rgba(42,171,238,0.08)", border:"1.5px solid rgba(42,171,238,0.3)", borderRadius:"14px", padding:"16px", width:"100%", maxWidth:"300px" }}>
+        <div style={{ background:"rgba(255,255,255,0.03)", border:"1.5px solid rgba(255,255,255,0.1)", borderRadius:"14px", padding:"16px", width:"100%", maxWidth:"300px" }}>
           <p style={{ fontSize:"13px", fontWeight:"700", color:C.ink, marginBottom:"10px" }}>Open Telegram and tap Start</p>
-          <a href={connectLink} target="_blank" rel="noreferrer" style={{ display:"inline-flex", alignItems:"center", gap:"6px", padding:"10px 20px", borderRadius:"10px", background:"linear-gradient(135deg,#2aabee,#1a8ac0)", color:"white", fontWeight:"800", fontSize:"13px", textDecoration:"none" }}>
+          <a href={connectLink} target="_blank" rel="noreferrer" style={{ display:"inline-flex", alignItems:"center", gap:"6px", padding:"10px 20px", borderRadius:"10px", background:"rgba(255,255,255,0.08)", color:"#fff", fontWeight:"800", fontSize:"13px", textDecoration:"none" }}>
             <TGIcon size={14}/> Open Telegram
           </a>
           <p style={{ fontSize:"11px", color:C.muted, marginTop:"8px" }}>{polling?"⏳ Waiting…":"Tap the link above"}</p>
@@ -693,12 +693,12 @@ export default function TelegramScheduler({ user }) {
   return (
     <div style={{ fontFamily:"'DM Sans',sans-serif", paddingBottom:"20px" }}>
       {/* Connected header */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:`${C.tg}10`, border:`1px solid ${C.tg}33`, borderRadius:"12px", padding:"10px 14px", marginBottom:"16px" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"12px", padding:"10px 14px", marginBottom:"16px" }}>
         <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-          <TGIcon size={16} color={C.tg}/>
+          <TGIcon size={16} color="rgba(255,255,255,0.6)"/>
           <div>
             <div style={{ fontSize:"12px", fontWeight:"800", color:C.ink }}>@{tgInfo?.telegram_username||tgInfo?.full_name||"Connected"}</div>
-            {tgInfo?.channel_verified&&<div style={{ fontSize:"10px", color:C.tg, fontWeight:"700" }}>+ {tgInfo.channel} 📢</div>}
+            {tgInfo?.channel_verified&&<div style={{ fontSize:"10px", color:"rgba(255,255,255,0.5)", fontWeight:"700" }}>+ {tgInfo.channel} 📢</div>}
           </div>
         </div>
         <button onClick={handleDisconnect} style={{ fontSize:"11px", fontWeight:"700", color:C.danger, background:`${C.danger}14`, border:`1px solid ${C.danger}40`, borderRadius:"999px", padding:"6px 16px", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>Disconnect</button>
@@ -708,7 +708,7 @@ export default function TelegramScheduler({ user }) {
       <div style={{ display:"flex", gap:7, flexWrap:"nowrap", marginBottom:16, overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
         {[["compose","Compose"],["bulk","Bulk"],["ai","AI Caption"],["posts","Posts"]].map(([id,label]) => (
           <button key={id} onClick={()=>setActiveTab(id)}
-            style={{ padding:"7px 14px", borderRadius:99, border:`1.5px solid ${activeTab===id?C.tg:C.hairline}`, background:activeTab===id?`${C.tg}18`:"transparent", color:activeTab===id?C.tg:C.muted, fontWeight:700, fontSize:11.5, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}>
+            style={{ padding:"7px 14px", borderRadius:99, border:`1.5px solid ${activeTab===id?"rgba(255,255,255,0.25)":C.hairline}`, background:activeTab===id?"rgba(255,255,255,0.08)":"transparent", color:activeTab===id?"#f5f5f7":C.muted, fontWeight:700, fontSize:11.5, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}>
             {label}
           </button>
         ))}
