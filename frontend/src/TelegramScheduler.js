@@ -248,18 +248,13 @@ function BulkPost({ userId, onSent }) {
 
   return (
     <div>
-      <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink, marginBottom:"4px" }}>Bulk Post</div>
-      <div style={{ fontSize:"11.5px", color:C.muted, marginBottom:"14px" }}>Select multiple images/videos/GIFs — each gets its own caption</div>
-
-      {/* Drop zone */}
-      <div onDrop={e=>{e.preventDefault();setDragOver(false);addFiles(e.dataTransfer.files);}}
-        onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)}
-        onClick={()=>fileRef.current?.click()}
-        style={{ border:`2px dashed ${dragOver?"rgba(255,255,255,0.25)":C.hairline}`, borderRadius:"14px", padding:"20px", textAlign:"center", cursor:"pointer", background:dragOver?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.02)", marginBottom:"14px", transition:"all 0.2s" }}>
-        <input ref={fileRef} type="file" accept="image/*,video/*,.gif" multiple style={{ display:"none" }} onChange={e=>addFiles(e.target.files)} />
-        <div style={{ fontSize:"24px", marginBottom:"6px" }}>📎</div>
-        <div style={{ fontSize:"13px", fontWeight:"800", color:C.ink }}>Drop files here or click</div>
-        <div style={{ fontSize:"10px", color:C.muted, marginTop:"3px" }}>Images · Videos · GIFs · Max 50 MB each</div>
+      <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:14 }}>Bulk Post</div>
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+        <label style={{ width:32, height:32, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0 }} title="Add images, videos or GIFs">
+          <input ref={fileRef} type="file" accept="image/*,video/*,.gif" multiple style={{ display:"none" }} onChange={e=>addFiles(e.target.files)} />
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </label>
+        <span style={{ fontSize:11, color:"rgba(255,255,255,0.25)", fontWeight:500 }}>Add images, videos or GIFs (max 50 MB each)</span>
       </div>
 
       {error && <div style={{ background:`${C.danger}12`, border:`1px solid ${C.danger}44`, borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:C.danger }}>{error}</div>}
