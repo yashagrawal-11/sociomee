@@ -62,10 +62,9 @@ function PinterestIcon({ size = 20 }) {
 function StatCard({ icon, label, value, color, sub }) {
   C = getC();
   return (
-    <div style={{ background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:16, padding:"16px 18px", flex:1, minWidth:100, textAlign:"center" }}>
-      <div style={{ fontSize:20, marginBottom:4 }}>{icon}</div>
-      <div style={{ fontSize:21, fontWeight:900, color: color || C.red, letterSpacing:"-0.5px", lineHeight:1 }}>{value}</div>
-      <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px", marginTop:4 }}>{label}</div>
+    <div style={{ background:"rgba(255,255,255,0.02)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"16px 18px", flex:1, minWidth:100, textAlign:"center" }}>
+      <div style={{ fontSize:22, fontWeight:900, color:"#f5f5f7", letterSpacing:"-0.5px", lineHeight:1 }}>{value}</div>
+      <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginTop:6 }}>{label}</div>
       {sub && <div style={{ fontSize:10, color:C.success, fontWeight:600, marginTop:2 }}>{sub}</div>}
     </div>
   );
@@ -74,7 +73,7 @@ function StatCard({ icon, label, value, color, sub }) {
 function Tab({ label, active, onClick }) {
   C = getC();
   return (
-    <button onClick={onClick} style={{ padding:"7px 14px", borderRadius:99, border:`1.5px solid ${active ? C.red : C.hairline}`, background:active ? `${C.red}18` : "transparent", color:active ? C.red : C.muted, fontWeight:700, fontSize:11.5, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}>
+    <button onClick={onClick} style={{ padding:"7px 14px", borderRadius:99, border:`1.5px solid ${active ? "rgba(255,255,255,0.25)" : C.hairline}`, background:active ? "rgba(255,255,255,0.08)" : "transparent", color:active ? "#f5f5f7" : C.muted, fontWeight:700, fontSize:11.5, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}>
       {label}
     </button>
   );
@@ -83,7 +82,7 @@ function Tab({ label, active, onClick }) {
 function Section({ title, children }) {
   C = getC();
   return (
-    <div style={{ background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:16, padding:18, marginBottom:16 }}>
+    <div style={{ background:"rgba(255,255,255,0.02)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:18, marginBottom:16 }}>
       {title && <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.2px", textTransform:"uppercase", color:C.muted, marginBottom:14 }}>{title}</div>}
       {children}
     </div>
@@ -647,7 +646,7 @@ export default function PinterestDashboard({ user, topic = "" }) {
     <div style={{ fontFamily:"'DM Sans',sans-serif" }}>
 
       {/* Profile header */}
-      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:16, padding:"10px 12px", flexWrap:"nowrap", minWidth:0 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, background:"rgba(255,255,255,0.02)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"10px 12px", flexWrap:"nowrap", minWidth:0 }}>
         {profile?.profile_pic
           ? <img src={profile.profile_pic} alt="" referrerPolicy="no-referrer" style={{ width:34, height:34, borderRadius:"50%", objectFit:"cover", flexShrink:0 }} />
           : <div style={{ width:34, height:34, borderRadius:"50%", background:PINTEREST_RED, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><PinterestIcon size={18} /></div>
@@ -664,11 +663,11 @@ export default function PinterestDashboard({ user, topic = "" }) {
 
       {/* Stat cards */}
       <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16 }}>
-        <StatCard icon="📌" label="Pins"          value={fmt(profile?.pin_count)}              color={C.red} />
-        <StatCard icon="👁️" label={`Impr. (${days}d)`} value={fmt(insights?.total_impressions)} color={C.purple} />
-        <StatCard icon="💾" label="Saves"          value={fmt(insights?.total_saves)}           color={C.orange} />
-        <StatCard icon="🖱️" label="Clicks"         value={fmt(insights?.total_pin_clicks)}      color={C.teal} />
-        <StatCard icon="💬" label="Eng. Rate"      value={`${insights?.engagement_rate ?? "—"}%`} color={C.success} />
+        <StatCard label="Pins"          value={fmt(profile?.pin_count)}              />
+        <StatCard label={`Impr. (${days}d)`} value={fmt(insights?.total_impressions)} />
+        <StatCard label="Saves"          value={fmt(insights?.total_saves)}           />
+        <StatCard label="Clicks"         value={fmt(insights?.total_pin_clicks)}      />
+        <StatCard label="Eng. Rate"      value={`${insights?.engagement_rate ?? "—"}%`} />
       </div>
 
       {/* Tabs */}

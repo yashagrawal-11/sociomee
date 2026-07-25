@@ -72,10 +72,9 @@ function IGIcon({ size = 20 }) {
 function StatCard({ icon, label, value, color, sub }) {
   C = getC();
   return (
-    <div style={{ background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:16, padding:"16px 18px", flex:1, minWidth:100, textAlign:"center" }}>
-      <div style={{ fontSize:20, marginBottom:4 }}>{icon}</div>
-      <div style={{ fontSize:21, fontWeight:900, color: color || C.pink, letterSpacing:"-0.5px", lineHeight:1 }}>{value}</div>
-      <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px", marginTop:4 }}>{label}</div>
+    <div style={{ background:"rgba(255,255,255,0.02)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"16px 18px", flex:1, minWidth:100, textAlign:"center" }}>
+      <div style={{ fontSize:22, fontWeight:900, color:"#f5f5f7", letterSpacing:"-0.5px", lineHeight:1 }}>{value}</div>
+      <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginTop:6 }}>{label}</div>
       {sub && <div style={{ fontSize:10, color:C.success, fontWeight:600, marginTop:2 }}>{sub}</div>}
     </div>
   );
@@ -93,7 +92,7 @@ function Tab({ label, active, onClick }) {
 function Section({ title, children }) {
   C = getC();
   return (
-    <div style={{ background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:16, padding:18, marginBottom:16 }}>
+    <div style={{ background:"rgba(255,255,255,0.02)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:18, marginBottom:16 }}>
       {title && <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.2px", textTransform:"uppercase", color:C.muted, marginBottom:14 }}>{title}</div>}
       {children}
     </div>
@@ -341,7 +340,7 @@ export default function InstagramDashboard({ user, topic = "" }) {
     <div style={{ fontFamily:"'DM Sans',sans-serif" }}>
 
       {/* Profile header */}
-      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, background:C.glass, backdropFilter:"blur(16px)", border:`1px solid ${C.hairline}`, borderRadius:16, padding:"10px 12px", flexWrap:"nowrap", minWidth:0 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, background:"rgba(255,255,255,0.02)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"10px 12px", flexWrap:"nowrap", minWidth:0 }}>
         {profile?.profile_pic
           ? <img src={profile.profile_pic} alt="" referrerPolicy="no-referrer" crossOrigin="anonymous" style={{ width:34, height:34, borderRadius:"50%", objectFit:"cover", flexShrink:0, border:"2px solid transparent", backgroundImage:C.ig, backgroundOrigin:"border-box" }} />
           : <div style={{ width:34, height:34, borderRadius:"50%", background:C.ig, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><IGIcon size={18} /></div>
