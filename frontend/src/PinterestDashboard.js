@@ -768,20 +768,20 @@ export default function PinterestDashboard({ user, topic = "" }) {
 
       {/* ── Viral AI Tab ── */}
       {tab === "viral" && (
-        <Section title="🔥 Viral Pin AI Predictor">
+        <Section title="Viral Pin AI Predictor">
           <p style={{ fontSize:12.5, color:C.muted, marginBottom:14, lineHeight:1.6 }}>
             Enter your pin idea and choose format — our AI predicts saves, clicks and viral score before you post.
           </p>
 
           <div style={{ display:"flex", gap:6, marginBottom:12, flexWrap:"wrap" }}>
-            {[["static","📷 Static"],["video","🎬 Video"],["idea","💡 Idea Pin"],["carousel","🖼️ Carousel"]].map(([key,label]) => (
-              <button key={key} onClick={() => setPredFormat(key)} style={{ padding:"6px 14px", borderRadius:99, border:`1.5px solid ${predFormat===key?C.red:C.hairline}`, background:predFormat===key?`${C.red}18`:"transparent", color:predFormat===key?C.red:C.muted, fontSize:11.5, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>{label}</button>
+            {[["static","Static"],["video","Video"],["idea","Idea Pin"],["carousel","Carousel"]].map(([key,label]) => (
+              <button key={key} onClick={() => setPredFormat(key)} style={{ padding:"6px 14px", borderRadius:99, border:`1.5px solid ${predFormat===key?"rgba(255,255,255,0.25)":C.hairline}`, background:predFormat===key?"rgba(255,255,255,0.08)":"transparent", color:predFormat===key?"#f5f5f7":C.muted, fontSize:11.5, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>{label}</button>
             ))}
           </div>
 
           <div style={{ display:"flex", gap:8, marginBottom:16 }}>
             <input value={predTopic} onChange={e => setPredTopic(e.target.value)} placeholder="e.g. 10 free Canva templates for creators..." style={{ flex:1, padding:"10px 14px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13, fontFamily:"inherit", outline:"none" }} onKeyDown={e => e.key === "Enter" && runPrediction()} />
-            <button onClick={runPrediction} disabled={predLoading || !predTopic.trim()} style={{ padding:"10px 20px", borderRadius:10, border:"none", background:C.red, color:"#fff", fontWeight:800, fontSize:12.5, cursor: predLoading ? "not-allowed" : "pointer", fontFamily:"inherit", opacity: predLoading ? 0.7 : 1 }}>
+            <button onClick={runPrediction} disabled={predLoading || !predTopic.trim()} style={{ padding:"10px 20px", borderRadius:99, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.07)", color:"#f5f5f7", fontWeight:800, fontSize:12, cursor: predLoading ? "not-allowed" : "pointer", fontFamily:"inherit", opacity: predLoading || !predTopic.trim() ? 0.4 : 1 }}>
               {predLoading ? "…" : "Predict"}
             </button>
           </div>
@@ -790,7 +790,7 @@ export default function PinterestDashboard({ user, topic = "" }) {
             <>
               {prediction.format_tip && (
                 <div style={{ background:`${C.orange}12`, border:`1px solid ${C.orange}33`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:12.5, color:C.slate }}>
-                  📋 <strong>{prediction.pin_format}:</strong> {prediction.format_tip}
+                  <strong>{prediction.pin_format}:</strong> {prediction.format_tip}
                 </div>
               )}
 
@@ -801,7 +801,7 @@ export default function PinterestDashboard({ user, topic = "" }) {
                   {prediction.hook_detected?.length > 0 && (
                     <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
                       {prediction.hook_detected.map((h, i) => (
-                        <span key={i} style={{ padding:"2px 8px", borderRadius:99, background:`${C.success}18`, color:C.success, fontSize:10, fontWeight:700, border:`1px solid ${C.success}33` }}>✓ "{h}"</span>
+                        <span key={i} style={{ padding:"2px 8px", borderRadius:99, background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.6)", fontSize:10, fontWeight:700, border:"1px solid rgba(255,255,255,0.1)" }}>{h}</span>
                       ))}
                     </div>
                   )}
@@ -810,15 +810,14 @@ export default function PinterestDashboard({ user, topic = "" }) {
 
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, marginBottom:16 }}>
                 {[
-                  { icon:"👁️", label:"Est. Impressions", val:fmt(prediction.estimated_impressions) },
-                  { icon:"💾", label:"Est. Saves",        val:fmt(prediction.estimated_saves) },
-                  { icon:"🖱️", label:"Est. Clicks",       val:fmt(prediction.estimated_clicks) },
-                  { icon:"👥", label:"Est. Follows",      val:`+${fmt(prediction.estimated_follows)}` },
+                  { label:"Est. Impressions", val:fmt(prediction.estimated_impressions) },
+                  { label:"Est. Saves",        val:fmt(prediction.estimated_saves) },
+                  { label:"Est. Clicks",       val:fmt(prediction.estimated_clicks) },
+                  { label:"Est. Follows",      val:`+${fmt(prediction.estimated_follows)}` },
                 ].map((s, i) => (
-                  <div key={i} style={{ background:`${C.red}0D`, border:`1px solid ${C.hairline}`, borderRadius:10, padding:"10px 8px", textAlign:"center" }}>
-                    <div style={{ fontSize:18 }}>{s.icon}</div>
-                    <div style={{ fontSize:14, fontWeight:900, color:C.ink }}>{s.val}</div>
-                    <div style={{ fontSize:9, color:C.muted, fontWeight:600, marginTop:2 }}>{s.label}</div>
+                  <div key={i} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"14px 10px", textAlign:"center" }}>
+                    <div style={{ fontSize:20, fontWeight:900, color:"#f5f5f7", letterSpacing:"-0.5px", lineHeight:1 }}>{s.val}</div>
+                    <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginTop:6 }}>{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -844,13 +843,13 @@ export default function PinterestDashboard({ user, topic = "" }) {
 
               {prediction.next_milestone && (
                 <div style={{ background:`${C.success}12`, border:`1px solid ${C.success}33`, borderRadius:10, padding:"10px 14px", marginBottom:12, fontSize:13, color:C.slate }}>
-                  🏆 At this pace → <strong style={{ color:C.success }}>{fmt(prediction.next_milestone.target)} followers</strong> in ~{prediction.next_milestone.months} month{prediction.next_milestone.months !== 1 ? "s" : ""}
+                  At this pace → <strong style={{ color:C.success }}>{fmt(prediction.next_milestone.target)} followers</strong> in ~{prediction.next_milestone.months} month{prediction.next_milestone.months !== 1 ? "s" : ""}
                 </div>
               )}
 
               <div style={{ fontSize:12.5, color:C.slate, lineHeight:1.7 }}>
-                <div>🕐 <strong>Best time to post:</strong> {prediction.best_post_time}</div>
-                <div>✍️ <strong>Tip:</strong> {prediction.tip}</div>
+                <div><strong>Best time to post:</strong> {prediction.best_post_time}</div>
+                <div><strong>Tip:</strong> {prediction.tip}</div>
               </div>
             </>
           )}

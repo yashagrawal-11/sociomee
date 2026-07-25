@@ -54,7 +54,7 @@ function statusIcon(s) {
   return s==="done"?"✅":s==="scheduled"?"⏰":s==="sending"?"📤":s==="error"?"❌":s==="cancelled"?"🚫":"⏳";
 }
 
-const mediaIcon = { photo:"🖼️", video:"🎬", gif:"🎞️", document:"📄", none:"💬" };
+const mediaIcon = { photo:"IMG", video:"VID", gif:"GIF", document:"DOC", none:"TXT" };
 
 // ══════════════════════════════════════════════════════════════════════
 // COMPOSE TAB (single post)
@@ -122,20 +122,18 @@ function ComposePost({ userId, onSent, prefillText }) {
       </div>
 
       {!media ? (
-        <div onDrop={e=>{e.preventDefault();setDragOver(false);handleMedia(e.dataTransfer.files[0]);}}
-          onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)}
-          onClick={()=>fileRef.current?.click()}
-          style={{ border:`2px dashed ${dragOver?C.tg:C.hairline}`, borderRadius:"12px", padding:"14px", textAlign:"center", cursor:"pointer", background:dragOver?`${C.tg}08`:"transparent", marginBottom:"12px" }}>
-          <input ref={fileRef} type="file" accept="image/*,video/*,.gif" style={{ display:"none" }} onChange={e=>handleMedia(e.target.files[0])} />
-          <div style={{ fontSize:"18px", marginBottom:"3px" }}>📎</div>
-          <div style={{ fontSize:"12px", fontWeight:"700", color:C.muted }}>Attach media (optional)</div>
-          <div style={{ fontSize:"10px", color:C.muted, marginTop:"2px" }}>Images · Videos · GIFs · Max 50 MB</div>
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:"12px" }}>
+          <label style={{ width:32, height:32, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0 }} title="Attach media (images, videos, GIFs · max 50MB)">
+            <input ref={fileRef} type="file" accept="image/*,video/*,.gif" style={{ display:"none" }} onChange={e=>handleMedia(e.target.files[0])} />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </label>
+          <span style={{ fontSize:11, color:"rgba(255,255,255,0.25)", fontWeight:500 }}>Attach image, video or GIF (max 50 MB)</span>
         </div>
       ) : (
         <div style={{ background:C.glass, border:`1.5px solid ${C.tg}44`, borderRadius:"12px", padding:"12px", marginBottom:"12px", position:"relative" }}>
           <button onClick={removeMedia} style={{ position:"absolute", top:"8px", right:"8px", background:`${C.danger}22`, border:"none", color:C.danger, width:"22px", height:"22px", borderRadius:"50%", cursor:"pointer", fontSize:"11px" }}>✕</button>
           <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px" }}>
-            <span style={{ fontSize:"18px" }}>{mediaIcon[mediaType]||"📄"}</span>
+            <span style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.4)", letterSpacing:"0.5px" }}>{mediaIcon[mediaType]||"DOC"}</span>
             <div><div style={{ fontSize:"12px", fontWeight:"700", color:C.ink }}>{media.name}</div><div style={{ fontSize:"10px", color:C.muted }}>{(media.size/1024/1024).toFixed(1)} MB · {mediaType}</div></div>
           </div>
           {mediaType==="photo" && <img src={mediaPreview} alt="preview" style={{ width:"100%", maxHeight:"180px", objectFit:"cover", borderRadius:"8px", marginBottom:"8px" }} />}
@@ -151,7 +149,7 @@ function ComposePost({ userId, onSent, prefillText }) {
         <div style={{ display:"flex", gap:"6px" }}>
           {[["now","Send Now"],["custom","Schedule"]].map(([v,l]) => (
             <button key={v} onClick={()=>setScheduleType(v)}
-              style={{ padding:"8px 18px", borderRadius:"999px", border:`1.5px solid ${scheduleType===v?C.tg:C.hairline}`, background:scheduleType===v?`linear-gradient(135deg,${C.tg},#1a8ac0)`:C.glass, color:scheduleType===v?"#ffffff":C.muted, fontWeight:"700", fontSize:"12px", cursor:"pointer", fontFamily:"inherit", boxShadow:scheduleType===v?`0 2px 10px ${C.tg}44`:"none", transition:"all 0.2s" }}>
+              style={{ padding:"8px 18px", borderRadius:"999px", border:`1.5px solid ${scheduleType===v?"rgba(255,255,255,0.25)":C.hairline}`, background:scheduleType===v?"rgba(255,255,255,0.08)":"transparent", color:scheduleType===v?"#f5f5f7":C.muted, fontWeight:"700", fontSize:"12px", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
               {l}
             </button>
           ))}
