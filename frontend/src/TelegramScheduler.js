@@ -112,8 +112,7 @@ function ComposePost({ userId, onSent, prefillText }) {
 
   return (
     <div>
-      <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink, marginBottom:"4px" }}>Compose Post</div>
-      <div style={{ fontSize:"11.5px", color:C.muted, marginBottom:"14px" }}>Send text, images, videos or GIFs · supports HTML tags</div>
+      <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:14 }}>Compose Post</div>
 
       <div style={{ position:"relative", marginBottom:"10px" }}>
         <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Write your Telegram post… supports <b>bold</b>, <i>italic</i>, <a href='url'>link</a>" rows={5}
@@ -175,7 +174,7 @@ function ComposePost({ userId, onSent, prefillText }) {
       )}
 
       <button onClick={send} disabled={loading||(!text.trim()&&!media)}
-        style={{ width:"100%", padding:"14px", borderRadius:"999px", border:"none", background:(loading||(!text.trim()&&!media))?"rgba(42,171,238,0.3)":`linear-gradient(135deg,#2aabee,#1a8ac0)`, color:"white", fontWeight:"800", fontSize:"14px", cursor:(loading||(!text.trim()&&!media))?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", boxShadow:(loading||(!text.trim()&&!media))?"none":"0 4px 20px rgba(42,171,238,0.35)" }}>
+        style={{ width:"100%", padding:"14px", borderRadius:"999px", border:"1px solid rgba(255,255,255,0.12)", background:(loading||(!text.trim()&&!media))?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.08)", color:"#f5f5f7", fontWeight:"800", fontSize:"13px", cursor:(loading||(!text.trim()&&!media))?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", opacity:(loading||(!text.trim()&&!media))?0.4:1, transition:"all 0.15s" }}>
         {loading?<><Spinner size={16} color="white"/>{scheduleType==="custom"?"Scheduling…":"Sending…"}</>:<><TGIcon size={16}/>{scheduleType==="custom"?"Schedule Post":"Send to Telegram"}</>}
       </button>
       <div style={{ marginTop:"8px", fontSize:"10.5px", color:C.muted, textAlign:"center" }}>Sends to personal Telegram + channel (if connected)</div>
