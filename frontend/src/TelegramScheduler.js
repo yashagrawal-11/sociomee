@@ -135,7 +135,7 @@ function ComposePost({ userId, onSent, prefillText }) {
             <span style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.4)", letterSpacing:"0.5px" }}>{mediaIcon[mediaType]||"DOC"}</span>
             <div><div style={{ fontSize:"12px", fontWeight:"700", color:C.ink }}>{media.name}</div><div style={{ fontSize:"10px", color:C.muted }}>{(media.size/1024/1024).toFixed(1)} MB · {mediaType}</div></div>
           </div>
-          {mediaType==="photo" && <img src={mediaPreview} alt="preview" style={{ width:"100%", maxHeight:"180px", objectFit:"cover", borderRadius:"8px", marginBottom:"8px" }} />}
+          {mediaType==="photo" && <img src={mediaPreview} alt="preview" style={{ width:"100%", objectFit:"contain", borderRadius:"8px", marginBottom:"8px" }} />}
           {mediaType==="video" && <video src={mediaPreview} controls style={{ width:"100%", maxHeight:"180px", borderRadius:"8px", marginBottom:"8px" }} />}
           {mediaType==="gif"   && <img src={mediaPreview} alt="gif" style={{ width:"100%", maxHeight:"180px", objectFit:"contain", borderRadius:"8px", marginBottom:"8px" }} />}
           <input value={caption} onChange={e=>setCaption(e.target.value)} placeholder="Caption (optional)"
@@ -285,7 +285,7 @@ function BulkPost({ userId, onSent }) {
           {/* Action buttons */}
           <div style={{ display:"flex", gap:"8px", marginBottom:"14px" }}>
             <button onClick={sendAll} disabled={sending}
-              style={{ flex:2, padding:"11px", borderRadius:"11px", border:"none", background:sending?"rgba(42,171,238,0.3)":`linear-gradient(135deg,#2aabee,#1a8ac0)`, color:"white", fontWeight:"800", fontSize:"13px", cursor:sending?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:"6px" }}>
+              style={{ flex:2, padding:"11px", borderRadius:"11px", border:"none", background:sending?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.08)", color:"#f5f5f7", fontWeight:"800", fontSize:"13px", cursor:sending?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", border:"1px solid rgba(255,255,255,0.12)", opacity:sending?0.5:1, transition:"all 0.15s" }}>
               {sending?<><Spinner size={14} color="white"/>Sending…</>:<><TGIcon size={14}/>Send All ({items.filter(it=>it.status!=="done").length} items)</>}
             </button>
             {doneCount===items.length && items.length>0 && (
@@ -309,7 +309,7 @@ function BulkPost({ userId, onSent }) {
               </div>
 
               {/* Preview */}
-              {it.mediaType==="photo" && <img src={it.preview} alt="" style={{ width:"100%", maxHeight:"120px", objectFit:"cover", borderRadius:"8px", marginBottom:"8px" }} />}
+              {it.mediaType==="photo" && <img src={it.preview} alt="" style={{ width:"100%", objectFit:"contain", borderRadius:"8px", marginBottom:"8px" }} />}
               {it.mediaType==="video" && <video src={it.preview} style={{ width:"100%", maxHeight:"120px", borderRadius:"8px", marginBottom:"8px" }} />}
               {it.mediaType==="gif"   && <img src={it.preview} alt="gif" style={{ width:"100%", maxHeight:"120px", objectFit:"contain", borderRadius:"8px", marginBottom:"8px" }} />}
 
@@ -390,7 +390,7 @@ function AICaption({ userId, onUseCaption }) {
       {error && <div style={{ background:`${C.danger}12`, border:`1px solid ${C.danger}44`, borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:C.danger }}>{error}</div>}
 
       <button onClick={generate} disabled={loading||!topic.trim()}
-        style={{ width:"100%", padding:"12px", borderRadius:"12px", border:"none", background:(loading||!topic.trim())?"rgba(42,171,238,0.3)":`linear-gradient(135deg,#2aabee,#1a8ac0)`, color:"white", fontWeight:"800", fontSize:"14px", cursor:(loading||!topic.trim())?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", marginBottom:"14px" }}>
+        style={{ width:"100%", padding:"12px", borderRadius:"12px", border:"none", background:(loading||!topic.trim())?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.08)", color:"#f5f5f7", fontWeight:"800", fontSize:"13px", cursor:(loading||!topic.trim())?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", marginBottom:"14px", border:"1px solid rgba(255,255,255,0.12)", opacity:(loading||!topic.trim())?0.4:1, transition:"all 0.15s" }}>
         {loading?<><Spinner size={16} color="white"/>Generating…</>:"Generate AI Caption"}
       </button>
 
@@ -762,7 +762,7 @@ function TGMiniCalendar({ value, onChange }) {
             style={{
               aspectRatio:"1", borderRadius:8, border:"none", fontSize:12, fontFamily:"inherit",
               cursor:isPast(d) ? "not-allowed" : "pointer",
-              background:isSelected(d) ? C.tg : "transparent",
+              background:isSelected(d) ? "rgba(255,255,255,0.15)" : "transparent",
               color:isPast(d) ? C.muted : (isSelected(d) ? "#fff" : C.ink),
               fontWeight:isSelected(d) ? 700 : 500,
               opacity:isPast(d) ? 0.35 : 1,
