@@ -343,6 +343,8 @@ function AICaption({ userId, onUseCaption }) {
   const [result,       setResult      ] = useState(null);
   const [error,        setError       ] = useState("");
   const [copied,       setCopied      ] = useState("");
+  const [platOpen,  setPlatOpen ] = useState(false);
+  const [langOpen,  setLangOpen ] = useState(false);
 
   const copy = (text, key) => { navigator.clipboard.writeText(String(text||"")); setCopied(key); setTimeout(()=>setCopied(""),2000); };
 
