@@ -154,6 +154,8 @@ function Publisher({ userId, topic, onPublished }) {
   C = getC();
   const [caption, setCaption] = useState(topic ? topic.slice(0, 500) : "");
   const [imageUrl, setImageUrl] = useState("");
+  const [imgPreview, setImgPreview] = useState("");
+  const [imgLoading, setImgLoading] = useState(false);
   const [loading, setLoad] = useState(false);
   const [result, setResult] = useState(null);
   const [err, setErr] = useState("");
@@ -188,16 +190,27 @@ function Publisher({ userId, topic, onPublished }) {
   return (
     <>
       <div style={{ marginBottom:10 }}>
-        <label style={{ fontSize:11, fontWeight:700, color:C.muted, display:"block", marginBottom:5 }}>IMAGE URL (required)</label>
-        <input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://your-image-url.jpg (must be publicly accessible)"
-          style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:12.5, fontFamily:"inherit", outline:"none", boxSizing:"border-box" }} />
-        <p style={{ fontSize:10.5, color:C.muted, marginTop:4 }}>⚠ Instagram requires a publicly accessible image URL. Upload to Cloudinary, ImgBB, or your server first.</p>
+        <div style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"1.3px", marginBottom:8 }}>Image</div>
+        {imgPreview ? (
+          <div style={{ position:"relative", display:"inline-block", marginBottom:4 }}>
+            <img src={imgPreview} alt="" style={{ maxHeight:160, maxWidth:"100%", borderRadius:10, border:"1px solid rgba(255,255,255,0.08)", display:"block" }} />
+            <button onClick={() => { setImageUrl(""); setImgPreview(""); }} style={{ position:"absolute", top:4, right:4, width:22, height:22, borderRadius:"50%", border:"none", background:"rgba(0,0,0,0.7)", color:"#fff", fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>x</button>
+          </div>
+        ) : (
+          <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, border:"1.5px dashed rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.02)", cursor:imgLoading?"not-allowed":"pointer" }}>
+            <input type="file" accept="image/*" style={{ display:"none" }} disabled={imgLoading} onChange={async e => { const f=e.target.files[0]; if(!f) return; setImgLoading(true); const fd=new FormData(); fd.append("file",f); try { const r=await fetch(BASE+"/threads/upload-media?user_id="+userId,{method:"POST",body:fd}); const d=await r.json(); if(d.url){setImageUrl(d.url);setImgPreview(URL.createObjectURL(f));} } catch(ex){} finally{setImgLoading(false);} }} />
+            <div style={{ width:32, height:32, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              {imgLoading ? <div style={{ width:14, height:14, borderRadius:"50%", border:"2px solid rgba(255,255,255,0.1)", borderTopColor:"rgba(255,255,255,0.5)", animation:"spin 0.7s linear infinite" }}/> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
+            </div>
+            <span style={{ fontSize:12, color:"rgba(255,255,255,0.3)" }}>{imgLoading ? "Uploading..." : "Click to upload image"}</span>
+          </label>
+        )}
       </div>
       <textarea value={caption} onChange={e => setCaption(e.target.value.slice(0, 2200))} placeholder="Write your Instagram caption... (max 2200 chars)" rows={4}
         style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:13.5, lineHeight:1.7, fontFamily:"inherit", resize:"vertical", outline:"none", boxSizing:"border-box" }} />
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:8 }}>
         <span style={{ fontSize:11.5, color: rem < 100 ? C.danger : C.muted, fontWeight:600 }}>{rem} chars left</span>
-        <button onClick={publish} disabled={loading || !caption.trim() || !imageUrl.trim()} style={{ padding:"9px 22px", borderRadius:99, border:"none", background:C.ig, color:"#fff", fontWeight:800, fontSize:12.5, cursor: loading ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:7, opacity: loading ? 0.6 : 1 }}>
+        <button onClick={publish} disabled={loading || !caption.trim() || !imageUrl.trim()} style={{ padding:"9px 22px", borderRadius:99, border:"1px solid rgba(255,255,255,0.12)", background:(loading||!caption.trim()||!imageUrl.trim())?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.08)", color:"#f5f5f7", fontWeight:800, fontSize:12, cursor: loading ? "not-allowed" : "pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:7, opacity: loading||!caption.trim()||!imageUrl.trim() ? 0.4 : 1, transition:"all 0.15s" }}>
           <IGIcon size={14} />
           {loading ? "Posting…" : "Post to Instagram"}
         </button>
@@ -924,12 +937,17 @@ function InstagramScheduleTab({ userId }) {
   const statusColor = (s) => s === "done" ? C.success : s === "error" ? C.rose : s === "sending" ? C.purple : C.muted;
 
   return (
-    <Section title="⏰ Schedule an Instagram Post">
+    <Section title="Schedule an Instagram Post">
       <div style={{ background: C.glass, border: `1.5px solid ${C.hairline}`, borderRadius: 14, padding: 16, marginBottom: 16 }}>
         <textarea value={caption} onChange={e => setCaption(e.target.value)} placeholder="Write your caption... (max 2200 chars)" maxLength={2200}
           style={{ width: "100%", minHeight: 100, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${C.hairline}`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 13, fontFamily: "inherit", outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10 }} />
-        <input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="Public image URL"
-          style={{ width: "100%", padding: "10px 14px", borderRadius: 12, border: `1.5px solid ${C.hairline}`, background: "rgba(255,255,255,0.04)", color: C.ink, fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
+        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", borderRadius:10, border:"1.5px dashed rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.02)", cursor:"pointer", marginBottom:8 }}>
+          <input type="file" accept="image/*" style={{ display:"none" }} onChange={async e => { const f=e.target.files[0]; if(!f) return; const fd=new FormData(); fd.append("file",f); try { const r=await fetch(BASE+"/threads/upload-media?user_id="+userId,{method:"POST",body:fd}); const d=await r.json(); if(d.url) setImageUrl(d.url); } catch(ex){} }} />
+          <div style={{ width:28, height:28, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <span style={{ fontSize:12, color:"rgba(255,255,255,0.3)" }}>{imageUrl ? "Image attached" : "Attach image (optional)"}</span>
+        </label>
         <div style={{ marginBottom: 12 }}>
           <InstagramMiniCalendar value={when} onChange={setWhen} />
         </div>
@@ -937,7 +955,7 @@ function InstagramScheduleTab({ userId }) {
           <InstagramTimePicker value={when} onChange={setWhen} />
         </div>
         <button onClick={schedule} disabled={loading || !caption.trim() || !imageUrl.trim() || !when}
-          style={{ width: "100%", padding: 12, borderRadius: 99, border: "none", background: (loading || !caption.trim() || !imageUrl.trim() || !when) ? "rgba(255,255,255,0.08)" : C.purple, color: "#fff", fontWeight: 800, fontSize: 13, cursor: (loading || !caption.trim() || !imageUrl.trim() || !when) ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+          style={{ width: "100%", padding: 12, borderRadius: 99, border: "1px solid rgba(255,255,255,0.12)", background: (loading || !caption.trim() || !when) ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.08)", color: "#fff", fontWeight: 800, fontSize: 13, cursor: (loading || !caption.trim() || !when) ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: (loading || !caption.trim() || !when) ? 0.4 : 1, transition: "all 0.15s" }}>
           {loading ? "Scheduling…" : "Schedule Post"}
         </button>
         {msg && <div style={{ marginTop: 8, fontSize: 12, color: msg.startsWith("Error") ? C.rose : C.success, fontWeight: 600 }}>{msg}</div>}
