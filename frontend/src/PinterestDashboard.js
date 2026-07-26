@@ -773,7 +773,7 @@ export default function PinterestDashboard({ user, topic = "" }) {
             ? <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={insights.chart_data} margin={{ top:5, right:10, left:-20, bottom:0 }}>
                   
-                  <XAxis dataKey="date" tick={{ fontSize:9, fill:C.muted }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                  <XAxis dataKey="date" hide={true} />
                   <YAxis tick={{ fontSize:9, fill:C.muted }} tickLine={false} axisLine={false} tickFormatter={fmt} />
                   <Tooltip contentStyle={{ background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:10, fontSize:12 }} formatter={v => [fmt(v), chartMetric]} />
                   <Line type="monotone" dataKey={chartMetric} stroke={chartMetric==="impressions"?C.red:chartMetric==="saves"?C.orange:C.purple} strokeWidth={2.5} dot={false} activeDot={{ r:5, strokeWidth:0 }} />
