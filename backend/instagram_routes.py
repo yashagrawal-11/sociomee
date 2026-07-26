@@ -228,11 +228,28 @@ async def get_status(user_id: str):
     acc = _get_account(user_id)
     if not acc:
         return {"connected": False}
+    # Always fetch fresh profile pic from API to avoid expired CDN URLs
+    profile_pic = acc.get("profile_pic", "")
+    try:
+        token = acc.get("access_token", "")
+        ig_id = acc.get("ig_user_id", "")
+        if token and ig_id:
+            async with httpx.AsyncClient(timeout=8) as client:
+                r = await client.get(f"https://graph.facebook.com/v19.0/{ig_id}",
+                    params={"fields": "profile_picture_url", "access_token": token})
+                if r.status_code == 200:
+                    fresh = r.json().get("profile_picture_url", "")
+                    if fresh:
+                        profile_pic = fresh
+                        acc["profile_pic"] = fresh
+                        _set_account(user_id, acc)
+    except Exception:
+        pass
     return {
         "connected":    True,
         "username":     acc.get("username"),
         "display_name": acc.get("display_name"),
-        "profile_pic":  acc.get("profile_pic"),
+        "profile_pic":  profile_pic,
         "profile_url":  acc.get("profile_url"),
         "followers":    acc.get("followers", 0),
         "following":    acc.get("following", 0),

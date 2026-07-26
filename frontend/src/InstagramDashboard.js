@@ -361,10 +361,10 @@ export default function InstagramDashboard({ user, topic = "" }) {
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ fontSize:12, fontWeight:800, color:C.ink, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>@{profile?.username}</div>
           <div style={{ fontSize:10, color:C.muted, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{profile?.display_name} · {fmt(profile?.followers)} followers · {fmt(profile?.media_count)} posts</div>
-          {profile?.bio && <div style={{ fontSize:11, color:C.muted, marginTop:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{profile.bio}</div>}
+
         </div>
         <div style={{ display:"flex", gap:6, flexShrink:0 }}>
-          {profile?.profile_url && <a href={profile.profile_url} target="_blank" rel="noreferrer" style={{ padding:"4px 9px", borderRadius:99, border:`1px solid ${C.hairline}`, color:C.slate, fontSize:10, fontWeight:700, textDecoration:"none", whiteSpace:"nowrap" }}>View</a>}
+
           <button onClick={() => { if (window.confirm("Disconnect Instagram?")) fetch(`${BASE}/instagram/disconnect?user_id=${userId}`, {method:"POST"}).then(() => { setConnected(false); setProfile(null); }); }} style={{ padding:"4px 9px", borderRadius:99, border:`1px solid ${C.danger}44`, background:`${C.danger}10`, color:C.danger, fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>Disconnect</button>
         </div>
       </div>
@@ -424,7 +424,7 @@ export default function InstagramDashboard({ user, topic = "" }) {
                 </ResponsiveContainer>
               : <p style={{ textAlign:"center", color:C.muted, fontSize:13, padding:"40px 0" }}>No data yet.</p>
             }
-            {insights?.is_mock && <p style={{ textAlign:"center", fontSize:10, color:C.muted, marginTop:6 }}>⚠ Demo data — real data loads after instagram_manage_insights is approved</p>}
+
           </Section>
 
           <Section title="🖼️ Recent Posts">
@@ -490,7 +490,7 @@ export default function InstagramDashboard({ user, topic = "" }) {
             </div>
           </Section>
 
-          {reels.is_mock && <p style={{ textAlign:"center", fontSize:10, color:C.muted }}>⚠ Demo data — real Reels metrics load after API access is granted</p>}
+
         </>
       )}
 
