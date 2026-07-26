@@ -493,42 +493,40 @@ export default function InstagramDashboard({ user, topic = "" }) {
         </>
       )}
 
-      {/* ── Stories Tab ── */}
+      {/* Stories Tab */}
       {tab === "stories" && stories && (
         <>
-          <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16 }}>
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:14 }}>
             <StatCard label="Avg Views" value={fmt(stories.avg_views)} />
             <StatCard label="Avg Exit Rate" value={`${stories.avg_exit_rate}%`} />
             <StatCard label="Best Type" value={stories.best_type} />
           </div>
-
-          <Section title="📱 Story Performance This Week">
+          <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, padding:20, marginBottom:14 }}>
+            <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:14 }}>Story Performance This Week</div>
             {stories.stories.map((s, i) => (
-              <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:`1px solid ${C.hairline}` }}>
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:i < stories.stories.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <div style={{ width:36, height:36, borderRadius:10, background:C.ig, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>
-                    {s.type === "Poll" ? "📊" : s.type === "Question" ? "❓" : s.type === "Slider" ? "⭐" : s.type === "Quiz" ? "🧠" : s.type === "Countdown" ? "⏰" : s.type === "Link" ? "🔗" : "📷"}
+                  <div style={{ width:34, height:34, borderRadius:9, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <span style={{ fontSize:10, fontWeight:800, color:"rgba(255,255,255,0.4)", textTransform:"uppercase" }}>{s.type?.slice(0,3) || "STR"}</span>
                   </div>
                   <div>
-                    <div style={{ fontSize:13, fontWeight:700, color:C.ink }}>{s.day} · {s.type}</div>
-                    <div style={{ fontSize:11, color:C.muted }}>{fmt(s.views)} views · {s.replies} replies</div>
+                    <div style={{ fontSize:12.5, fontWeight:700, color:"#f5f5f7" }}>{s.day} · {s.type}</div>
+                    <div style={{ fontSize:10.5, color:"rgba(255,255,255,0.35)", marginTop:2 }}>{fmt(s.views)} views · {s.replies} replies</div>
                   </div>
                 </div>
                 <div style={{ textAlign:"right" }}>
-                  <div style={{ fontSize:12, fontWeight:800, color: s.exit_rate > 15 ? C.danger : C.success }}>{s.exit_rate}% exit</div>
+                  <div style={{ fontSize:11.5, fontWeight:800, color: s.exit_rate > 15 ? "#f87171" : "#34d399" }}>{s.exit_rate}% exit</div>
                 </div>
               </div>
             ))}
-          </Section>
-
-          <Section title="">
-            <div style={{ background:`${C.pink}10`, border:`1px solid ${C.pink}33`, borderRadius:10, padding:"12px 14px", fontSize:12.5, color:C.slate, lineHeight:1.6 }}>
-              💡 <strong>Stories Tip:</strong> {stories.tip}
+          </div>
+          {stories.tip && (
+            <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:12, padding:"12px 16px", fontSize:12.5, color:"rgba(255,255,255,0.55)", lineHeight:1.7, borderLeft:"2px solid rgba(255,255,255,0.15)" }}>
+              <strong style={{ color:"#f5f5f7" }}>Stories Tip:</strong> {stories.tip}
             </div>
-          </Section>
+          )}
         </>
       )}
-
       {/* ── Viral AI Tab ── */}
       {tab === "viral" && (
         <Section title="Viral Content AI Predictor">
