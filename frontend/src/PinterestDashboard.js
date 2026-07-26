@@ -781,7 +781,7 @@ export default function PinterestDashboard({ user, topic = "" }) {
               </ResponsiveContainer>
             : <p style={{ textAlign:"center", color:C.muted, fontSize:13, padding:"40px 0" }}>No data yet.</p>
           }
-          {insights?.is_mock && <p style={{ textAlign:"center", fontSize:10, color:C.muted, marginTop:6 }}>⚠ Demo data — real analytics will appear once this account has published pins with some history</p>}
+          
         </Section>
       )}
 
@@ -1007,7 +1007,7 @@ export default function PinterestDashboard({ user, topic = "" }) {
             )}
           </Section>
 
-          {audience.is_mock && <p style={{ textAlign:"center", fontSize:10, color:C.muted }}>⚠ Estimated data — real audience data loads after API approval</p>}
+          
         </>
       )}
 
