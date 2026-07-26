@@ -402,7 +402,7 @@ export default function InstagramDashboard({ user, topic = "" }) {
           <Section title="📈 Performance Over Time">
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14, flexWrap:"wrap", gap:6 }}>
               <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-                {[["impressions","Impressions",C.purple],["reach","Reach",C.pink],["likes","Likes",C.orange],["saves","Saves",C.success],["comments","Comments",C.teal]].map(([k,l,col]) => (
+                {[["impressions","Interactions",C.purple],["reach","Reach",C.pink],["profile_views","Profile Views",C.teal]].map(([k,l,col]) => (
                   <button key={k} onClick={() => setChartMetric(k)} style={{ padding:"3px 10px", borderRadius:99, border:`1.5px solid ${chartMetric===k?col:C.hairline}`, background:chartMetric===k?`${col}18`:"transparent", color:chartMetric===k?col:C.muted, fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
                 ))}
               </div>
@@ -418,7 +418,7 @@ export default function InstagramDashboard({ user, topic = "" }) {
                     
                     <YAxis tick={{ fontSize:9, fill:C.muted }} tickLine={false} axisLine={false} tickFormatter={fmt} />
                     <Tooltip contentStyle={{ background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:10, fontSize:12 }} formatter={v => [fmt(v), chartMetric]} />
-                    <Line type="monotone" dataKey={chartMetric} stroke={chartMetric==="impressions"?C.purple:chartMetric==="reach"?C.pink:chartMetric==="likes"?C.orange:chartMetric==="saves"?C.success:C.teal} strokeWidth={2.5} dot={false} activeDot={{ r:5, strokeWidth:0 }} />
+                    <Line type="monotone" dataKey={chartMetric} stroke={chartMetric==="impressions"?C.purple:chartMetric==="reach"?C.pink:C.teal} strokeWidth={2.5} dot={false} activeDot={{ r:5, strokeWidth:0 }} />
                   </LineChart>
                 </ResponsiveContainer>
               : <p style={{ textAlign:"center", color:C.muted, fontSize:13, padding:"40px 0" }}>No data yet.</p>
