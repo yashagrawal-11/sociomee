@@ -279,23 +279,24 @@ async def get_insights(user_id: str, days: int = 30):
     ig_user_id = acc["ig_user_id"]
     since      = int((datetime.utcnow() - timedelta(days=days)).timestamp())
     until      = int(datetime.utcnow().timestamp())
-
     try:
-        async with httpx.AsyncClient() as client:
-            r = await client.get(
+        async with httpx.AsyncClient(timeout=15) as client:
+            r1 = await client.get(
                 f"https://graph.facebook.com/v19.0/{ig_user_id}/insights",
-                params={
-                    "metric":       "reach,profile_views,accounts_engaged,total_interactions",
-                    "period":       "day",
-                    "since":        since,
-                    "until":        until,
-                    "access_token": token,
-                },
+                params={"metric":"reach","period":"day","since":since,"until":until,"access_token":token},
             )
-        if r.status_code == 200:
-            return _parse_insights(r.json(), days)
-    except Exception:
-        pass
+            r2 = await client.get(
+                f"https://graph.facebook.com/v19.0/{ig_user_id}/insights",
+                params={"metric":"profile_views,accounts_engaged,total_interactions","period":"day","metric_type":"total_value","since":since,"until":until,"access_token":token},
+            )
+        d1 = r1.json() if r1.status_code == 200 else {"data":[]}
+        d2 = r2.json() if r2.status_code == 200 else {"data":[]}
+        combined = {"data": d1.get("data",[]) + d2.get("data",[])}
+        if d1.get("data") or d2.get("data"):
+            return _parse_insights(combined, days)
+    except Exception as e:
+        import logging; logging.getLogger("instagram").warning("Insights error: %s", e)
+    return _mock_insights(acc, days)
 
     return _mock_insights(acc, days)
 
