@@ -20,7 +20,7 @@ router = APIRouter(prefix="/pinterest", tags=["pinterest"])
 PINTEREST_APP_ID       = os.getenv("PINTEREST_APP_ID", "")
 PINTEREST_APP_SECRET   = os.getenv("PINTEREST_APP_SECRET", "")
 PINTEREST_REDIRECT_URI = os.getenv("PINTEREST_REDIRECT_URI", "https://sociomeeai.com/pinterest/callback")
-PINTEREST_SCOPE        = "boards:read,boards:write,pins:read,pins:write,user_accounts:read,ads:read"
+PINTEREST_SCOPE        = "boards:read,pins:read,user_accounts:read"
 
 # ── Storage helpers ────────────────────────────────────────────────
 DATA_DIR       = Path(__file__).parent / "data"
@@ -69,9 +69,9 @@ def _set_account(user_id: str, account: dict):
     from crypto_utils import encrypt
     data = _load()
     enc_account = dict(account)
-    if enc_account.get("access_token"):
+    if enc_account.get("access_token") and not enc_account["access_token"].startswith("gAAAAA"):
         enc_account["access_token"] = encrypt(enc_account["access_token"])
-    if enc_account.get("refresh_token"):
+    if enc_account.get("refresh_token") and not enc_account["refresh_token"].startswith("gAAAAA"):
         enc_account["refresh_token"] = encrypt(enc_account["refresh_token"])
     data[str(user_id)] = enc_account
     _save(data)
@@ -145,6 +145,7 @@ async def pinterest_callback(code: str, state: str = ""):
         raise HTTPException(400, f"Token exchange failed: {r.text}")
 
     td          = r.json()
+    import logging; logging.getLogger("pinterest_oauth").warning("TOKEN EXCHANGE RESPONSE: %s", str(td)[:200])
     access_token  = td.get("access_token")
     refresh_token = td.get("refresh_token", "")
 
@@ -230,7 +231,7 @@ async def get_insights(user_id: str, days: int = 30):
             r = await client.get(
                 "https://api.pinterest.com/v5/user_account/analytics",
                 params={"start_date": start, "end_date": end,
-                        "metric_types": "IMPRESSION,SAVE,PIN_CLICK,OUTBOUND_CLICK,PROFILE_VISIT"},
+                        "metric_types": "IMPRESSION,SAVE,PIN_CLICK,OUTBOUND_CLICK"},
                 headers={"Authorization": f"Bearer {token}"},
             )
         if r.status_code == 200:
@@ -247,10 +248,11 @@ def _parse_insights(raw: dict, days: int) -> dict:
     totals = {"impressions": 0, "saves": 0, "pin_clicks": 0, "outbound_clicks": 0}
     for d in daily:
         date = d.get("date", "")
-        impr = d.get("IMPRESSION", 0)
-        saves = d.get("SAVE", 0)
-        clicks = d.get("PIN_CLICK", 0)
-        outbound = d.get("OUTBOUND_CLICK", 0)
+        m = d.get("metrics", d)
+        impr = m.get("IMPRESSION", 0)
+        saves = m.get("SAVE", 0)
+        clicks = m.get("PIN_CLICK", 0)
+        outbound = m.get("OUTBOUND_CLICK", 0)
         chart.append({"date": date, "impressions": impr, "saves": saves,
                       "pin_clicks": clicks, "outbound_clicks": outbound})
         totals["impressions"] += impr
