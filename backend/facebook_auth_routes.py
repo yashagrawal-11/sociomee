@@ -4,7 +4,7 @@ facebook_auth_routes.py — Facebook OAuth Login
 import os, logging, httpx, json
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
-from auth_routes import _load_users, _save_users, _make_token
+from auth_routes import _load_users, _save_users, create_jwt_token
 
 log = logging.getLogger("facebook_auth")
 router = APIRouter(prefix="/auth/facebook", tags=["facebook_auth"])
@@ -77,7 +77,7 @@ async def fb_callback(request: Request):
             if pic: users[email]["profile_pic"] = pic
 
         _save_users(users)
-        token = _make_token(email)
+        token = create_jwt_token({"email": email, "name": name, "picture": pic, "user_id": fb_id})
         return RedirectResponse(f"/auth/callback?token={token}&is_new={'true' if is_new else 'false'}")
 
     except Exception as e:
