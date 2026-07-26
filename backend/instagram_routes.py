@@ -285,7 +285,7 @@ async def get_insights(user_id: str, days: int = 30):
             r = await client.get(
                 f"https://graph.facebook.com/v19.0/{ig_user_id}/insights",
                 params={
-                    "metric":       "impressions,reach,profile_views,follower_count",
+                    "metric":       "reach,profile_views,accounts_engaged,total_interactions",
                     "period":       "day",
                     "since":        since,
                     "until":        until,
@@ -303,19 +303,23 @@ async def get_insights(user_id: str, days: int = 30):
 def _parse_insights(raw: dict, days: int) -> dict:
     data       = raw.get("data", [])
     metric_map = {item["name"]: item.get("values", []) for item in data}
-    impressions_s = metric_map.get("impressions", [])
-    reach_s       = metric_map.get("reach", [])
-    pviews_s      = metric_map.get("profile_views", [])
+    reach_s    = metric_map.get("reach", [])
+    pviews_s   = metric_map.get("profile_views", [])
+    engaged_s  = metric_map.get("accounts_engaged", [])
+    interact_s = metric_map.get("total_interactions", [])
     chart  = []
-    totals = {"impressions": 0, "reach": 0, "profile_views": 0}
-    for i, v in enumerate(impressions_s[-days:]):
-        impressions   = v.get("value", 0)
-        reach         = reach_s[i]["value"]  if i < len(reach_s)  else 0
-        profile_views = pviews_s[i]["value"] if i < len(pviews_s) else 0
-        chart.append({"date": v.get("end_time", "")[:10], "impressions": impressions, "reach": reach, "profile_views": profile_views})
-        totals["impressions"] += impressions; totals["reach"] += reach; totals["profile_views"] += profile_views
+    totals = {"reach": 0, "profile_views": 0, "accounts_engaged": 0, "total_interactions": 0}
+    base_s = reach_s or pviews_s or engaged_s
+    for i, v in enumerate(base_s[-days:]):
+        reach         = reach_s[i].get("value", 0)    if i < len(reach_s)    else 0
+        profile_views = pviews_s[i].get("value", 0)   if i < len(pviews_s)   else 0
+        engaged       = engaged_s[i].get("value", 0)  if i < len(engaged_s)  else 0
+        interactions  = interact_s[i].get("value", 0) if i < len(interact_s) else 0
+        chart.append({"date": v.get("end_time", "")[:10], "impressions": interactions, "reach": reach, "profile_views": profile_views})
+        totals["reach"] += reach; totals["profile_views"] += profile_views
+        totals["accounts_engaged"] += engaged; totals["total_interactions"] += interactions
     return {**totals, "chart_data": chart, "is_mock": False,
-            "total_impressions": totals["impressions"], "total_reach": totals["reach"],
+            "total_impressions": totals["total_interactions"], "total_reach": totals["reach"],
             "total_profile_views": totals["profile_views"]}
 
 
