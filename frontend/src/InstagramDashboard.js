@@ -449,50 +449,44 @@ export default function InstagramDashboard({ user, topic = "" }) {
         </>
       )}
 
-      {/* ── Reels Tab ── */}
+      {/* Reels Tab */}
       {tab === "reels" && reels && (
         <>
-          <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16 }}>
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:14 }}>
             <StatCard label="Avg Plays" value={fmt(reels.avg_plays)} />
             <StatCard label="Avg Eng Rate" value={`${reels.avg_eng}%`} />
           </div>
-
-          <Section title="🎬 Reels Performance">
+          <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, padding:20, marginBottom:14 }}>
+            <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:14 }}>Reels Performance</div>
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={reels.reels} margin={{ top:5, right:10, left:-20, bottom:0 }}>
-                <XAxis dataKey="topic" tick={{ fontSize:9, fill:C.muted }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize:9, fill:C.muted }} axisLine={false} tickLine={false} tickFormatter={fmt} />
-                <Tooltip contentStyle={{ background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:10, fontSize:12 }} formatter={v => [fmt(v), "Plays"]} />
-                <Bar dataKey="plays" fill={C.pink} radius={[6,6,0,0]} />
+                <XAxis dataKey="topic" tick={{ fontSize:9, fill:"rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize:9, fill:"rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} tickFormatter={fmt} />
+                <Tooltip contentStyle={{ background:"rgba(15,15,15,0.95)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, fontSize:11 }} formatter={v => [fmt(v), "Plays"]} />
+                <Bar dataKey="plays" fill="rgba(255,255,255,0.2)" radius={[6,6,0,0]} />
               </BarChart>
             </ResponsiveContainer>
-          </Section>
-
+          </div>
           {reels.best_reel && (
-            <Section title="🏆 Best Performing Reel">
-              <div style={{ background:`${C.pink}10`, border:`1px solid ${C.pink}33`, borderRadius:12, padding:"14px 16px" }}>
-                <div style={{ fontSize:14, fontWeight:800, color:C.ink, marginBottom:8 }}>{reels.best_reel.topic}</div>
-                <div style={{ display:"flex", gap:16, flexWrap:"wrap", fontSize:12, color:C.muted, fontWeight:600 }}>
-                  <span>▶️ {fmt(reels.best_reel.plays)} plays</span>
-                  <span>❤️ {fmt(reels.best_reel.likes)}</span>
-                  <span>💾 {fmt(reels.best_reel.saves)}</span>
-                  <span>🔁 {fmt(reels.best_reel.shares)}</span>
-                  <span>📊 {reels.best_reel.eng_rate}% eng</span>
-                </div>
+            <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"16px 18px", marginBottom:14 }}>
+              <div style={{ fontSize:11, fontWeight:800, letterSpacing:"1.3px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:12 }}>Best Performing Reel</div>
+              <div style={{ fontSize:13.5, fontWeight:800, color:"#f5f5f7", marginBottom:10 }}>{reels.best_reel.topic}</div>
+              <div style={{ display:"flex", gap:16, flexWrap:"wrap", fontSize:11, color:"rgba(255,255,255,0.4)", fontWeight:600 }}>
+                <span>{fmt(reels.best_reel.plays)} plays</span>
+                <span>{fmt(reels.best_reel.likes)} likes</span>
+                <span>{fmt(reels.best_reel.saves)} saves</span>
+                <span>{fmt(reels.best_reel.shares)} shares</span>
+                <span>{reels.best_reel.eng_rate}% eng</span>
               </div>
-            </Section>
-          )}
-
-          <Section title="">
-            <div style={{ background:`${C.purple}10`, border:`1px solid ${C.purple}33`, borderRadius:10, padding:"12px 14px", fontSize:12.5, color:C.slate, lineHeight:1.6 }}>
-              💡 <strong>Reels Tip:</strong> {reels.tip}
             </div>
-          </Section>
-
-
+          )}
+          {reels.tip && (
+            <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:12, padding:"12px 16px", fontSize:12.5, color:"rgba(255,255,255,0.55)", lineHeight:1.7, borderLeft:"2px solid rgba(255,255,255,0.15)" }}>
+              <strong style={{ color:"#f5f5f7" }}>Reels Tip:</strong> {reels.tip}
+            </div>
+          )}
         </>
       )}
-
       {/* Stories Tab */}
       {tab === "stories" && stories && (
         <>
