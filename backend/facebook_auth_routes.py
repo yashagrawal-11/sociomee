@@ -78,7 +78,7 @@ async def fb_callback(request: Request):
 
         _save_users(users)
         token = create_jwt_token({"email": email, "name": name, "picture": pic, "user_id": fb_id})
-        return RedirectResponse(f"/auth/callback?token={token}&is_new={'true' if is_new else 'false'}")
+        return RedirectResponse(f"https://sociomeeai.com/app/auth/callback?token={token}&is_new={'true' if is_new else 'false'}")
 
     except Exception as e:
         log.error("Facebook auth error: %s", e)
