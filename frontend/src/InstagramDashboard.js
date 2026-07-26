@@ -374,8 +374,8 @@ export default function InstagramDashboard({ user, topic = "" }) {
         <StatCard label="Followers" value={fmt(profile?.followers)} />
         <StatCard label={`Reach (${days}d)`} value={fmt(insights?.total_reach)} />
         <StatCard label={`Impr. (${days}d)`} value={fmt(insights?.total_impressions)} />
-        <StatCard label="Saves" value={fmt(insights?.total_saves)} />
-        <StatCard label="Eng. Rate" value={`${insights?.engagement_rate ?? "—"}%`} />
+        <StatCard label="Saves" value={insights?.total_saves !== undefined ? fmt(insights.total_saves) : "0"} />
+        <StatCard label="Eng. Rate" value={`${insights?.engagement_rate ?? 0}%`} />
       </div>
 
       {/* Tabs */}
@@ -415,7 +415,7 @@ export default function InstagramDashboard({ user, topic = "" }) {
             {insights?.chart_data?.length > 0
               ? <ResponsiveContainer width="100%" height={180}>
                   <LineChart data={insights.chart_data} margin={{ top:5, right:10, left:-20, bottom:0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={C.hairline} />
+                    
                     <YAxis tick={{ fontSize:9, fill:C.muted }} tickLine={false} axisLine={false} tickFormatter={fmt} />
                     <Tooltip contentStyle={{ background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:10, fontSize:12 }} formatter={v => [fmt(v), chartMetric]} />
                     <Line type="monotone" dataKey={chartMetric} stroke={chartMetric==="impressions"?C.purple:chartMetric==="reach"?C.pink:chartMetric==="likes"?C.orange:chartMetric==="saves"?C.success:C.teal} strokeWidth={2.5} dot={false} activeDot={{ r:5, strokeWidth:0 }} />
@@ -426,21 +426,21 @@ export default function InstagramDashboard({ user, topic = "" }) {
 
           </Section>
 
-          <Section title="🖼️ Recent Posts">
+          <Section title="Recent Posts">
             {posts.length === 0
               ? <p style={{ textAlign:"center", color:C.muted, fontSize:13, padding:20 }}>No posts found.</p>
               : posts.map((p, i) => (
-                <div key={i} style={{ background:`${C.hairline}`, border:`1px solid ${C.hairline}`, borderRadius:12, padding:"12px 14px", marginBottom:8 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6, gap:8 }}>
-                    <p style={{ fontSize:13, color:C.ink, lineHeight:1.5, flex:1 }}>{p.caption || "(No caption)"}</p>
-                    <span style={{ fontSize:10, fontWeight:700, color:C.muted, background:`${C.hairline}`, padding:"2px 8px", borderRadius:99, flexShrink:0 }}>{p.type === "VIDEO" ? "🎬 Reel" : p.type === "CAROUSEL_ALBUM" ? "🖼️ Carousel" : "📷 Post"}</span>
+                <div key={i} style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:12, padding:"12px 14px", marginBottom:8 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8, gap:8 }}>
+                    <p style={{ fontSize:12.5, color:C.ink, lineHeight:1.6, flex:1, margin:0 }}>{p.caption || "(No caption)"}</p>
+                    <span style={{ fontSize:9.5, fontWeight:700, color:"rgba(255,255,255,0.4)", background:"rgba(255,255,255,0.06)", padding:"3px 9px", borderRadius:99, flexShrink:0, border:"1px solid rgba(255,255,255,0.08)" }}>{p.type === "VIDEO" ? "Reel" : p.type === "CAROUSEL_ALBUM" ? "Carousel" : "Post"}</span>
                   </div>
-                  <div style={{ display:"flex", gap:14, fontSize:11.5, color:C.muted, fontWeight:600, flexWrap:"wrap" }}>
-                    <span>❤️ {fmt(p.likes)}</span>
-                    <span>💬 {fmt(p.comments)}</span>
-                    <span>💾 {fmt(p.saves)}</span>
-                    <span style={{ marginLeft:"auto" }}>{p.timestamp}</span>
-                    {p.url && <a href={p.url} target="_blank" rel="noreferrer" style={{ color:C.pink, fontWeight:700, fontSize:11 }}>View →</a>}
+                  <div style={{ display:"flex", gap:12, fontSize:11, color:"rgba(255,255,255,0.35)", fontWeight:600, flexWrap:"wrap", alignItems:"center" }}>
+                    <span>{fmt(p.likes)} likes</span>
+                    <span>{fmt(p.comments)} comments</span>
+                    <span>{fmt(p.saves)} saves</span>
+                    <span style={{ marginLeft:"auto", fontSize:10 }}>{p.timestamp}</span>
+                    {p.url && <a href={p.url} target="_blank" rel="noreferrer" style={{ color:"rgba(255,255,255,0.4)", fontWeight:700, fontSize:10, textDecoration:"none" }}>View</a>}
                   </div>
                 </div>
               ))
