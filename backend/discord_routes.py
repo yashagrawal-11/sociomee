@@ -671,3 +671,91 @@ def remove_webhook(user_id: str = Query(...), channel_name: str = Query(...)):
         return {"success": True}
     except Exception as e:
         raise HTTPException(400, str(e))
+
+@router.get("/analytics")
+def discord_analytics(user_id: str = Query(...)):
+    """Return Discord analytics from bot job history."""
+    import json as _json
+    from pathlib import Path as _Path
+    from datetime import datetime, timezone, timedelta
+    from collections import defaultdict
+
+    def parse_dt(s):
+        try:
+            dt = datetime.fromisoformat(s)
+            return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
+        except: return None
+
+    # Load bot jobs
+    jobs_file = _Path(__file__).parent / "discord_bot_jobs.json"
+    try:
+        jobs = _json.loads(jobs_file.read_text()) if jobs_file.exists() else {}
+    except: jobs = {}
+
+    # Load scheduled jobs
+    sched_file = _Path(__file__).parent / "discord_scheduled_jobs.json"
+    try:
+        sched_jobs = _json.loads(sched_file.read_text()) if sched_file.exists() else {}
+    except: sched_jobs = {}
+
+    all_jobs = {**jobs, **sched_jobs}
+    user_jobs = [j for j in all_jobs.values() if j.get("user_id") == user_id]
+    now = datetime.now(timezone.utc)
+    sent = [j for j in user_jobs if j.get("status") == "done" and j.get("sent_at") and parse_dt(j["sent_at"])]
+    scheduled = [j for j in user_jobs if j.get("status") in ("pending","scheduled")]
+
+    daily = defaultdict(int)
+    for j in sent:
+        dt = parse_dt(j["sent_at"])
+        if dt: daily[dt.strftime("%Y-%m-%d")] += 1
+
+    days_30 = [{"date": (now-timedelta(days=i)).strftime("%Y-%m-%d"), "posts": daily.get((now-timedelta(days=i)).strftime("%Y-%m-%d"), 0)} for i in range(29,-1,-1)]
+
+    week_start = now - timedelta(days=7)
+    last_week_start = now - timedelta(days=14)
+    this_week = sum(1 for j in sent if parse_dt(j["sent_at"]) and parse_dt(j["sent_at"]) >= week_start)
+    last_week = sum(1 for j in sent if parse_dt(j["sent_at"]) and last_week_start <= parse_dt(j["sent_at"]) < week_start)
+
+    hour_counts = defaultdict(int)
+    for j in sent:
+        dt = parse_dt(j["sent_at"])
+        if dt: hour_counts[dt.hour] += 1
+    best_hour = max(hour_counts, key=hour_counts.get) if hour_counts else None
+
+    # Get member count from Discord API
+    member_count = None
+    guilds_data = _load_guilds()
+    user_guilds = guilds_data.get(user_id, [])
+    if user_guilds and DISCORD_BOT_TOKEN:
+        try:
+            import requests as _req
+            g = user_guilds[0]
+            r = _req.get(f"https://discord.com/api/v10/guilds/{g['guild_id']}?with_counts=true",
+                headers={"Authorization": f"Bot {DISCORD_BOT_TOKEN}"}, timeout=5)
+            if r.ok: member_count = r.json().get("approximate_member_count")
+        except: pass
+
+    weekly_trend = []
+    for w in range(7,-1,-1):
+        we = now - timedelta(days=w*7)
+        ws = we - timedelta(days=7)
+        count = sum(1 for j in sent if parse_dt(j["sent_at"]) and ws <= parse_dt(j["sent_at"]) < we)
+        weekly_trend.append({"week": f"W{8-w}", "posts": count})
+
+    avg = len(sent)/30 if sent else 0
+    predictions = [{"date": (now+timedelta(days=i)).strftime("%Y-%m-%d"), "predicted": round(avg*(1+i*0.05),1)} for i in range(1,8)]
+
+    # Channel breakdown
+    chan_counts = defaultdict(int)
+    for j in sent:
+        chan_counts[j.get("channel_name") or j.get("channel_id") or "general"] += 1
+
+    return {
+        "total_posts": len(sent), "scheduled_posts": len(scheduled),
+        "this_week": this_week, "last_week": last_week,
+        "member_count": member_count, "daily_posts": days_30,
+        "best_hour": best_hour, "success_rate": round(len(sent)/max(len(user_jobs),1)*100),
+        "weekly_trend": weekly_trend, "predictions": predictions,
+        "avg_per_day": round(avg,1), "channel_breakdown": dict(chan_counts),
+        "server_name": user_guilds[0]["guild_name"] if user_guilds else None,
+    }
