@@ -183,10 +183,10 @@ export default function TextToAudio({ user }) {
   const btnStyle = (active, disabled) => ({
     flex:1, padding:"11px 16px", borderRadius:"99px",
     border:`1.5px solid rgba(124,58,237,${disabled?"0.2":active?"0.8":"0.5"})`,
-    background:disabled?"rgba(124,58,237,0.05)":active?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.04)",
+    background:disabled?"rgba(255,255,255,0.02)":active?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.04)",
     backdropFilter:"blur(16px)", color:"#fff", fontWeight:"700", fontSize:"12px",
     cursor:disabled?"not-allowed":"pointer", fontFamily:"inherit",
-    boxShadow:disabled?"none":active?"0 0 24px rgba(124,58,237,0.6)":"0 0 16px rgba(255,255,255,0.12)",
+    boxShadow:disabled?"none":active?"none":"none",
     transition:"all 0.3s", display:"flex", alignItems:"center", justifyContent:"center",
   });
 
@@ -195,7 +195,7 @@ export default function TextToAudio({ user }) {
 
       {/* Header */}
       <div style={{marginBottom:"24px"}}>
-        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",border:"1.5px solid rgba(255,255,255,0.25)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px",boxShadow:"0 0 16px rgba(255,255,255,0.08)"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",border:"1.5px solid rgba(255,255,255,0.25)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px",boxShadow:"none"}}>
           <span>🔊</span>
           <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)"}}>{tt("टेक्स्ट से ऑडियो","मजकूर ते ऑडिओ","உரை முதல் ஆடியோ","টেক্সট থেকে অডিও","Text to Audio")}</span>
         </div>
@@ -209,7 +209,7 @@ export default function TextToAudio({ user }) {
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"10px"}}>
           {LANGS.map(l=>(
             <button key={l.code} onClick={()=>setLang(l.code)}
-              style={{padding:"8px 16px",borderRadius:"99px",cursor:"pointer",fontFamily:"inherit",fontWeight:"700",fontSize:"12px",transition:"all 0.2s",border:`1.5px solid rgba(124,58,237,${lang===l.code?"0.7":"0.2"})`,background:lang===l.code?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",backdropFilter:"blur(10px)",color:"#fff",boxShadow:lang===l.code?"0 0 16px rgba(124,58,237,0.4)":"none"}}>
+              style={{padding:"8px 16px",borderRadius:"99px",cursor:"pointer",fontFamily:"inherit",fontWeight:"700",fontSize:"12px",transition:"all 0.2s",border:`1.5px solid rgba(124,58,237,${lang===l.code?"0.7":"0.2"})`,background:lang===l.code?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",backdropFilter:"blur(10px)",color:"#fff",boxShadow:lang===l.code?"none":"none"}}>
               {l.label}
             </button>
           ))}
@@ -218,7 +218,7 @@ export default function TextToAudio({ user }) {
         <div style={{display:"flex",gap:"8px"}}>
           {[{id:"female",label:tt("महिला","महिला","பெண்","মহিলা","Female")},{id:"male",label:tt("पुरुष","पुरुष","ஆண்","পুরুষ","Male")}].map(g=>(
             <button key={g.id} onClick={()=>setGender(g.id)}
-              style={{padding:"7px 18px",borderRadius:"99px",cursor:"pointer",fontFamily:"inherit",fontWeight:"700",fontSize:"12px",transition:"all 0.2s",border:`1.5px solid rgba(124,58,237,${gender===g.id?"0.7":"0.2"})`,background:gender===g.id?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",backdropFilter:"blur(10px)",color:"#fff",boxShadow:gender===g.id?"0 0 14px rgba(124,58,237,0.4)":"none"}}>
+              style={{padding:"7px 18px",borderRadius:"99px",cursor:"pointer",fontFamily:"inherit",fontWeight:"700",fontSize:"12px",transition:"all 0.2s",border:`1.5px solid rgba(124,58,237,${gender===g.id?"0.7":"0.2"})`,background:gender===g.id?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",backdropFilter:"blur(10px)",color:"#fff",boxShadow:gender===g.id?"none":"none"}}>
               {g.label}
             </button>
           ))}
@@ -254,11 +254,11 @@ export default function TextToAudio({ user }) {
 
         {/* Word highlight display */}
         {playing || paused ? (
-          <div style={{minHeight:"200px",padding:"16px 18px",borderRadius:"14px",border:`1.5px solid rgba(124,58,237,0.4)`,background:"rgba(124,58,237,0.06)",fontSize:"14px",lineHeight:"2",color:"rgba(255,255,255,0.7)",overflowY:"auto",maxHeight:"300px"}}>
+          <div style={{minHeight:"200px",padding:"16px 18px",borderRadius:"14px",border:`1.5px solid rgba(255,255,255,0.15)`,background:"rgba(255,255,255,0.03)",fontSize:"14px",lineHeight:"2",color:"rgba(255,255,255,0.7)",overflowY:"auto",maxHeight:"300px"}}>
             {words.map((w,i)=>(
               <span key={i} style={{
                 padding:"1px 3px", borderRadius:"4px", marginRight:"4px",
-                background:i===wordIndex?"rgba(124,58,237,0.4)":"transparent",
+                background:i===wordIndex?"rgba(255,255,255,0.15)":"transparent",
                 color:i===wordIndex?"#fff":i<wordIndex?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.7)",
                 fontWeight:i===wordIndex?"800":"400",
                 transition:"all 0.1s",
@@ -271,7 +271,7 @@ export default function TextToAudio({ user }) {
             onChange={e=>{setText(e.target.value);setCharCount(e.target.value.length);setError("");setDone(false);}}
             placeholder={tt("यहाँ अपना स्क्रिप्ट पेस्ट करें...","येथे तुमची स्क्रिप्ट पेस्ट करा...","உங்கள் ஸ்கிரிப்டை இங்கே ஒட்டுங்கள்...","এখানে আপনার স্ক্রিপ্ট পেস্ট করুন...","Paste your script here...")}
             style={{width:"100%",minHeight:"200px",padding:"16px 18px",borderRadius:"14px",border:`1.5px solid ${hairline}`,background:"rgba(255,255,255,0.04)",backdropFilter:"blur(8px)",color:"#ede8ff",fontSize:"14px",lineHeight:"1.8",fontFamily:"inherit",resize:"vertical",outline:"none",boxSizing:"border-box",transition:"border 0.2s"}}
-            onFocus={e=>{e.target.style.border=`1.5px solid ${P}`;e.target.style.boxShadow=`0 0 0 3px rgba(255,255,255,0.06)`;}}
+            onFocus={e=>{e.target.style.border=`1.5px solid ${P}`;e.target.style.boxShadow=`0 none`;}}
             onBlur={e=>{e.target.style.border=`1.5px solid ${hairline}`;e.target.style.boxShadow="none";}}
           />
         )}
@@ -279,7 +279,7 @@ export default function TextToAudio({ user }) {
 
       {/* Waveform visualizer */}
       {(playing || paused) && (
-        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"3px",height:"44px",marginBottom:"16px",background:"rgba(124,58,237,0.06)",borderRadius:"12px",padding:"0 16px",border:`1px solid ${hairline}`}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"3px",height:"44px",marginBottom:"16px",background:"rgba(255,255,255,0.03)",borderRadius:"12px",padding:"0 16px",border:`1px solid ${hairline}`}}>
           {waveform.map((h,i)=>(
             <div key={i} style={{width:"3px",height:`${paused?4:h}px`,borderRadius:"99px",background:"rgba(255,255,255,0.15)",transition:"height 0.1s ease",opacity:paused?0.3:1}}/>
           ))}
@@ -341,9 +341,9 @@ export default function TextToAudio({ user }) {
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         .tts-btn:hover:not(:disabled){
-          background:rgba(124,58,237,0.25) !important;
-          border-color:rgba(124,58,237,1) !important;
-          box-shadow:0 0 28px rgba(124,58,237,0.8),0 0 60px rgba(124,58,237,0.4) !important;
+          background:rgba(255,255,255,0.1) !important;
+          border-color:rgba(255,255,255,0.4) !important;
+          box-shadow:none !important;
           transform:translateY(-2px) !important;
         }
       `}</style>

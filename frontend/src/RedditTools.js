@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const C = {
-  orange:"#ff4500", glass:"rgba(255,255,255,0.04)",
+  orange:"rgba(255,255,255,0.8)", glass:"rgba(255,255,255,0.04)",
   hairline:"rgba(255,255,255,0.08)", ink:"rgba(255,255,255,0.9)",
   muted:"rgba(255,255,255,0.4)", success:"#34d399", danger:"#f87171",
 };
@@ -51,7 +51,7 @@ function stripDashes(s){return typeof s==="string"?s.replace(/[\u2013\u2014-]/g,
 
 function ToolCard({ title, icon, children }) {
   return (
-    <div style={{maxWidth:"700px",margin:"0 auto",padding:"20px 16px"}}>
+    <div style={{maxWidth:"700px",margin:"0 auto",padding:"40px 16px",display:"flex",flexDirection:"column",justifyContent:"center",minHeight:"calc(100vh - 200px)"}}>
       <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"20px"}}>
         <span style={{fontSize:"20px"}}>{icon}</span>
         <h2 style={{fontSize:"18px",fontWeight:"900",color:"#fff",margin:0}}>{title}</h2>
@@ -67,7 +67,7 @@ function GlassCard({ children, style={} }) {
 
 function GenButton({ onClick, loading, label="✦ Generate" }) {
   return (
-    <button onClick={onClick} disabled={loading} style={{width:"100%",padding:"14px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.6)",background:loading?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.15)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:"none",transition:"all 0.3s",opacity:loading?0.6:1}}>
+    <button onClick={onClick} disabled={loading} style={{width:"100%",padding:"14px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",background:loading?"rgba(255,255,255,0.02)":"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:"none",transition:"all 0.3s",opacity:loading?0.6:1}}>
       {loading?"Generating…":label}
     </button>
   );
@@ -76,7 +76,7 @@ function GenButton({ onClick, loading, label="✦ Generate" }) {
 function NichePills({ niches, active, onSelect }) {
   return (
     <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
-      {niches.map(n=>{const key=n.toLowerCase();const isActive=active===key;return <button key={n} onClick={()=>onSelect(key)} style={{padding:"5px 12px",borderRadius:"99px",border:`1.5px solid ${isActive?"rgba(255,69,0,0.7)":"rgba(255,255,255,0.1)"}`,background:isActive?"rgba(255,69,0,0.15)":"transparent",color:isActive?"#fb923c":"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit"}}>{n}</button>;})}
+      {niches.map(n=>{const key=n.toLowerCase();const isActive=active===key;return <button key={n} onClick={()=>onSelect(key)} style={{padding:"5px 12px",borderRadius:"99px",border:`1.5px solid ${isActive?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.1)"}`,background:isActive?"rgba(255,255,255,0.06)":"transparent",color:isActive?"#fb923c":"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit"}}>{n}</button>;})}
     </div>
   );
 }
@@ -120,7 +120,7 @@ export function RedditTitle() {
   };
 
   return (
-    <ToolCard title="Post Title Generator" icon="📝">
+    <ToolCard title="Post Title Generator" icon="">
       <GlassCard style={{marginBottom:"16px"}}>
         <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>TOPIC / IDEA</div>
         <input value={topic} onChange={e=>setTopic(e.target.value)} onKeyDown={e=>e.key==="Enter"&&generate()} placeholder="e.g. working from home, Indian startup culture, crypto losses" style={{width:"100%",padding:"12px 16px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",color:"#fff",fontSize:"14px",fontFamily:"inherit",outline:"none",boxSizing:"border-box",marginBottom:"12px"}}/>
@@ -134,7 +134,7 @@ export function RedditTitle() {
       {!loading && titles.length>0 && (
         <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
           {titles.map((title,i)=>(
-            <GlassCard key={i} style={{cursor:"pointer",borderLeft:`3px solid ${i===0?"#ff4500":"rgba(255,255,255,0.08)"}`}} onClick={()=>{navigator.clipboard.writeText(title);setCopied(i);setTimeout(()=>setCopied(null),2000);}}>
+            <GlassCard key={i} style={{cursor:"pointer",borderLeft:`3px solid ${i===0?"rgba(255,255,255,0.8)":"rgba(255,255,255,0.08)"}`}} onClick={()=>{navigator.clipboard.writeText(title);setCopied(i);setTimeout(()=>setCopied(null),2000);}}>
               <div style={{display:"flex",alignItems:"flex-start",gap:"12px"}}>
                 <div style={{width:"24px",height:"24px",borderRadius:"50%",background:"rgba(255,69,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",fontWeight:"800",color:"#fb923c",flexShrink:0}}>{i+1}</div>
                 <div style={{flex:1,fontSize:"14px",color:"rgba(255,255,255,0.85)",lineHeight:1.6,fontWeight:"500"}}>{title}</div>
@@ -143,7 +143,7 @@ export function RedditTitle() {
               <div style={{marginTop:"8px",marginLeft:"36px",fontSize:"10px",color:C.muted}}>{title.length} chars</div>
             </GlassCard>
           ))}
-          <GlassCard style={{borderLeft:"3px solid #ff4500"}}>
+          <GlassCard style={{borderLeft:"3px solid rgba(255,255,255,0.8)"}}>
             <div style={{fontSize:"10px",fontWeight:"700",color:"#fb923c",marginBottom:"6px"}}>🔴 REDDIT TIP</div>
             <div style={{fontSize:"12px",color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>Questions get 40% more comments. Avoid starting with "I" — lower upvotes. Best time: 9 AM–12 PM EST weekdays. Always check subreddit rules first.</div>
           </GlassCard>
@@ -173,7 +173,7 @@ export function RedditSubfinder() {
   const diffColor = d => d?.toLowerCase().includes("beginner")?"#34d399":d?.toLowerCase().includes("strict")?"#f87171":"#f59e0b";
 
   return (
-    <ToolCard title="Subreddit Finder" icon="🔍">
+    <ToolCard title="Subreddit Finder" icon="">
       <GlassCard style={{marginBottom:"16px"}}>
         <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>YOUR TOPIC / CONTENT</div>
         <input value={topic} onChange={e=>setTopic(e.target.value)} onKeyDown={e=>e.key==="Enter"&&generate()} placeholder="e.g. I built an AI startup in India, my crypto journey, fitness transformation" style={{width:"100%",padding:"12px 16px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",color:"#fff",fontSize:"14px",fontFamily:"inherit",outline:"none",boxSizing:"border-box",marginBottom:"14px"}}/>
@@ -195,11 +195,11 @@ export function RedditSubfinder() {
                   </div>
                   <div style={{fontSize:"13px",color:"rgba(255,255,255,0.75)",lineHeight:1.5,marginBottom:"8px"}}>{sub.reason}</div>
                   <div style={{display:"flex",alignItems:"flex-start",gap:"6px",padding:"8px 10px",borderRadius:"8px",background:"rgba(255,69,0,0.08)",border:"1px solid rgba(255,69,0,0.2)"}}>
-                    <span style={{fontSize:"11px",color:"#fb923c",fontWeight:"700",flexShrink:0}}>💡</span>
+                    <span style={{fontSize:"11px",color:"#fb923c",fontWeight:"700",flexShrink:0}}></span>
                     <span style={{fontSize:"11px",color:"rgba(255,255,255,0.65)"}}>{sub.tip}</span>
                   </div>
                 </div>
-                <button onClick={()=>{navigator.clipboard.writeText(sub.name);setCopied(i);setTimeout(()=>setCopied(null),2000);}} style={{padding:"6px 14px",borderRadius:"99px",border:"1px solid rgba(255,69,0,0.3)",background:"rgba(255,69,0,0.1)",color:copied===i?C.success:"#fb923c",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>{copied===i?"✓":"Copy"}</button>
+                <button onClick={()=>{navigator.clipboard.writeText(sub.name);setCopied(i);setTimeout(()=>setCopied(null),2000);}} style={{padding:"6px 14px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.04)",color:copied===i?C.success:"#fb923c",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>{copied===i?"✓":"Copy"}</button>
               </div>
             </GlassCard>
           ))}
@@ -218,7 +218,7 @@ export function RedditBestTime() {
 
   const analyze = async () => {
     setLoading(true); setResult(null);
-    const text = await askGemini(`Best times to post on Reddit for niche: "${niche}"${subreddit?` for r/${subreddit.replace(/^r\//,"")}`:""}.  Return ONLY valid JSON no markdown: {"times":[{"time":"9:00 AM – 12:00 PM EST","reason":"reason","score":95,"day":"Mon–Fri"}],"best_days":["Monday"],"avoid":["Saturday night"],"tip":"specific Reddit tip","frequency":"X posts per week"} 3-4 time slots.`);
+    const text = await askGemini(`Best times to post on Reddit for niche: "${niche}"${subreddit?` for r/${subreddit.replace(/^r\//,"")}`:""}.  Return ONLY valid JSON no markdown: {"times":[{"time":"9:00 AM – 12:00 PM EST","reason":"reason","score":95,"day":"Mon–Fri"}],"best_days":["Monday"],"avoid":["Saturday night"],"tip":"specific Reddit tip","frequency":"posts per week"} 3-4 time slots.`);
     const parsed = parseJSON(text);
     setResult((parsed && parsed.times) ? parsed : (TIME_FALLBACKS[niche] || TIME_FALLBACKS.general));
     setLoading(false);
@@ -227,7 +227,7 @@ export function RedditBestTime() {
   const scoreColor = s => s>=90?"#34d399":s>=80?"#f59e0b":"#f87171";
 
   return (
-    <ToolCard title="Best Time to Post" icon="⏰">
+    <ToolCard title="Best Time to Post" icon="">
       <GlassCard style={{marginBottom:"16px"}}>
         <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>SUBREDDIT (optional)</div>
         <input value={subreddit} onChange={e=>setSubreddit(e.target.value)} placeholder="e.g. r/india, r/personalfinance, r/entrepreneur" style={{width:"100%",padding:"12px 16px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",color:"#fff",fontSize:"14px",fontFamily:"inherit",outline:"none",boxSizing:"border-box",marginBottom:"14px"}}/>
@@ -253,18 +253,18 @@ export function RedditBestTime() {
           </GlassCard>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
             <GlassCard>
-              <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>✅ Best Days</div>
+              <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>Best Days</div>
               {result.best_days?.map((d,i)=><div key={i} style={{fontSize:"13px",color:"#34d399",fontWeight:"600",marginBottom:"4px"}}>• {d}</div>)}
             </GlassCard>
             <GlassCard>
-              <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>❌ Avoid</div>
+              <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>Avoid</div>
               {result.avoid?.map((d,i)=><div key={i} style={{fontSize:"11px",color:"#f87171",fontWeight:"600",marginBottom:"4px"}}>• {d}</div>)}
             </GlassCard>
           </div>
-          <GlassCard style={{borderLeft:"3px solid #ff4500"}}>
+          <GlassCard style={{borderLeft:"3px solid rgba(255,255,255,0.8)"}}>
             <div style={{fontSize:"10px",fontWeight:"700",color:"#fb923c",marginBottom:"6px"}}>🔴 REDDIT PRO TIP</div>
             <div style={{fontSize:"13px",color:"rgba(255,255,255,0.8)",lineHeight:1.6,marginBottom:"8px"}}>{result.tip}</div>
-            <div style={{fontSize:"12px",color:C.muted}}>📅 <span style={{color:"#fb923c",fontWeight:"700"}}>{result.frequency}</span></div>
+            <div style={{fontSize:"12px",color:C.muted}}><span style={{color:"#fb923c",fontWeight:"700"}}>{result.frequency}</span></div>
           </GlassCard>
         </div>
       )}

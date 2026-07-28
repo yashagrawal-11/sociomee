@@ -42,8 +42,8 @@ const BLOCKED_KEYWORDS = [
 const isBlocked = (text) => BLOCKED_KEYWORDS.some(w => text.toLowerCase().includes(w));
 
 const AESTHETIC_COMBOS = [
-  "🌊💙🫧","🌸🤍🌿","🖤🌙✨","🔥💫⚡","🌅🍂🎯",
-  "💜🌌🔮","🌺🦋🌈","❄️🤍💎","🌻☀️🍯","🎸🎵🎶","none",
+  "💙🫧","🤍","🖤","","🌅",
+  "💜🌌","","🤍","🌻🍯","🎸","none",
 ];
 
 // 6 batches per type — each batch has 4 types
@@ -53,9 +53,9 @@ const BATCHES = [
     professional: (n,ni,pl,ach,cat,role,brand) =>
       `${n} | ${cat||ni}${role?` · ${role}`:""}\n${ni} creating content on ${pl}.${ach?`\n${ach}.`:""}\nDedicated to educating and inspiring audiences across India.`,
     casual: (n,ni,pl,ach,cat,role,brand) =>
-      `Hey! I'm ${n} 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}.${role?`\n${role}${brand?` @${brand}`:""}.`:""}\n${ach?`${ach} 🎯\n`:""}\nCreating content that actually helps. Let's vibe! 🚀`,
+      `Hey! I'm ${n} 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}.${role?`\n${role}${brand?` @${brand}`:""}.`:""}\n${ach?`${ach} \n`:""}\nCreating content that actually helps. Let's vibe! `,
     punchy: (n,ni,pl,ach,cat,role,brand) =>
-      `${ni} 🎯${cat?` | ${cat}`:""} | ${pl}${role?`\n${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach}\n`:""}\nBuilding my story one post at a time ⚡`,
+      `${ni} ${cat?` | ${cat}`:""} | ${pl}${role?`\n${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach}\n`:""}\nBuilding my story one post at a time `,
     aesthetic: (n,ni,pl,ach,cat,role,brand,emoji) =>
       `${emoji}\n${n} · ${cat||ni}\n${ach||"creating & thriving"}`,
   },
@@ -64,9 +64,9 @@ const BATCHES = [
     professional: (n,ni,pl,ach,cat,role,brand) =>
       `${n}\n${cat||ni}${role?` · ${role}${brand?` @${brand}`:""}`:""}.\nCreating on ${pl}.${ach?` ${ach}.`:""}\nPassionate about content that makes a difference.`,
     casual: (n,ni,pl,ach,cat,role,brand) =>
-      `Hi, I'm ${n}! ✨\nJust a ${ni} making the internet better.${role?`\n${role}${brand?` @${brand}`:""} 💼`:""}\n${ach?`${ach} and still going! 💪\n`:""}\nFind me on ${pl} 🔥`,
+      `Hi, I'm ${n}! \nJust a ${ni} making the internet better.${role?`\n${role}${brand?` @${brand}`:""} `:""}\n${ach?`${ach} and still going! \n`:""}\nFind me on ${pl} `,
     punchy: (n,ni,pl,ach,cat,role,brand) =>
-      `${ni} 🔥 | ${cat||"Creator"} | ${pl}${role?`\n${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach} | `:""}\nLet's grow together 🚀`,
+      `${ni} | ${cat||"Creator"} | ${pl}${role?`\n${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach} | `:""}\nLet's grow together `,
     aesthetic: (n,ni,pl,ach,cat,role,brand,emoji) =>
       `${n}\n${emoji}\n${cat||ni}${ach?` · ${ach}`:""}`,
   },
@@ -75,9 +75,9 @@ const BATCHES = [
     professional: (n,ni,pl,ach,cat,role,brand) =>
       `${n} | ${ni}${cat?` & ${cat}`:""}\n${role?`${role}${brand?` · @${brand}`:""}\n`:""}${pl} creator.${ach?` ${ach}.`:""}\nBuilding authentic connections through storytelling.`,
     casual: (n,ni,pl,ach,cat,role,brand) =>
-      `I'm ${n} 😊\n${ni}${cat?` | ${cat}`:""} | ${pl}\n${role?`${role}${brand?` @${brand}`:""} ✨\n`:""}\n${ach?`${ach} 🌟\n`:""}\nCreating from the heart. Come say hi! 💬`,
+      `I'm ${n} \n${ni}${cat?` | ${cat}`:""} | ${pl}\n${role?`${role}${brand?` @${brand}`:""} \n`:""}\n${ach?`${ach} \n`:""}\nCreating from the heart. Come say hi! `,
     punchy: (n,ni,pl,ach,cat,role,brand) =>
-      `${ni} ✨${cat?` | ${cat}`:""}\n${pl}${role?` | ${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach}\n`:""}\nContent that hits different 🎬`,
+      `${ni} ${cat?` | ${cat}`:""}\n${pl}${role?` | ${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach}\n`:""}\nContent that hits different `,
     aesthetic: (n,ni,pl,ach,cat,role,brand,emoji) =>
       `${emoji}\n${cat||ni}${role?` · ${role}`:""}\n${n}${ach?` · ${ach}`:""}`,
   },
@@ -86,9 +86,9 @@ const BATCHES = [
     professional: (n,ni,pl,ach,cat,role,brand) =>
       `${n}\n${ni} · ${cat||"Creator"}${role?` · ${role}${brand?` @${brand}`:""}`:""}.\nCreating on ${pl} for audiences worldwide.${ach?`\n${ach}.`:""}`,
     casual: (n,ni,pl,ach,cat,role,brand) =>
-      `${n} here! 🎯\nA ${ni}${cat?` & ${cat}`:""} on ${pl}.${role?`\n${role}${brand?` @${brand}`:""} 🚀`:""}\n${ach?`${ach} 💫\n`:""}\nContent that actually helps you grow 🔥`,
+      `${n} here! \nA ${ni}${cat?` & ${cat}`:""} on ${pl}.${role?`\n${role}${brand?` @${brand}`:""} `:""}\n${ach?`${ach} \n`:""}\nContent that actually helps you grow `,
     punchy: (n,ni,pl,ach,cat,role,brand) =>
-      `${cat||ni} | ${ni} | ${pl}${role?`\n${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach}\n`:""}\n${n} ⚡`,
+      `${cat||ni} | ${ni} | ${pl}${role?`\n${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach}\n`:""}\n${n} `,
     aesthetic: (n,ni,pl,ach,cat,role,brand,emoji) =>
       `${n} ${emoji}\n${cat||ni}${ach?` · ${ach}`:""}\n${role?`${role}${brand?` @${brand}`:""}`:"creating & thriving"}`,
   },
@@ -97,20 +97,20 @@ const BATCHES = [
     professional: (n,ni,pl,ach,cat,role,brand) =>
       `${n} | ${cat||ni}\n${role?`${role}${brand?` · @${brand}`:""} ·\n`:""}${ni} · ${pl}.${ach?` ${ach}.`:""}\nInspiring Indian audiences through quality content.`,
     casual: (n,ni,pl,ach,cat,role,brand) =>
-      `Hey it's ${n}! 💫\n${ni} vibes on ${pl}.${role?`\n${role}${brand?` @${brand}`:""} 💼`:""}\n${ach?`${ach} 🔥\n`:""}\nLet's create something great together 🤝`,
+      `Hey it's ${n}! \n${ni} vibes on ${pl}.${role?`\n${role}${brand?` @${brand}`:""} `:""}\n${ach?`${ach} \n`:""}\nLet's create something great together `,
     punchy: (n,ni,pl,ach,cat,role,brand) =>
-      `${n} | ${ni} 🔥\n${pl}${cat?` | ${cat}`:""}\n${role?`${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach}`:""} ⚡`,
+      `${n} | ${ni} \n${pl}${cat?` | ${cat}`:""}\n${role?`${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach}`:""} `,
     aesthetic: (n,ni,pl,ach,cat,role,brand,emoji) =>
-      `${emoji} ${n} ${emoji}\n${cat||ni}\n${ach||role||"in my era ✨"}`,
+      `${emoji} ${n} ${emoji}\n${cat||ni}\n${ach||role||"in my era "}`,
   },
   // Batch 6
   {
     professional: (n,ni,pl,ach,cat,role,brand) =>
       `${n}\n${cat||ni}${role?` & ${role}${brand?` @${brand}`:""}`:""}.\nCreating on ${pl}.${ach?` ${ach}.`:""}\nContent that educates, inspires and connects.`,
     casual: (n,ni,pl,ach,cat,role,brand) =>
-      `What's up! I'm ${n} ✌️\n${ni}${cat?` · ${cat}`:""} on ${pl}.${role?`\n${role}${brand?` @${brand}`:""} 🎯`:""}\n${ach?`${ach} 💪\n`:""}\nReal content for real people 🙌`,
+      `What's up! I'm ${n} ✌️\n${ni}${cat?` · ${cat}`:""} on ${pl}.${role?`\n${role}${brand?` @${brand}`:""} `:""}\n${ach?`${ach} \n`:""}\nReal content for real people `,
     punchy: (n,ni,pl,ach,cat,role,brand) =>
-      `${ni} · ${cat||"Creator"} · ${pl}${role?`\n${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach}\n`:""}\nNo filter. Just ${n} ⚡`,
+      `${ni} · ${cat||"Creator"} · ${pl}${role?`\n${role}${brand?` @${brand}`:""}`:""}\n${ach?`${ach}\n`:""}\nNo filter. Just ${n} `,
     aesthetic: (n,ni,pl,ach,cat,role,brand,emoji) =>
       `${emoji}\n${n} · ${cat||ni}\n${ach?ach:role?`${role}${brand?` @${brand}`:""}`:"living my best life"}`,
   },
@@ -165,24 +165,24 @@ export default function BioWriter({ user }) {
 
       if (language==="hinglish") {
         professional = `${n} | ${cat||ni}${r?` · ${r}${b?` @${b}`:""}`:""}.\n${ni} jo ${pl} par content banate hain.${ach?` ${ach}.`:""}\nHigh-quality content ke zariye Indian audience ko inspire karna — yahi mera passion hai.`;
-        casual = `Hey! Main ${n} hoon 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}.${r?`\n${r}${b?` @${b}`:""} 💼`:""}\n${ach?`${ach} 🎯\n`:""}\nAisa content banata hoon jo actually kaam aata hai 🚀`;
-        punchy = `${ni} 🎯 | ${cat||"Creator"} | ${pl}${r?`\n${r}${b?` @${b}`:""}`:""}\n${ach?`${ach}\n`:""}\nEk post ek kadam ⚡`;
+        casual = `Hey! Main ${n} hoon 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}.${r?`\n${r}${b?` @${b}`:""} `:""}\n${ach?`${ach} \n`:""}\nAisa content banata hoon jo actually kaam aata hai `;
+        punchy = `${ni} | ${cat||"Creator"} | ${pl}${r?`\n${r}${b?` @${b}`:""}`:""}\n${ach?`${ach}\n`:""}\nEk post ek kadam `;
       } else if (language==="hindi") {
         professional = `${n} | ${cat||ni}${r?` · ${r}${b?` @${b}`:""}`:""}.\n${ni} जो ${pl} पर content बनाते हैं।${ach?` ${ach}।`:""}\nHigh-quality content के ज़रिए inspire करना — यही मेरा passion है।`;
-        casual = `नमस्ते! मैं ${n} हूँ 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}।${r?`\n${r}${b?` @${b}`:""} 💼`:""}\n${ach?`${ach} 🎯\n`:""}\nऐसा content बनाता हूँ जो actually काम आए 🚀`;
-        punchy = `${ni} 🎯 | ${cat||"Creator"} | ${pl}${r?`\n${r}${b?` @${b}`:""}`:""}\n${ach?`${ach}\n`:""}\nहर post एक कदम ⚡`;
+        casual = `नमस्ते! मैं ${n} हूँ 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}।${r?`\n${r}${b?` @${b}`:""} `:""}\n${ach?`${ach} \n`:""}\nऐसा content बनाता हूँ जो actually काम आए `;
+        punchy = `${ni} | ${cat||"Creator"} | ${pl}${r?`\n${r}${b?` @${b}`:""}`:""}\n${ach?`${ach}\n`:""}\nहर post एक कदम `;
       } else if (language==="marathi") {
         professional = `${n} | ${cat||ni}${r?` · ${r}${b?` @${b}`:""}`:""}.\n${ni} जे ${pl} वर content तयार करतात.${ach?` ${ach}.`:""}\nHigh-quality content द्वारे inspire करणे — हेच माझे passion आहे.`;
-        casual = `नमस्कार! मी ${n} आहे 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}.${r?`\n${r}${b?` @${b}`:""} 💼`:""}\n${ach?`${ach} 🎯\n`:""}\nखरोखर उपयोगी content बनवतो 🚀`;
-        punchy = `${ni} 🎯 | ${cat||"Creator"} | ${pl}${r?`\n${r}${b?` @${b}`:""}`:""}\n${ach?`${ach}\n`:""}\nप्रत्येक post एक पाऊल ⚡`;
+        casual = `नमस्कार! मी ${n} आहे 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}.${r?`\n${r}${b?` @${b}`:""} `:""}\n${ach?`${ach} \n`:""}\nखरोखर उपयोगी content बनवतो `;
+        punchy = `${ni} | ${cat||"Creator"} | ${pl}${r?`\n${r}${b?` @${b}`:""}`:""}\n${ach?`${ach}\n`:""}\nप्रत्येक post एक पाऊल `;
       } else if (language==="tamil") {
         professional = `${n} | ${cat||ni}${r?` · ${r}${b?` @${b}`:""}`:""}.\n${ni} ${pl} இல் content உருவாக்குகிறார்.${ach?` ${ach}.`:""}\nதரமான content மூலம் inspire செய்வது என் passion.`;
-        casual = `வணக்கம்! நான் ${n} 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}.${r?`\n${r}${b?` @${b}`:""} 💼`:""}\n${ach?`${ach} 🎯\n`:""}\nஉண்மையில் உதவும் content 🚀`;
-        punchy = `${ni} 🎯 | ${cat||"Creator"} | ${pl}${r?`\n${r}${b?` @${b}`:""}`:""}\n${ach?`${ach}\n`:""}\nஒவ்வொரு post ஒரு அடி ⚡`;
+        casual = `வணக்கம்! நான் ${n} 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}.${r?`\n${r}${b?` @${b}`:""} `:""}\n${ach?`${ach} \n`:""}\nஉண்மையில் உதவும் content `;
+        punchy = `${ni} | ${cat||"Creator"} | ${pl}${r?`\n${r}${b?` @${b}`:""}`:""}\n${ach?`${ach}\n`:""}\nஒவ்வொரு post ஒரு அடி `;
       } else if (language==="bengali") {
         professional = `${n} | ${cat||ni}${r?` · ${r}${b?` @${b}`:""}`:""}.\n${ni} যিনি ${pl} এ content তৈরি করেন।${ach?` ${ach}।`:""}\nমানসম্পন্ন content এর মাধ্যমে অনুপ্রাণিত করা — এটাই আমার passion।`;
-        casual = `হ্যালো! আমি ${n} 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}।${r?`\n${r}${b?` @${b}`:""} 💼`:""}\n${ach?`${ach} 🎯\n`:""}\nসত্যিই কাজে আসে এমন content 🚀`;
-        punchy = `${ni} 🎯 | ${cat||"Creator"} | ${pl}${r?`\n${r}${b?` @${b}`:""}`:""}\n${ach?`${ach}\n`:""}\nপ্রতিটি post একটি পদক্ষেপ ⚡`;
+        casual = `হ্যালো! আমি ${n} 👋\n${ni}${cat?` & ${cat}`:""} on ${pl}।${r?`\n${r}${b?` @${b}`:""} `:""}\n${ach?`${ach} \n`:""}\nসত্যিই কাজে আসে এমন content `;
+        punchy = `${ni} | ${cat||"Creator"} | ${pl}${r?`\n${r}${b?` @${b}`:""}`:""}\n${ach?`${ach}\n`:""}\nপ্রতিটি post একটি পদক্ষেপ `;
       }
 
       setBios({ professional, casual, punchy, aesthetic:aestheticBio });
@@ -200,14 +200,14 @@ export default function BioWriter({ user }) {
     fontFamily:"inherit", fontWeight:"700", fontSize:"12px", transition:"all 0.2s",
     border:`1.5px solid rgba(124,58,237,${active?"0.7":"0.2"})`,
     background:active?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",
-    color:"#fff", boxShadow:active?"0 0 14px rgba(124,58,237,0.4)":"none",
+    color:"#fff", boxShadow:active?"0 0 14px rgba(255,255,255,0.15)":"none",
   });
 
   const BIO_TYPES = [
-    {key:"professional", label:`💼 ${bt("प्रोफेशनल","व्यावसायिक","தொழில்முறை","পেশাদার","Professional")}`},
-    {key:"casual",       label:`😊 ${bt("कैज़ुअल","सहज","சாதாரண","ক্যাজুয়াল","Casual")}`},
-    {key:"punchy",       label:`⚡ ${bt("पंची","पंची","பஞ்சி","পাঞ্চি","Punchy")}`},
-    {key:"aesthetic",    label:`🌸 ${bt("एस्थेटिक","एस्थेटिक","அழகியல்","অ্যাস্থেটিক","Aesthetic")}`},
+    {key:"professional", label:`${bt("प्रोफेशनल","व्यावसायिक","தொழில்முறை","পেশাদার","Professional")}`},
+    {key:"casual",       label:`${bt("कैज़ुअल","सहज","சாதாரண","ক্যাজুয়াল","Casual")}`},
+    {key:"punchy",       label:`${bt("पंची","पंची","பஞ்சி","পাঞ্চি","Punchy")}`},
+    {key:"aesthetic",    label:`${bt("एस्थेटिक","एस्थेटिक","அழகியல்","অ্যাস্থেটিক","Aesthetic")}`},
   ];
 
   return (
@@ -215,7 +215,7 @@ export default function BioWriter({ user }) {
       {/* Header */}
       <div style={{marginBottom:"24px"}}>
         <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",border:"1.5px solid rgba(255,255,255,0.25)",borderRadius:"99px",padding:"6px 16px",marginBottom:"10px"}}>
-          <span>✍️</span>
+          <span></span>
           <span style={{fontSize:"10px",fontWeight:"800",letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,0.5)"}}>Bio Writer</span>
         </div>
         <h2 style={{fontSize:"22px",fontWeight:"700",color:"#fff",fontFamily:"'Orbitron',sans-serif",letterSpacing:"2px",textTransform:"uppercase",marginBottom:"6px"}}>BIO WRITER</h2>
@@ -229,7 +229,7 @@ export default function BioWriter({ user }) {
           placeholder="e.g. Yash Agrawal"
           style={{width:"100%",padding:"12px 18px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",outline:"none",fontSize:"14px",color:"#fff",background:"rgba(255,255,255,0.05)",backdropFilter:"blur(8px)",fontFamily:"inherit",boxSizing:"border-box",transition:"border 0.2s"}}
           onFocus={e=>{e.target.style.border=`1.5px solid ${P}`;e.target.style.boxShadow=`0 0 0 3px rgba(255,255,255,0.06)`;}}
-          onBlur={e=>{e.target.style.border="1.5px solid rgba(124,58,237,0.25)";e.target.style.boxShadow="none";}}
+          onBlur={e=>{e.target.style.border="1.5px solid rgba(255,255,255,0.12)";e.target.style.boxShadow="none";}}
         />
       </div>
 
@@ -307,7 +307,7 @@ export default function BioWriter({ user }) {
           placeholder="e.g. 100K subscribers, Shark Tank S1, Award winner..."
           style={{width:"100%",padding:"12px 18px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",outline:"none",fontSize:"14px",color:"#fff",background:"rgba(255,255,255,0.05)",backdropFilter:"blur(8px)",fontFamily:"inherit",boxSizing:"border-box",transition:"border 0.2s"}}
           onFocus={e=>{e.target.style.border=`1.5px solid ${P}`;e.target.style.boxShadow=`0 0 0 3px rgba(255,255,255,0.06)`;}}
-          onBlur={e=>{e.target.style.border="1.5px solid rgba(124,58,237,0.25)";e.target.style.boxShadow="none";}}
+          onBlur={e=>{e.target.style.border="1.5px solid rgba(255,255,255,0.12)";e.target.style.boxShadow="none";}}
         />
       </div>
 
@@ -323,11 +323,11 @@ export default function BioWriter({ user }) {
 
       {/* Aesthetic combo */}
       <div style={{marginBottom:"20px"}}>
-        <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",marginBottom:"8px"}}>🌸 AESTHETIC COMBO</div>
+        <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",marginBottom:"8px"}}>AESTHETIC COMBO</div>
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
           {AESTHETIC_COMBOS.map(e=>(
             <button key={e} onClick={()=>setAesthetic(e)}
-              style={{padding:"8px 12px",borderRadius:"12px",cursor:"pointer",fontFamily:"inherit",fontSize:e==="none"?"11px":"16px",fontWeight:e==="none"?"700":"400",transition:"all 0.2s",border:`1.5px solid ${aesthetic===e?"rgba(124,58,237,0.7)":"rgba(255,255,255,0.08)"}`,background:aesthetic===e?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",color:"#fff",boxShadow:aesthetic===e?"0 0 14px rgba(124,58,237,0.4)":"none"}}>
+              style={{padding:"8px 12px",borderRadius:"12px",cursor:"pointer",fontFamily:"inherit",fontSize:e==="none"?"11px":"16px",fontWeight:e==="none"?"700":"400",transition:"all 0.2s",border:`1.5px solid ${aesthetic===e?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.08)"}`,background:aesthetic===e?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.04)",color:"#fff",boxShadow:aesthetic===e?"0 0 14px rgba(255,255,255,0.15)":"none"}}>
               {e==="none"?"None":e}
             </button>
           ))}
@@ -339,13 +339,13 @@ export default function BioWriter({ user }) {
       {/* Generate button */}
       <button onClick={()=>generate(false)} disabled={loading||!name.trim()}
         className="bio-gen-btn"
-        style={{width:"100%",padding:"14px",borderRadius:"99px",border:`1.5px solid rgba(124,58,237,${loading||!name.trim()?"0.2":"0.6"})`,background:loading||!name.trim()?"rgba(124,58,237,0.05)":"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading||!name.trim()?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading||!name.trim()?"none":"0 0 16px rgba(255,255,255,0.12)",transition:"all 0.3s",marginBottom:"20px",opacity:loading||!name.trim()?0.5:1}}>
+        style={{width:"100%",padding:"14px",borderRadius:"99px",border:`1.5px solid rgba(124,58,237,${loading||!name.trim()?"0.2":"0.6"})`,background:loading||!name.trim()?"rgba(255,255,255,0.03)":"rgba(255,255,255,0.06)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading||!name.trim()?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading||!name.trim()?"none":"0 0 16px rgba(255,255,255,0.12)",transition:"all 0.3s",marginBottom:"20px",opacity:loading||!name.trim()?0.5:1}}>
         {loading?(
           <span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"8px"}}>
             <span style={{width:"14px",height:"14px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.3)",borderTopColor:"#fff",animation:"spin 0.7s linear infinite",display:"inline-block"}}/>
             {bt("बना रहे हैं…","तयार करत आहे…","உருவாக்குகிறது…","তৈরি করছে…","Generating…")}
           </span>
-        ):`✦ ${bt("बायो बनाएं","बायो तयार करा","பயோ உருவாக்கு","বায়ো তৈরি করুন","Generate Bios")}`}
+        ):`${bt("बायो बनाएं","बायो तयार करा","பயோ உருவாக்கு","বায়ো তৈরি করুন","Generate Bios")}`}
       </button>
 
       {/* Results */}
@@ -378,7 +378,7 @@ export default function BioWriter({ user }) {
         .bio-gen-btn:hover:not(:disabled){
           background:rgba(255,255,255,0.08) !important;
           border-color:rgba(124,58,237,1) !important;
-          box-shadow:0 0 28px rgba(124,58,237,0.8),0 0 60px rgba(124,58,237,0.4) !important;
+          box-shadow:0 0 28px rgba(124,58,237,0.8),0 0 60px rgba(255,255,255,0.15) !important;
           transform:translateY(-2px) !important;
         }
       `}</style>

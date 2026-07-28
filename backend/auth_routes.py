@@ -166,13 +166,16 @@ async def google_callback(request: Request, code: str, state: str = None):
         if user_res.status_code != 200:
             raise HTTPException(status_code=400, detail=user_data)
 
+        _uemail_g = user_data.get("email", "")
+        _users_g = _load_users()
+        _uplan_g = _users_g.get(_uemail_g, {}).get("plan", "free")
         user_payload = {
             "user_id": str(user_data.get("id", "")),
-            "email": user_data.get("email", ""),
+            "email": _uemail_g,
             "name": user_data.get("name", ""),
             "picture": user_data.get("picture", ""),
             "provider": "google",
-            "plan": "free",
+            "plan": _uplan_g,
         }
 
         try:

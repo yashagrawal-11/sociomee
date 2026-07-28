@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Pie, Cell, PieChart as RechartsPie } from "recharts";
 const BASE = "https://sociomeeai.com/api";
-const C = {purple:"#7c3aed",muted:"rgba(255,255,255,0.4)",glass:"rgba(255,255,255,0.03)"};
-const PURPLE = ["#7c3aed","#9333ea","#a78bfa","#6d28d9","#c4b5fd"];
+const C = {purple:"#ffffff",muted:"rgba(255,255,255,0.4)",glass:"rgba(255,255,255,0.03)"};
+const PURPLE = ["#ffffff","#9333ea","rgba(255,255,255,0.7)","#ffffff","rgba(255,255,255,0.6)"];
 function fmt(n){if(!n)return"0";if(n>=1000000)return(n/1000000).toFixed(1)+"M";if(n>=1000)return(n/1000).toFixed(1)+"K";return String(n);}
 function GC({children,style={}}){return <div style={{background:C.glass,border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"20px",...style}}>{children}</div>;}
 
@@ -11,7 +11,7 @@ function VideoDonut({label,center,sub,data}){
   const filtered=data.filter(x=>x.value>0);
   const highlighted=active!==null?filtered[active]:null;
   return(
-    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"14px 8px",border:"1px solid rgba(124,58,237,0.15)",display:"flex",flexDirection:"column",alignItems:"center"}}>
+    <div style={{textAlign:"center",background:"rgba(124,58,237,0.06)",borderRadius:"14px",padding:"14px 8px",border:"1px solid rgba(255,255,255,0.08)",display:"flex",flexDirection:"column",alignItems:"center"}}>
       <div style={{fontSize:"9px",fontWeight:"800",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>{label}</div>
       <div style={{position:"relative"}}>
         <RechartsPie width={170} height={170}>
@@ -57,16 +57,16 @@ export default function VideoPerformance({userId, user}){
 
   if(error?.error==="not_connected")return(
     <div style={{maxWidth:"800px",margin:"0 auto",padding:"40px 16px",textAlign:"center"}}>
-      <div style={{fontSize:"48px",marginBottom:"16px"}}>📊</div>
+      <div style={{fontSize:"48px",marginBottom:"16px"}}></div>
       <h2 style={{color:"#fff",fontSize:"18px",marginBottom:"8px"}}>Connect Your YouTube Channel</h2>
       <p style={{color:C.muted,fontSize:"14px",marginBottom:"20px"}}>Connect your channel to see real video performance data — views, likes, comments and engagement rate.</p>
-      <button onClick={()=>window.location.href="/app#youtube"} style={{padding:"12px 28px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.6)",background:"rgba(124,58,237,0.15)",color:"#fff",fontWeight:"700",fontSize:"14px",cursor:"pointer",fontFamily:"inherit"}}>Connect YouTube Channel</button>
+      <button onClick={()=>window.location.href="/app#youtube"} style={{padding:"12px 28px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.6)",background:"rgba(255,255,255,0.08)",color:"#fff",fontWeight:"700",fontSize:"14px",cursor:"pointer",fontFamily:"inherit"}}>Connect YouTube Channel</button>
     </div>
   );
 
   if(!data?.videos?.length)return(
     <div style={{maxWidth:"800px",margin:"0 auto",padding:"40px 16px",textAlign:"center"}}>
-      <div style={{fontSize:"48px",marginBottom:"16px"}}>🎬</div>
+      <div style={{fontSize:"48px",marginBottom:"16px"}}></div>
       <p style={{color:C.muted}}>No videos found on your channel yet.</p>
     </div>
   );
@@ -76,17 +76,17 @@ export default function VideoPerformance({userId, user}){
 
   return(<div style={{maxWidth:"800px",margin:"0 auto",padding:"20px 16px"}}>
     <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"20px"}}>
-      <span style={{fontSize:"20px"}}>📊</span>
+      <span style={{fontSize:"20px"}}></span>
       <h2 style={{fontSize:"18px",fontWeight:"900",color:"#fff",margin:0}}>Video Performance</h2>
     </div>
 
     {/* Summary Cards */}
     <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"16px"}}>
       {[
-        {label:"Total Views",val:fmt(s.total_views),color:"#7c3aed",icon:"👁"},
-        {label:"Total Likes",val:fmt(s.total_likes),color:"#a78bfa",icon:"❤️"},
-        {label:"Comments",val:fmt(s.total_comments),color:"#6d28d9",icon:"💬"},
-        {label:"Avg Engagement",val:s.avg_engagement+"%",color:"#c4b5fd",icon:"📈"},
+        {label:"Total Views",val:fmt(s.total_views),color:"#ffffff",icon:""},
+        {label:"Total Likes",val:fmt(s.total_likes),color:"rgba(255,255,255,0.7)",icon:""},
+        {label:"Comments",val:fmt(s.total_comments),color:"#ffffff",icon:""},
+        {label:"Avg Engagement",val:s.avg_engagement+"%",color:"rgba(255,255,255,0.6)",icon:""},
       ].map((card,i)=><GC key={i} style={{textAlign:"center",padding:"14px 10px",borderLeft:`3px solid ${card.color}`}}>
         <div style={{fontSize:"18px",marginBottom:"4px"}}>{card.icon}</div>
         <div style={{fontSize:"18px",fontWeight:"900",color:card.color}}>{card.val}</div>
@@ -101,18 +101,18 @@ export default function VideoPerformance({userId, user}){
         {data.videos.map((vid,i)=>{
           const isSel=selected?.id===vid.id;
           const maxV=data.videos[0].views||1;
-          return(<div key={i} onClick={()=>setSelected(vid)} style={{display:"flex",gap:"12px",alignItems:"center",padding:"10px",borderRadius:"10px",background:isSel?"rgba(124,58,237,0.12)":"transparent",border:isSel?"1px solid rgba(124,58,237,0.3)":"1px solid transparent",cursor:"pointer",transition:"all 0.2s"}}>
+          return(<div key={i} onClick={()=>setSelected(vid)} style={{display:"flex",gap:"12px",alignItems:"center",padding:"10px",borderRadius:"10px",background:isSel?"rgba(255,255,255,0.06)":"transparent",border:isSel?"1px solid rgba(255,255,255,0.15)":"1px solid transparent",cursor:"pointer",transition:"all 0.2s"}}>
             <img src={vid.thumbnail} alt="" style={{width:"80px",height:"45px",borderRadius:"6px",objectFit:"cover",flexShrink:0}}/>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:"12px",color:"#fff",fontWeight:"600",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:"4px"}}>{vid.title}</div>
               <div style={{height:"4px",borderRadius:"99px",background:"rgba(255,255,255,0.06)",marginBottom:"4px"}}>
-                <div style={{height:"100%",borderRadius:"99px",background:"#7c3aed",width:`${vid.views/maxV*100}%`}}/>
+                <div style={{height:"100%",borderRadius:"99px",background:"#ffffff",width:`${vid.views/maxV*100}%`}}/>
               </div>
               <div style={{display:"flex",gap:"10px"}}>
-                <span style={{fontSize:"10px",color:"#a78bfa",fontWeight:"600"}}>👁 {fmt(vid.views)}</span>
-                <span style={{fontSize:"10px",color:"rgba(255,255,255,0.4)"}}>❤️ {fmt(vid.likes)}</span>
-                <span style={{fontSize:"10px",color:"rgba(255,255,255,0.4)"}}>💬 {fmt(vid.comments)}</span>
-                <span style={{fontSize:"10px",color:"#34d399",fontWeight:"600"}}>📈 {vid.engagement_rate}%</span>
+                <span style={{fontSize:"10px",color:"rgba(255,255,255,0.7)",fontWeight:"600"}}>{fmt(vid.views)}</span>
+                <span style={{fontSize:"10px",color:"rgba(255,255,255,0.4)"}}>{fmt(vid.likes)}</span>
+                <span style={{fontSize:"10px",color:"rgba(255,255,255,0.4)"}}>{fmt(vid.comments)}</span>
+                <span style={{fontSize:"10px",color:"#34d399",fontWeight:"600"}}>{vid.engagement_rate}%</span>
               </div>
             </div>
           </div>);
@@ -122,17 +122,17 @@ export default function VideoPerformance({userId, user}){
 
     {/* Selected Video Donuts */}
     {v&&<GC>
-      <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"14px"}}>📹 {v.title.slice(0,60)}{v.title.length>60?"...":""}</div>
+      <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"14px"}}>{v.title.slice(0,60)}{v.title.length>60?"...":""}</div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"12px"}}>
         <VideoDonut label="VIEWS" center={fmt(v.views)} sub="total views"
-          data={[{name:"This video",value:v.views,color:"#7c3aed"},{name:"Others",value:Math.max(0,(data.summary.total_views-v.views)),color:"rgba(124,58,237,0.2)"}]}/>
+          data={[{name:"This video",value:v.views,color:"#ffffff"},{name:"Others",value:Math.max(0,(data.summary.total_views-v.views)),color:"rgba(255,255,255,0.08)"}]}/>
         <VideoDonut label="ENGAGEMENT" center={v.engagement_rate+"%"} sub="like rate"
-          data={[{name:"Likes",value:v.likes,color:"#7c3aed"},{name:"Comments",value:v.comments,color:"#a78bfa"},{name:"Views",value:Math.max(0,v.views-v.likes-v.comments),color:"rgba(124,58,237,0.15)"}]}/>
+          data={[{name:"Likes",value:v.likes,color:"#ffffff"},{name:"Comments",value:v.comments,color:"rgba(255,255,255,0.7)"},{name:"Views",value:Math.max(0,v.views-v.likes-v.comments),color:"rgba(255,255,255,0.08)"}]}/>
         <VideoDonut label="INTERACTIONS" center={fmt(v.likes+v.comments)} sub="total"
-          data={[{name:"Likes",value:v.likes,color:"#7c3aed"},{name:"Comments",value:v.comments,color:"#9333ea"}]}/>
+          data={[{name:"Likes",value:v.likes,color:"#ffffff"},{name:"Comments",value:v.comments,color:"#9333ea"}]}/>
       </div>
-      <div style={{marginTop:"12px",padding:"10px 14px",borderRadius:"10px",background:"rgba(124,58,237,0.08)",borderLeft:"2px solid #7c3aed"}}>
-        <span style={{fontSize:"11px",color:"rgba(255,255,255,0.6)"}}>✦ </span>
+      <div style={{marginTop:"12px",padding:"10px 14px",borderRadius:"10px",background:"rgba(124,58,237,0.08)",borderLeft:"2px solid #ffffff"}}>
+        <span style={{fontSize:"11px",color:"rgba(255,255,255,0.6)"}}></span>
         <span style={{fontSize:"11px",color:"rgba(255,255,255,0.6)"}}>
           {v.engagement_rate>=5?"Strong engagement! This video is performing above average."
           :v.engagement_rate>=2?"Decent engagement. Try adding a stronger CTA in your description."

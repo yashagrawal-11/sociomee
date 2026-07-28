@@ -21,7 +21,7 @@ import QRGenerator from "./QRGenerator";
 import LinkInBio from "./LinkInBio";
 import LinkedInDashboard from "./LinkedInDashboard";
 import { LinkedInPost, LinkedInHeadline, LinkedInAbout, LinkedInCarousel, LinkedInHashtags, LinkedInBestTime } from "./LinkedInTools";
-import { QuoraAnswer, QuoraQuestionFinder, QuoraHook } from "./QuoraTools";
+import { QuoraAnswer, QuoraQuestionFinder, QuoraHook, QuoraSpaceFinder, QuoraProfileBio, QuoraCommentGenerator, QuoraDigestCreator } from "./QuoraTools";
 import { FacebookPost, FacebookGroupPost, FacebookAdCopy, FacebookBestTime } from "./FacebookTools";
 import ThumbnailStudioNew from "./ThumbnailStudio";
 import ScreenRecorder from './components/ScreenRecorder';
@@ -365,7 +365,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", curre
     couponWrap: { background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"16px",marginBottom:"12px" },
     couponInput: { flex:1,padding:"8px 12px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",color:"#fff",fontSize:"12px",fontFamily:"Poppins,sans-serif",outline:"none",letterSpacing:"1px",fontWeight:"700" },
     couponBtn: { padding:"8px 20px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.08)",color:"#fff",fontWeight:"700",fontSize:"11px",cursor:"pointer",fontFamily:"Poppins,sans-serif" },
-    badge: { position:"absolute",top:"-9px",right:"10px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",color:"#fff",fontSize:"8px",fontWeight:"900",padding:"2px 7px",borderRadius:"99px" },
+    badge: { position:"absolute",top:"-9px",right:"10px",background:"rgba(255,255,255,0.12)",color:"#fff",fontSize:"8px",fontWeight:"900",padding:"2px 7px",borderRadius:"99px" },
     popularTag: { position:"absolute",top:"-9px",left:"50%",transform:"translateX(-50%)",background:"rgba(124,58,237,0.12)",backdropFilter:"blur(12px)",border:"1px solid rgba(124,58,237,0.4)",color:"#c4b5fd",fontSize:"8px",fontWeight:"600",padding:"2px 10px",borderRadius:"99px",whiteSpace:"nowrap",boxShadow:"0 0 12px rgba(124,58,237,0.25)" },
   };
 
@@ -762,7 +762,7 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
             {variants&&(
               <div style={{ display:"flex",gap:"6px",marginBottom:"4px" }}>
                 {variants.map((v,i)=>(
-                  <button key={i} onClick={()=>{setSelV(i);setEditCap("");}} style={{ padding:"4px 12px",fontSize:"11px",fontWeight:"700",borderRadius:"99px",border:`1px solid ${selV===i?"#a78bfa":"rgba(255,255,255,0.1)"}`,background:selV===i?"rgba(124,58,237,0.2)":"transparent",color:selV===i?"#a78bfa":"rgba(255,255,255,0.4)",cursor:"pointer",fontFamily:"inherit" }}>
+                  <button key={i} onClick={()=>{setSelV(i);setEditCap("");}} style={{ padding:"4px 12px",fontSize:"11px",fontWeight:"700",borderRadius:"99px",border:`1px solid ${selV===i?"#a78bfa":"rgba(255,255,255,0.1)"}`,background:selV===i?"rgba(255,255,255,0.06)":"transparent",color:selV===i?"#a78bfa":"rgba(255,255,255,0.4)",cursor:"pointer",fontFamily:"inherit" }}>
                     Version {i+1}
                   </button>
                 ))}
@@ -772,7 +772,7 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
               <div>
                 <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px" }}>
                   <SectionHead icon="📝" title="Caption" copyText={displayCap}/>
-                  <button onClick={()=>setEditMode(!editMode)} style={{ padding:"3px 9px",fontSize:"11px",fontWeight:"700",borderRadius:"7px",border:`1px solid ${editMode?"#a78bfa":C.hairline}`,background:editMode?"rgba(124,58,237,0.2)":C.glass,color:editMode?"#a78bfa":C.muted,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"3px",flexShrink:0 }}>
+                  <button onClick={()=>setEditMode(!editMode)} style={{ padding:"3px 9px",fontSize:"11px",fontWeight:"700",borderRadius:"7px",border:`1px solid ${editMode?"#a78bfa":C.hairline}`,background:editMode?"rgba(255,255,255,0.06)":C.glass,color:editMode?"#a78bfa":C.muted,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"3px",flexShrink:0 }}>
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     {editMode?"Done":"Edit"}
                   </button>
@@ -906,7 +906,7 @@ function ThumbnailStudio({ keyword, title, isPro, onUpgradeClick, onThumbnailSel
           </>) : (
             <p style={{ fontSize:"11px",color:"rgba(255,255,255,0.25)",margin:0,textAlign:"center" }}>Click analyze to get AI score</p>
           )}
-          <button onClick={()=>selectThumbnail(slot)} style={{ width:"100%",marginTop:"8px",padding:"8px",borderRadius:"8px",border:`1px solid ${isSelected?"#a78bfa":"rgba(255,255,255,0.15)"}`,background:isSelected?"rgba(124,58,237,0.3)":"rgba(255,255,255,0.05)",color:"#fff",fontWeight:"700",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>
+          <button onClick={()=>selectThumbnail(slot)} style={{ width:"100%",marginTop:"8px",padding:"8px",borderRadius:"8px",border:`1px solid ${isSelected?"#a78bfa":"rgba(255,255,255,0.15)"}`,background:isSelected?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.05)",color:"#fff",fontWeight:"700",fontSize:"12px",cursor:"pointer",fontFamily:"inherit" }}>
             {isSelected ? "✓ Selected for Upload" : `Use Thumbnail ${slot}`}
           </button>
         </div>
@@ -919,8 +919,8 @@ function ThumbnailStudio({ keyword, title, isPro, onUpgradeClick, onThumbnailSel
       <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px" }}>
         <SectionHead icon="🖼️" title="Thumbnail Studio" copyText={null}/>
         <div style={{ display:"flex",gap:"6px" }}>
-          <button onClick={()=>{setMode("single");setFileB(null);setPreviewB(null);setResultB(null);}} style={{ padding:"4px 12px",fontSize:"11px",fontWeight:"700",borderRadius:"99px",border:`1px solid ${mode==="single"?"#a78bfa":"rgba(255,255,255,0.1)"}`,background:mode==="single"?"rgba(124,58,237,0.2)":"transparent",color:mode==="single"?"#a78bfa":"rgba(255,255,255,0.4)",cursor:"pointer",fontFamily:"inherit" }}>Single</button>
-          <button onClick={()=>setMode("ab")} style={{ padding:"4px 12px",fontSize:"11px",fontWeight:"700",borderRadius:"99px",border:`1px solid ${mode==="ab"?"#a78bfa":"rgba(255,255,255,0.1)"}`,background:mode==="ab"?"rgba(124,58,237,0.2)":"transparent",color:mode==="ab"?"#a78bfa":"rgba(255,255,255,0.4)",cursor:"pointer",fontFamily:"inherit" }}>A/B Test</button>
+          <button onClick={()=>{setMode("single");setFileB(null);setPreviewB(null);setResultB(null);}} style={{ padding:"4px 12px",fontSize:"11px",fontWeight:"700",borderRadius:"99px",border:`1px solid ${mode==="single"?"#a78bfa":"rgba(255,255,255,0.1)"}`,background:mode==="single"?"rgba(255,255,255,0.06)":"transparent",color:mode==="single"?"#a78bfa":"rgba(255,255,255,0.4)",cursor:"pointer",fontFamily:"inherit" }}>Single</button>
+          <button onClick={()=>setMode("ab")} style={{ padding:"4px 12px",fontSize:"11px",fontWeight:"700",borderRadius:"99px",border:`1px solid ${mode==="ab"?"#a78bfa":"rgba(255,255,255,0.1)"}`,background:mode==="ab"?"rgba(255,255,255,0.06)":"transparent",color:mode==="ab"?"#a78bfa":"rgba(255,255,255,0.4)",cursor:"pointer",fontFamily:"inherit" }}>A/B Test</button>
         </div>
       </div>
       <div style={{ display:"flex",gap:"12px",marginBottom:"10px" }}>
@@ -1685,7 +1685,7 @@ function ChannelSettingsModal({ user, onClose, BASE, onUpgrade }) {
   return (
     <>
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
-      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"460px",background:"rgba(10,8,20,0.98)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"20px",padding:"24px",maxHeight:"82vh",overflowY:"auto",scrollbarWidth:"none",msOverflowStyle:"none",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 60px rgba(124,58,237,0.12)"}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"460px",background:"rgba(10,10,10,0.98)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"24px",maxHeight:"82vh",overflowY:"auto",scrollbarWidth:"none",msOverflowStyle:"none",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 0px rgba(0,0,0,0)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"4px"}}>
           <div>
             <h2 style={{fontSize:"16px",fontWeight:"800",color:"#fff",margin:0}}>Channel Settings</h2>
@@ -1784,26 +1784,26 @@ function ChannelSettingsModal({ user, onClose, BASE, onUpgrade }) {
     </div>
         {bugModal && (
       <div onClick={(e)=>{if(e.target===e.currentTarget){setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(12px)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
-        <div style={{background:"#0f0a1a",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"20px",padding:"28px",width:"100%",maxWidth:"460px",position:"relative"}}>
+        <div style={{background:"rgba(12,12,12,0.98)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"28px",width:"100%",maxWidth:"460px",position:"relative"}}>
           <button onClick={()=>{setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}} style={{position:"absolute",top:"16px",right:"16px",background:"none",border:"none",color:"rgba(255,255,255,0.4)",fontSize:"20px",cursor:"pointer",lineHeight:1}}>✕</button>
           {bugDone ? (
             <div style={{textAlign:"center",padding:"24px 0"}}>
               <div style={{fontSize:"40px",marginBottom:"12px"}}>✅</div>
               <div style={{fontSize:"16px",fontWeight:"700",color:"#fff",marginBottom:"8px"}}>Bug reported!</div>
               <div style={{fontSize:"13px",color:"rgba(255,255,255,0.45)"}}>We will look into it. Thanks for helping improve SocioMee.</div>
-              <button onClick={()=>{setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}} style={{marginTop:"20px",padding:"10px 28px",borderRadius:"99px",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",border:"none",color:"#fff",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit"}}>Done</button>
+              <button onClick={()=>{setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}} style={{marginTop:"20px",padding:"10px 28px",borderRadius:"99px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontWeight:"700",fontSize:"13px",cursor:"pointer",fontFamily:"inherit"}}>Done</button>
             </div>
           ) : (
             <>
-              <div style={{fontSize:"16px",fontWeight:"800",color:"#fff",marginBottom:"4px"}}>🐛 Report a Bug</div>
+              <div style={{fontSize:"16px",fontWeight:"800",color:"#fff",marginBottom:"4px"}}>Report a Bug</div>
               <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)",marginBottom:"20px"}}>Tell us what went wrong. Include as many details as possible.</div>
               <textarea value={bugText} onChange={e=>setBugText(e.target.value)} placeholder="Please include as many details as possible..." rows={5} style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"12px",padding:"14px",color:"#fff",fontSize:"13px",fontFamily:"inherit",resize:"vertical",outline:"none",lineHeight:1.6}}/>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:"12px"}}>
                 <label style={{display:"flex",alignItems:"center",gap:"6px",cursor:"pointer",color:"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600"}}>
                   <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>setBugImage(ev.target.result);reader.readAsDataURL(file);}}/>
-                  📎 {bugImage ? "Screenshot attached ✓" : "Attach screenshot"}
+                  {bugImage ? "Screenshot attached ✓" : "Attach screenshot"}
                 </label>
-                <button disabled={bugSending||!bugText.trim()} onClick={async()=>{setBugSending(true);try{await fetch("/api/bug/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({description:bugText,user_email:user?.email||"unknown",user_id:user?.user_id||user?.id||"unknown",screenshot:bugImage||null})});setBugDone(true);}catch(e){setBugDone(true);}setBugSending(false);}} style={{padding:"10px 22px",borderRadius:"99px",background:bugText.trim()?"linear-gradient(135deg,#7c3aed,#ff3d8f)":"rgba(255,255,255,0.08)",border:"none",color:bugText.trim()?"#fff":"rgba(255,255,255,0.3)",fontWeight:"700",fontSize:"13px",cursor:bugText.trim()?"pointer":"default",fontFamily:"inherit"}}>{bugSending?"Sending...":"Submit"}</button>
+                <button disabled={bugSending||!bugText.trim()} onClick={async()=>{setBugSending(true);try{await fetch("/api/bug/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({description:bugText,user_email:user?.email||"unknown",user_id:user?.user_id||user?.id||"unknown",screenshot:bugImage||null})});setBugDone(true);}catch(e){setBugDone(true);}setBugSending(false);}} style={{padding:"10px 22px",borderRadius:"99px",background:bugText.trim()?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.04)",border:"none",color:"#fff",fontWeight:"700",fontSize:"13px",cursor:bugText.trim()?"pointer":"default",fontFamily:"inherit"}}>{bugSending?"Sending...":"Submit"}</button>
               </div>
             </>
           )}
@@ -2162,7 +2162,7 @@ export default function App() {
           <button onClick={()=>{ if(profilePanelOpen){ setProfilePanelOpen(false); setLangMenuOpen(false); } else setProfilePanelOpen(true); }} style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 16px",border:"none",background:profilePanelOpen?"rgba(255,255,255,0.06)":"transparent",cursor:"pointer",fontFamily:"inherit",width:"100%",textAlign:"left",flexShrink:0,transition:"all 0.15s",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
             {user?.picture
               ? <img src={user.picture} alt="" referrerPolicy="no-referrer" style={{width:"34px",height:"34px",borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
-              : <div style={{width:"34px",height:"34px",borderRadius:"50%",background:"linear-gradient(135deg,#7c3aed,#ff3d8f)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"13px",fontWeight:"800",color:"#fff",flexShrink:0}}>{(user?.email||"U")[0].toUpperCase()}</div>
+              : <div style={{width:"34px",height:"34px",borderRadius:"50%",background:"rgba(255,255,255,0.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"13px",fontWeight:"800",color:"#fff",flexShrink:0}}>{(user?.email||"U")[0].toUpperCase()}</div>
             }
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:"12px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{user?.name||user?.email?.split("@")[0]||"User"}</div>
@@ -2278,7 +2278,7 @@ export default function App() {
               {[
                 {tab:"quora-answer",label:"Answer Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>},
                 {tab:"quora-finder",label:"Question Finder",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>},
-                {tab:"quora-hook",label:"Hook Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
+                {tab:"quora-hook",label:"Hook Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},{tab:"quora-space",label:"Space Finder",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},{tab:"quora-bio",label:"Profile Bio",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>},{tab:"quora-comment",label:"Comment Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>},{tab:"quora-digest",label:"Digest Creator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>},
               ].map(item=>(
                 <button key={item.tab} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
                   style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 10px",borderRadius:"6px",border:"none",borderLeft:activeTab===item.tab?"2px solid #b92b27":"2px solid transparent",background:activeTab===item.tab?"rgba(185,43,39,0.12)":"transparent",color:activeTab===item.tab?"#e07875":"rgba(255,255,255,0.4)",fontSize:"12px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}
@@ -2553,28 +2553,28 @@ export default function App() {
       {profilePanelOpen && <div onClick={()=>setProfilePanelOpen(false)} style={{position:"fixed",inset:0,zIndex:9998}}/>}
       <div className="profile-slide-panel" style={{position:"fixed",bottom:"60px",left:0,width:"220px",zIndex:9999,background:"rgba(10,10,10,0.99)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px 16px 0 0",padding:"16px 14px 20px",transform:profilePanelOpen?"translateY(0)":"translateY(120%)",visibility:profilePanelOpen?"visible":"hidden",pointerEvents:profilePanelOpen?"all":"none",transition:"transform 0.35s cubic-bezier(0.32,0.72,0,1)"}}>
         <div style={{width:"32px",height:"3px",borderRadius:"99px",background:"rgba(255,255,255,0.12)",margin:"0 auto 14px"}}/>
-        <button onClick={()=>{setShowPlansPopup(true);setProfilePanelOpen(false);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");fetch(`${BASE}/credits/${user?.user_id}`).then(r=>r.ok?r.json():null).then(d=>{if(d)setCreditStatus(d);}).catch(()=>{});}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+        <button onClick={()=>{setShowPlansPopup(true);setProfilePanelOpen(false);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");fetch(`${BASE}/credits/${user?.user_id}`).then(r=>r.ok?r.json():null).then(d=>{if(d)setCreditStatus(d);}).catch(()=>{});}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           <span style={{flex:1}}>{t("plans")}</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <button onClick={()=>{setShowUsagePopup(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+        <button onClick={()=>{setShowUsagePopup(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span style={{flex:1}}>Usage</span>
           <span style={{fontSize:"11px",color:"#a78bfa",fontWeight:"700"}}>{creditStatus?.credits_remaining||0}/{creditStatus?.monthly_limit||180}</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <button onClick={()=>{setChannelSettingsOpen(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+        <button onClick={()=>{setChannelSettingsOpen(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
           <span style={{flex:1}}>Channel Settings</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <button onClick={()=>{setShowNotificationsModal(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+        <button onClick={()=>{setShowNotificationsModal(true);setProfilePanelOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span style={{flex:1}}>Notifications</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <button onClick={()=>setBugModal(true)} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,58,237,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+        <button onClick={()=>setBugModal(true)} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span style={{flex:1}}>Report a Bug</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -2594,26 +2594,26 @@ export default function App() {
 
       {showNotificationsModal && (
         <div onClick={()=>setShowNotificationsModal(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
-          <div onClick={e=>e.stopPropagation()} style={{background:"rgba(13,13,20,0.98)",border:"1px solid rgba(124,58,237,0.25)",borderRadius:"16px",padding:"24px",width:"100%",maxWidth:"360px"}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"rgba(10,10,10,0.97)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"24px",width:"100%",maxWidth:"360px",boxShadow:"0 24px 60px rgba(0,0,0,0.6)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"20px"}}>
-              <div style={{fontSize:"16px",fontWeight:"800",color:"#fff",fontFamily:"Poppins,sans-serif"}}>🔔 Notifications</div>
+              <div style={{fontSize:"16px",fontWeight:"800",color:"#fff",fontFamily:"Poppins,sans-serif"}}>Notifications</div>
               <button onClick={()=>setShowNotificationsModal(false)} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
             {[{key:"newFeatures",label:"New Features",desc:"Get notified when we launch new tools"},{key:"weeklyTips",label:"Weekly Tips",desc:"Creator tips every week"},{key:"usageAlerts",label:"Usage Alerts",desc:"Alert when credits are running low"},{key:"proOffers",label:"Pro Offers",desc:"Exclusive deals and discounts"}].map(({key,label,desc})=>(
               <div key={key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px",borderRadius:"10px",background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",marginBottom:"8px"}}>
                 <div><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",fontFamily:"Poppins,sans-serif"}}>{label}</div><div style={{fontSize:"11px",color:"rgba(255,255,255,0.4)",fontFamily:"Poppins,sans-serif",marginTop:"2px"}}>{desc}</div></div>
-                <button onClick={()=>setNotifSettings(p=>({...p,[key]:!p[key]}))} style={{width:"44px",height:"24px",borderRadius:"99px",border:"none",background:notifSettings[key]?"#7c3aed":"rgba(255,255,255,0.1)",cursor:"pointer",position:"relative",transition:"all 0.2s",flexShrink:0}}>
-                  <div style={{width:"18px",height:"18px",borderRadius:"50%",background:"#fff",position:"absolute",top:"3px",transition:"all 0.2s",left:notifSettings[key]?"23px":"3px"}}/>
+                <button onClick={()=>setNotifSettings(p=>({...p,[key]:!p[key]}))} style={{width:"44px",height:"24px",borderRadius:"99px",border:"none",background:notifSettings[key]?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.1)",cursor:"pointer",position:"relative",transition:"all 0.2s",flexShrink:0}}>
+                  <div style={{width:"18px",height:"18px",borderRadius:"50%",background:notifSettings[key]?"#000":"#fff",position:"absolute",top:"3px",transition:"all 0.2s",left:notifSettings[key]?"23px":"3px"}}/>
                 </button>
               </div>
             ))}
-            <button onClick={()=>setShowNotificationsModal(false)} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"none",background:"linear-gradient(135deg,#7c3aed,#9333ea)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif",marginTop:"8px"}}>Save Preferences</button>
+            <button onClick={()=>setShowNotificationsModal(false)} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif",marginTop:"8px"}}>Save Preferences</button>
           </div>
         </div>
       )}
       {showDeleteModal && (
         <div onClick={()=>{setShowDeleteModal(false);setDeleteConfirm('');}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
-          <div onClick={e=>e.stopPropagation()} style={{background:"rgba(13,13,20,0.98)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:"16px",padding:"24px",width:"100%",maxWidth:"360px"}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"rgba(10,10,10,0.97)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:"16px",padding:"24px",width:"100%",maxWidth:"360px"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"16px"}}>
               <div style={{fontSize:"16px",fontWeight:"800",color:"#ef4444",fontFamily:"Poppins,sans-serif"}}>Delete Account</div>
               <button onClick={()=>{setShowDeleteModal(false);setDeleteConfirm('');setDeleteError('');}} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
@@ -2688,12 +2688,12 @@ export default function App() {
         };
         return (
         <div onClick={()=>{setShowPlansPopup(false);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
-          <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"400px",background:"rgba(10,8,20,0.98)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"20px",padding:"24px",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 60px rgba(124,58,237,0.12)"}}>
+          <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"400px",background:"rgba(10,10,10,0.98)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"24px",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 0px rgba(0,0,0,0)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"20px"}}>
               <div><h2 style={{fontSize:"16px",fontWeight:"800",color:"#fff",margin:0}}>Your Plan</h2><p style={{fontSize:"11px",color:"rgba(255,255,255,0.3)",marginTop:"3px"}}>Manage your subscription</p></div>
               <button onClick={()=>{setShowPlansPopup(false);setDowngradeConfirm(null);setDowngradeSuccess("");setDowngradeError("");}} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
-            <div style={{background:"linear-gradient(135deg,rgba(124,58,237,0.15),rgba(255,61,143,0.08))",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"16px",padding:"20px",marginBottom:"16px"}}>
+            <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"20px",marginBottom:"16px"}}>
               <div style={{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.4)",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"}}>Current Plan</div>
               <div style={{fontSize:"24px",fontWeight:"900",color:"#fff",marginBottom:"4px"}}>✦ {creditStatus?.plan_label||"Free"}</div>
               <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>{creditStatus?.credits_remaining||0} of {creditStatus?.monthly_limit||180} credits remaining</div>
@@ -2740,7 +2740,7 @@ export default function App() {
                 {downgradeError && <div style={{fontSize:"12px",color:"#ef4444",marginBottom:"12px"}}>⚠ {downgradeError}</div>}
                 <div style={{display:"flex",gap:"8px"}}>
                   <button onClick={()=>{setDowngradeConfirm(null);setDowngradeError("");}} style={{flex:1,padding:"11px",borderRadius:"10px",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.5)",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>Keep Plan</button>
-                  <button onClick={executeDowngrade} disabled={downgradeLoading} style={{flex:1,padding:"11px",borderRadius:"10px",border:"none",background:downgradeConfirm.targetPlan==="free"?"rgba(239,68,68,0.15)":"rgba(124,58,237,0.2)",color:downgradeConfirm.targetPlan==="free"?"#ef4444":"#a78bfa",fontSize:"13px",fontWeight:"700",cursor:downgradeLoading?"not-allowed":"pointer",fontFamily:"inherit",opacity:downgradeLoading?0.6:1}}>{downgradeLoading?"Processing...":downgradeConfirm.targetPlan==="free"?"Yes, Cancel":"Yes, Downgrade"}</button>
+                  <button onClick={executeDowngrade} disabled={downgradeLoading} style={{flex:1,padding:"11px",borderRadius:"10px",border:"none",background:downgradeConfirm.targetPlan==="free"?"rgba(239,68,68,0.15)":"rgba(255,255,255,0.06)",color:downgradeConfirm.targetPlan==="free"?"#ef4444":"#a78bfa",fontSize:"13px",fontWeight:"700",cursor:downgradeLoading?"not-allowed":"pointer",fontFamily:"inherit",opacity:downgradeLoading?0.6:1}}>{downgradeLoading?"Processing...":downgradeConfirm.targetPlan==="free"?"Yes, Cancel":"Yes, Downgrade"}</button>
                 </div>
               </div>
             )}
@@ -2750,7 +2750,7 @@ export default function App() {
       })()}
       {showUsagePopup && (
         <div onClick={()=>setShowUsagePopup(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
-          <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"400px",background:"rgba(10,8,20,0.98)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:"20px",padding:"24px",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 60px rgba(124,58,237,0.12)"}}>
+          <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:"400px",background:"rgba(10,10,10,0.98)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"24px",boxShadow:"0 24px 80px rgba(0,0,0,0.9),0 0 0px rgba(0,0,0,0)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"20px"}}>
               <div><h2 style={{fontSize:"16px",fontWeight:"800",color:"#fff",margin:0}}>Credit Usage</h2><p style={{fontSize:"11px",color:"rgba(255,255,255,0.3)",marginTop:"3px"}}>Track your credit usage and history</p></div>
               <button onClick={()=>setShowUsagePopup(false)} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
@@ -2838,7 +2838,7 @@ export default function App() {
             <div style={{ textAlign:"center", padding:"60px 20px" }}>
               <h2 style={{ color:"#fff", fontFamily:"'Orbitron',sans-serif", fontSize:"22px", marginBottom:"12px" }}>{t("welcomeTitle")}</h2>
               <p className="welcome-body-text" style={{ color:"rgba(255,255,255,0.4)", marginBottom:"24px" }}>{t("welcomeBody")}</p>
-              <a href="/login" style={{ padding:"12px 32px", borderRadius:"99px", background:"linear-gradient(135deg,#7c3aed,#ff3d8f)", color:"#fff", fontWeight:"800", textDecoration:"none", fontSize:"14px" }}>{t("logIn")}</a>
+              <a href="/login" style={{ padding:"12px 32px", borderRadius:"99px", background:"rgba(255,255,255,0.12)", color:"#fff", fontWeight:"800", textDecoration:"none", fontSize:"14px" }}>{t("logIn")}</a>
             </div>
           )}
 
@@ -2921,7 +2921,7 @@ export default function App() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={deepResearch&&isPro?"#a78bfa":"rgba(255,255,255,0.4)"} strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
                     <span style={{ fontSize:"12px",fontWeight:"700",color:deepResearch&&isPro?"#a78bfa":"rgba(255,255,255,0.4)",letterSpacing:"0.3px" }}>Deep Research</span>
                     {!isPro&&<span style={{ fontSize:"10px",padding:"2px 7px",borderRadius:"99px",background:"rgba(251,191,36,0.2)",color:"#fbbf24",fontWeight:"800" }}>PRO</span>}
-                    {deepResearch&&isPro&&<span style={{ fontSize:"10px",padding:"2px 7px",borderRadius:"99px",background:"rgba(124,58,237,0.3)",color:"#c4b5fd",fontWeight:"800" }}>ON</span>}
+                    {deepResearch&&isPro&&<span style={{ fontSize:"10px",padding:"2px 7px",borderRadius:"99px",background:"rgba(255,255,255,0.08)",color:"#c4b5fd",fontWeight:"800" }}>ON</span>}
                   </button>
                   {!isPro&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.3)" }}>Pro and Pro+ only — fetches live news, Wikipedia and trending data</span>}
                   {deepResearch&&isPro&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.35)" }}>Costs 15 credits — fetches live news, Wikipedia and trending data</span>}
@@ -3069,6 +3069,10 @@ export default function App() {
           {activeTab==="quora-answer" && isLoggedIn && <QuoraAnswer/>}
           {activeTab==="quora-finder" && isLoggedIn && <QuoraQuestionFinder/>}
           {activeTab==="quora-hook" && isLoggedIn && <QuoraHook/>}
+          {activeTab==="quora-space" && isLoggedIn && <QuoraSpaceFinder/>}
+          {activeTab==="quora-bio" && isLoggedIn && <QuoraProfileBio/>}
+          {activeTab==="quora-comment" && isLoggedIn && <QuoraCommentGenerator/>}
+          {activeTab==="quora-digest" && isLoggedIn && <QuoraDigestCreator/>}
           {activeTab==="pinterest"  && isLoggedIn && <PinterestDashboard user={user}/>}
           {activeTab==="reddit"     && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><ComingSoonCard platform="Reddit" icon="/icons/reddit.png" color="#ff4500" message="Reddit integration coming soon. Post to subreddits and track upvotes."/></div>}
           {activeTab==="telegram" && isLoggedIn && <TelegramScheduler user={user}/>}
@@ -3211,7 +3215,7 @@ export default function App() {
     )}
     {bugModal && (
         <div onClick={(e)=>{if(e.target===e.currentTarget){setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(16px)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
-          <div style={{background:"rgba(10,8,20,0.85)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"28px",width:"100%",maxWidth:"460px",position:"relative",boxShadow:"0 24px 60px rgba(0,0,0,0.6)"}}>
+          <div style={{background:"rgba(10,10,10,0.97)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"28px",width:"100%",maxWidth:"460px",position:"relative",boxShadow:"0 24px 60px rgba(0,0,0,0.6)"}}>
             <button onClick={()=>{setBugModal(false);setBugText("");setBugImage(null);setBugDone(false);}} style={{position:"absolute",top:"16px",right:"16px",background:"none",border:"none",color:"rgba(255,255,255,0.35)",fontSize:"18px",cursor:"pointer",lineHeight:1}}>✕</button>
             {bugDone ? (
               <div style={{textAlign:"center",padding:"24px 0"}}>

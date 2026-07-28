@@ -1,3 +1,4 @@
+import React from "react";
 /**
  * TelegramScheduler.js — SocioMee Telegram Bulk Scheduler + AI Caption
  * Tabs: Compose | Bulk Upload | AI Caption | Posts
@@ -545,10 +546,9 @@ function PostsHistory({ userId, refreshKey }) {
     </div>
   );
   if (!jobs.length) return (
-    <div style={{ textAlign:"center", padding:"40px", color:C.muted }}>
-      <div style={{ fontSize:"36px", marginBottom:"12px" }}>📭</div>
-      <div style={{ fontSize:"14px", fontWeight:"700", color:C.ink, marginBottom:"6px" }}>No posts yet</div>
-      <div style={{ fontSize:"12px" }}>Compose your first post!</div>
+    <div style={{ textAlign:"center", padding:"60px 20px", color:C.muted }}>
+      <div style={{ fontSize:"14px", fontWeight:"700", color:"rgba(255,255,255,0.5)", marginBottom:"6px" }}>No posts yet</div>
+      <div style={{ fontSize:"12px" }}>Compose your first post to see history here.</div>
     </div>
   );
 
@@ -558,34 +558,32 @@ function PostsHistory({ userId, refreshKey }) {
   const failed    = jobs.filter(j=>j.status==="error"||j.status==="cancelled");
 
   const JobCard = ({ job }) => {
-    const col = statusColor(job.status);
+    const col = job.status==="done"?"#34d399":job.status==="scheduled"?"rgba(255,255,255,0.6)":job.status==="sending"?"rgba(255,255,255,0.8)":"#f87171";
     const ist = job.scheduled_at ? new Date(job.scheduled_at).toLocaleString("en-IN",{timeZone:"Asia/Kolkata",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : "";
+    const timeStr = job.sent_at ? timeAgo(job.sent_at) : job.created_at ? timeAgo(job.created_at) : "";
     return (
-      <div style={{ background:C.glass, border:`1.5px solid ${col}44`, borderRadius:"12px", padding:"12px 14px", marginBottom:"8px" }}>
-        <div style={{ display:"flex", alignItems:"flex-start", gap:"10px" }}>
-          <span style={{ fontSize:"16px", flexShrink:0 }}>{statusIcon(job.status)}</span>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontSize:"12px", fontWeight:"600", color:C.ink, lineHeight:1.5, marginBottom:"5px", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
-              {job.text||job.caption||"(media only)"}
-            </div>
-            <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", alignItems:"center" }}>
-              <span style={{ fontSize:"9px", fontWeight:"800", color:col, padding:"2px 7px", borderRadius:"99px", background:`${col}15`, border:`1px solid ${col}33`, textTransform:"uppercase" }}>{job.status}</span>
-              {job.media_type&&job.media_type!=="none"&&<span style={{ fontSize:"10px", color:"rgba(255,255,255,0.5)", fontWeight:"700" }}>{mediaIcon[job.media_type]} {job.media_type}</span>}
-              {ist&&<span style={{ fontSize:"10px", color:C.warn, fontWeight:"700" }}>⏰ {ist} IST</span>}
-              {job.sent_at&&<span style={{ fontSize:"10px", color:C.muted }}>{timeAgo(job.sent_at)}</span>}
-              {!job.sent_at&&job.created_at&&<span style={{ fontSize:"10px", color:C.muted }}>{timeAgo(job.created_at)}</span>}
-            </div>
-            {job.targets?.length>0&&<div style={{ fontSize:"10px", color:C.muted, marginTop:"3px" }}>→ {job.targets.join(" · ")}</div>}
-            {job.results?.map((r,i)=><div key={i} style={{ fontSize:"10px", color:r.ok?C.success:C.danger, marginTop:"2px" }}>{r.ok?"✓":"✗"} {r.target}{r.error?` — ${r.error}`:""}</div>)}
+      <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"12px",padding:"14px 16px",marginBottom:"8px",display:"flex",alignItems:"flex-start",gap:"12px"}}>
+        <div style={{width:"8px",height:"8px",borderRadius:"50%",background:col,flexShrink:0,marginTop:"5px"}}/>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.85)",lineHeight:1.5,marginBottom:"6px",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>
+            {job.text||job.caption||(job.media_filename||"Media post")}
           </div>
-          {job.status==="scheduled"&&(
-            <button onClick={()=>cancel(job.job_id)} disabled={cancelling[job.job_id]}
-              style={{ padding:"4px 10px", borderRadius:"7px", border:`1px solid ${C.danger}44`, background:`${C.danger}10`, color:C.danger, fontSize:"10px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit", flexShrink:0 }}>
-              {cancelling[job.job_id]?"…":"Cancel"}
-            </button>
-          )}
+          <div style={{display:"flex",gap:"8px",flexWrap:"wrap",alignItems:"center"}}>
+            <span style={{fontSize:"10px",fontWeight:"700",color:col,padding:"2px 8px",borderRadius:"99px",background:`${col}18`,border:`1px solid ${col}30`,textTransform:"uppercase",letterSpacing:"0.5px"}}>{job.status}</span>
+            {job.media_type&&job.media_type!=="none"&&<span style={{fontSize:"11px",color:"rgba(255,255,255,0.4)",fontWeight:"600",textTransform:"capitalize"}}>{job.media_type}</span>}
+            {ist&&<span style={{fontSize:"11px",color:"rgba(255,255,255,0.5)"}}>{ist} IST</span>}
+            {timeStr&&<span style={{fontSize:"11px",color:"rgba(255,255,255,0.3)"}}>{timeStr}</span>}
+          </div>
+          {job.results?.filter(r=>r.ok).length>0&&<div style={{fontSize:"11px",color:"#34d399",marginTop:"4px",fontWeight:"600"}}>Delivered to {job.results.filter(r=>r.ok).length} target{job.results.filter(r=>r.ok).length>1?"s":""}</div>}
+          {job.results?.filter(r=>!r.ok).length>0&&<div style={{fontSize:"11px",color:"#f87171",marginTop:"4px"}}>Failed: {job.results.filter(r=>!r.ok).map(r=>r.error||r.target).join(", ")}</div>}
+        </div>
+        {job.status==="scheduled"&&(
+          <button onClick={()=>cancel(job.job_id)} disabled={cancelling[job.job_id]}
+            style={{padding:"5px 12px",borderRadius:"99px",border:"1px solid rgba(248,113,113,0.3)",background:"rgba(248,113,113,0.08)",color:"#f87171",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+            {cancelling[job.job_id]?"...":"Cancel"}
+          </button>
+        )}
       </div>
-    </div>
     );
   };
 
@@ -595,10 +593,10 @@ function PostsHistory({ userId, refreshKey }) {
         <div style={{ fontSize:"13px", fontWeight:"800", color:C.ink }}>All Posts ({jobs.length})</div>
         <button onClick={load} style={{ fontSize:"11px", padding:"4px 12px", borderRadius:"8px", border:`1px solid ${C.hairline}`, background:"transparent", color:C.muted, cursor:"pointer", fontFamily:"inherit" }}>↺ Refresh</button>
       </div>
-      {scheduled.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.warn, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px" }}>Scheduled ({scheduled.length})</div>{scheduled.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
-      {sending.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:scheduled.length?"12px":"0" }}>📤 Sending ({sending.length})</div>{sending.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
-      {done.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.success, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:(scheduled.length||sending.length)?"12px":"0" }}>✅ Sent ({done.length})</div>{done.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
-      {failed.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:C.danger, textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:"12px" }}>❌ Failed ({failed.length})</div>{failed.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
+      {scheduled.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px" }}>Scheduled ({scheduled.length})</div>{scheduled.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
+      {sending.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:scheduled.length?"12px":"0" }}>Sending ({sending.length})</div>{sending.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
+      {done.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:(scheduled.length||sending.length)?"12px":"0" }}>Sent ({done.length})</div>{done.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
+      {failed.length>0&&<><div style={{ fontSize:"10px", fontWeight:"800", color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"1px", marginBottom:"8px", marginTop:"12px" }}>Failed ({failed.length})</div>{failed.map(j=><JobCard key={j.job_id} job={j}/>)}</>}
     </div>
   );
 }
@@ -606,11 +604,181 @@ function PostsHistory({ userId, refreshKey }) {
 // ══════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ══════════════════════════════════════════════════════════════════════
+
+function TelegramAnalytics({userId}){
+  const [data,setData]=React.useState(null);
+  const [hovChart,setHovChart]=React.useState(null);
+  const [loading,setLoading]=React.useState(true);
+  React.useEffect(()=>{
+    fetch(`https://sociomeeai.com/api/telegram/analytics?user_id=${userId}`)
+      .then(r=>r.json()).then(d=>{setData(d);setLoading(false);}).catch(()=>setLoading(false));
+  },[userId]);
+  const Cm={muted:"rgba(255,255,255,0.4)",success:"#34d399",danger:"#f87171"};
+  const GC=({children,style={}})=><div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"20px",...style}}>{children}</div>;
+  if(loading)return <div style={{padding:"40px",textAlign:"center",color:"rgba(255,255,255,0.4)",fontSize:"13px"}}>Loading analytics...</div>;
+  if(!data)return <div style={{padding:"40px",textAlign:"center",color:"rgba(255,255,255,0.4)",fontSize:"13px"}}>No analytics available.</div>;
+  const maxPosts=Math.max(...(data.daily_posts||[]).map(d=>d.posts),1);
+  const weekChange=data.last_week>0?Math.round(((data.this_week-data.last_week)/data.last_week)*100):data.this_week>0?100:0;
+  const mediaTypes=Object.entries(data.media_breakdown||{});
+  const totalMedia=mediaTypes.reduce((s,[,v])=>s+v,0)||1;
+  const bestHourStr=data.best_hour!=null?`${data.best_hour}:00 - ${data.best_hour+1}:00`:"N/A";
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:"14px",padding:"4px 0"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px"}}>
+        {[
+          {label:"TOTAL POSTS",value:data.total_posts||0,sub:"all time"},
+          {label:"THIS WEEK",value:data.this_week||0,sub:weekChange>=0?`+${weekChange}% vs last week`:`${weekChange}% vs last week`,subColor:weekChange>=0?Cm.success:Cm.danger},
+          {label:"SUBSCRIBERS",value:data.member_count!=null?data.member_count.toLocaleString():"N/A",sub:"channel members"},
+          {label:"SUCCESS RATE",value:`${data.success_rate||0}%`,sub:"posts delivered"},
+        ].map((s,i)=>(
+          <GC key={i} style={{textAlign:"center"}}>
+            <div style={{fontSize:"11px",fontWeight:"700",color:Cm.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>{s.label}</div>
+            <div style={{fontSize:"28px",fontWeight:"900",color:"#f5f5f7",marginBottom:"4px"}}>{s.value}</div>
+            <div style={{fontSize:"11px",color:s.subColor||Cm.muted}}>{s.sub}</div>
+          </GC>
+        ))}
+      </div>
+      <GC>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
+          <div>
+            <div style={{fontSize:"11px",fontWeight:"700",color:Cm.muted,textTransform:"uppercase",letterSpacing:"1px"}}>Posts Last 30 Days</div>
+            <div style={{fontSize:"28px",fontWeight:"900",color:"#f5f5f7",marginTop:"2px"}}>{(data.daily_posts||[]).reduce((s,d)=>s+d.posts,0)}</div>
+          </div>
+        </div>
+        {(()=>{
+          const pts = data.daily_posts||[];
+          const W=700,H=100,pad=8;
+          const maxV=Math.max(...pts.map(d=>d.posts),1);
+          const xs=pts.map((_,i)=>pad+(i/(pts.length-1||1))*(W-pad*2));
+          const ys=pts.map(d=>H-pad-(d.posts/maxV)*(H-pad*2));
+          const path=pts.map((d,i)=>`${i===0?"M":"L"}${xs[i]},${ys[i]}`).join(" ");
+          const area=`${path} L${xs[xs.length-1]},${H} L${xs[0]},${H} Z`;
+          return(
+            <div style={{position:"relative"}}>
+              <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{overflow:"visible",display:"block"}}>
+                <defs>
+                  <linearGradient id="tgGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="rgba(255,255,255,0.15)"/>
+                    <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
+                  </linearGradient>
+                </defs>
+                <path d={area} fill="url(#tgGrad)"/>
+                <path d={path} fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                {pts.map((d,i)=>d.posts>0&&(
+                  <circle key={i} cx={xs[i]} cy={ys[i]} r={hovChart===i?5:3}
+                    fill={hovChart===i?"#fff":"rgba(255,255,255,0.5)"}
+                    style={{cursor:"pointer",transition:"r 0.15s"}}
+                    onMouseEnter={()=>setHovChart(i)} onMouseLeave={()=>setHovChart(null)}/>
+                ))}
+                {hovChart!==null&&pts[hovChart]&&(
+                  <g>
+                    <rect x={Math.min(xs[hovChart]-40,W-90)} y={ys[hovChart]-36} width="88" height="28" rx="6" fill="rgba(20,20,20,0.95)" stroke="rgba(255,255,255,0.15)" strokeWidth="1"/>
+                    <text x={Math.min(xs[hovChart]-40,W-90)+8} y={ys[hovChart]-22} fill="rgba(255,255,255,0.5)" fontSize="9">{pts[hovChart].date.slice(5)}</text>
+                    <text x={Math.min(xs[hovChart]-40,W-90)+8} y={ys[hovChart]-10} fill="#fff" fontSize="11" fontWeight="700">posts: {pts[hovChart].posts}</text>
+                  </g>
+                )}
+              </svg>
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:"4px"}}>
+                <span style={{fontSize:"10px",color:Cm.muted}}>{pts[0]?.date?.slice(5)}</span>
+                <span style={{fontSize:"10px",color:Cm.muted}}>Today</span>
+              </div>
+            </div>
+          );
+        })()}
+      </GC>
+      {/* Weekly trend + predictions */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px"}}>
+        <GC>
+          <div style={{fontSize:"11px",fontWeight:"700",color:Cm.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>Weekly Trend (8 Weeks)</div>
+          {(()=>{
+            const pts=data.weekly_trend||[];
+            const W=300,H=70,pad=8;
+            const maxV=Math.max(...pts.map(d=>d.posts),1);
+            const xs=pts.map((_,i)=>pad+(i/(pts.length-1||1))*(W-pad*2));
+            const ys=pts.map(d=>H-pad-(d.posts/maxV)*(H-pad*2));
+            const path=pts.map((d,i)=>`${i===0?"M":"L"}${xs[i]},${ys[i]}`).join(" ");
+            const area=`${path} L${xs[xs.length-1]},${H} L${xs[0]},${H} Z`;
+            return(
+              <div>
+                <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{overflow:"visible",display:"block"}}>
+                  <defs><linearGradient id="wkGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="rgba(255,255,255,0.12)"/><stop offset="100%" stopColor="rgba(255,255,255,0)"/></linearGradient></defs>
+                  <path d={area} fill="url(#wkGrad)"/>
+                  <path d={path} fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  {pts.map((d,i)=>d.posts>0&&<circle key={i} cx={xs[i]} cy={ys[i]} r="3" fill="rgba(255,255,255,0.5)"><title>{d.week}: {d.posts}</title></circle>)}
+                </svg>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:"4px"}}>
+                  {pts.map((w,i)=><span key={i} style={{fontSize:"9px",color:Cm.muted,flex:1,textAlign:"center"}}>{w.week}</span>)}
+                </div>
+              </div>
+            );
+          })()}
+        </GC>
+        <GC>
+          <div style={{fontSize:"11px",fontWeight:"700",color:Cm.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>7-Day Prediction</div>
+          {(()=>{
+            const pts=data.predictions||[];
+            const W=300,H=70,pad=8;
+            const maxV=Math.max(...pts.map(d=>d.predicted),1);
+            const xs=pts.map((_,i)=>pad+(i/(pts.length-1||1))*(W-pad*2));
+            const ys=pts.map(d=>H-pad-(d.predicted/maxV)*(H-pad*2));
+            const path=pts.map((d,i)=>`${i===0?"M":"L"}${xs[i]},${ys[i]}`).join(" ");
+            const area=`${path} L${xs[xs.length-1]},${H} L${xs[0]},${H} Z`;
+            return(
+              <div>
+                <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{overflow:"visible",display:"block"}}>
+                  <defs><linearGradient id="pdGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="rgba(255,255,255,0.08)"/><stop offset="100%" stopColor="rgba(255,255,255,0)"/></linearGradient></defs>
+                  <path d={area} fill="url(#pdGrad)"/>
+                  <path d={path} fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="4 3"/>
+                  {pts.map((d,i)=><circle key={i} cx={xs[i]} cy={ys[i]} r="3" fill="rgba(255,255,255,0.3)"><title>{d.date}: ~{d.predicted}</title></circle>)}
+                </svg>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:"4px"}}>
+                  {pts.map((p,i)=><span key={i} style={{fontSize:"9px",color:Cm.muted,flex:1,textAlign:"center"}}>{p.date.slice(5)}</span>)}
+                </div>
+                <div style={{marginTop:"8px",fontSize:"11px",color:Cm.muted}}>Avg/day: <span style={{color:"#f5f5f7",fontWeight:"700"}}>{data.avg_per_day||0}</span></div>
+              </div>
+            );
+          })()}
+        </GC>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px"}}>
+        <GC>
+          <div style={{fontSize:"11px",fontWeight:"700",color:Cm.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"14px"}}>Content Type</div>
+          {mediaTypes.length>0?mediaTypes.map(([type,count],i)=>(
+            <div key={i} style={{marginBottom:"10px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
+                <span style={{fontSize:"12px",color:"rgba(255,255,255,0.8)",fontWeight:"600",textTransform:"capitalize"}}>{type}</span>
+                <span style={{fontSize:"12px",color:Cm.muted,fontWeight:"600"}}>{count}</span>
+              </div>
+              <div style={{height:"4px",borderRadius:"99px",background:"rgba(255,255,255,0.06)"}}>
+                <div style={{height:"100%",borderRadius:"99px",background:"rgba(255,255,255,0.5)",width:`${(count/totalMedia)*100}%`}}/>
+              </div>
+            </div>
+          )):<div style={{fontSize:"12px",color:Cm.muted}}>No posts yet</div>}
+        </GC>
+        <GC>
+          <div style={{fontSize:"11px",fontWeight:"700",color:Cm.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"14px"}}>Insights</div>
+          {[
+            {label:"Best Posting Time",value:bestHourStr},
+            {label:"Scheduled Queue",value:`${data.scheduled_posts||0} posts`},
+            {label:"Last Week Posts",value:`${data.last_week||0} posts`},
+            {label:"Avg Per Day (30d)",value:((data.total_posts||0)/30).toFixed(1)},
+          ].map((item,i)=>(
+            <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:i<3?"1px solid rgba(255,255,255,0.05)":"none"}}>
+              <span style={{fontSize:"12px",color:Cm.muted}}>{item.label}</span>
+              <span style={{fontSize:"12px",color:"#f5f5f7",fontWeight:"700"}}>{item.value}</span>
+            </div>
+          ))}
+        </GC>
+      </div>
+    </div>
+  );
+}
+
 export default function TelegramScheduler({ user }) {
   const C      = getC();
   const userId = user?.user_id || localStorage.getItem("sociomee_user_id") || "";
 
-  const [activeTab,   setActiveTab  ] = useState("compose");
+  const [activeTab,   setActiveTab  ] = useState("analytics");
   const [tgStatus,    setTgStatus   ] = useState("checking");
   const [tgInfo,      setTgInfo     ] = useState(null);
   const [connectLink, setConnectLink] = useState("");
@@ -715,7 +883,7 @@ export default function TelegramScheduler({ user }) {
 
       {/* Tabs */}
       <div style={{ display:"flex", gap:7, flexWrap:"nowrap", marginBottom:16, overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
-        {[["compose","Compose"],["bulk","Bulk"],["ai","AI Caption"],["posts","Posts"]].map(([id,label]) => (
+        {[["analytics","Analytics"],["compose","Compose"],["bulk","Bulk"],["ai","AI Caption"],["posts","Posts"]].map(([id,label]) => (
           <button key={id} onClick={()=>setActiveTab(id)}
             style={{ padding:"7px 14px", borderRadius:99, border:`1.5px solid ${activeTab===id?"rgba(255,255,255,0.25)":C.hairline}`, background:activeTab===id?"rgba(255,255,255,0.08)":"transparent", color:activeTab===id?"#f5f5f7":C.muted, fontWeight:700, fontSize:11.5, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}>
             {label}
@@ -727,6 +895,7 @@ export default function TelegramScheduler({ user }) {
       {activeTab==="bulk"    && <BulkPost userId={userId} onSent={()=>{setRefreshKey(k=>k+1);setActiveTab("posts");}}/>}
       {activeTab==="ai"      && <AICaption userId={userId} onUseCaption={handleUseCaption}/>}
       {activeTab==="posts"   && <PostsHistory userId={userId} refreshKey={refreshKey}/>}
+      {activeTab==="analytics" && <TelegramAnalytics userId={userId}/>}
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');

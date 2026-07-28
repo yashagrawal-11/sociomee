@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const C = {
-  purple:"#a78bfa", teal:"#2aabee", glass:"rgba(255,255,255,0.04)",
+  purple:"rgba(255,255,255,0.7)", teal:"rgba(255,255,255,0.8)", glass:"rgba(255,255,255,0.04)",
   hairline:"rgba(255,255,255,0.08)", ink:"rgba(255,255,255,0.9)",
   muted:"rgba(255,255,255,0.4)", success:"#34d399", danger:"#f87171",
 };
@@ -20,7 +20,7 @@ function filterText(text) {
 
 function ToolCard({ title, icon, children }) {
   return (
-    <div style={{maxWidth:"700px",margin:"0 auto",padding:"20px 16px"}}>
+    <div style={{maxWidth:"700px",margin:"0 auto",padding:"40px 16px",display:"flex",flexDirection:"column",justifyContent:"center",minHeight:"calc(100vh - 200px)"}}>
       <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"20px"}}>
         <span style={{fontSize:"20px"}}>{icon}</span>
         <h2 style={{fontSize:"18px",fontWeight:"900",color:"#fff",margin:0}}>{title}</h2>
@@ -38,9 +38,9 @@ function GlassCard({ children, style={} }) {
   );
 }
 
-function GenButton({ onClick, loading, label="✦ Generate" }) {
+function GenButton({ onClick, loading, label="Generate" }) {
   return (
-    <button onClick={onClick} disabled={loading} style={{width:"100%",padding:"14px",borderRadius:"99px",border:"1.5px solid rgba(124,58,237,0.6)",background:loading?"rgba(124,58,237,0.05)":"rgba(124,58,237,0.15)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading?"none":"0 0 24px rgba(124,58,237,0.4)",transition:"all 0.3s",opacity:loading?0.6:1}}>
+    <button onClick={onClick} disabled={loading} style={{width:"100%",padding:"14px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.2)",background:loading?"rgba(255,255,255,0.03)":"rgba(255,255,255,0.08)",backdropFilter:"blur(16px)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:loading?"not-allowed":"pointer",fontFamily:"inherit",boxShadow:loading?"none":"0 0 24px rgba(255,255,255,0.15)",transition:"all 0.3s",opacity:loading?0.6:1}}>
       {loading ? "Generating..." : label}
     </button>
   );
@@ -49,16 +49,16 @@ function GenButton({ onClick, loading, label="✦ Generate" }) {
 // ── Hook Generator ────────────────────────────────────────────────────
 const HOOK_TEMPLATES = {
   crypto: [
-    "⚡ {topic} just happened. Here's what every crypto holder MUST know right now...",
+    "{topic} just happened. Here's what every crypto holder MUST know right now...",
     "🚨 BREAKING: {topic} — This changes everything for your portfolio",
     "They don't want you to know about {topic}. Read this before it's deleted 👇",
     "I lost ₹2 lakhs ignoring this about {topic}. Don't make my mistake.",
-    "📈 {topic} is the biggest opportunity of 2024. Here's exactly how to play it 👇",
+    "{topic} is the biggest opportunity of 2024. Here's exactly how to play it 👇",
   ],
   news: [
-    "🔴 JUST IN: {topic} — Full story inside",
+    "JUST IN: {topic} — Full story inside",
     "Everyone is talking about {topic} but nobody is telling you the real truth 👇",
-    "⚠️ {topic}: What the mainstream media is hiding from you",
+    "{topic}: What the mainstream media is hiding from you",
     "Breaking: {topic} — And it affects YOU directly. Here's how 👇",
     "The truth about {topic} that changed everything we thought we knew 🧵",
   ],
@@ -66,42 +66,42 @@ const HOOK_TEMPLATES = {
     "🤯 {topic} just broke the internet. Here's why it matters to you",
     "This {topic} trick saves me 3 hours every day. Sharing it for free 👇",
     "Engineers at big tech companies are scared of {topic}. Here's why 🧵",
-    "⚡ {topic} is changing everything. Early adopters will win big.",
+    "{topic} is changing everything. Early adopters will win big.",
     "Nobody talks about {topic} honestly. Let me be the first 👇",
   ],
   finance: [
-    "💰 {topic} — The wealth secret the rich don't want you to know",
+    "{topic} — The wealth secret the rich don't want you to know",
     "I studied {topic} for 100 hours. Here's everything in 2 minutes 👇",
-    "⚠️ {topic} alert: Your money is at risk if you don't read this",
-    "How {topic} made someone ₹10 lakh in 30 days (legally) 📈",
+    "{topic} alert: Your money is at risk if you don't read this",
+    "How {topic} made someone ₹10 lakh in 30 days (legally) ",
     "The {topic} strategy that changed my financial life forever 🧵",
   ],
   entertainment: [
     "😱 {topic} — Nobody saw this coming. Full scoop inside 👇",
-    "The real story behind {topic} that they don't show on TV 🎬",
-    "🔥 {topic} just went viral and here's the full breakdown",
-    "Exclusive: {topic} — The inside story 👀",
+    "The real story behind {topic} that they don't show on TV ",
+    "{topic} just went viral and here's the full breakdown",
+    "Exclusive: {topic} — The inside story ",
     "Plot twist: {topic} is not what you think it is 🧵",
   ],
   sports: [
-    "🏆 {topic} — The moment that changed Indian sports forever",
+    "{topic} — The moment that changed Indian sports forever",
     "Inside story: {topic} revealed by someone who was there 👇",
-    "⚡ {topic} — Stats, analysis and what happens next 🧵",
+    "{topic} — Stats, analysis and what happens next 🧵",
     "The truth about {topic} that commentators won't tell you 🏏",
-    "🔥 {topic}: Complete breakdown for real fans only 👇",
+    "{topic}: Complete breakdown for real fans only 👇",
   ],
   motivation: [
     "I was broke at 22. {topic} changed my life. Here's what I learned 👇",
-    "⚡ {topic} — The mindset shift that 99% of people miss",
+    "{topic} — The mindset shift that 99% of people miss",
     "Most people fail at {topic} because of this one mistake 🧵",
     "The {topic} truth nobody wants to hear (but everyone needs) 👇",
-    "5 years ago I discovered {topic}. Today I share everything for free 🎯",
+    "5 years ago I discovered {topic}. Today I share everything for free ",
   ],
   general: [
-    "🔥 {topic} — You need to see this right now 👇",
+    "{topic} — You need to see this right now 👇",
     "Everyone is wrong about {topic}. Here's the truth 🧵",
-    "⚡ {topic} changes everything. Read before it's gone.",
-    "The {topic} secret that nobody talks about openly 👀",
+    "{topic} changes everything. Read before it's gone.",
+    "The {topic} secret that nobody talks about openly ",
     "I wish I knew this about {topic} 5 years ago. Sharing now 👇",
   ],
 };
@@ -136,18 +136,18 @@ export function TelegramHookGenerator() {
         <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>NICHE</div>
         <div style={{display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"16px"}}>
           {niches.map(n=>(
-            <button key={n} onClick={()=>setNiche(n.toLowerCase())} style={{padding:"5px 12px",borderRadius:"99px",border:`1.5px solid ${niche===n.toLowerCase()?"rgba(124,58,237,0.7)":"rgba(255,255,255,0.1)"}`,background:niche===n.toLowerCase()?"rgba(124,58,237,0.15)":"transparent",color:niche===n.toLowerCase()?"#c4b5fd":"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit"}}>
+            <button key={n} onClick={()=>setNiche(n.toLowerCase())} style={{padding:"5px 12px",borderRadius:"99px",border:`1.5px solid ${niche===n.toLowerCase()?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.1)"}`,background:niche===n.toLowerCase()?"rgba(255,255,255,0.08)":"transparent",color:niche===n.toLowerCase()?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit"}}>
               {n}
             </button>
           ))}
         </div>
-        <GenButton onClick={generate} loading={loading} label="✦ Generate Hooks"/>
+        <GenButton onClick={generate} loading={loading} label="Generate Hooks"/>
       </GlassCard>
       {hooks.length>0 && (
         <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
           {hooks.map((h,i)=>(
             <GlassCard key={i} style={{display:"flex",alignItems:"flex-start",gap:"12px",cursor:"pointer"}} onClick={()=>{navigator.clipboard.writeText(h);setCopied(i);setTimeout(()=>setCopied(null),2000);}}>
-              <div style={{width:"24px",height:"24px",borderRadius:"50%",background:"rgba(124,58,237,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",fontWeight:"800",color:"#a78bfa",flexShrink:0}}>{i+1}</div>
+              <div style={{width:"24px",height:"24px",borderRadius:"50%",background:"rgba(255,255,255,0.08)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",fontWeight:"800",color:"rgba(255,255,255,0.7)",flexShrink:0}}>{i+1}</div>
               <div style={{flex:1,fontSize:"14px",color:"rgba(255,255,255,0.85)",lineHeight:1.6}}>{h}</div>
               <div style={{fontSize:"11px",color:copied===i?C.success:C.muted,fontWeight:"600",flexShrink:0}}>{copied===i?"✓ Copied":"Copy"}</div>
             </GlassCard>
@@ -161,27 +161,27 @@ export function TelegramHookGenerator() {
 // ── Poll Generator ────────────────────────────────────────────────────
 const POLL_TEMPLATES = {
   crypto: [
-    {q:"Bitcoin will hit $1 lakh by end of 2024?",opts:["Yes, definitely 🚀","No, bear market 📉","Maybe by 2025 🤔","BTC is dead 💀"]},
+    {q:"Bitcoin will hit $1 lakh by end of 2024?",opts:["Yes, definitely ","No, bear market 📉","Maybe by 2025 ","BTC is dead 💀"]},
     {q:"Which crypto will 10x first?",opts:["Bitcoin (BTC)","Ethereum (ETH)","Solana (SOL)","Altcoins 🎰"]},
-    {q:"Are you buying this crypto dip?",opts:["Already bought! 💪","Waiting for lower","Too scared 😰","Already lost money"]},
+    {q:"Are you buying this crypto dip?",opts:["Already bought! ","Waiting for lower","Too scared 😰","Already lost money"]},
   ],
   bollywood: [
-    {q:"Who is the real King of Bollywood right now?",opts:["Shah Rukh Khan 👑","Salman Khan 💪","Ranveer Singh 🔥","The OTT era killed kings"]},
-    {q:"Best Bollywood movie of 2024?",opts:["Animal 🐯","Stree 2 👻","Fighter ✈️","None impressed me"]},
+    {q:"Who is the real King of Bollywood right now?",opts:["Shah Rukh Khan 👑","Salman Khan ","Ranveer Singh ","The OTT era killed kings"]},
+    {q:"Best Bollywood movie of 2024?",opts:["Animal ","Stree 2 👻","Fighter ","None impressed me"]},
     {q:"Nepotism in Bollywood - your take?",opts:["It's real and unfair 😤","Talent wins always","Mixed - both exist","Don't care about it"]},
   ],
   sports: [
-    {q:"India will win the next World Cup?",opts:["100% Yes! 🏆","Possible but tough","No chance 😬","Don't follow cricket"]},
-    {q:"Greatest Indian cricketer of all time?",opts:["Sachin Tendulkar 🐐","Virat Kohli 🔥","MS Dhoni 🧢","Someone else"]},
-    {q:"IPL or International Cricket - which do you prefer?",opts:["IPL all day! 💰","International is real","Both equally","Not a cricket fan"]},
+    {q:"India will win the next World Cup?",opts:["100% Yes! ","Possible but tough","No chance 😬","Don't follow cricket"]},
+    {q:"Greatest Indian cricketer of all time?",opts:["Sachin Tendulkar 🐐","Virat Kohli ","MS Dhoni 🧢","Someone else"]},
+    {q:"IPL or International Cricket - which do you prefer?",opts:["IPL all day! ","International is real","Both equally","Not a cricket fan"]},
   ],
   general: [
-    {q:"What's your biggest financial goal right now?",opts:["Buy a house 🏠","Start a business 💼","Travel the world ✈️","Financial freedom 💰"]},
-    {q:"How do you consume news?",opts:["Telegram channels 📱","Instagram/YouTube","TV & newspapers","I avoid news"]},
-    {q:"Biggest challenge of your generation?",opts:["Jobs & career 💼","Inflation & cost 💸","Mental health 🧠","Relationships ❤️"]},
+    {q:"What's your biggest financial goal right now?",opts:["Buy a house ","Start a business ","Travel the world ","Financial freedom "]},
+    {q:"How do you consume news?",opts:["Telegram channels ","Instagram/YouTube","TV & newspapers","I avoid news"]},
+    {q:"Biggest challenge of your generation?",opts:["Jobs & career ","Inflation & cost 💸","Mental health ","Relationships "]},
   ],
   tech: [
-    {q:"AI will replace your job in 10 years?",opts:["Yes, I'm worried 😰","No, humans will adapt","Already replacing some","My job is AI-proof 💪"]},
+    {q:"AI will replace your job in 10 years?",opts:["Yes, I'm worried 😰","No, humans will adapt","Already replacing some","My job is AI-proof "]},
     {q:"iPhone vs Android - final answer?",opts:["iPhone forever 🍎","Android master race 🤖","Both have pros & cons","Phone doesn't matter"]},
     {q:"Best tech investment right now?",opts:["AI companies 🤖","Semiconductor stocks","Indian IT sector","Avoid tech stocks"]},
   ],
@@ -200,9 +200,9 @@ export function TelegramPollGenerator() {
     setTimeout(() => {
       const pool = POLL_TEMPLATES[niche] || POLL_TEMPLATES.general;
       const extra = [
-        {q:`What do you think about ${topic}?`,opts:["Very positive 🔥","Somewhat positive 👍","Neutral 😐","Negative 👎"]},
-        {q:`${topic} — overhyped or underrated?`,opts:["Totally overhyped 🙄","Slightly overhyped","Fairly valued","Very underrated 💎"]},
-        {q:`Will ${topic} impact your life in 2024?`,opts:["Yes, majorly 🎯","Somewhat yes","Not really","Not sure yet 🤔"]},
+        {q:`What do you think about ${topic}?`,opts:["Very positive ","Somewhat positive ","Neutral 😐","Negative 👎"]},
+        {q:`${topic} — overhyped or underrated?`,opts:["Totally overhyped 🙄","Slightly overhyped","Fairly valued","Very underrated "]},
+        {q:`Will ${topic} impact your life in 2024?`,opts:["Yes, majorly ","Somewhat yes","Not really","Not sure yet "]},
       ];
       const combined = [...pool, ...extra].sort(() => Math.random() - 0.5).slice(0, 3);
       setPolls(combined.map(p => ({question: p.q, options: p.opts})));
@@ -211,7 +211,7 @@ export function TelegramPollGenerator() {
   };
 
   const copyPoll = (poll, i) => {
-    const text = `📊 ${poll.question}\n\n${poll.options.map((o,j)=>`${["🅐","🅑","🅒","🅓"][j]} ${o}`).join("\n")}`;
+    const text = `${poll.question}\n\n${poll.options.map((o,j)=>`${["🅐","🅑","🅒","🅓"][j]} ${o}`).join("\n")}`;
     navigator.clipboard.writeText(text);
     setCopied(i);
     setTimeout(()=>setCopied(null),2000);
@@ -220,7 +220,7 @@ export function TelegramPollGenerator() {
   const niches = ["general","crypto","bollywood","sports","tech","finance","news","motivation"];
 
   return (
-    <ToolCard title="Poll Generator" icon="📊">
+    <ToolCard title="Poll Generator" icon="">
       <GlassCard style={{marginBottom:"16px"}}>
         <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>TOPIC (optional)</div>
         <input value={topic} onChange={e=>setTopic(e.target.value)} placeholder="e.g. cricket, crypto, jobs, AI"
@@ -228,20 +228,20 @@ export function TelegramPollGenerator() {
         <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>NICHE</div>
         <div style={{display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"16px"}}>
           {niches.map(n=>(
-            <button key={n} onClick={()=>setNiche(n)} style={{padding:"5px 12px",borderRadius:"99px",border:`1.5px solid ${niche===n?"rgba(124,58,237,0.7)":"rgba(255,255,255,0.1)"}`,background:niche===n?"rgba(124,58,237,0.15)":"transparent",color:niche===n?"#c4b5fd":"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textTransform:"capitalize"}}>
+            <button key={n} onClick={()=>setNiche(n)} style={{padding:"5px 12px",borderRadius:"99px",border:`1.5px solid ${niche===n?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.1)"}`,background:niche===n?"rgba(255,255,255,0.08)":"transparent",color:niche===n?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textTransform:"capitalize"}}>
               {n}
             </button>
           ))}
         </div>
-        <GenButton onClick={generate} loading={loading} label="✦ Generate Polls"/>
+        <GenButton onClick={generate} loading={loading} label="Generate Polls"/>
       </GlassCard>
       {polls.length>0 && (
         <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
           {polls.map((poll,i)=>(
             <GlassCard key={i}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"12px"}}>
-                <div style={{fontSize:"15px",fontWeight:"700",color:"#fff",lineHeight:1.4,flex:1}}>📊 {poll.question}</div>
-                <button onClick={()=>copyPoll(poll,i)} style={{padding:"5px 12px",borderRadius:"99px",border:"1px solid rgba(124,58,237,0.3)",background:"rgba(124,58,237,0.1)",color:copied===i?C.success:"#a78bfa",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",flexShrink:0,marginLeft:"12px"}}>
+                <div style={{fontSize:"15px",fontWeight:"700",color:"#fff",lineHeight:1.4,flex:1}}>{poll.question}</div>
+                <button onClick={()=>copyPoll(poll,i)} style={{padding:"5px 12px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.05)",color:copied===i?C.success:"rgba(255,255,255,0.7)",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",flexShrink:0,marginLeft:"12px"}}>
                   {copied===i?"✓ Copied":"Copy"}
                 </button>
               </div>
@@ -351,14 +351,14 @@ export function TelegramBestTime() {
   ];
 
   return (
-    <ToolCard title="Best Time to Post" icon="⏰">
+    <ToolCard title="Best Time to Post" icon="">
       <GlassCard style={{marginBottom:"16px"}}>
         <div style={{display:"flex",flexDirection:"column",gap:"16px",marginBottom:"16px"}}>
           <div>
             <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>NICHE</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>
               {niches.map(n=>(
-                <button key={n} onClick={()=>setNiche(n)} style={{padding:"5px 12px",borderRadius:"99px",border:`1.5px solid ${niche===n?"rgba(124,58,237,0.7)":"rgba(255,255,255,0.1)"}`,background:niche===n?"rgba(124,58,237,0.15)":"transparent",color:niche===n?"#c4b5fd":"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textTransform:"capitalize"}}>
+                <button key={n} onClick={()=>setNiche(n)} style={{padding:"5px 12px",borderRadius:"99px",border:`1.5px solid ${niche===n?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.1)"}`,background:niche===n?"rgba(255,255,255,0.08)":"transparent",color:niche===n?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textTransform:"capitalize"}}>
                   {n}
                 </button>
               ))}
@@ -368,14 +368,14 @@ export function TelegramBestTime() {
             <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>AUDIENCE REGION</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>
               {audiences.map(a=>(
-                <button key={a.id} onClick={()=>setAudience(a.id)} style={{padding:"5px 14px",borderRadius:"99px",border:`1.5px solid ${audience===a.id?"rgba(124,58,237,0.7)":"rgba(255,255,255,0.1)"}`,background:audience===a.id?"rgba(124,58,237,0.15)":"transparent",color:audience===a.id?"#c4b5fd":"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit"}}>
+                <button key={a.id} onClick={()=>setAudience(a.id)} style={{padding:"5px 14px",borderRadius:"99px",border:`1.5px solid ${audience===a.id?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.1)"}`,background:audience===a.id?"rgba(255,255,255,0.08)":"transparent",color:audience===a.id?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.5)",fontSize:"11px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit"}}>
                   {a.label}
                 </button>
               ))}
             </div>
           </div>
         </div>
-        <GenButton onClick={analyze} loading={loading} label="✦ Analyze Best Times"/>
+        <GenButton onClick={analyze} loading={loading} label="Analyze Best Times"/>
       </GlassCard>
 
       {result && (
@@ -398,23 +398,23 @@ export function TelegramBestTime() {
 
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
             <GlassCard>
-              <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>✅ Best Days</div>
+              <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>Best Days</div>
               {result.best_days?.map((d,i)=>(
                 <div key={i} style={{fontSize:"13px",color:"#34d399",fontWeight:"600",marginBottom:"4px"}}>• {d}</div>
               ))}
             </GlassCard>
             <GlassCard>
-              <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>❌ Avoid These</div>
+              <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"10px"}}>Avoid These</div>
               {result.avoid?.map((d,i)=>(
                 <div key={i} style={{fontSize:"11px",color:"#f87171",fontWeight:"600",marginBottom:"4px"}}>• {d}</div>
               ))}
             </GlassCard>
           </div>
 
-          <GlassCard style={{borderLeft:"3px solid #7c3aed"}}>
-            <div style={{fontSize:"10px",fontWeight:"700",color:"#a78bfa",marginBottom:"6px"}}>✦ PRO TIP</div>
+          <GlassCard style={{borderLeft:"3px solid #ffffff"}}>
+            <div style={{fontSize:"10px",fontWeight:"700",color:"rgba(255,255,255,0.7)",marginBottom:"6px"}}>PRO TIP</div>
             <div style={{fontSize:"13px",color:"rgba(255,255,255,0.8)",lineHeight:1.6,marginBottom:"8px"}}>{result.tip}</div>
-            <div style={{fontSize:"12px",color:C.muted}}>📅 Recommended frequency: <span style={{color:"#a78bfa",fontWeight:"700"}}>{result.frequency}</span></div>
+            <div style={{fontSize:"12px",color:C.muted}}>Recommended frequency: <span style={{color:"rgba(255,255,255,0.7)",fontWeight:"700"}}>{result.frequency}</span></div>
           </GlassCard>
         </div>
       )}
