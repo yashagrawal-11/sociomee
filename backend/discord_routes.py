@@ -256,6 +256,22 @@ async def discord_bot_send(payload: BotSendPayload):
     if r.status_code not in (200, 201):
         raise HTTPException(400, f"Discord send failed: {r.text}")
     msg = r.json()
+    # Save to jobs file for history
+    import uuid as _uuid
+    job = {
+        "job_id": str(_uuid.uuid4()),
+        "user_id": payload.user_id,
+        "guild_id": payload.guild_id,
+        "channel_id": payload.channel_id,
+        "content": payload.content,
+        "image_url": payload.image_url,
+        "status": "done",
+        "sent_at": datetime.now(timezone.utc).isoformat(),
+        "message_id": msg.get("id", ""),
+    }
+    jobs = _lbjobs()
+    jobs[job["job_id"]] = job
+    _sbjobs(jobs)
     return {"ok": True, "message_id": msg.get("id", "")}
 
 
