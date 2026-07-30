@@ -1,3 +1,4 @@
+import SocioMeeDashboard from "./SocioMeeDashboard";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import Onboarding from "./Onboarding";
@@ -2091,7 +2092,7 @@ export default function App() {
   const toggleTab = (tab) => { setActiveTab(tab); setSidebarOpen(false); };
 
   const PAGE_TITLES = {
-    generate:"App | SocioMee", youtube:"YouTube | SocioMee",
+    generate:"App | SocioMee", dashboard:"Dashboard | SocioMee", youtube:"YouTube | SocioMee",
     threads:"Threads | SocioMee", instagram:"Instagram | SocioMee", facebook:"Facebook | SocioMee",
     pinterest:"Pinterest | SocioMee", reddit:"Reddit | SocioMee",
     telegram:"Telegram | SocioMee", discord:"Discord | SocioMee",
@@ -2174,6 +2175,15 @@ export default function App() {
 
         {/* Nav */}
         <nav style={{flex:1,display:"flex",flexDirection:"column",padding:"8px 8px",gap:"1px",overflowY:"auto",overflowX:"hidden",scrollbarWidth:"none",msOverflowStyle:"none"}}>
+
+          {/* Dashboard */}
+          <button onClick={()=>{setActiveTab("dashboard");setSidebarOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",padding:"9px 12px",borderRadius:"8px",border:"none",background:activeTab==="dashboard"?"rgba(255,255,255,0.07)":"transparent",color:activeTab==="dashboard"?"#fff":"rgba(255,255,255,0.45)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s",borderLeft:activeTab==="dashboard"?"3px solid rgba(255,255,255,0.4)":"3px solid transparent"}}
+            onMouseEnter={e=>{if(activeTab!=="dashboard"){e.currentTarget.style.background="rgba(255,255,255,0.05)";e.currentTarget.style.color="rgba(255,255,255,0.85)";}}}
+            onMouseLeave={e=>{if(activeTab!=="dashboard"){e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(255,255,255,0.45)";}}}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard
+          </button>
 
           {/* Generate */}
           <button onClick={()=>{setActiveTab("generate");setSidebarOpen(false);}} style={{display:"flex",alignItems:"center",gap:"10px",padding:"9px 12px",borderRadius:"8px",border:"none",background:activeTab==="generate"?"rgba(255,255,255,0.07)":"transparent",color:activeTab==="generate"?"#fff":"rgba(255,255,255,0.45)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s",borderLeft:activeTab==="generate"?"3px solid rgba(255,255,255,0.4)":"3px solid transparent"}}>
@@ -2841,6 +2851,9 @@ export default function App() {
             </div>
           )}
 
+          {activeTab==="dashboard" && isLoggedIn && (
+            <SocioMeeDashboard userId={appUserId} onNavigate={(tab)=>{setActiveTab(tab);setSidebarOpen(false);}}/>
+          )}
           {activeTab==="generate" && isLoggedIn && (
             <>
               <div style={{ background:"rgba(255,255,255,0.04)", border:"1.5px solid rgba(255,255,255,0.08)", borderRadius:"18px", padding:"24px", backdropFilter:"blur(16px)", marginBottom:"20px" }}>

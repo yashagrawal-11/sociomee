@@ -62,7 +62,7 @@ function LinkedInDashboard({ user }) {
   const userId = user?.user_id || user?.id || localStorage.getItem("sociomee_user_id") || "";
   const [status,      setStatus     ] = useState("checking");
   const [profile,     setProfile    ] = useState(null);
-  const [tab,         setTab        ] = useState("post");
+  const [tab,         setTab        ] = useState("analytics");
   const [text,        setText       ] = useState("");
   const [imgUrl,      setImgUrl     ] = useState("");
   const [imgPreview,  setImgPreview ] = useState("");
