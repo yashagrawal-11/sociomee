@@ -50,19 +50,22 @@ function PlatDonut({p:plt,d,size}){
       <circle cx={cx} cy={cy} r={R} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={sw}/>
       {arcs.map((a,i)=>(<path key={i} d={a.d} fill="none" stroke={a.color} strokeWidth={hov===i?sw*1.25:sw} strokeLinecap="butt" style={{cursor:"pointer",transition:"stroke-width 0.15s"}} onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)}/>))}
       <circle cx={cx} cy={cy} r={R-sw/2} fill="rgba(0,0,0,0.75)"/>
-      {active?(<><text x={cx} y={cy-3} textAnchor="middle" fill={active.color} fontSize={size*0.13} fontWeight="900" fontFamily="DM Sans,sans-serif">{active.pct}%</text><text x={cx} y={cy+size*0.13} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize={size*0.09} fontFamily="DM Sans,sans-serif">{active.label.slice(0,7)}</text></>)
-      :connected?(<><text x={cx} y={cy-2} textAnchor="middle" fill={plt.color} fontSize={size*0.16} fontWeight="900" fontFamily="DM Sans,sans-serif">{fmt(mainStat)}</text><text x={cx} y={cy+size*0.14} textAnchor="middle" fill="rgba(255,255,255,0.28)" fontSize={size*0.09} fontFamily="DM Sans,sans-serif">{plt.statLabel.slice(0,7)}</text></>)
+      {active?(<><text x={cx} y={cy-3} textAnchor="middle" fill="#ffffff" fontSize={size*0.13} fontWeight="900" fontFamily="DM Sans,sans-serif">{active.pct}%</text><text x={cx} y={cy+size*0.13} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize={size*0.09} fontFamily="DM Sans,sans-serif">{active.label.slice(0,7)}</text></>)
+      :connected?(<><text x={cx} y={cy-2} textAnchor="middle" fill="#ffffff" fontSize={size*0.16} fontWeight="900" fontFamily="DM Sans,sans-serif">{fmt(mainStat)}</text><text x={cx} y={cy+size*0.14} textAnchor="middle" fill="rgba(255,255,255,0.28)" fontSize={size*0.09} fontFamily="DM Sans,sans-serif">{plt.statLabel.slice(0,7)}</text></>)
       :(<text x={cx} y={cy+4} textAnchor="middle" fill="rgba(255,255,255,0.15)" fontSize={size*0.1} fontFamily="DM Sans,sans-serif">Offline</text>)}
     </svg>
   );
 }
 
-function PlatCard({p,d,onClick,loading}){const connected=d?.connected;const stat=d?.subscribers??d?.followers??d?.member_count??null;const stat2=d?.media_count??d?.pin_count??d?.total_posts??null;const Icon=p.icon;return(<Glass onClick={connected?onClick:undefined} style={{padding:16,position:"relative",overflow:"hidden",background:"rgba(255,255,255,0.03)"}}><div style={{position:"absolute",top:0,left:0,right:0,height:2,background:connected?`linear-gradient(90deg,${p.color},${p.color}44)`:"rgba(255,255,255,0.04)",borderRadius:"16px 16px 0 0"}}/><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}><div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:24,height:24,borderRadius:7,background:`${p.color}18`,border:`1px solid ${p.color}30`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon s={14}/></div><span style={{fontSize:12,fontWeight:800,color:connected?"#f5f5f7":"rgba(255,255,255,0.3)"}}>{p.label}</span></div><span style={{fontSize:8,fontWeight:900,letterSpacing:"0.7px",textTransform:"uppercase",padding:"2px 8px",borderRadius:99,background:connected?`${p.color}20`:"rgba(255,255,255,0.05)",color:connected?p.color:"rgba(255,255,255,0.2)",border:`1px solid ${connected?p.color+"44":"rgba(255,255,255,0.07)"}`}}>{connected?"Live":"Off"}</span></div>{loading?(<div style={{display:"flex",justifyContent:"center",marginBottom:10}}><Skel w={88} h={88} r={44}/></div>):(<div style={{display:"flex",justifyContent:"center",marginBottom:10}}><PlatDonut p={p} d={d} size={88}/></div>)}{connected&&!loading&&(<div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:8}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div>{stat!=null&&<div style={{fontSize:14,fontWeight:900,color:"#f5f5f7"}}>{fmt(stat)}<span style={{fontSize:8,color:"rgba(255,255,255,0.3)",marginLeft:3}}>{p.statLabel}</span></div>}{stat2!=null&&p.stat2Label&&<div style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginTop:1}}>{stat2} {p.stat2Label}</div>}</div>{d.week_change!=null&&<div style={{fontSize:10,fontWeight:800,color:d.week_change>=0?"#34d399":"#f87171"}}>{d.week_change>=0?"+":""}{d.week_change}%</div>}</div></div>)}</Glass>);}
+function PlatCard({p,d,onClick,loading}){const connected=d?.connected;const stat=d?.subscribers??d?.followers??d?.member_count??null;const stat2=d?.media_count??d?.pin_count??d?.total_posts??null;const Icon=p.icon;return(<Glass onClick={connected?onClick:undefined} style={{padding:16,position:"relative",overflow:"hidden",background:"rgba(255,255,255,0.03)"}}><div style={{position:"absolute",top:0,left:0,right:0,height:2,background:connected?`linear-gradient(90deg,${p.color},${p.color}44)`:"rgba(255,255,255,0.04)",borderRadius:"16px 16px 0 0"}}/><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}><div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:24,height:24,borderRadius:7,background:`${p.color}18`,border:`1px solid ${p.color}30`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon s={14}/></div><span style={{fontSize:12,fontWeight:800,color:connected?"#f5f5f7":"rgba(255,255,255,0.3)"}}>{p.label}</span></div><div style={{width:8,height:8,borderRadius:"50%",background:connected?"#34d399":"rgba(255,255,255,0.15)",boxShadow:connected?"0 0 8px #34d399,0 0 16px #34d39933":undefined,flexShrink:0}}/></div>{loading?(<div style={{display:"flex",justifyContent:"center",marginBottom:10}}><Skel w={88} h={88} r={44}/></div>):(<div style={{display:"flex",justifyContent:"center",marginBottom:10}}><PlatDonut p={p} d={d} size={88}/></div>)}{connected&&!loading&&(<div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:8}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div>{stat!=null&&<div style={{fontSize:14,fontWeight:900,color:"#f5f5f7"}}>{fmt(stat)}<span style={{fontSize:8,color:"rgba(255,255,255,0.3)",marginLeft:3}}>{p.statLabel}</span></div>}{stat2!=null&&p.stat2Label&&<div style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginTop:1}}>{stat2} {p.stat2Label}</div>}</div>{d.week_change!=null&&<div style={{fontSize:10,fontWeight:800,color:d.week_change>=0?"#34d399":"#f87171"}}>{d.week_change>=0?"+":""}{d.week_change}%</div>}</div></div>)}</Glass>);}
 function StatCard({label,value,sub,color,loading,icon}){return(<Glass style={{padding:"16px 18px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"1.2px",color:"rgba(255,255,255,0.3)"}}>{label}</div><div style={{padding:7,borderRadius:8,background:`${color}18`,color}}>{icon}</div></div>{loading?<Skel h={28} r={6} style={{marginBottom:6}}/>:<div style={{fontSize:26,fontWeight:900,color:"#f5f5f7",lineHeight:1,marginBottom:5}}>{value}</div>}{loading?<Skel h={10} w="55%"/>:<div style={{fontSize:10,color,fontWeight:600}}>{sub}</div>}<div style={{marginTop:12,height:1.5,background:"rgba(255,255,255,0.05)",borderRadius:99}}><div style={{height:"100%",width:"65%",background:color,borderRadius:99,opacity:0.4}}/></div></Glass>);}
 function InsightsPanel({data,conn}){const topP=[...conn].sort((a,b)=>{const da=data[a.id],db=data[b.id];return(db?.subscribers??db?.followers??db?.member_count??0)-(da?.subscribers??da?.followers??da?.member_count??0);})[0];const tw=data.telegram?.this_week||0,wc=data.telegram?.week_change??0;const connPct=Math.round((conn.length/8)*100);const totalReach=conn.reduce((s,p)=>{const d=data[p.id];return s+(d?.subscribers??d?.followers??d?.member_count??0);},0);const metrics=[{label:"Platform Coverage",v:conn.length,max:8,color:"#a78bfa"},{label:"Telegram Activity",v:Math.min(tw,10),max:10,color:"#2aabee"},{label:"IG Posts",v:Math.min(data.instagram?.media_count||0,50),max:50,color:"#e1306c"},{label:"Pinterest Pins",v:Math.min(data.pinterest?.pin_count||0,100),max:100,color:"#e60023"}];const tip=conn.length===0?"Connect a platform to get AI tips.":conn.length<4?`On ${conn.length} platforms. Creators on 5+ grow 3x faster.`:tw===0?"Post to Telegram consistently to build momentum.":wc>50?"Great momentum! Cross-post to Instagram now.":"Analyze best content and double down on it.";return(<div style={{display:"flex",flexDirection:"column",gap:10}}><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"1.5px",color:"rgba(255,255,255,0.3)",marginBottom:2}}>AI Insights</div><Glass style={{padding:"14px 16px",display:"flex",alignItems:"center",gap:14,background:"rgba(167,139,250,0.06)",border:"1px solid rgba(167,139,250,0.15)"}}><svg width="58" height="58" viewBox="0 0 58 58" style={{flexShrink:0}}><circle cx="29" cy="29" r="23" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7"/><circle cx="29" cy="29" r="23" fill="none" stroke="#a78bfa" strokeWidth="7" strokeLinecap="round" strokeDasharray={`${(connPct/100)*144.5} 144.5`} transform="rotate(-90 29 29)"/><text x="29" y="34" textAnchor="middle" fill="#a78bfa" fontSize="12" fontWeight="900" fontFamily="DM Sans,sans-serif">{conn.length}/8</text></svg><div><div style={{fontSize:13,fontWeight:900,color:"#f5f5f7"}}>Coverage</div><div style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginTop:2}}>{conn.length===8?"All active!":`${8-conn.length} to connect`}</div><div style={{fontSize:10,color:"#a78bfa",marginTop:4,fontWeight:700}}>{fmt(totalReach)} total reach</div></div></Glass>{metrics.map((b,i)=>(<Glass key={i} style={{padding:"10px 14px"}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}><span style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>{b.label}</span><span style={{fontSize:10,fontWeight:800,color:"#f5f5f7"}}>{b.v}<span style={{color:"rgba(255,255,255,0.2)"}}>/{b.max}</span></span></div><div style={{height:4,background:"rgba(255,255,255,0.06)",borderRadius:99,overflow:"hidden"}}><div style={{height:"100%",width:`${Math.min((b.v/b.max)*100,100)}%`,background:`linear-gradient(90deg,${b.color},${b.color}88)`,borderRadius:99,transition:"width 0.8s ease"}}/></div></Glass>))}{topP&&(<Glass style={{padding:"10px 14px",background:`${topP.color}0a`,border:`1px solid ${topP.color}22`}}><div style={{fontSize:8,fontWeight:800,textTransform:"uppercase",letterSpacing:"1px",color:"rgba(255,255,255,0.3)",marginBottom:6}}>Top Platform</div><div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,borderRadius:"50%",background:topP.color,boxShadow:`0 0 6px ${topP.color}`}}/><span style={{fontSize:12,fontWeight:800,color:"#f5f5f7"}}>{topP.label}</span><span style={{fontSize:10,color:"rgba(255,255,255,0.35)",marginLeft:"auto"}}>{fmt(data[topP.id]?.subscribers??data[topP.id]?.followers??data[topP.id]?.member_count??0)}</span></div></Glass>)}{tw>0&&(<Glass style={{padding:"10px 14px",background:wc>=0?"rgba(52,211,153,0.06)":"rgba(248,113,113,0.06)",border:`1px solid ${wc>=0?"rgba(52,211,153,0.18)":"rgba(248,113,113,0.18)"}`}}><div style={{display:"flex",alignItems:"center",gap:8}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={wc>=0?"#34d399":"#f87171"} strokeWidth="2.5"><polyline points={wc>=0?"22 7 13.5 15.5 8.5 10.5 2 17":"2 7 10.5 15.5 15.5 10.5 22 17"}/></svg><span style={{fontSize:11,fontWeight:800,color:"#f5f5f7"}}>{tw} posts this week</span><span style={{fontSize:10,fontWeight:700,color:wc>=0?"#34d399":"#f87171",marginLeft:"auto"}}>{wc>=0?"+":""}{wc}%</span></div></Glass>)}<Glass style={{padding:"10px 14px"}}><div style={{fontSize:8,fontWeight:800,textTransform:"uppercase",letterSpacing:"1px",color:"rgba(255,255,255,0.25)",marginBottom:5}}>Smart Tip</div><div style={{fontSize:11,color:"rgba(255,255,255,0.48)",lineHeight:1.6}}>{tip}</div></Glass></div>);}
 
-function UnifiedChart({userId,tgDaily}){
+function UnifiedChart({userId,tgDaily,data}){
   const[days,setDays]=React.useState(30);
+  const[chartType,setChartType]=React.useState("line");
+  const[hovBar,setHovBar]=React.useState(null);
+  const[hovPie,setHovPie]=React.useState(null);
   const[ytData,setYtData]=React.useState([]);
   const[loading,setLoading]=React.useState(true);
   const[hovX,setHovX]=React.useState(null);
@@ -76,23 +79,35 @@ function UnifiedChart({userId,tgDaily}){
       fetch(`${BASE}/threads/insights?user_id=${userId}&days=${days}`).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(`${BASE}/instagram/insights?user_id=${userId}&days=${days}`).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(`${BASE}/pinterest/insights?user_id=${userId}&days=${days}`).then(r=>r.ok?r.json():null).catch(()=>null),
-    ]).then(([yt,th,ig,pi])=>{
-      setAllData({yt,th,ig,pi});
+      fetch(`${BASE}/discord/analytics?user_id=${userId}`).then(r=>r.ok?r.json():null).catch(()=>null),
+    ]).then(([yt,th,ig,pi,dc])=>{
+      setAllData({yt,th,ig,pi,dc});
       setYtData(yt?.chart_data||[]);
       setLoading(false);
     });
   },[userId,days]);
 
+  // LinkedIn: flat line at 1 if connected (no time-series data available)
+  const liConn=data?.linkedin?.connected;
+  const liVals=liConn?Array(days).fill(1):[];
+  // Discord: use total_posts as flat signal
+  const dcData=allData.dc;
+  const dcPosts=dcData?.total_posts||0;
+  const dcConn=data?.discord?.connected;
+  const dcVals=dcConn?[...Array(days-1).fill(0),dcPosts>0?dcPosts:0]:[]; 
   const PLAT_DATASETS=[
     {key:"yt",  label:"YouTube Views",   color:"#ff0000", vals:(allData.yt?.chart_data||[]).map(d=>d.views||0)},
     {key:"th",  label:"Threads Views",   color:"#e0e0e0", vals:(allData.th?.chart_data||[]).map(d=>d.views||0)},
     {key:"ig",  label:"Instagram Reach", color:"#e1306c", vals:(allData.ig?.chart_data||[]).map(d=>d.reach||d.impressions||d.views||0)},
     {key:"pi",  label:"Pinterest Impr",  color:"#e60023", vals:(allData.pi?.chart_data||[]).map(d=>d.impressions||d.views||0)},
     {key:"tg",  label:"Telegram Posts",  color:"#2aabee", vals:tgDaily.slice(-days)},
+    {key:"li",  label:"LinkedIn",        color:"#0a66c2", vals:liVals},
+    {key:"dc",  label:"Discord Posts",   color:"#5865f2", vals:dcVals},
   ];
-  const datasets=PLAT_DATASETS.filter(d=>d.vals.length>0&&d.vals.some(v=>v>0));
+  const datasets=PLAT_DATASETS.filter(d=>d.vals.length>0&&(d.vals.some(v=>v>=0)||d.key==="li"||d.key==="dc"));
 
-  const W=600,H=140,pad=10;
+  const H=chartType==="donut"?220:chartType==="bar"?200:chartType==="pie"?220:140;
+  const W=600,pad=10;
   const allVals=datasets.flatMap(d=>d.vals);
   const maxV=Math.max(...allVals,1);
   const len=Math.max(...datasets.map(d=>d.vals.length),1);
@@ -116,6 +131,11 @@ function UnifiedChart({userId,tgDaily}){
           <div style={{fontSize:10,color:"rgba(255,255,255,0.35)",marginTop:2}}>Last {days} days</div>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
+          <div style={{display:"flex",gap:4,marginBottom:4}}>
+            {[["line","Line"],["bar","Bar"],["donut","Donut"],["pie","Pie"]].map(([k,l])=>(
+              <button key={k} onClick={()=>setChartType(k)} style={{padding:"4px 10px",borderRadius:99,border:`1px solid ${chartType===k?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.07)"}`,background:chartType===k?"rgba(255,255,255,0.1)":"transparent",color:chartType===k?"#f5f5f7":"rgba(255,255,255,0.4)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>{l}</button>
+            ))}
+          </div>
           <div style={{display:"flex",gap:4}}>
             {[7,30,90].map(d=>(
               <button key={d} onClick={()=>setDays(d)} style={{padding:"4px 10px",borderRadius:99,border:`1px solid ${days===d?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.07)"}`,background:days===d?"rgba(255,255,255,0.1)":"transparent",color:days===d?"#f5f5f7":"rgba(255,255,255,0.4)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>{d}d</button>
@@ -125,52 +145,149 @@ function UnifiedChart({userId,tgDaily}){
       </div>
       {loading?<Skel h={H} r={8}/>:paths.length>0?(
         <div>
-          <svg width="100%" height={H} viewBox={"0 0 "+W+" "+H} style={{display:"block",overflow:"visible",cursor:"crosshair"}}
-            onMouseMove={e=>{const r=e.currentTarget.getBoundingClientRect();const mx=(e.clientX-r.left)/r.width*W;setHovX(Math.max(0,Math.min(len-1,Math.round((mx-pad)/(W-pad*2)*(len-1)))));}}
-            onMouseLeave={()=>setHovX(null)}>
-            <defs>
-              {paths.map((p,i)=>(
-                <linearGradient key={i} id={"ucg"+i} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={p.color} stopOpacity="0.2"/>
-                  <stop offset="100%" stopColor={p.color} stopOpacity="0"/>
-                </linearGradient>
-              ))}
-            </defs>
-            {paths.map((p,i)=>(
-              <g key={i}>
-                <path d={p.area} fill={"url(#ucg"+i+")"}/>
-                <path d={p.path} fill="none" stroke={p.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={hov!=null&&hov!==i?0.25:1} style={{transition:"opacity 0.2s"}}/>
-              </g>
-            ))}
-            {hovX!=null&&paths.length>0&&(
-              <>
-                <line x1={xs[hovX]} y1={pad} x2={xs[hovX]} y2={H} stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="3 3"/>
-                {paths.map((p,i)=>(
-                  hovX<p.vals.length&&<circle key={i} cx={xs[hovX]} cy={p.ys[hovX]} r="4" fill={p.color} stroke="#000" strokeWidth="1.5"/>
-                ))}
-                <rect x={Math.min(xs[hovX]+8,W-120)} y={pad} width="112" height={paths.length*16+10} rx="6" fill="rgba(8,8,8,0.96)" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
-                {paths.map((p,i)=>(
-                  hovX<p.vals.length&&(
-                    <g key={i}>
-                      <rect x={Math.min(xs[hovX]+14,W-114)} y={pad+6+i*16} width="6" height="6" rx="2" fill={p.color}/>
-                      <text x={Math.min(xs[hovX]+24,W-104)} y={pad+13+i*16} fill="rgba(255,255,255,0.8)" fontSize="10" fontFamily="DM Sans,sans-serif">{p.label}: {fmt(p.vals[hovX])}</text>
+          {chartType==="line"&&(
+            <div>
+              <svg width="100%" height={H} viewBox={"0 0 "+W+" "+H} style={{display:"block",overflow:"visible",cursor:"crosshair"}}
+                onMouseMove={e=>{const r=e.currentTarget.getBoundingClientRect();const mx=(e.clientX-r.left)/r.width*W;setHovX(Math.max(0,Math.min(len-1,Math.round((mx-pad)/(W-pad*2)*(len-1)))));}}
+                onMouseLeave={()=>setHovX(null)}>
+                <defs>{paths.map((p,i)=>(<linearGradient key={i} id={"ucg"+i} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={p.color} stopOpacity="0.2"/><stop offset="100%" stopColor={p.color} stopOpacity="0"/></linearGradient>))}</defs>
+                {paths.map((p,i)=>(<g key={i}><path d={p.area} fill={"url(#ucg"+i+")"}/><path d={p.path} fill="none" stroke={p.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={hov!=null&&hov!==i?0.25:1} style={{transition:"opacity 0.2s"}}/></g>))}
+                {hovX!=null&&(<><line x1={xs[hovX]} y1={pad} x2={xs[hovX]} y2={H} stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="3 3"/>{paths.map((p,i)=>(hovX<p.vals.length&&<circle key={i} cx={xs[hovX]} cy={p.ys[hovX]} r="4" fill={p.color} stroke="#000" strokeWidth="1.5"/>))}<rect x={Math.min(xs[hovX]+8,W-120)} y={pad} width="112" height={paths.length*16+10} rx="6" fill="rgba(8,8,8,0.96)" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>{paths.map((p,i)=>(hovX<p.vals.length&&(<g key={i}><rect x={Math.min(xs[hovX]+14,W-114)} y={pad+6+i*16} width="6" height="6" rx="2" fill={p.color}/><text x={Math.min(xs[hovX]+24,W-104)} y={pad+13+i*16} fill="rgba(255,255,255,0.8)" fontSize="10" fontFamily="DM Sans,sans-serif">{p.label}: {fmt(p.vals[hovX])}</text></g>)))}</>)}
+              </svg>
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}><span style={{fontSize:9,color:"rgba(255,255,255,0.2)"}}>{labels.start}</span><span style={{fontSize:9,color:"rgba(255,255,255,0.2)"}}>Today</span></div>
+            </div>
+          )}
+          {chartType==="bar"&&(()=>{
+            const BW=600,BH=H,bpad=10,grpGap=4,barGap=1;
+            const barLen=Math.min(len,days===7?7:days===30?14:20);
+            const barDatasets=datasets.map((d,di)=>({...d,vals:d.vals.slice(-barLen)}));
+            const allValsFlat=barDatasets.flatMap(d=>d.vals).filter(v=>v>0);
+            const maxBV=Math.max(...allValsFlat,1);
+            const minBV=Math.max(Math.min(...allValsFlat,maxBV),0);
+            // log scale: makes small values visible
+            const logScale=v=>v<=0?0:Math.log1p(v)/Math.log1p(maxBV);
+            const totalBars=barDatasets.length;
+            const slotW=(BW-bpad*2)/Math.max(barLen,1);
+            const bw=Math.max((slotW-grpGap-(barGap*(totalBars-1)))/totalBars,10);
+            const drawH=BH-bpad-24;
+            // get date labels from ytData
+            const dateLabels=ytData.slice(-barLen).map(d=>d.date?d.date.slice(5):"");
+            return(
+              <div style={{position:"relative"}}>
+                <svg width="100%" height={BH} viewBox={"0 0 "+BW+" "+BH} style={{display:"block",overflow:"visible"}}>
+                  <defs>{barDatasets.map((ds,di)=>(<linearGradient key={di} id={"bg"+di} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={ds.color} stopOpacity="0.95"/><stop offset="100%" stopColor={ds.color} stopOpacity="0.3"/></linearGradient>))}</defs>
+                  {[0.25,0.5,0.75,1].map(f=>(<g key={f}><line x1={bpad} y1={bpad+(1-f)*drawH} x2={BW-bpad} y2={bpad+(1-f)*drawH} stroke="rgba(255,255,255,0.05)" strokeWidth="1"/><text x={8} y={bpad+(1-f)*drawH+4} textAnchor="end" fill="rgba(255,255,255,0.2)" fontSize="8" fontFamily="DM Sans,sans-serif">{fmt(Math.round(maxBV*f))}</text></g>))}
+                  {barDatasets.map((ds,di)=>ds.vals.map((v,i)=>{
+                    const grpX=bpad+i*slotW+grpGap/2;
+                    const x=grpX+di*(bw+barGap);
+                    const bh=Math.max(logScale(v)*drawH,v>0?4:0);
+                    const y=bpad+drawH-bh;
+                    const isHov=hovBar&&hovBar.i===i&&hovBar.di===di;
+                    const date=dateLabels[i]||"";
+                    return(
+                      <g key={di+"-"+i} style={{cursor:"pointer"}}
+                        onMouseEnter={()=>setHovBar({i,di,v,label:ds.label,color:ds.color,x:grpX+slotW/2,y,date})}
+                        onMouseLeave={()=>setHovBar(null)}>
+                        <rect x={x} y={y} width={bw} height={bh} fill={"url(#bg"+di+")"} rx="0" opacity={hovBar&&!isHov?0.25:1} style={{transition:"opacity 0.15s"}}/>
+                        {isHov&&<rect x={x-1} y={y-1} width={bw+2} height={bh+2} fill="none" stroke={ds.color} strokeWidth="1.5" rx="3" opacity="0.8"/>}
+                      </g>
+                    );
+                  }))}
+                  <line x1={bpad} y1={bpad+drawH} x2={BW-bpad} y2={bpad+drawH} stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
+                  {hovBar&&(
+                    <g>
+                      <rect x={Math.min(Math.max(hovBar.x-55,bpad),BW-120)} y={Math.max(hovBar.y-52,2)} width="110" height="46" rx="8" fill="rgba(6,6,6,0.97)" stroke={hovBar.color} strokeWidth="1" style={{filter:"drop-shadow(0 4px 12px rgba(0,0,0,0.8))"}}/>
+                      <text x={Math.min(Math.max(hovBar.x-55,bpad),BW-120)+55} y={Math.max(hovBar.y-52,2)+14} textAnchor="middle" fill={hovBar.color} fontSize="9" fontWeight="800" fontFamily="DM Sans,sans-serif" letterSpacing="0.5">{hovBar.label.toUpperCase()}</text>
+                      <text x={Math.min(Math.max(hovBar.x-55,bpad),BW-120)+55} y={Math.max(hovBar.y-52,2)+28} textAnchor="middle" fill="#ffffff" fontSize="13" fontWeight="900" fontFamily="DM Sans,sans-serif">{fmt(hovBar.v)}</text>
+                      <text x={Math.min(Math.max(hovBar.x-55,bpad),BW-120)+55} y={Math.max(hovBar.y-52,2)+40} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="9" fontFamily="DM Sans,sans-serif">{hovBar.date}</text>
                     </g>
-                  )
-                ))}
-              </>
-            )}
-          </svg>
-          <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
-            <span style={{fontSize:9,color:"rgba(255,255,255,0.2)"}}>{labels.start}</span>
-            <span style={{fontSize:9,color:"rgba(255,255,255,0.2)"}}>Today</span>
-          </div>
-          <div style={{display:"flex",gap:14,marginTop:8}}>
-            {paths.map((p,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:5,cursor:"pointer",opacity:hov!=null&&hov!==i?0.3:1}} onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)}>
-                <div style={{width:20,height:2,borderRadius:99,background:p.color}}/>
-                <span style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>{p.label}</span>
+                  )}
+                </svg>
               </div>
-            ))}
+            );
+          })()}
+          {chartType==="donut"&&(()=>{
+            const totals=datasets.map(ds=>({label:ds.label,color:ds.color,v:ds.vals.reduce((s,x)=>s+x,0)})).filter(d=>d.v>0);
+            const grandTotal=totals.reduce((s,d)=>s+d.v,0)||1;
+            const sz=H,cx=sz/2,cy=sz/2,R=sz*0.38,sw=sz*0.13;
+            let angle=-90;
+            const arcs=totals.map((seg,i)=>{
+              const pct=seg.v/grandTotal,deg=Math.max(pct*360,2);
+              const r1=angle*Math.PI/180,r2=(angle+deg)*Math.PI/180;
+              const x1=cx+R*Math.cos(r1),y1=cy+R*Math.sin(r1),x2=cx+R*Math.cos(r2),y2=cy+R*Math.sin(r2);
+              const arcD="M "+x1+" "+y1+" A "+R+" "+R+" 0 "+(deg>180?1:0)+" 1 "+x2+" "+y2;
+              angle+=deg;
+              return{...seg,d:arcD,pct:Math.round(pct*100)};
+            });
+            return(
+              <div style={{display:"flex",alignItems:"center",gap:32}}>
+                <svg width={sz} height={sz} viewBox={"0 0 "+sz+" "+sz} style={{flexShrink:0}}>
+                  <circle cx={cx} cy={cy} r={R} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={sw}/>
+                  {arcs.map((a,i)=>(<path key={i} d={a.d} fill="none" stroke={a.color} strokeWidth={sw} strokeLinecap="butt" style={{filter:`drop-shadow(0 0 4px ${a.color}66)`}}/>))}
+                  <circle cx={cx} cy={cy} r={R-sw/2} fill="rgba(0,0,0,0.8)"/>
+                  <text x={cx} y={cy-8} textAnchor="middle" fill="#f5f5f7" fontSize={sz*0.1} fontWeight="900" fontFamily="DM Sans,sans-serif">{fmt(grandTotal)}</text>
+                  <text x={cx} y={cy+sz*0.08} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize={sz*0.065} fontFamily="DM Sans,sans-serif">Total Activity</text>
+                </svg>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:10}}>
+                  {arcs.map((a,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",borderRadius:10,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)"}}>
+                      <div style={{width:10,height:10,borderRadius:3,background:a.color,flexShrink:0,boxShadow:"0 0 6px "+a.color+"88"}}/>
+                      <span style={{fontSize:11,color:"rgba(255,255,255,0.6)",flex:1}}>{a.label}</span>
+                      <span style={{fontSize:12,fontWeight:900,color:"#f5f5f7"}}>{fmt(a.v)}</span>
+                      <span style={{fontSize:10,color:a.color,fontWeight:700,minWidth:32,textAlign:"right"}}>{a.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+          {chartType==="pie"&&(()=>{
+            const totals=datasets.map(ds=>({label:ds.label,color:ds.color,v:ds.vals.reduce((s,x)=>s+x,0)})).filter(d=>d.v>0);
+            const grandTotal=totals.reduce((s,d)=>s+d.v,0)||1;
+            const cx=190,cy=H/2,R=H/2-10,BW=600;
+            let angle=-90;
+            const slices=totals.map((seg,i)=>{
+              const pct=seg.v/grandTotal,deg=Math.max(pct*360,4);
+              const r1=angle*Math.PI/180,r2=(angle+deg)*Math.PI/180;
+              const x1=cx+R*Math.cos(r1),y1=cy+R*Math.sin(r1);
+              const x2=cx+R*Math.cos(r2),y2=cy+R*Math.sin(r2);
+              const mx=cx+(R*0.65)*Math.cos((r1+r2)/2),my=cy+(R*0.65)*Math.sin((r1+r2)/2);
+              const arcD="M "+cx+" "+cy+" L "+x1+" "+y1+" A "+R+" "+R+" 0 "+(deg>180?1:0)+" 1 "+x2+" "+y2+" Z";
+              angle+=deg;
+              return{...seg,d:arcD,pct:Math.round(pct*100),mx,my};
+            });
+            return(
+              <div style={{display:"flex",alignItems:"center",gap:24}}>
+                <svg width={cx*2+10} height={H} viewBox={"0 0 "+(cx*2)+" "+H} style={{flexShrink:0}}>
+                  <defs>{slices.map((s,i)=>(<linearGradient key={i} id={"pg"+i} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor={s.color} stopOpacity="1"/><stop offset="100%" stopColor={s.color} stopOpacity="0.6"/></linearGradient>))}</defs>
+                  {slices.map((s,i)=>(
+                    <g key={i} style={{cursor:"pointer",transition:"transform 0.2s",transformOrigin:`${cx}px ${cy}px`,transform:hovPie===i?"scale(1.04)":"scale(1)"}} onMouseEnter={()=>setHovPie(i)} onMouseLeave={()=>setHovPie(null)}>
+                      <path d={s.d} fill={"url(#pg"+i+")"} stroke="rgba(0,0,0,0.4)" strokeWidth="1.5"/>
+                    </g>
+                  ))}
+                  {hovPie!=null&&slices[hovPie]&&(
+                    <g>
+                      <rect x={Math.min(slices[hovPie].mx-50,BW-110)} y={slices[hovPie].my-28} width="100" height="34" rx="6" fill="rgba(8,8,8,0.95)" stroke={slices[hovPie].color} strokeWidth="1"/>
+                      <text x={Math.min(slices[hovPie].mx-50,BW-110)+50} y={slices[hovPie].my-13} textAnchor="middle" fill={slices[hovPie].color} fontSize="10" fontWeight="800" fontFamily="DM Sans,sans-serif">{slices[hovPie].label}</text>
+                      <text x={Math.min(slices[hovPie].mx-50,BW-110)+50} y={slices[hovPie].my+2} textAnchor="middle" fill="#fff" fontSize="12" fontWeight="900" fontFamily="DM Sans,sans-serif">{fmt(slices[hovPie].v)} · {slices[hovPie].pct}%</text>
+                    </g>
+                  )}
+                </svg>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:8}}>
+                  {slices.map((s,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",borderRadius:10,background:hovPie===i?`${s.color}12`:"rgba(255,255,255,0.03)",border:`1px solid ${hovPie===i?s.color+"33":"rgba(255,255,255,0.06)"}`,cursor:"pointer",transition:"all 0.15s"}} onMouseEnter={()=>setHovPie(i)} onMouseLeave={()=>setHovPie(null)}>
+                      <div style={{width:10,height:10,borderRadius:"50%",background:s.color,flexShrink:0,boxShadow:`0 0 6px ${s.color}88`}}/>
+                      <span style={{fontSize:11,color:"rgba(255,255,255,0.6)",flex:1}}>{s.label}</span>
+                      <span style={{fontSize:12,fontWeight:900,color:"#f5f5f7"}}>{fmt(s.v)}</span>
+                      <span style={{fontSize:10,color:s.color,fontWeight:700,minWidth:32,textAlign:"right"}}>{s.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+          <div style={{display:"flex",gap:10,marginTop:10,flexWrap:"wrap"}}>
+            {paths.map((p,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:5,cursor:"pointer",opacity:hov!=null&&hov!==i?0.3:1,transition:"opacity 0.2s"}} onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)}><div style={{width:7,height:7,borderRadius:"50%",background:p.color,boxShadow:`0 0 6px ${p.color},0 0 12px ${p.color}66`,flexShrink:0}}/><span style={{fontSize:9,color:"rgba(255,255,255,0.45)",whiteSpace:"nowrap"}}>{p.label}</span></div>))}
           </div>
         </div>
       ):(
@@ -199,7 +316,7 @@ function InsightsHorizontal({data,conn}){
     <div>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
         <span style={{fontSize:13,fontWeight:900,color:"#f5f5f7"}}>✦ SocioMee AI Insights</span>
-        <span style={{fontSize:10,fontWeight:700,color:"#34d399",background:"rgba(52,211,153,0.1)",border:"1px solid rgba(52,211,153,0.2)",padding:"2px 8px",borderRadius:99}}>Live Analysis</span>
+        <div style={{width:8,height:8,borderRadius:"50%",background:"#34d399",boxShadow:"0 0 10px #34d399,0 0 20px #34d39944"}}/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:14}} className="d-ins-grid">
         {cards.map((card,i)=>(
@@ -254,7 +371,7 @@ export default function SocioMeeDashboard({userId,onNavigate}){
   return(
     <div style={{fontFamily:"'DM Sans','Syne',sans-serif",paddingBottom:48}}>
       <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}} @media(max-width:900px){.d-top{grid-template-columns:repeat(2,1fr)!important}.d-plat{grid-template-columns:repeat(2,1fr)!important}.d-body{flex-direction:column!important}.d-ins-grid{grid-template-columns:repeat(2,1fr)!important}}`}</style>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:28}}><div><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"2.5px",color:"rgba(255,255,255,0.28)",marginBottom:4}}>Creator OS</div><div style={{fontSize:26,fontWeight:900,color:"#f5f5f7",letterSpacing:"-0.5px"}}>Dashboard</div></div><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:7,height:7,borderRadius:"50%",background:"#34d399",boxShadow:"0 0 8px #34d399"}}/><span style={{fontSize:10,color:"rgba(255,255,255,0.28)"}}>Live · 30s</span></div></div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:28}}><div><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"2.5px",color:"rgba(255,255,255,0.28)",marginBottom:4}}>Creator OS</div><div style={{fontSize:26,fontWeight:900,color:"#f5f5f7",letterSpacing:"-0.5px"}}>Dashboard</div></div><div style={{width:8,height:8,borderRadius:"50%",background:"#34d399",boxShadow:"0 0 10px #34d399,0 0 20px #34d39944"}}/></div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}} className="d-top">
         <StatCard label="Platforms" value={conn.length} sub="of 8 connected" color="#a78bfa" loading={loading} icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>}/>
         <StatCard label="Total Reach" value={fmt(totalReach)} sub="across all platforms" color="#34d399" loading={loading} icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}/>
@@ -262,7 +379,7 @@ export default function SocioMeeDashboard({userId,onNavigate}){
         <StatCard label="This Week" value={tw} sub={wc>=0?`+${wc}% vs last week`:`${wc}% vs last week`} color={wc>=0?"#34d399":"#f87171"} loading={loading} icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>}/>
       </div>
       <div style={{marginBottom:20}}>
-        <UnifiedChart userId={userId} tgDaily={tgDaily}/>
+        <UnifiedChart userId={userId} tgDaily={tgDaily} data={data}/>
       </div>
       <Glass style={{padding:20,marginBottom:24}}>
         {loading?<div style={{display:"flex",gap:12}}>{[1,2,3,4].map(i=><Skel key={i} h={80} r={10} style={{flex:1}}/>)}</div>:<InsightsHorizontal data={data} conn={conn}/>}
