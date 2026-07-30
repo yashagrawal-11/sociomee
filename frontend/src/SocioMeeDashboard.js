@@ -10,9 +10,8 @@ const PLATS=[
   {id:"pinterest",label:"Pinterest",color:"#e60023",statLabel:"Followers",stat2Label:"Pins",    icon:({s=18})=><img src="/icons/pinterest.png" width={s} height={s} style={{objectFit:"contain"}} alt=""/>},
   {id:"telegram", label:"Telegram", color:"#2aabee",statLabel:"Members",  stat2Label:"Posts",
    icon:({s=18})=><svg viewBox="0 0 24 24" width={s} height={s} fill="#2aabee"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>},
-  {id:"discord",  label:"Discord",  color:"#5865f2",statLabel:"Members",  stat2Label:"Posts",
-   icon:({s=18})=><img src="/icons/discord.png" width={s} height={s} style={{objectFit:"contain"}} alt="dc" onError={e=>{e.target.style.display="none";e.target.parentNode.innerHTML='<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>';}}/> },
-];
+  {id:"discord",  label:"Discord",  color:"#5865f2",statLabel:"Members",  stat2Label:"Posts",   icon:({s=18})=><svg viewBox="0 0 24 24" width={s} height={s} fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>},
+];;
 const fmt=n=>n==null?"0":n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e3?(n/1e3).toFixed(1)+"K":String(n);
 const Glass=({children,style={},onClick})=>(<div onClick={onClick} style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:16,transition:"border-color 0.2s,background 0.2s",...style,cursor:onClick?"pointer":undefined}} onMouseEnter={onClick?e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.18)";e.currentTarget.style.background="rgba(255,255,255,0.07)";}:undefined} onMouseLeave={onClick?e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.08)";e.currentTarget.style.background=style.background||"rgba(255,255,255,0.04)";}:undefined}>{children}</div>);
 const Skel=({w="100%",h=14,r=6,style={}})=>(<div style={{width:w,height:h,borderRadius:r,background:"rgba(255,255,255,0.06)",overflow:"hidden",...style}}><div style={{width:"100%",height:"100%",backgroundImage:"linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0) 100%)",backgroundSize:"200% 100%",animation:"shimmer 1.4s ease infinite"}}/></div>);
@@ -61,6 +60,187 @@ function PlatDonut({p:plt,d,size}){
 function PlatCard({p,d,onClick,loading}){const connected=d?.connected;const stat=d?.subscribers??d?.followers??d?.member_count??null;const stat2=d?.media_count??d?.pin_count??d?.total_posts??null;const Icon=p.icon;return(<Glass onClick={connected?onClick:undefined} style={{padding:16,position:"relative",overflow:"hidden",background:"rgba(255,255,255,0.03)"}}><div style={{position:"absolute",top:0,left:0,right:0,height:2,background:connected?`linear-gradient(90deg,${p.color},${p.color}44)`:"rgba(255,255,255,0.04)",borderRadius:"16px 16px 0 0"}}/><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}><div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:24,height:24,borderRadius:7,background:`${p.color}18`,border:`1px solid ${p.color}30`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon s={14}/></div><span style={{fontSize:12,fontWeight:800,color:connected?"#f5f5f7":"rgba(255,255,255,0.3)"}}>{p.label}</span></div><span style={{fontSize:8,fontWeight:900,letterSpacing:"0.7px",textTransform:"uppercase",padding:"2px 8px",borderRadius:99,background:connected?`${p.color}20`:"rgba(255,255,255,0.05)",color:connected?p.color:"rgba(255,255,255,0.2)",border:`1px solid ${connected?p.color+"44":"rgba(255,255,255,0.07)"}`}}>{connected?"Live":"Off"}</span></div>{loading?(<div style={{display:"flex",justifyContent:"center",marginBottom:10}}><Skel w={88} h={88} r={44}/></div>):(<div style={{display:"flex",justifyContent:"center",marginBottom:10}}><PlatDonut p={p} d={d} size={88}/></div>)}{connected&&!loading&&(<div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:8}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div>{stat!=null&&<div style={{fontSize:14,fontWeight:900,color:"#f5f5f7"}}>{fmt(stat)}<span style={{fontSize:8,color:"rgba(255,255,255,0.3)",marginLeft:3}}>{p.statLabel}</span></div>}{stat2!=null&&p.stat2Label&&<div style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginTop:1}}>{stat2} {p.stat2Label}</div>}</div>{d.week_change!=null&&<div style={{fontSize:10,fontWeight:800,color:d.week_change>=0?"#34d399":"#f87171"}}>{d.week_change>=0?"+":""}{d.week_change}%</div>}</div></div>)}</Glass>);}
 function StatCard({label,value,sub,color,loading,icon}){return(<Glass style={{padding:"16px 18px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"1.2px",color:"rgba(255,255,255,0.3)"}}>{label}</div><div style={{padding:7,borderRadius:8,background:`${color}18`,color}}>{icon}</div></div>{loading?<Skel h={28} r={6} style={{marginBottom:6}}/>:<div style={{fontSize:26,fontWeight:900,color:"#f5f5f7",lineHeight:1,marginBottom:5}}>{value}</div>}{loading?<Skel h={10} w="55%"/>:<div style={{fontSize:10,color,fontWeight:600}}>{sub}</div>}<div style={{marginTop:12,height:1.5,background:"rgba(255,255,255,0.05)",borderRadius:99}}><div style={{height:"100%",width:"65%",background:color,borderRadius:99,opacity:0.4}}/></div></Glass>);}
 function InsightsPanel({data,conn}){const topP=[...conn].sort((a,b)=>{const da=data[a.id],db=data[b.id];return(db?.subscribers??db?.followers??db?.member_count??0)-(da?.subscribers??da?.followers??da?.member_count??0);})[0];const tw=data.telegram?.this_week||0,wc=data.telegram?.week_change??0;const connPct=Math.round((conn.length/8)*100);const totalReach=conn.reduce((s,p)=>{const d=data[p.id];return s+(d?.subscribers??d?.followers??d?.member_count??0);},0);const metrics=[{label:"Platform Coverage",v:conn.length,max:8,color:"#a78bfa"},{label:"Telegram Activity",v:Math.min(tw,10),max:10,color:"#2aabee"},{label:"IG Posts",v:Math.min(data.instagram?.media_count||0,50),max:50,color:"#e1306c"},{label:"Pinterest Pins",v:Math.min(data.pinterest?.pin_count||0,100),max:100,color:"#e60023"}];const tip=conn.length===0?"Connect a platform to get AI tips.":conn.length<4?`On ${conn.length} platforms. Creators on 5+ grow 3x faster.`:tw===0?"Post to Telegram consistently to build momentum.":wc>50?"Great momentum! Cross-post to Instagram now.":"Analyze best content and double down on it.";return(<div style={{display:"flex",flexDirection:"column",gap:10}}><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"1.5px",color:"rgba(255,255,255,0.3)",marginBottom:2}}>AI Insights</div><Glass style={{padding:"14px 16px",display:"flex",alignItems:"center",gap:14,background:"rgba(167,139,250,0.06)",border:"1px solid rgba(167,139,250,0.15)"}}><svg width="58" height="58" viewBox="0 0 58 58" style={{flexShrink:0}}><circle cx="29" cy="29" r="23" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7"/><circle cx="29" cy="29" r="23" fill="none" stroke="#a78bfa" strokeWidth="7" strokeLinecap="round" strokeDasharray={`${(connPct/100)*144.5} 144.5`} transform="rotate(-90 29 29)"/><text x="29" y="34" textAnchor="middle" fill="#a78bfa" fontSize="12" fontWeight="900" fontFamily="DM Sans,sans-serif">{conn.length}/8</text></svg><div><div style={{fontSize:13,fontWeight:900,color:"#f5f5f7"}}>Coverage</div><div style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginTop:2}}>{conn.length===8?"All active!":`${8-conn.length} to connect`}</div><div style={{fontSize:10,color:"#a78bfa",marginTop:4,fontWeight:700}}>{fmt(totalReach)} total reach</div></div></Glass>{metrics.map((b,i)=>(<Glass key={i} style={{padding:"10px 14px"}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}><span style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>{b.label}</span><span style={{fontSize:10,fontWeight:800,color:"#f5f5f7"}}>{b.v}<span style={{color:"rgba(255,255,255,0.2)"}}>/{b.max}</span></span></div><div style={{height:4,background:"rgba(255,255,255,0.06)",borderRadius:99,overflow:"hidden"}}><div style={{height:"100%",width:`${Math.min((b.v/b.max)*100,100)}%`,background:`linear-gradient(90deg,${b.color},${b.color}88)`,borderRadius:99,transition:"width 0.8s ease"}}/></div></Glass>))}{topP&&(<Glass style={{padding:"10px 14px",background:`${topP.color}0a`,border:`1px solid ${topP.color}22`}}><div style={{fontSize:8,fontWeight:800,textTransform:"uppercase",letterSpacing:"1px",color:"rgba(255,255,255,0.3)",marginBottom:6}}>Top Platform</div><div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,borderRadius:"50%",background:topP.color,boxShadow:`0 0 6px ${topP.color}`}}/><span style={{fontSize:12,fontWeight:800,color:"#f5f5f7"}}>{topP.label}</span><span style={{fontSize:10,color:"rgba(255,255,255,0.35)",marginLeft:"auto"}}>{fmt(data[topP.id]?.subscribers??data[topP.id]?.followers??data[topP.id]?.member_count??0)}</span></div></Glass>)}{tw>0&&(<Glass style={{padding:"10px 14px",background:wc>=0?"rgba(52,211,153,0.06)":"rgba(248,113,113,0.06)",border:`1px solid ${wc>=0?"rgba(52,211,153,0.18)":"rgba(248,113,113,0.18)"}`}}><div style={{display:"flex",alignItems:"center",gap:8}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={wc>=0?"#34d399":"#f87171"} strokeWidth="2.5"><polyline points={wc>=0?"22 7 13.5 15.5 8.5 10.5 2 17":"2 7 10.5 15.5 15.5 10.5 22 17"}/></svg><span style={{fontSize:11,fontWeight:800,color:"#f5f5f7"}}>{tw} posts this week</span><span style={{fontSize:10,fontWeight:700,color:wc>=0?"#34d399":"#f87171",marginLeft:"auto"}}>{wc>=0?"+":""}{wc}%</span></div></Glass>)}<Glass style={{padding:"10px 14px"}}><div style={{fontSize:8,fontWeight:800,textTransform:"uppercase",letterSpacing:"1px",color:"rgba(255,255,255,0.25)",marginBottom:5}}>Smart Tip</div><div style={{fontSize:11,color:"rgba(255,255,255,0.48)",lineHeight:1.6}}>{tip}</div></Glass></div>);}
+
+function UnifiedChart({userId,tgDaily}){
+  const[days,setDays]=React.useState(30);
+  const[ytData,setYtData]=React.useState([]);
+  const[loading,setLoading]=React.useState(true);
+  const[hovX,setHovX]=React.useState(null);
+  const[hov,setHov]=React.useState(null);
+
+  const[allData,setAllData]=React.useState({});
+  React.useEffect(()=>{
+    setLoading(true);
+    Promise.all([
+      fetch(`${BASE}/youtube/analytics/${userId}?days=${days}`).then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch(`${BASE}/threads/insights?user_id=${userId}&days=${days}`).then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch(`${BASE}/instagram/insights?user_id=${userId}&days=${days}`).then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch(`${BASE}/pinterest/insights?user_id=${userId}&days=${days}`).then(r=>r.ok?r.json():null).catch(()=>null),
+    ]).then(([yt,th,ig,pi])=>{
+      setAllData({yt,th,ig,pi});
+      setYtData(yt?.chart_data||[]);
+      setLoading(false);
+    });
+  },[userId,days]);
+
+  const PLAT_DATASETS=[
+    {key:"yt",  label:"YouTube Views",   color:"#ff0000", vals:(allData.yt?.chart_data||[]).map(d=>d.views||0)},
+    {key:"th",  label:"Threads Views",   color:"#e0e0e0", vals:(allData.th?.chart_data||[]).map(d=>d.views||0)},
+    {key:"ig",  label:"Instagram Reach", color:"#e1306c", vals:(allData.ig?.chart_data||[]).map(d=>d.reach||d.impressions||d.views||0)},
+    {key:"pi",  label:"Pinterest Impr",  color:"#e60023", vals:(allData.pi?.chart_data||[]).map(d=>d.impressions||d.views||0)},
+    {key:"tg",  label:"Telegram Posts",  color:"#2aabee", vals:tgDaily.slice(-days)},
+  ];
+  const datasets=PLAT_DATASETS.filter(d=>d.vals.length>0&&d.vals.some(v=>v>0));
+
+  const W=600,H=140,pad=10;
+  const allVals=datasets.flatMap(d=>d.vals);
+  const maxV=Math.max(...allVals,1);
+  const len=Math.max(...datasets.map(d=>d.vals.length),1);
+  const xs=Array.from({length:len},(_,i)=>pad+(i/(len-1||1))*(W-pad*2));
+  const paths=datasets.map(ds=>{
+    const ys=ds.vals.map(v=>H-pad-(v/maxV)*(H-pad*2));
+    const pts=ds.vals.map((_,i)=>`${i===0?"M":"L"}${xs[i]},${ys[i]}`).join(" ");
+    const area=`${pts} L${xs[ds.vals.length-1]},${H} L${xs[0]},${H} Z`;
+    return{...ds,ys,path:pts,area};
+  });
+
+  const total=datasets.reduce((s,d)=>s+d.vals.reduce((a,v)=>a+v,0),0);
+  const labels=ytData.length?{start:ytData[0]?.date?.slice(5),end:ytData[ytData.length-1]?.date?.slice(5)}:{start:"",end:"Today"};
+
+  return(
+    <Glass style={{flex:2,minWidth:0,padding:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
+        <div>
+          <div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"1.2px",color:"rgba(255,255,255,0.28)",marginBottom:4}}>Channel Analytics</div>
+          <div style={{fontSize:22,fontWeight:900,color:"#f5f5f7"}}>{fmt(total)}</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,0.35)",marginTop:2}}>Last {days} days</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
+          <div style={{display:"flex",gap:4}}>
+            {[7,30,90].map(d=>(
+              <button key={d} onClick={()=>setDays(d)} style={{padding:"4px 10px",borderRadius:99,border:`1px solid ${days===d?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.07)"}`,background:days===d?"rgba(255,255,255,0.1)":"transparent",color:days===d?"#f5f5f7":"rgba(255,255,255,0.4)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>{d}d</button>
+            ))}
+          </div>
+        </div>
+      </div>
+      {loading?<Skel h={H} r={8}/>:paths.length>0?(
+        <div>
+          <svg width="100%" height={H} viewBox={"0 0 "+W+" "+H} style={{display:"block",overflow:"visible",cursor:"crosshair"}}
+            onMouseMove={e=>{const r=e.currentTarget.getBoundingClientRect();const mx=(e.clientX-r.left)/r.width*W;setHovX(Math.max(0,Math.min(len-1,Math.round((mx-pad)/(W-pad*2)*(len-1)))));}}
+            onMouseLeave={()=>setHovX(null)}>
+            <defs>
+              {paths.map((p,i)=>(
+                <linearGradient key={i} id={"ucg"+i} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={p.color} stopOpacity="0.2"/>
+                  <stop offset="100%" stopColor={p.color} stopOpacity="0"/>
+                </linearGradient>
+              ))}
+            </defs>
+            {paths.map((p,i)=>(
+              <g key={i}>
+                <path d={p.area} fill={"url(#ucg"+i+")"}/>
+                <path d={p.path} fill="none" stroke={p.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={hov!=null&&hov!==i?0.25:1} style={{transition:"opacity 0.2s"}}/>
+              </g>
+            ))}
+            {hovX!=null&&paths.length>0&&(
+              <>
+                <line x1={xs[hovX]} y1={pad} x2={xs[hovX]} y2={H} stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="3 3"/>
+                {paths.map((p,i)=>(
+                  hovX<p.vals.length&&<circle key={i} cx={xs[hovX]} cy={p.ys[hovX]} r="4" fill={p.color} stroke="#000" strokeWidth="1.5"/>
+                ))}
+                <rect x={Math.min(xs[hovX]+8,W-120)} y={pad} width="112" height={paths.length*16+10} rx="6" fill="rgba(8,8,8,0.96)" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
+                {paths.map((p,i)=>(
+                  hovX<p.vals.length&&(
+                    <g key={i}>
+                      <rect x={Math.min(xs[hovX]+14,W-114)} y={pad+6+i*16} width="6" height="6" rx="2" fill={p.color}/>
+                      <text x={Math.min(xs[hovX]+24,W-104)} y={pad+13+i*16} fill="rgba(255,255,255,0.8)" fontSize="10" fontFamily="DM Sans,sans-serif">{p.label}: {fmt(p.vals[hovX])}</text>
+                    </g>
+                  )
+                ))}
+              </>
+            )}
+          </svg>
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+            <span style={{fontSize:9,color:"rgba(255,255,255,0.2)"}}>{labels.start}</span>
+            <span style={{fontSize:9,color:"rgba(255,255,255,0.2)"}}>Today</span>
+          </div>
+          <div style={{display:"flex",gap:14,marginTop:8}}>
+            {paths.map((p,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:5,cursor:"pointer",opacity:hov!=null&&hov!==i?0.3:1}} onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)}>
+                <div style={{width:20,height:2,borderRadius:99,background:p.color}}/>
+                <span style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>{p.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ):(
+        <div style={{height:H,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:8,fontSize:11,color:"rgba(255,255,255,0.18)",borderRadius:8,border:"1px dashed rgba(255,255,255,0.06)"}}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Connect YouTube to see analytics
+        </div>
+      )}
+    </Glass>
+  );
+}
+
+function InsightsHorizontal({data,conn}){
+  const topP=[...conn].sort((a,b)=>{const da=data[a.id],db=data[b.id];return(db?.subscribers??db?.followers??db?.member_count??0)-(da?.subscribers??da?.followers??da?.member_count??0);})[0];
+  const tw=data.telegram?.this_week||0,wc=data.telegram?.week_change??0;
+  const totalReach=conn.reduce((s,p)=>{const d=data[p.id];return s+(d?.subscribers??d?.followers??d?.member_count??0);},0);
+  const connPct=Math.round((conn.length/8)*100);
+  const cards=[
+    {icon:"✦",color:"#a78bfa",label:"Coverage",value:`${conn.length}/8`,sub:conn.length===8?"All platforms active!":`${8-conn.length} more to connect`,bg:"rgba(167,139,250,0.08)",border:"rgba(167,139,250,0.2)"},
+    {icon:"↑",color:"#34d399",label:"Total Reach",value:fmt(totalReach),sub:"across all platforms",bg:"rgba(52,211,153,0.06)",border:"rgba(52,211,153,0.15)"},
+    {icon:"⚡",color:wc>=0?"#34d399":"#f87171",label:"This Week",value:tw+" posts",sub:wc>=0?`+${wc}% vs last week`:`${wc}% vs last week`,bg:wc>=0?"rgba(52,211,153,0.06)":"rgba(248,113,113,0.06)",border:wc>=0?"rgba(52,211,153,0.15)":"rgba(248,113,113,0.15)"},
+    {icon:"★",color:"#60a5fa",label:"Top Platform",value:topP?topP.label:"None",sub:topP?fmt(data[topP.id]?.subscribers??data[topP.id]?.followers??data[topP.id]?.member_count??0)+" reach":"Connect platforms",bg:"rgba(96,165,250,0.06)",border:"rgba(96,165,250,0.15)"},
+  ];
+  const tip=conn.length===0?"Connect a platform to get AI tips.":conn.length<4?`On ${conn.length} platforms. Creators on 5+ grow 3x faster.`:tw===0?"Post to Telegram consistently to build momentum.":wc>50?"Great momentum! Cross-post to Instagram now.":"Analyze best content and double down on it.";
+  return(
+    <div>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+        <span style={{fontSize:13,fontWeight:900,color:"#f5f5f7"}}>✦ SocioMee AI Insights</span>
+        <span style={{fontSize:10,fontWeight:700,color:"#34d399",background:"rgba(52,211,153,0.1)",border:"1px solid rgba(52,211,153,0.2)",padding:"2px 8px",borderRadius:99}}>Live Analysis</span>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:14}} className="d-ins-grid">
+        {cards.map((card,i)=>(
+          <div key={i} style={{padding:"14px 16px",borderRadius:12,background:card.bg,border:`1px solid ${card.border}`}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+              <span style={{fontSize:14,color:card.color}}>{card.icon}</span>
+              <span style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"1px",color:"rgba(255,255,255,0.35)"}}>{card.label}</span>
+            </div>
+            <div style={{fontSize:20,fontWeight:900,color:"#f5f5f7",marginBottom:3}}>{card.value}</div>
+            <div style={{fontSize:10,color:card.color,fontWeight:600}}>{card.sub}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}} className="d-ins-grid">
+        {[
+          {label:"Platform Coverage",v:conn.length,max:8,color:"#a78bfa"},
+          {label:"Telegram Activity",v:Math.min(tw,10),max:10,color:"#2aabee"},
+          {label:"IG Posts",v:Math.min(data.instagram?.media_count||0,50),max:50,color:"#e1306c"},
+          {label:"Smart Tip",v:null,color:"#f5f5f7",tip},
+        ].map((b,i)=>(
+          <div key={i} style={{padding:"12px 14px",borderRadius:12,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.07)"}}>
+            <div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"1px",color:"rgba(255,255,255,0.3)",marginBottom:8}}>{b.label}</div>
+            {b.tip?(
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.55)",lineHeight:1.6}}>{b.tip}</div>
+            ):(
+              <>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                  <span style={{fontSize:13,fontWeight:900,color:"#f5f5f7"}}>{b.v}</span>
+                  <span style={{fontSize:10,color:"rgba(255,255,255,0.25)"}}>/{b.max}</span>
+                </div>
+                <div style={{height:4,background:"rgba(255,255,255,0.06)",borderRadius:99,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:`${Math.min((b.v/b.max)*100,100)}%`,background:`linear-gradient(90deg,${b.color},${b.color}88)`,borderRadius:99,transition:"width 0.8s ease"}}/>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 export default function SocioMeeDashboard({userId,onNavigate}){
   const[data,setData]=useState({});const[loading,setLoading]=useState(true);const[hov,setHov]=useState(null);const timerRef=useRef(null);
   const fetchAll=useCallback(async()=>{if(!userId)return;const R={};const safe=async(k,fn)=>{try{R[k]=await fn();}catch{R[k]={connected:false};}};await Promise.all([safe("youtube",async()=>{const r=await fetch(`${BASE}/youtube/channels/${userId}`,{credentials:"include"});if(!r.ok)return{connected:false};const d=await r.json();const ch=d?.channels?.[0]||d;if(!ch?.channel_id)return{connected:false};return{connected:true,name:ch.channel_title||ch.title,subscribers:ch.subscriber_count??0,total_views:ch.view_count??0,sparkline:ch.recent_views||[]};}),safe("instagram",async()=>{const r=await fetch(`${BASE}/instagram/status?user_id=${userId}`);if(!r.ok)return{connected:false};const d=await r.json();if(!d?.connected)return{connected:false};return{connected:true,name:d.username?`@${d.username}`:null,followers:d.followers??0,media_count:d.media_count??0};}),safe("threads",async()=>{const r=await fetch(`${BASE}/threads/status?user_id=${userId}`);if(!r.ok)return{connected:false};const d=await r.json();if(!d?.connected)return{connected:false};return{connected:true,name:d.username?`@${d.username}`:null,followers:d.followers??0};}),safe("facebook",async()=>{const r=await fetch(`${BASE}/facebook/status?user_id=${userId}`);if(!r.ok)return{connected:false};const d=await r.json();if(!d?.connected)return{connected:false};const pg=d.selected_page||d.pages?.[0];return{connected:true,name:pg?.name||d.fb_name||null,followers:pg?.fan_count??0};}),safe("linkedin",async()=>{const r=await fetch(`${BASE}/linkedin/status?user_id=${userId}`);if(!r.ok)return{connected:false};const d=await r.json();if(!d?.connected)return{connected:false};return{connected:true,name:d.name||null,followers:1};}),safe("pinterest",async()=>{const r=await fetch(`${BASE}/pinterest/status?user_id=${userId}`);if(!r.ok)return{connected:false};const d=await r.json();if(!d?.connected)return{connected:false};return{connected:true,name:d.username?`@${d.username}`:null,followers:d.followers??0,pin_count:d.pin_count??0};}),safe("telegram",async()=>{const r=await fetch(`${BASE}/telegram/analytics?user_id=${userId}`);if(!r.ok)return{connected:false};const d=await r.json();if(d?.error)return{connected:false};const pts=(d.daily_posts||[]).slice(-7).map(x=>x.posts);const lw=d.last_week||0,tw=d.this_week||0;return{connected:true,name:d.channel?`@${d.channel}`:null,member_count:d.member_count??0,followers:d.member_count??0,total_posts:d.total_posts??0,this_week:tw,week_change:lw>0?Math.round(((tw-lw)/lw)*100):tw>0?100:0,sparkline:pts,daily_posts:d.daily_posts||[]};}),safe("discord",async()=>{const r=await fetch(`${BASE}/discord/analytics?user_id=${userId}`);if(!r.ok)return{connected:false};const d=await r.json();if(d?.error||!d?.server_name)return{connected:false};return{connected:true,name:d.server_name,member_count:d.member_count??0,followers:d.member_count??0,total_posts:d.total_posts??0};})]);setData(R);setLoading(false);},[userId]);
@@ -70,12 +250,10 @@ export default function SocioMeeDashboard({userId,onNavigate}){
   const totalPosts=conn.reduce((s,p)=>s+(data[p.id]?.total_posts??data[p.id]?.media_count??data[p.id]?.pin_count??0),0);
   const tw=data.telegram?.this_week||0,wc=data.telegram?.week_change??0;
   const tgDaily=(data.telegram?.daily_posts||[]).map(d=>d.posts);
-  const chartDatasets=[];
-  if(tgDaily.length>0)chartDatasets.push({label:"Telegram",color:"#2aabee",vals:tgDaily});
-  conn.filter(p=>p.id!=="telegram"&&(data[p.id]?.sparkline||[]).length>0).forEach(p=>chartDatasets.push({label:p.label,color:p.color,vals:data[p.id].sparkline}));
+
   return(
     <div style={{fontFamily:"'DM Sans','Syne',sans-serif",paddingBottom:48}}>
-      <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}} @media(max-width:900px){.d-top{grid-template-columns:repeat(2,1fr)!important}.d-plat{grid-template-columns:repeat(2,1fr)!important}.d-body{flex-direction:column!important}}`}</style>
+      <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}} @media(max-width:900px){.d-top{grid-template-columns:repeat(2,1fr)!important}.d-plat{grid-template-columns:repeat(2,1fr)!important}.d-body{flex-direction:column!important}.d-ins-grid{grid-template-columns:repeat(2,1fr)!important}}`}</style>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:28}}><div><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"2.5px",color:"rgba(255,255,255,0.28)",marginBottom:4}}>Creator OS</div><div style={{fontSize:26,fontWeight:900,color:"#f5f5f7",letterSpacing:"-0.5px"}}>Dashboard</div></div><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:7,height:7,borderRadius:"50%",background:"#34d399",boxShadow:"0 0 8px #34d399"}}/><span style={{fontSize:10,color:"rgba(255,255,255,0.28)"}}>Live · 30s</span></div></div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}} className="d-top">
         <StatCard label="Platforms" value={conn.length} sub="of 8 connected" color="#a78bfa" loading={loading} icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>}/>
@@ -83,15 +261,12 @@ export default function SocioMeeDashboard({userId,onNavigate}){
         <StatCard label="Total Posts" value={fmt(totalPosts)} sub="via SocioMee" color="#60a5fa" loading={loading} icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>}/>
         <StatCard label="This Week" value={tw} sub={wc>=0?`+${wc}% vs last week`:`${wc}% vs last week`} color={wc>=0?"#34d399":"#f87171"} loading={loading} icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>}/>
       </div>
-      <div style={{display:"flex",gap:14,marginBottom:24}} className="d-body">
-        <Glass style={{flex:2,minWidth:0,padding:20}}>
-          <div style={{marginBottom:16}}><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"1.2px",color:"rgba(255,255,255,0.28)",marginBottom:4}}>Multi-Platform Activity</div><div style={{fontSize:16,fontWeight:900,color:"#f5f5f7"}}>Reach &amp; Engagement</div></div>
-          {loading?<Skel h={130} r={8}/>:chartDatasets.length>0?<MultiLineChart datasets={chartDatasets} height={130}/>:(<div style={{height:130,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:8,fontSize:11,color:"rgba(255,255,255,0.18)",borderRadius:8,border:"1px dashed rgba(255,255,255,0.06)"}}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Connect platforms to see activity</div>)}
-        </Glass>
-        <Glass style={{flex:"0 0 270px",padding:20}}>
-          {loading?<div style={{display:"flex",flexDirection:"column",gap:10}}>{[1,2,3,4,5,6].map(i=><Skel key={i} h={42} r={10}/>)}</div>:<InsightsPanel data={data} conn={conn}/>}
-        </Glass>
+      <div style={{marginBottom:20}}>
+        <UnifiedChart userId={userId} tgDaily={tgDaily}/>
       </div>
+      <Glass style={{padding:20,marginBottom:24}}>
+        {loading?<div style={{display:"flex",gap:12}}>{[1,2,3,4].map(i=><Skel key={i} h={80} r={10} style={{flex:1}}/>)}</div>:<InsightsHorizontal data={data} conn={conn}/>}
+      </Glass>
       <div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"1.5px",color:"rgba(255,255,255,0.28)",marginBottom:14}}>All Platforms</div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}} className="d-plat">
         {PLATS.map(p=>(<PlatCard key={p.id} p={p} d={data[p.id]||{}} onClick={()=>onNavigate&&onNavigate(p.id)} loading={loading}/>))}
