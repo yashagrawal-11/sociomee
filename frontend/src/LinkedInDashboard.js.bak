@@ -223,7 +223,7 @@ function LinkedInDashboard({ user }) {
 
       {/* Tabs */}
       <div style={{ display:"flex",gap:6,marginBottom:14,flexWrap:"nowrap",overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",paddingBottom:2 }}>
-        {[["analytics","Analytics"],["post","Post"],["schedule","Schedule"],["history","Recent Posts"],["bulk","Bulk Schedule"]].map(([v,l])=>(
+        {[["post","Post"],["schedule","Schedule"],["history","Recent Posts"],["bulk","Bulk Schedule"]].map(([v,l])=>(
           <Tab key={v} label={l} active={tab===v} onClick={()=>setTab(v)} />
         ))}
       </div>
@@ -321,7 +321,6 @@ function LinkedInDashboard({ user }) {
       )}
 
       {/* History tab */}
-      {tab==="analytics" && <LinkedInAnalytics history={history}/>}
       {tab==="history" && (
         <div>
           <div style={{ fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:12 }}>Recent Posts ({history.length})</div>
@@ -352,127 +351,4 @@ function LinkedInDashboard({ user }) {
     </div>
   );
 }
-
-function LinkedInAnalytics({ history }) {
-  const C = { muted:"rgba(255,255,255,0.4)", success:"#34d399", danger:"#f87171", ink:"#f5f5f7", hairline:"rgba(255,255,255,0.08)" };
-  const GC = ({ children, style={} }) => <div style={{ background:"rgba(255,255,255,0.03)", border:`1px solid ${C.hairline}`, borderRadius:16, padding:20, ...style }}>{children}</div>;
-
-  const total = history.length;
-  const now = new Date();
-  const weekAgo = new Date(now - 7*24*60*60*1000);
-  const twoWeeksAgo = new Date(now - 14*24*60*60*1000);
-  const thisWeek = history.filter(h => new Date(h.date) >= weekAgo).length;
-  const lastWeek = history.filter(h => new Date(h.date) >= twoWeeksAgo && new Date(h.date) < weekAgo).length;
-  const weekChange = lastWeek > 0 ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : thisWeek > 0 ? 100 : 0;
-  const withImage = history.filter(h => h.hasImage).length;
-  const withUrl = history.filter(h => h.hasUrl).length;
-  const textOnly = total - withImage - withUrl + history.filter(h => h.hasImage && h.hasUrl).length;
-
-  // Daily posts last 30 days
-  const daily = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now); d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0,10);
-    daily.push({ date: key, posts: history.filter(h => h.date && h.date.slice(0,10) === key).length });
-  }
-
-  // Weekly trend 8 weeks
-  const weekly = [];
-  for (let i = 7; i >= 0; i--) {
-    const wStart = new Date(now - (i+1)*7*24*60*60*1000);
-    const wEnd = new Date(now - i*7*24*60*60*1000);
-    const label = `W${8-i}`;
-    weekly.push({ week: label, posts: history.filter(h => new Date(h.date) >= wStart && new Date(h.date) < wEnd).length });
-  }
-
-  const SparkLine = ({ pts, valueKey, color="rgba(255,255,255,0.7)", dashed=false }) => {
-    const W=300, H=70, pad=8;
-    const vals = pts.map(p => p[valueKey]);
-    const maxV = Math.max(...vals, 1);
-    const xs = pts.map((_,i) => pad + (i/(pts.length-1||1))*(W-pad*2));
-    const ys = pts.map(v => H - pad - (v/maxV)*(H-pad*2));
-    const path = pts.map((_,i) => `${i===0?"M":"L"}${xs[i]},${ys[i]}`).join(" ");
-    const area = `${path} L${xs[xs.length-1]},${H} L${xs[0]},${H} Z`;
-    return (
-      <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:"visible", display:"block" }}>
-        <defs>
-          <linearGradient id={`liGrad${valueKey}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.12)"/>
-            <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
-          </linearGradient>
-        </defs>
-        <path d={area} fill={`url(#liGrad${valueKey})`}/>
-        <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={dashed?"4 3":undefined}/>
-        {pts.map((p,i) => p[valueKey]>0 && <circle key={i} cx={xs[i]} cy={ys[i]} r="3" fill="rgba(255,255,255,0.5)"/>)}
-      </svg>
-    );
-  };
-
-  if (total === 0) return (
-    <GC style={{ textAlign:"center", padding:"40px 24px" }}>
-      <div style={{ fontSize:14, fontWeight:700, color:C.ink, marginBottom:8 }}>No posts yet</div>
-      <div style={{ fontSize:12, color:C.muted }}>Post from the Post tab to see your analytics here.</div>
-    </GC>
-  );
-
-  return (
-    <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10 }} className="li-stats-grid">
-        {[
-          { label:"TOTAL POSTS", value:total, sub:"all time" },
-          { label:"THIS WEEK", value:thisWeek, sub:weekChange>=0?`+${weekChange}% vs last week`:`${weekChange}% vs last week`, subColor:weekChange>=0?C.success:C.danger },
-          { label:"WITH IMAGE", value:withImage, sub:"posts with media" },
-          { label:"WITH ARTICLE", value:withUrl, sub:"link posts" },
-        ].map((s,i) => (
-          <GC key={i} style={{ textAlign:"center" }}>
-            <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:8 }}>{s.label}</div>
-            <div style={{ fontSize:28, fontWeight:900, color:C.ink, marginBottom:4 }}>{s.value}</div>
-            <div style={{ fontSize:11, color:s.subColor||C.muted }}>{s.sub}</div>
-          </GC>
-        ))}
-      </div>
-
-      <GC>
-        <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:4 }}>Posts Last 30 Days</div>
-        <div style={{ fontSize:28, fontWeight:900, color:C.ink, marginBottom:12 }}>{daily.reduce((s,d)=>s+d.posts,0)}</div>
-        <SparkLine pts={daily} valueKey="posts"/>
-        <div style={{ display:"flex", justifyContent:"space-between", marginTop:4 }}>
-          <span style={{ fontSize:10, color:C.muted }}>{daily[0]?.date?.slice(5)}</span>
-          <span style={{ fontSize:10, color:C.muted }}>Today</span>
-        </div>
-      </GC>
-
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }} className="li-half-grid">
-        <GC>
-          <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:8 }}>Weekly Trend (8 Weeks)</div>
-          <SparkLine pts={weekly} valueKey="posts"/>
-          <div style={{ display:"flex", justifyContent:"space-between", marginTop:4 }}>
-            {weekly.map((w,i) => <span key={i} style={{ fontSize:9, color:C.muted, flex:1, textAlign:"center" }}>{w.week}</span>)}
-          </div>
-        </GC>
-        <GC>
-          <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:8 }}>Content Type</div>
-          {[["Text Only", textOnly], ["With Image", withImage], ["With Article", withUrl]].map(([label, count],i) => (
-            <div key={i} style={{ marginBottom:10 }}>
-              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
-                <span style={{ fontSize:12, color:"rgba(255,255,255,0.8)", fontWeight:600 }}>{label}</span>
-                <span style={{ fontSize:12, color:C.muted, fontWeight:600 }}>{count}</span>
-              </div>
-              <div style={{ background:"rgba(255,255,255,0.06)", borderRadius:99, height:4, overflow:"hidden" }}>
-                <div style={{ width:`${total>0?(count/total)*100:0}%`, height:"100%", background:"rgba(255,255,255,0.4)", borderRadius:99, transition:"width 0.4s" }}/>
-              </div>
-            </div>
-          ))}
-        </GC>
-      </div>
-      <style>{`
-        @media(max-width:768px){
-          .li-stats-grid{grid-template-columns:repeat(2,1fr)!important}
-          .li-half-grid{grid-template-columns:1fr!important}
-        }
-      `}</style>
-    </div>
-  );
-}
-
 export default LinkedInDashboard;

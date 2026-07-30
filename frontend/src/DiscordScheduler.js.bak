@@ -59,11 +59,11 @@ function DiscordAnalytics({userId}){
   const bestHourStr=data.best_hour!=null?`${data.best_hour}:00 - ${data.best_hour+1}:00`:"N/A";
   return(
     <div style={{display:"flex",flexDirection:"column",gap:"14px"}}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px"}} className="dc-stats-grid">
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px"}}>
         {[
           {label:"TOTAL POSTS",value:data.total_posts||0,sub:"all time"},
           {label:"THIS WEEK",value:data.this_week||0,sub:weekChange>=0?`+${weekChange}% vs last week`:`${weekChange}% vs last week`,subColor:weekChange>=0?C.success:C.danger},
-          {label:"MEMBERS",value:data.member_count!=null?data.member_count.toLocaleString():"0",sub:data.server_name||"server members"},
+          {label:"MEMBERS",value:data.member_count!=null?data.member_count.toLocaleString():"N/A",sub:data.server_name||"server members"},
           {label:"SUCCESS RATE",value:`${data.success_rate||0}%`,sub:"posts delivered"},
         ].map((s,i)=>(
           <GC key={i} style={{textAlign:"center"}}>
@@ -86,7 +86,7 @@ function DiscordAnalytics({userId}){
           <span style={{fontSize:"10px",color:C.muted}}>Today</span>
         </div>
       </GC>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px"}} className="dc-half-grid">
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px"}}>
         <GC>
           <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>Weekly Trend</div>
           <LineChart pts={data.weekly_trend||[]} keyX="week" keyY="posts" height={60}/>
@@ -103,7 +103,7 @@ function DiscordAnalytics({userId}){
           <div style={{marginTop:"8px",fontSize:"11px",color:C.muted}}>Avg/day: <span style={{color:C.ink,fontWeight:"700"}}>{data.avg_per_day||0}</span></div>
         </GC>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px"}} className="dc-half-grid">
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px"}}>
         <GC>
           <div style={{fontSize:"11px",fontWeight:"700",color:C.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"14px"}}>Channel Breakdown</div>
           {chanEntries.length>0?chanEntries.map(([ch,count],i)=>(
@@ -409,7 +409,7 @@ export default function DiscordScheduler({ user }) {
 
   return(
     <div style={{fontFamily:"'DM Sans','Syne',sans-serif",maxWidth:"860px",margin:"0 auto",padding:"20px 16px"}}>
-      <style>{`@keyframes dspin{to{transform:rotate(360deg)}} *{box-sizing:border-box;margin:0} @media(max-width:768px){.dc-stats-grid{grid-template-columns:repeat(2,1fr)!important}.dc-half-grid{grid-template-columns:1fr!important}.dc-tabs::-webkit-scrollbar{display:none}.dc-tabs{-ms-overflow-style:none;scrollbar-width:none}.dc-connected-card{flex-wrap:wrap!important;align-items:flex-start!important}.dc-channels-wrap{order:2;width:100%!important}.dc-connected-card>button:last-child{align-self:flex-start}}`}</style>
+      <style>{`@keyframes dspin{to{transform:rotate(360deg)}} *{box-sizing:border-box;margin:0}`}</style>
 
       {/* Server selector */}
       <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"16px",flexWrap:"wrap"}}>
@@ -432,13 +432,13 @@ export default function DiscordScheduler({ user }) {
 
       {activeGuild&&(
         <div style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 16px",borderRadius:"12px",
-          background:"rgba(255,255,255,0.02)",border:`1px solid ${C.hairline}`,marginBottom:"16px"}} className="dc-connected-card">
+          background:"rgba(255,255,255,0.02)",border:`1px solid ${C.hairline}`,marginBottom:"16px"}}>
           {activeGuild.guild_icon&&<img src={activeGuild.guild_icon} style={{width:32,height:32,borderRadius:"50%"}} alt=""/>}
           <div style={{flex:1}}>
             <div style={{fontSize:"13px",fontWeight:"800",color:C.ink}}>{activeGuild.guild_name}</div>
             <div style={{fontSize:"11px",color:C.muted}}>Bot connected</div>
           </div>
-          <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}} className="dc-channels-wrap">
+          <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
             {activeGuild.channels?.map(ch=>(
               <button key={ch.id} onClick={()=>setActiveChan(ch)}
                 style={{padding:"4px 10px",borderRadius:"99px",fontSize:"11px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit",
@@ -474,7 +474,7 @@ export default function DiscordScheduler({ user }) {
       ):(
         <>
           {/* Tabs */}
-          <div style={{display:"flex",gap:"6px",marginBottom:"16px",overflowX:"auto"}} className="dc-tabs">
+          <div style={{display:"flex",gap:"6px",marginBottom:"16px",overflowX:"auto"}}>
             {[["analytics","Analytics"],["compose","Compose"],["posts","Posts"]].map(([id,label])=>(
               <button key={id} onClick={()=>setActiveTab(id)}
                 style={{padding:"7px 16px",borderRadius:"99px",border:`1.5px solid ${activeTab===id?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.08)"}`,

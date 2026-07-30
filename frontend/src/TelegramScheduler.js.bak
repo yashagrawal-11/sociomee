@@ -624,11 +624,11 @@ function TelegramAnalytics({userId}){
   const bestHourStr=data.best_hour!=null?`${data.best_hour}:00 - ${data.best_hour+1}:00`:"N/A";
   return(
     <div style={{display:"flex",flexDirection:"column",gap:"14px",padding:"4px 0"}}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px"}} className="tg-stats-grid">
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px"}}>
         {[
           {label:"TOTAL POSTS",value:data.total_posts||0,sub:"all time"},
           {label:"THIS WEEK",value:data.this_week||0,sub:weekChange>=0?`+${weekChange}% vs last week`:`${weekChange}% vs last week`,subColor:weekChange>=0?Cm.success:Cm.danger},
-          {label:"SUBSCRIBERS",value:data.member_count!=null?data.member_count.toLocaleString():"0",sub:"channel members"},
+          {label:"SUBSCRIBERS",value:data.member_count!=null?data.member_count.toLocaleString():"N/A",sub:"channel members"},
           {label:"SUCCESS RATE",value:`${data.success_rate||0}%`,sub:"posts delivered"},
         ].map((s,i)=>(
           <GC key={i} style={{textAlign:"center"}}>
@@ -687,7 +687,7 @@ function TelegramAnalytics({userId}){
         })()}
       </GC>
       {/* Weekly trend + predictions */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px"}} className="tg-half-grid">
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px"}}>
         <GC>
           <div style={{fontSize:"11px",fontWeight:"700",color:Cm.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>Weekly Trend (8 Weeks)</div>
           {(()=>{
@@ -740,7 +740,7 @@ function TelegramAnalytics({userId}){
           })()}
         </GC>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px"}} className="tg-half-grid">
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px"}}>
         <GC>
           <div style={{fontSize:"11px",fontWeight:"700",color:Cm.muted,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"14px"}}>Content Type</div>
           {mediaTypes.length>0?mediaTypes.map(([type,count],i)=>(
@@ -882,7 +882,7 @@ export default function TelegramScheduler({ user }) {
       </div>
 
       {/* Tabs */}
-      <div style={{ display:"flex", gap:7, flexWrap:"nowrap", marginBottom:16, overflowX:"auto", WebkitOverflowScrolling:"touch" }} className="tg-tabs">
+      <div style={{ display:"flex", gap:7, flexWrap:"nowrap", marginBottom:16, overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
         {[["analytics","Analytics"],["compose","Compose"],["bulk","Bulk"],["ai","AI Caption"],["posts","Posts"]].map(([id,label]) => (
           <button key={id} onClick={()=>setActiveTab(id)}
             style={{ padding:"7px 14px", borderRadius:99, border:`1.5px solid ${activeTab===id?"rgba(255,255,255,0.25)":C.hairline}`, background:activeTab===id?"rgba(255,255,255,0.08)":"transparent", color:activeTab===id?"#f5f5f7":C.muted, fontWeight:700, fontSize:11.5, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}>
@@ -903,14 +903,6 @@ export default function TelegramScheduler({ user }) {
         @keyframes spin { to { transform: rotate(360deg); } }
         textarea:focus, input:focus, select:focus { outline: none; border-color: #2aabee !important; }
         textarea { font-family: inherit; }
-        @media (max-width: 768px) {
-          .tg-tabs::-webkit-scrollbar { display: none; }
-          .tg-tabs { -ms-overflow-style: none; scrollbar-width: none; }
-        }
-        @media (max-width: 768px) {
-          .tg-stats-grid { grid-template-columns: repeat(2,1fr) !important; }
-          .tg-half-grid { grid-template-columns: 1fr !important; }
-        }
       `}</style>
     </div>
   );
