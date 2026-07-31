@@ -999,7 +999,7 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
     _check_email_verified(user)
     if not _check_topic_safety(topic):
         raise HTTPException(400, "This topic cannot be generated. SocioMee does not create content involving self-harm, sexual content, slurs, hate speech, or violence.")
-    err = _check_credits(user["user_id"], cost=3 if p == "threads" else 10)
+    err = _check_credits(user["user_id"], cost=10)
     if err: return err
     try:
         if p == "youtube":
@@ -1011,64 +1011,88 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
             if not _HAS_IG: raise HTTPException(503, "InstagramEngine not available.")
             from vertex_engine import generate_instagram
             _ig = generate_instagram(topic=topic, tone=payload.tone or "casual", persona=payload.effective_persona(), language=payload.language or "hinglish", niche=payload.niche or "general")
+            _ig_cap1 = _ig.get("caption","")
+            try:
+                from vertex_engine import generate as _vg
+                _ig2 = generate_instagram(topic=topic, tone="emotional", persona=payload.effective_persona(), language=payload.language or "hinglish", niche=payload.niche or "general")
+                _ig3 = generate_instagram(topic=topic, tone="motivational", persona=payload.effective_persona(), language=payload.language or "hinglish", niche=payload.niche or "general")
+                _ig_variants = [v for v in [_ig_cap1, _ig2.get("caption",""), _ig3.get("caption","")] if v]
+            except Exception:
+                _ig_variants = [_ig_cap1]
             result = {
                 "platform": "instagram",
                 "topic": topic,
                 "reel_hook": _ig.get("reel_hook",""),
-                "caption": _ig.get("caption",""),
-                "post": _ig.get("caption",""),
+                "caption": _ig_cap1,
+                "post": _ig_cap1,
                 "hashtags": _ig.get("hashtags",[]),
                 "cta": _ig.get("cta",""),
                 "story_ideas": _ig.get("story_ideas",[]),
-                "seo_packs": {"instagram": {"caption": _ig.get("caption",""), "description": _ig.get("caption",""), "hashtags": _ig.get("hashtags",[])}},
+                "post_variants": _ig_variants,
+                "seo_packs": {"instagram": {"caption": _ig_cap1, "description": _ig_cap1, "hashtags": _ig.get("hashtags",[])}},
             }
-            # normalise: pull best caption from scripts bundle
-            if "scripts" in result and isinstance(result["scripts"], dict):
-                selected = result["scripts"].get("selected_script", {})
-                if isinstance(selected, dict):
-                    script_text = selected.get("full_script","") or selected.get("hook","")
-                elif isinstance(selected, str):
-                    script_text = selected
-                else:
-                    script_text = ""
-                result["caption"] = script_text or result.get("description","")
-            else:
-                result["caption"] = result.get("description","")
+            result["caption"] = _ig_cap1
         elif p == "x":
             if not _HAS_X: raise HTTPException(503, "XEngine not available.")
             from vertex_engine import generate_twitter_x
             _x = generate_twitter_x(topic=topic, tone=payload.tone or "bold", persona=payload.effective_persona(), language=payload.language or "english")
+            _x_t1 = _x.get("tweet","")
+            try:
+                _x2 = generate_twitter_x(topic=topic, tone="casual", persona=payload.effective_persona(), language=payload.language or "english")
+                _x3 = generate_twitter_x(topic=topic, tone="informative", persona=payload.effective_persona(), language=payload.language or "english")
+                _x_variants = [v for v in [_x_t1, _x2.get("tweet",""), _x3.get("tweet","")] if v]
+            except Exception:
+                _x_variants = [_x_t1]
             result = {
                 "platform": "x",
                 "topic": topic,
-                "tweet": _x.get("tweet",""),
-                "post": _x.get("tweet",""),
-                "caption": _x.get("tweet",""),
+                "tweet": _x_t1,
+                "post": _x_t1,
+                "caption": _x_t1,
                 "thread": _x.get("thread",[]),
                 "hashtags": _x.get("hashtags",[]),
                 "reply_bait": _x.get("reply_bait",""),
-                "seo_packs": {"x": {"caption": _x.get("tweet",""), "description": _x.get("tweet",""), "hashtags": _x.get("hashtags",[])}},
+                "post_variants": _x_variants,
+                "seo_packs": {"x": {"caption": _x_t1, "description": _x_t1, "hashtags": _x.get("hashtags",[])}},
             }
-            result["caption"] = result.get("post") or result.get("tweet") or result.get("caption","")
+            result["caption"] = _x_t1
         elif p == "pinterest":
             if not _HAS_PINT: raise HTTPException(503, "PinterestEngine not available.")
-            result = PinterestEngine().generate(topic=topic, niche=payload.niche)
-            result["caption"] = result.get("description","")
+            _pint_r = PinterestEngine().generate(topic=topic, niche=payload.niche)
+            _pint_d1 = _pint_r.get("description","")
+            try:
+                _pint_r2 = PinterestEngine().generate(topic=topic, niche=payload.niche)
+                _pint_r3 = PinterestEngine().generate(topic=topic, niche=payload.niche)
+                _pint_variants = [v for v in [_pint_d1, _pint_r2.get("description",""), _pint_r3.get("description","")] if v]
+            except Exception:
+                _pint_variants = [_pint_d1]
+            result = _pint_r
+            result["post_variants"] = _pint_variants
+            result["seo_packs"] = result.get("seo_packs", {"pinterest": {"caption": _pint_d1, "description": _pint_d1, "hashtags": result.get("hashtags",[])}})
+            result["caption"] = _pint_d1
         elif p == "facebook":
             if not _HAS_FB: raise HTTPException(503, "FacebookEngine not available.")
             from vertex_engine import generate_facebook
             _fb = generate_facebook(topic=topic, tone=payload.tone or "casual", persona=payload.effective_persona(), language=payload.language or "hinglish", objective=payload.objective or "engagement")
+            _fb_p1 = _fb.get("post","")
+            try:
+                _fb2 = generate_facebook(topic=topic, tone="emotional", persona=payload.effective_persona(), language=payload.language or "hinglish", objective="shares")
+                _fb3 = generate_facebook(topic=topic, tone="storytelling", persona=payload.effective_persona(), language=payload.language or "hinglish", objective="comments")
+                _fb_variants = [v for v in [_fb_p1, _fb2.get("post",""), _fb3.get("post","")] if v]
+            except Exception:
+                _fb_variants = [_fb_p1]
             result = {
                 "platform": "facebook",
                 "topic": topic,
-                "post": _fb.get("post",""),
-                "caption": _fb.get("post",""),
+                "post": _fb_p1,
+                "caption": _fb_p1,
                 "hashtags": _fb.get("hashtags",[]),
                 "hook_line": _fb.get("hook_line",""),
                 "cta": _fb.get("cta",""),
-                "seo_packs": {"facebook": {"caption": _fb.get("post",""), "description": _fb.get("post",""), "hashtags": _fb.get("hashtags",[])}},
+                "post_variants": _fb_variants,
+                "seo_packs": {"facebook": {"caption": _fb_p1, "description": _fb_p1, "hashtags": _fb.get("hashtags",[])}},
             }
-            result["caption"] = result.get("long_copy") or result.get("short_copy") or result.get("title_hook","")
+            result["caption"] = _fb_p1
         elif p == "tiktok":
             if not _HAS_TT: raise HTTPException(503, "TikTokEngine not available.")
             result = TikTokEngine().generate(topic=topic, niche=payload.niche, tone=payload.tone, objective=payload.objective, duration_seconds=payload.duration_seconds).to_dict()
@@ -1077,32 +1101,48 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
             if not _HAS_TG: raise HTTPException(503, "TelegramEngine not available.")
             from vertex_engine import generate_telegram
             _tg = generate_telegram(topic=topic, tone=payload.tone or "informative", persona=payload.effective_persona(), language=payload.language or "hinglish", destination_type=payload.destination_type or "channel")
+            _tg_m1 = _tg.get("message","")
+            try:
+                _tg2 = generate_telegram(topic=topic, tone="casual", persona=payload.effective_persona(), language=payload.language or "hinglish", destination_type="channel")
+                _tg3 = generate_telegram(topic=topic, tone="bold", persona=payload.effective_persona(), language=payload.language or "hinglish", destination_type="channel")
+                _tg_variants = [v for v in [_tg_m1, _tg2.get("message",""), _tg3.get("message","")] if v]
+            except Exception:
+                _tg_variants = [_tg_m1]
             result = {
                 "platform": "telegram",
                 "topic": topic,
-                "message": _tg.get("message",""),
-                "post": _tg.get("message",""),
-                "caption": _tg.get("message",""),
+                "message": _tg_m1,
+                "post": _tg_m1,
+                "caption": _tg_m1,
                 "hashtags": _tg.get("hashtags",[]),
                 "poll_question": _tg.get("poll_question",""),
                 "poll_options": _tg.get("poll_options",[]),
-                "seo_packs": {"telegram": {"caption": _tg.get("message",""), "description": _tg.get("message",""), "hashtags": _tg.get("hashtags",[])}},
+                "post_variants": _tg_variants,
+                "seo_packs": {"telegram": {"caption": _tg_m1, "description": _tg_m1, "hashtags": _tg.get("hashtags",[])}},
             }
-            result["caption"] = result.get("post_body") or result.get("short_version") or result.get("opening_line","")
+            result["caption"] = _tg_m1
         elif p == "threads":
             if not _HAS_THR: raise HTTPException(503, "ThreadsEngine not available.")
             from vertex_engine import generate_threads
             _th = generate_threads(topic=topic, tone=payload.tone or "casual", persona=payload.effective_persona(), language=payload.language or "hinglish")
+            _th_p1 = _th.get("main_post","")
+            try:
+                _th2 = generate_threads(topic=topic, tone="emotional", persona=payload.effective_persona(), language=payload.language or "hinglish")
+                _th3 = generate_threads(topic=topic, tone="bold", persona=payload.effective_persona(), language=payload.language or "hinglish")
+                _th_variants = [v for v in [_th_p1, _th2.get("main_post",""), _th3.get("main_post","")] if v]
+            except Exception:
+                _th_variants = [_th_p1]
             result = {
                 "platform": "threads",
                 "topic": topic,
-                "post": _th.get("main_post",""),
-                "caption": _th.get("main_post",""),
+                "post": _th_p1,
+                "caption": _th_p1,
                 "thread_replies": _th.get("thread_replies",[]),
                 "hashtags": _th.get("hashtags",[]),
-                "seo_packs": {"threads": {"caption": _th.get("main_post",""), "description": _th.get("main_post",""), "hashtags": _th.get("hashtags",[])}},
+                "post_variants": _th_variants,
+                "seo_packs": {"threads": {"caption": _th_p1, "description": _th_p1, "hashtags": _th.get("hashtags",[])}},
             }
-            result["caption"] = result.get("full_thread") or result.get("opening_line","")
+            result["caption"] = _th_p1
         elif p == "reddit":
             import requests as _req
             _gemini_key = __import__('os').getenv('GOOGLE_API_KEY','')

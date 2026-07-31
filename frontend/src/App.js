@@ -743,7 +743,7 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
   if (!all.length) return null;
   const meta = { youtube:{icon:"/icons/youtube.png",color:"#ff0000"},instagram:{icon:"/icons/instagram.png",color:"#e1306c"},x:{icon:"/icons/x.png",color:"#ffffff"},facebook:{icon:"/icons/facebook.png",color:"#1877f2"},threads:{icon:"/icons/threads.png",color:"#ffffff"},pinterest:{icon:"/icons/pinterest.png",color:"#e60023"},telegram:{icon:"/icons/telegram.png",color:"#2aabee"},linkedin:{icon:"/icons/linkedin.png",color:"#0077b5"},reddit:{icon:"/icons/reddit.png",color:"#ff4500"},quora:{icon:"/icons/quora.png",color:"#b92b27"} };
   const pack = seoPacks[active]||{};
-  const variants = (active==="linkedin"&&result?.post_variants?.length>1) ? result.post_variants : null;
+  const variants = (result?.post_variants?.length>1) ? result.post_variants : null;
   const baseCap = variants ? variants[selV] : (pack.description||pack.caption||pack.post||"");
   const displayCap = editCap || baseCap;
   const switchTab = (p) => { setActive(p); setSelV(0); setEditCap(""); setEditMode(false); };
@@ -772,11 +772,14 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
             {(pack.description||pack.caption||pack.post)&&active!=="youtube"&&(
               <div>
                 <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px" }}>
-                  <SectionHead icon="📝" title="Caption" copyText={displayCap}/>
-                  <button onClick={()=>setEditMode(!editMode)} style={{ padding:"3px 9px",fontSize:"11px",fontWeight:"700",borderRadius:"7px",border:`1px solid ${editMode?"#a78bfa":C.hairline}`,background:editMode?"rgba(255,255,255,0.06)":C.glass,color:editMode?"#a78bfa":C.muted,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"3px",flexShrink:0 }}>
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    {editMode?"Done":"Edit"}
-                  </button>
+                  <SectionHead icon="" title="Caption" copyText={null}/>
+                  <div style={{ display:"flex",gap:"6px",alignItems:"center" }}>
+                    <CopyBtn text={displayCap}/>
+                    <button onClick={()=>setEditMode(!editMode)} style={{ padding:"3px 9px",fontSize:"11px",fontWeight:"700",borderRadius:"7px",border:`1px solid ${editMode?"#a78bfa":C.hairline}`,background:editMode?"rgba(255,255,255,0.06)":C.glass,color:editMode?"#a78bfa":C.muted,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"3px",flexShrink:0 }}>
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      {editMode?"Done":"Edit"}
+                    </button>
+                  </div>
                 </div>
                 {editMode
                   ? <textarea value={editCap||baseCap} onChange={e=>setEditCap(e.target.value)} autoFocus style={{ width:"100%",minHeight:"160px",background:C.glass,border:`1.5px solid rgba(124,58,237,0.5)`,borderRadius:"12px",padding:"12px 14px",fontSize:"13px",lineHeight:1.7,color:C.ink,fontFamily:"inherit",resize:"vertical",outline:"none",boxSizing:"border-box" }}/>
@@ -786,7 +789,7 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
             )}
             {active==="youtube"&&pack.timestamps?.length>0&&(
               <div>
-                <SectionHead icon="⏱️" title="Timestamps" copyText={pack.timestamps.join("\n")}/>
+                <SectionHead icon="" title="Timestamps" copyText={pack.timestamps.join("\n")}/>
                 <div style={{ background:C.glass,borderRadius:"10px",padding:"10px 14px",border:`1px solid ${C.hairline}` }}>
                   {pack.timestamps.map((t,i)=><div key={i} style={{ fontSize:"13px",color:C.ink,padding:"2px 0",borderBottom:i<pack.timestamps.length-1?`1px solid ${C.hairline}`:"none" }}>{t}</div>)}
                 </div>
@@ -794,7 +797,7 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
             )}
             {pack.hashtags?.length>0&&(
               <div>
-                <SectionHead icon="🏷️" title="Hashtags" copyText={pack.hashtags.join(" ")}/>
+                <SectionHead icon="" title="Hashtags" copyText={pack.hashtags.join(" ")}/>
                 <div style={{ display:"flex",flexWrap:"wrap" }}>{pack.hashtags.map((h,i)=><Pill key={i} color={C.rose}>{h}</Pill>)}</div>
               </div>
             )}
@@ -2936,7 +2939,7 @@ export default function App() {
                     {deepResearch&&isPro&&<span style={{ fontSize:"10px",padding:"2px 7px",borderRadius:"99px",background:"rgba(255,255,255,0.08)",color:"#c4b5fd",fontWeight:"800" }}>ON</span>}
                   </button>
                   {!isPro&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.3)" }}>Pro and Pro+ only — fetches live news, Wikipedia and trending data</span>}
-                  {deepResearch&&isPro&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.35)" }}>Costs 15 credits — fetches live news, Wikipedia and trending data</span>}
+                  {deepResearch&&isPro&&<span style={{ fontSize:"11px",color:"rgba(255,255,255,0.35)" }}>Costs 15 credits. Fetches live news, Wikipedia and trending data</span>}
                 </div>
 
                 {/* Platform Grid */}
