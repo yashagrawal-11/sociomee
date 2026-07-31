@@ -248,8 +248,19 @@ def generate_facebook(topic: str, tone: str = "casual", persona: str = "default"
     from persona_profiles import build_persona_prompt_block
     persona_block = build_persona_prompt_block(persona, tone, language)
 
+    tone_guide = {
+        "casual": "Conversational and friendly, like talking to a friend.",
+        "emotional": "Heartfelt and personal, evoke feeling and empathy.",
+        "storytelling": "Lead with a real story or scenario, then the insight.",
+        "bold": "Direct, confident, no fluff.",
+        "funny": "Light, witty, use humour to make the point.",
+        "informative": "Clear, factual, educational but still warm.",
+        "motivational": "Inspire action, end with an uplifting push.",
+        "educational": "Teach something specific, structured but human.",
+    }.get(tone.lower(), "Conversational and engaging.")
     prompt = f"""Generate Facebook content for this topic: "{topic}"
 Objective: {objective}
+Tone: {tone} — {tone_guide}
 
 {persona_block}
 

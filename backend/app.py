@@ -426,6 +426,9 @@ except Exception as e:
 # ── CORS ─────────────────────────────────────────────────────────────
 ALLOWED_ORIGINS = [
     "https://sociomee.in",
+    "https://sociomeeai.com",
+    "https://www.sociomeeai.com",
+    "https://app.sociomeeai.com",
     "https://www.sociomee.in",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -461,7 +464,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
-            "connect-src 'self' https://api.razorpay.com https://sociomeeai.com https://sociomee.in; "
+            "connect-src 'self' https://api.razorpay.com https://sociomeeai.com https://www.sociomeeai.com https://sociomee.in; "
             "frame-src https://api.razorpay.com https://checkout.razorpay.com;"
         )
         # Remove server info header
@@ -1057,19 +1060,33 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
             }
             result["caption"] = _x_t1
         elif p == "pinterest":
-            if not _HAS_PINT: raise HTTPException(503, "PinterestEngine not available.")
-            _pint_r = PinterestEngine().generate(topic=topic, niche=payload.niche)
-            _pint_d1 = _pint_r.get("description","")
+            from vertex_engine import generate_pinterest as _gen_pint
+            _pint_tone = payload.tone or "informative"
+            _pint_lang = payload.language or "english"
+            _pint_persona = payload.effective_persona()
+            _pint_niche = payload.niche or "general"
+            _pint_r = _gen_pint(topic=topic, tone=_pint_tone, persona=_pint_persona, language=_pint_lang, niche=_pint_niche)
+            _pint_d1 = _pint_r.get("pin_description", _pint_r.get("description", ""))
+            _pint_title = _pint_r.get("pin_title", topic)
             try:
-                _pint_r2 = PinterestEngine().generate(topic=topic, niche=payload.niche)
-                _pint_r3 = PinterestEngine().generate(topic=topic, niche=payload.niche)
-                _pint_variants = [v for v in [_pint_d1, _pint_r2.get("description",""), _pint_r3.get("description","")] if v]
+                _pint_r2 = _gen_pint(topic=topic, tone="educational", persona=_pint_persona, language=_pint_lang, niche=_pint_niche)
+                _pint_r3 = _gen_pint(topic=topic, tone="motivational", persona=_pint_persona, language=_pint_lang, niche=_pint_niche)
+                _pint_variants = [v for v in [_pint_d1, _pint_r2.get("pin_description",""), _pint_r3.get("pin_description","")] if v]
             except Exception:
                 _pint_variants = [_pint_d1]
-            result = _pint_r
-            result["post_variants"] = _pint_variants
-            result["seo_packs"] = result.get("seo_packs", {"pinterest": {"caption": _pint_d1, "description": _pint_d1, "hashtags": result.get("hashtags",[])}})
-            result["caption"] = _pint_d1
+            result = {
+                "platform": "pinterest",
+                "topic": topic,
+                "caption": _pint_d1,
+                "post": _pint_d1,
+                "pin_title": _pint_title,
+                "pin_description": _pint_d1,
+                "hashtags": _pint_r.get("hashtags", []),
+                "board_suggestions": _pint_r.get("board_suggestions", []),
+                "seo_keywords": _pint_r.get("seo_keywords", []),
+                "post_variants": _pint_variants,
+                "seo_packs": {"pinterest": {"caption": _pint_d1, "description": _pint_d1, "hashtags": _pint_r.get("hashtags", [])}},
+            }
         elif p == "facebook":
             if not _HAS_FB: raise HTTPException(503, "FacebookEngine not available.")
             from vertex_engine import generate_facebook
@@ -1144,107 +1161,157 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
             }
             result["caption"] = _th_p1
         elif p == "reddit":
-            import requests as _req
-            _gemini_key = __import__('os').getenv('GOOGLE_API_KEY','')
-            _reddit_prompt = f"""Write a Reddit post about: {topic}
-Tone: {getattr(payload,'tone','informative')}
-Language: English (Reddit is English only)
+            from vertex_engine import generate_json as _rgj
+            _rtone = payload.tone or "informative"
 
-Write a Reddit post that feels genuinely human. NOT like AI generated content.
-
-Rules:
-- Title: compelling, curiosity-driven, 60-100 characters
-- Body: conversational, first-person, like a real person sharing experience
-- Share a genuine perspective or insight, not generic advice
-- Include 2-3 specific points that feel real and lived-in
-- End with a question to spark discussion
-- NO bullet points with numbers like "1. 2. 3." — write in flowing paragraphs
-- NO phrases like "Here is what actually matters" or "Most people approach X wrong"
-- Sound like a real Reddit user, not a content writer
-
-Return ONLY valid JSON:
-{{"post_title": "...", "post_body": "..."}}"""
-            try:
-                _r = _req.post(
-                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{_gemini_key}}",
-                    headers={{"Content-Type":"application/json"}},
-                    json={{"contents":[{{"parts":[{{"text":_reddit_prompt}}]}}],"generationConfig":{{"maxOutputTokens":600,"temperature":0.9,"thinkingConfig":{{"thinkingBudget":0}}}}}},
-                    timeout=30
+            def _reddit_call(angle):
+                _rp = (
+                    "Write a Reddit post about: " + topic + "\n"
+                    + "Angle: " + angle + "\n"
+                    + "Tone: " + _rtone + "\n"
+                    + "Write in English. Sound like a real Reddit user sharing a genuine perspective.\n"
+                    + "Rules:\n"
+                    + "- Title: compelling, curiosity-driven, 60-100 characters\n"
+                    + "- Body: conversational, first-person, flowing paragraphs, 200-300 words\n"
+                    + "- Share specific insights, not generic advice\n"
+                    + "- End with a question to spark discussion\n"
+                    + "- No numbered bullet points\n"
+                    + "- No AI filler phrases\n"
+                    + "Return ONLY valid JSON, no markdown fences:\n"
+                    + '{"post_title": "title here", "post_body": "body here"}'
                 )
-                _rd = _r.json()
-                _rt = _rd["candidates"][0]["content"]["parts"][0]["text"].strip()
-                _rt = _rt.replace("```json","").replace("```","").strip()
-                _rj = __import__('json').loads(_rt)
-                post_title = _rj.get("post_title", topic)
-                post_body = _rj.get("post_body", "")
-            except Exception as _re:
-                post_title = f"{topic} — sharing what I learned"
-                post_body = f"Been thinking about {topic} a lot lately. Would love to hear what others think about this."
-            sep = "\n\n"
+                return _rgj(_rp, max_tokens=700, temperature=0.9)
+
+            _r_angles = [
+                "personal experience and lessons learned",
+                "contrarian take with data and reasoning",
+                "story-driven with a surprising conclusion",
+            ]
+            _r_fallbacks = [
+                (topic + " — what I wish someone told me earlier",
+                 "I have been thinking about " + topic + " for a while now and the more I dig into it, the more I realize how much misinformation is out there. The reality is more nuanced than most people assume. Happy to share specifics if anyone is interested. What has your experience been?"),
+                (topic + " — the data tells a different story",
+                 "Everyone has an opinion on " + topic + " but very few people actually look at the numbers. When you do, the picture changes pretty dramatically. The conventional wisdom here is wrong in at least two important ways. What do others think?"),
+                ("My honest take on " + topic + " after going deep on this",
+                 "I spent a lot of time researching " + topic + " recently and came away with a perspective I did not expect. The thing that surprised me most was how much context matters. The same approach works brilliantly in one situation and fails completely in another. Would love to hear if others have noticed this too."),
+            ]
+
+            _r_variants = []
+            for _i, _angle in enumerate(_r_angles):
+                try:
+                    _rd = _reddit_call(_angle)
+                    _rt = _rd.get("post_title", "").strip()
+                    _rb = _rd.get("post_body", "").strip()
+                    if not _rt or not _rb:
+                        raise ValueError("empty")
+                    _r_variants.append(_rt + "\n\n" + _rb)
+                except Exception:
+                    _ft, _fb = _r_fallbacks[_i]
+                    _r_variants.append(_ft + "\n\n" + _fb)
+
+            _r_parts = _r_variants[0].split("\n\n", 1)
+            post_title = _r_parts[0] if _r_parts else topic
+            post_body = _r_parts[1] if len(_r_parts) > 1 else ""
             result = {
                 "platform": "reddit",
                 "topic": topic,
-                "caption": post_title + sep + post_body,
+                "caption": _r_variants[0],
                 "post_title": post_title,
                 "post": post_body,
+                "post_variants": _r_variants,
                 "hashtags": [],
             }
         elif p == "quora":
-            import requests as _req_q
-            _gkey_q = __import__('os').getenv('GOOGLE_API_KEY','')
-            _persona_q = getattr(payload,'personality','default') or 'default'
-            _tone_q = getattr(payload,'tone','informative') or 'informative'
-            _quora_prompt = f"""Write a Quora answer about this topic: {topic}
-Voice/Persona: {_persona_q}
-Tone: {_tone_q}
+            import requests as _req_q, json as _json_q
+            _gkey_q = __import__('os').getenv('GOOGLE_API_KEY', '')
+            _qurl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + _gkey_q
+            _qcfg = {"maxOutputTokens": 800, "temperature": 0.9, "thinkingConfig": {"thinkingBudget": 0}}
+            _qlang_map = {
+                "hinglish": "Write in Hinglish (Hindi words in Roman script mixed naturally with English).",
+                "hindi": "Write entirely in Hindi using Devanagari script.",
+                "english": "Write in clear, fluent English.",
+                "marathi": "Write entirely in Marathi using Devanagari script.",
+                "tamil": "Write entirely in Tamil script.",
+                "bengali": "Write entirely in Bengali script.",
+            }
+            _qlang = _qlang_map.get((payload.language or "english").lower(), "Write in clear, fluent English.")
+            _qschema = '{"quora_question": "specific question string", "quora_answer": "full answer string"}'
 
-Write a genuinely helpful, credible Quora answer. Rules:
-- Opening line must be specific and hook the reader immediately, NOT generic
-- Write in flowing paragraphs, not bullet points or numbered lists
-- Share a real insight or angle specific to this exact topic
-- Use concrete reasoning or examples, not vague advice
-- 250 to 350 words total
-- End naturally without a forced CTA
-- Sound like a knowledgeable person who genuinely understands this topic
-- NEVER use these phrases: "Most people overcomplicate", "Here is what actually matters", "The answer becomes clear", "What is the best way to approach"
-- The answer must be specifically about: {topic}
-
-Return ONLY valid JSON with no extra text:
-{{"quora_question": "a specific relevant question about the topic", "quora_answer": "the full answer text"}}"""
-            try:
-                _r_q = _req_q.post(
-                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{_gkey_q}}",
-                    headers={{"Content-Type":"application/json"}},
-                    json={{"contents":[{{"parts":[{{"text":_quora_prompt}}]}}],"generationConfig":{{"maxOutputTokens":700,"temperature":0.85,"thinkingConfig":{{"thinkingBudget":0}}}}}},
-                    timeout=30
+            def _quora_call(tone_desc):
+                from vertex_engine import generate as _vgen
+                import json as _jq
+                _qprompt = (
+                    "You are writing a Quora answer. " + _qlang + "\n\n"
+                    + "Topic: " + topic + "\n"
+                    + "Tone: " + tone_desc + "\n\n"
+                    + "Write a specific, relevant Quora question about this topic and a 250-350 word answer in flowing paragraphs.\n"
+                    + "Rules:\n"
+                    + "- Question must be specific and naturally phrased. Never start with: What should I know about.\n"
+                    + "- Answer must be in flowing paragraphs only. No bullet points, no numbered lists.\n"
+                    + "- Be specific and insightful. Use concrete reasoning, not vague advice.\n"
+                    + "- Do not open with Great question or any compliment.\n"
+                    + "- Do not end with a forced CTA or sign-off.\n"
+                    + "- Never use: Most people overcomplicate, Here is what actually matters, The answer becomes clear.\n\n"
+                    + "Return ONLY valid JSON, no markdown fences, no extra text:\n"
+                    + _qschema
                 )
-                _rd_q = _r_q.json()
-                _rt_q = _rd_q["candidates"][0]["content"]["parts"][0]["text"].strip()
-                _rt_q = _rt_q.replace("```json","").replace("```","").strip()
-                _rj_q = __import__('json').loads(_rt_q)
-                question = _rj_q.get("quora_question", f"What should I know about {topic}?")
-                answer = _rj_q.get("quora_answer","")
-            except Exception as _qe:
-                question = f"What should I know about {topic}?"
-                answer = f"This topic has more depth than most people realize. {topic} is worth understanding properly before forming an opinion."
-            sep = "\n\n"
-            full_post = f"Question: {{question}}{{sep}}{{answer}}"
-            result = {{
+                _qt = _vgen(_qprompt, max_tokens=800, temperature=0.9)
+                _qt = _qt.replace("```json", "").replace("```", "").strip()
+                return _jq.loads(_qt)
+
+            _qa_variants = []
+            _tones = [
+                "informative and authoritative, like a subject-matter expert explaining clearly",
+                "analytical and nuanced, examining the topic from multiple angles with evidence",
+                "personal and story-driven, drawing on first-hand experience or observation",
+            ]
+            _q_fallbacks = [
+                ("How does " + topic + " actually work in practice?",
+                 topic + " is one of those subjects where the gap between theory and practice is large. "
+                 + "Most explanations focus on the surface mechanics without addressing what actually determines outcomes. "
+                 + "The key variables are rarely the ones that get the most attention, and understanding that shift changes how you approach the whole subject."),
+                ("What does the data actually say about " + topic + "?",
+                 "The evidence on " + topic + " is more nuanced than popular coverage suggests. "
+                 + "When you look at the research rather than the headlines, a different picture emerges. "
+                 + "The factors that drive results here are specific and measurable, not the vague principles most people repeat."),
+                ("What changed my understanding of " + topic + "?",
+                 "I spent a long time thinking about " + topic + " the way most people do, until one experience shifted my perspective entirely. "
+                 + "The thing that surprised me was how much context matters. "
+                 + "The same approach that works in one situation fails in another for reasons that are completely predictable once you understand the underlying dynamics."),
+            ]
+            for _i, _tone in enumerate(_tones):
+                try:
+                    _qdata = _quora_call(_tone)
+                    _qq = _qdata.get("quora_question", "").strip()
+                    _qa = _qdata.get("quora_answer", "").strip()
+                    if not _qq or not _qa:
+                        raise ValueError("empty")
+                    _qa_variants.append("Question: " + _qq + "\n\n" + _qa)
+                except Exception:
+                    _fq, _fa = _q_fallbacks[_i]
+                    _qa_variants.append("Question: " + _fq + "\n\n" + _fa)
+
+            full_post = _qa_variants[0]
+            _qparts = _qa_variants[0].split("\n\n", 1)
+            question = _qparts[0].replace("Question: ", "", 1) if _qparts else topic
+            answer = _qparts[1] if len(_qparts) > 1 else _qa_variants[0]
+            result = {
                 "platform": "quora",
                 "topic": topic,
                 "caption": full_post,
                 "post": full_post,
                 "quora_question": question,
                 "quora_answer": answer,
+                "post_variants": _qa_variants,
                 "hashtags": [],
-            }}
+            }
         elif p == "linkedin":
             from vertex_engine import generate_linkedin, generate_json as _gj
             _persona3 = payload.effective_persona()
             _tone3 = getattr(payload,'tone','informative') or 'informative'
             _lang3 = getattr(payload,'language','english') or 'english'
             _li = generate_linkedin(topic=topic, tone=_tone3, persona=_persona3, language=_lang3)
-            import logging; logging.getLogger("sociomee").warning(f"LinkedIn post result: {repr(_li_post[:100])}")
+            
             _li_post = _li.get("post","")
             _li_tags = _li.get("hashtags",["#linkedin","#professional","#growth","#india","#creator","#business"])
             _variants = [_li_post] if _li_post else []
@@ -1267,6 +1334,10 @@ Return ONLY valid JSON with no extra text:
         import logging
         logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)
         raise HTTPException(500, "Something went wrong. Please try again.")
+    # echo back the language and format so frontend can display correctly
+    if isinstance(result, dict):
+        result["language"] = payload.language or "hinglish"
+        result["format_type"] = payload.format_type or "long"
     # wrap caption into seo_packs so PlatformSEOTabs can render it
     caption = result.get("caption","") or result.get("post","") or result.get("description","")
     if "seo_packs" not in result:
