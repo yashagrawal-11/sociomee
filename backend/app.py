@@ -567,59 +567,51 @@ def _seo_tips(title: str, keyword: str, score: int) -> list:
     return tips[:3]
 
 def _generate_titles_with_scores(topic: str, persona: str, language: str) -> list:
-    t = topic.strip(); tc = t.title()
+    t = topic.strip()
     is_hi = "hindi" in language.lower() or language.lower() == "hinglish"
-    p = str(persona).lower().strip() if isinstance(persona, str) else "default"
-    TITLE_SETS = {
-        "dhruvrathee": [
-            f"{tc}: Woh Sachchi Kahani Jo Media Chhupaata Hai | Full Investigation",
-            f"Kya Sach Hai {tc} Ke Baare Mein? Evidence-Based Analysis",
-            f"{tc} — Asli Hakikat Kya Hai? Poora Sach Aaj Jaaniye",
-        ],
-        "carryminati": [
-            f"{tc} Ka Pura Scene | Bhai Maine Research Kiya",
-            f"Yaar Seriously {tc}? | Seedha Point Pe Aata Hoon",
-            f"{tc} — Bhai Tune Kya Kiya? Full Roast + Analysis",
-        ],
-        "samayraina": [
-            f"{tc}... Matlab Seriously? | Dark Comedy Analysis",
-            f"Haan Toh {tc} Ke Baare Mein Baat Karte Hain",
-            f"{tc} — Ye Bhi Theek Hai I Guess | Honest Review",
-        ],
-        "rebelkid": [
-            f"Stop Normalizing {tc} — Here's The Truth Nobody Says",
-            f"{tc} Is A Cute Little Red Flag We Need To Talk About",
-            f"Respectfully, {tc} Needs To Be Called Out | Full Take",
-        ],
-        "mrbeast": [
-            f"The SHOCKING Truth About {tc} Nobody Talks About",
-            f"I Researched {tc} For 30 Days — Here's What I Found",
-            f"Why {tc} Is MORE Insane Than You Think (FULL STORY)",
-        ],
-        "alexhormozi": [
-            f"The {tc} Framework Nobody Teaches You (Do This Instead)",
-            f"Why 99% of People Get {tc} Completely Wrong",
-            f"{tc}: The Brutally Honest Truth | No Fluff",
-        ],
-        "joerogan": [
-            f"Dude, {tc} Is Crazier Than You Think | Deep Dive",
-            f"The {tc} Conversation Nobody Is Having | Full Analysis",
-            f"Think About {tc} For A Second — It's Wild",
-        ],
-        "default": [
-            f"{tc}: The Complete Truth Finally Revealed | Full Analysis",
-            f"Why {tc} Matters More Than You Think — Deep Dive",
-            f"Everything You Were Wrong About {tc} | Explained Simply",
-        ],
-    }
-    if not is_hi:
-        eng_personas = {"mrbeast","alexhormozi","joerogan","rebelkid","default"}
-        if p not in eng_personas: p = "default"
-    raw_titles = TITLE_SETS.get(p, TITLE_SETS["default"])
+    lang_inst = "Write titles in Hinglish (Hindi words in Roman script mixed with English)." if is_hi else "Write titles in English."
+    try:
+        from vertex_engine import generate as _vgen
+        import json as _tj
+        prompt = (
+            "Generate 3 unique, high-CTR YouTube video titles for this topic: " + t + "\n"
+            + lang_inst + "\n"
+            + "Rules:\n"
+            + "- Each title must be different in structure and angle\n"
+            + "- Titles should be curiosity-driven, specific, and SEO-optimized\n"
+            + "- Do NOT repeat the topic keyword verbatim at the start of every title\n"
+            + "- Mix formats: one emotional/story, one listicle/numbered, one bold claim\n"
+            + "- 50-70 characters each\n"
+            + "- No generic templates like 'dark truth' or '3 galtiyan'\n"
+            + "Return ONLY valid JSON, no markdown:\n"
+            + '{"titles": ["title1", "title2", "title3"]}'
+        )
+        raw = _vgen(prompt, max_tokens=300, temperature=0.9)
+        raw = raw.replace("```json","").replace("```","").strip()
+        data = _tj.loads(raw)
+        titles = data.get("titles", [])
+        if len(titles) >= 3:
+            result = []
+            for title in titles[:3]:
+                score = _seo_score_title(title, topic)
+                tips = _seo_tips(title, topic, score)
+                grade = "A" if score >= 80 else "B" if score >= 65 else "C" if score >= 50 else "D"
+                result.append({"title": title, "seo_score": score, "grade": grade, "tips": tips})
+            result.sort(key=lambda x: x["seo_score"], reverse=True)
+            return result
+    except Exception as _te:
+        pass
+    # Fallback only if Vertex fails
+    tc = t.title()
+    fallback = [
+        tc + ": Full Truth Finally Revealed | Deep Dive",
+        "Why " + tc + " Matters More Than You Think",
+        "Everything You Didn't Know About " + tc + " | Explained",
+    ]
     result = []
-    for title in raw_titles:
+    for title in fallback:
         score = _seo_score_title(title, topic)
-        tips  = _seo_tips(title, topic, score)
+        tips = _seo_tips(title, topic, score)
         grade = "A" if score >= 80 else "B" if score >= 65 else "C" if score >= 50 else "D"
         result.append({"title": title, "seo_score": score, "grade": grade, "tips": tips})
     result.sort(key=lambda x: x["seo_score"], reverse=True)
@@ -630,111 +622,65 @@ def _generate_titles_with_scores(topic: str, persona: str, language: str) -> lis
 # silently shadowed the real one, meaning fixes to the real function never applied
 # to any of this file's own usages. Single source of truth now.
 def _generate_yt_description(topic: str, hook: str, structure: dict, titles_with_score: list, language: str = "hinglish") -> str:
-    import requests as _r, re as _re, os as _os
-    t = topic.strip(); tc = t.title()
+    t = topic.strip()
     if not _check_topic_safety(t):
         return ("This topic cannot be generated. SocioMee does not create content involving self-harm, "
                 "sexual content, slurs, hate speech, or violence. Please choose a different topic.")
-    kp = structure.get("key_points", [])
-    best_title = titles_with_score[0]["title"] if titles_with_score else tc
-    NL = "\n"
-
-    # Generate with Gemini
+    best_title = titles_with_score[0]["title"] if titles_with_score else t.title()
     try:
-        api_key = _os.environ.get("GOOGLE_API_KEY","")
-        kp_text = ", ".join(str(p) for p in kp[:5] if p)
-        prompt = f"""Write a professional YouTube video description for:
-Topic: {t}
-Title: {best_title}
-Language: {language} — write ALL text in {language} only, no other language.
-
-Use EXACTLY this format (no markdown, no asterisks, plain text only):
-
-{best_title}
-
-ABOUT THIS VIDEO
-[Write 2-3 engaging sentences in {language} about what this video covers, why it matters, and what viewer will learn. Make it specific to {t}.]
-
-IN THIS VIDEO
-- [Point 1 specific to {t}]
-- [Point 2 specific to {t}]
-- [Point 3 specific to {t}]
-- [Point 4 specific to {t}]
-- [Point 5 specific to {t}]
-
-YOUR QUERIES
-{t}
-{t} explained
-{t} full analysis
-{t} truth revealed
-{t} in hindi
-{t} 2024
-{t} real story
-{t} investigation
-about {t}
-{t} facts
-
-TIMESTAMPS
-00:00 - Introduction
-00:30 - Background
-02:00 - [Section specific to {t}]
-05:00 - [Section specific to {t}]
-08:00 - [Section specific to {t}]
-12:00 - Conclusion
-
-HASHTAGS
-#{t.lower().replace(' ','')} #viralvideo #trending #youtube #india #facts #analysis #investigation #hinglish #viral
-
-DISCLAIMER
-This video is for educational and informational purposes only. All information is based on publicly available sources. We do not claim ownership of any third-party content shown. Copyright © SocioMee 2024.
-
-Write the ABOUT THIS VIDEO and IS VIDEO MEIN AAP JANENGE sections with content specific to {t}. Keep rest exactly as shown."""
-
-        resp = _r.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
-            headers={"Content-Type":"application/json"},
-            json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":1500,"temperature":0.7}},
-            timeout=30
+        from vertex_engine import generate as _vgen
+        import json as _dj
+        lang_map = {
+            "hinglish": "Hinglish (Hindi words in Roman script mixed naturally with English)",
+            "hindi": "Hindi using Devanagari script",
+            "english": "English",
+            "marathi": "Marathi (Devanagari script)",
+            "tamil": "Tamil script",
+            "bengali": "Bengali script",
+        }
+        lang_name = lang_map.get(language.lower(), "English")
+        prompt = (
+            "Generate YouTube search queries and hashtags for this video.\n"
+            "Topic: " + t + "\n"
+            "Title: " + best_title + "\n"
+            "Write in " + lang_name + ".\n\n"
+            "Return ONLY valid JSON, no markdown:\n"
+            "{\"queries\": [\"10 short specific search queries related to the topic, each 2-5 words\"], "
+            "\"hashtags\": [\"8 hashtags without the hash symbol, most relevant and specific to the topic first, broader ones after\"]}"
         )
-        data = resp.json()
-        if "candidates" in data:
-            raw = data["candidates"][0]["content"]["parts"][0]["text"]
-            # Clean any markdown
-            raw = _re.sub(r"\*\*(.*?)\*\*", r"\1", raw)
-            raw = _re.sub(r"\*(.*?)\*", r"\1", raw)
-            raw = _re.sub(r"^(Okay|Sure|Here|Alright)[^\n]*\n", "", raw.strip(), flags=_re.IGNORECASE)
-            return raw.strip()
-    except Exception as e:
-        log.warning("Gemini description failed: %s", e)
+        raw = _vgen(prompt, max_tokens=500, temperature=0.8)
+        raw = raw.replace("```json","").replace("```","").strip()
+        data = _dj.loads(raw)
+        queries = data.get("queries", [])[:10]
+        hashtags = data.get("hashtags", [])[:8]
+    except Exception:
+        queries = []
+        hashtags = []
 
-    # Fallback
-    queries = [t, t+" explained", t+" full analysis", t+" truth revealed", t+" in hindi",
-               t+" documentary", "about "+t, t+" real story", t+" latest news", t+" facts"]
-    kp_bullets = NL.join(f"• {str(p)[:80]}" for p in kp[:5] if p)
-    hashtags = f"#{t.lower().replace(' ','')} #viralvideo #trending #youtube #india #facts #analysis #viral"
-    return f"""{best_title}
+    if not queries:
+        queries = [t, t+" explained", t+" full analysis", t+" truth revealed",
+                   t+" in hindi", t+" documentary", "about "+t, t+" real story",
+                   t+" latest news", t+" facts"]
+    if not hashtags:
+        clean = t.lower().replace(" ", "")
+        hashtags = [clean, clean+"video", "youtube", "youtubevideo", "tutorial", "contentcreator", "videoseo", "creator"]
 
-ABOUT THIS VIDEO
-Aaj hum {t} ke baare mein ek honest aur detailed analysis karenge. Is video mein hum sab angles cover karenge bina kisi bias ke.
+    NL = chr(10)
+    queries_block = NL.join(queries)
+    hashtags_block = " ".join("#" + h.replace("#","").replace(" ","") for h in hashtags)
 
-IS VIDEO MEIN AAP JANENGE
-{kp_bullets or f"• {tc} ki poori kahani"}
+    return (
+        best_title + NL + NL
+        + "\U0001F50E Your Queries:" + NL + NL
+        + queries_block + NL + NL
+        + hashtags_block + NL + NL
+        + "Don't forget to Like, Comment, Share and Subscribe for more content like this!" + NL + NL
+        + "Copyright Disclaimer under Section 107 of the Copyright Act 1976: This video is for criticism, comment, "
+        + "news reporting, teaching, scholarship, and research. Fair use depends on the full context of the use "
+        + "and is not legal advice." + NL + NL
+        + "Published by SocioMee AI"
+    )
 
-YOUR QUERIES
-{NL.join(queries)}
-
-TIMESTAMPS
-00:00 - Introduction
-00:30 - Background
-02:00 - Main Analysis
-08:00 - Key Findings
-12:00 - Conclusion
-
-HASHTAGS
-{hashtags}
-
-DISCLAIMER
-This video is for educational and informational purposes only. All information is based on publicly available sources. Copyright © SocioMee 2024."""
 
 
 def _normalize(raw: dict, payload: FullContentRequest, platform: str = "youtube") -> dict:
@@ -1006,10 +952,46 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
     if err: return err
     try:
         if p == "youtube":
-            if not _HAS_YT: raise HTTPException(503, "YouTubeIntelligenceEngine not available.")
-            e = YouTubeIntelligenceEngine()
-            try: result = e.generate(topic=topic, niche=payload.niche, personality=payload.personality, format_type=payload.format_type, duration_seconds=payload.duration_seconds, language=payload.language, tone=payload.tone)
-            except TypeError: result = e.generate(topic=topic, niche=payload.niche, personality=payload.personality, format_type=payload.format_type, duration_seconds=payload.duration_seconds, language=payload.language)
+            if not _HAS_AI_ROUTER or not _generate_full_content:
+                raise HTTPException(503, "AI router not available.")
+            _yt_persona = payload.personality or "default"
+            _yt_lang = payload.language or "hinglish"
+            _yt_niche = payload.niche or "auto"
+            _yt_plan = getattr(payload, "plan", None) or "pro"
+            _yt_raw = _generate_full_content(
+                topic=topic, persona=_yt_persona.strip().lower(),
+                language=_yt_lang.strip().lower(), country="in",
+                plan=_yt_plan, deep_research=False, niche=_yt_niche,
+            )
+            _yt_titles_ws = _yt_raw.get("seo_scores") or []
+            if not _yt_titles_ws:
+                _yt_titles_ws = [{"title": t, "seo_score": 70, "grade": "B", "tips": []} for t in _yt_raw.get("titles", [])]
+            _yt_hook = _yt_raw.get("structure", {}).get("hook", "")
+            _yt_desc = _generate_yt_description(
+                topic=topic, hook=_yt_hook, structure=_yt_raw.get("structure", {}),
+                titles_with_score=_yt_titles_ws, language=_yt_lang,
+            )
+            _yt_hashtags_line = [l for l in _yt_desc.split(chr(10)) if l.strip().startswith("#")]
+            _yt_hashtags = _yt_hashtags_line[0].split() if _yt_hashtags_line else []
+            _yt_queries = []
+            for l in _yt_desc.split(chr(10)):
+                ls = l.strip()
+                if ls and not ls.startswith("#") and "Your Queries" not in ls and "Copyright" not in ls and "Published by" not in ls and "Like, Comment" not in ls and ls != _yt_raw.get("best_title", ""):
+                    _yt_queries.append(ls)
+            result = {
+                "platform": "youtube",
+                "topic": _yt_raw.get("topic", topic),
+                "best_title": _yt_raw.get("best_title", topic),
+                "titles_with_score": _yt_titles_ws,
+                "titles": _yt_raw.get("titles", []),
+                "script_text": _yt_raw.get("script", ""),
+                "hook": _yt_hook,
+                "youtube_description": _yt_desc,
+                "seo_description": _yt_desc,
+                "search_queries": _yt_queries[:10],
+                "seo_hashtags": _yt_hashtags,
+                "word_count": len((_yt_raw.get("script","") or "").split()),
+            }
         elif p == "instagram":
             if not _HAS_IG: raise HTTPException(503, "InstagramEngine not available.")
             from vertex_engine import generate_instagram
@@ -1376,15 +1358,32 @@ async def thumb_ab_test(
         return {"error": str(e)}
 
 @app.post("/thumbnail/analyze")
-async def thumb_analyze(file: UploadFile = File(...), keyword: str = Form(""), niche: str = Form(""), user: dict = Depends(get_current_user)):
-    err = _check_credits(user.get("user_id",""))
-    if err: return err
+async def thumb_analyze(file: UploadFile = File(...), title: str = Form(""), keyword: str = Form(""), niche: str = Form(""), user: dict = Depends(get_current_user)):
     real_plan = get_credit_status(user.get("user_id",""))["plan"]
     try:
         b = await file.read()
+        kw = title or keyword or niche or "general"
         if _HAS_THUMB:
-            r = analyze_thumbnail_real(image_bytes=b, mime_type=file.content_type or "image/jpeg", keyword=keyword or niche or "general", niche=niche or keyword or "general", plan=real_plan)
-            if r: return r
+            r = analyze_thumbnail_real(image_bytes=b, mime_type=file.content_type or "image/jpeg", keyword=kw, niche=niche or kw, plan=real_plan)
+            if r and not r.get("error"):
+                overall = r.get("fit_score") or r.get("overall") or round((
+                    r.get("ctr_potential",0)+r.get("color_contrast",0)+
+                    r.get("text_readability",0)+r.get("emotion_hook",0)
+                )/4)
+                metrics = {
+                    "ctr_potential": r.get("ctr_potential",0),
+                    "color_contrast": r.get("color_contrast",0),
+                    "text_readability": r.get("text_readability",0),
+                    "emotion_hook": r.get("emotion_hook",0),
+                    "face_element": r.get("face_element",0),
+                }
+                return {
+                    "overall_score": overall,
+                    "metrics": metrics,
+                    "verdict": r.get("verdict",""),
+                    "suggestions": r.get("suggestions",[]),
+                    "strengths": r.get("strengths",[]),
+                }
         score = 70
         if PILImage:
             try:
@@ -1392,7 +1391,7 @@ async def thumb_analyze(file: UploadFile = File(...), keyword: str = Form(""), n
                 if h > 0 and 1.7 <= w/h <= 1.8: score += 10
                 if w >= 1280: score += 8
             except Exception: pass
-        return {"fit_score": min(score,100), "ctr_potential": min(score-10,100), "verdict": "Good thumbnail." if score>=70 else "Needs improvement.", "suggestions": ["Bigger text","Add a face","Brighter colors","Use 16:9 ratio"]}
+        return {"overall_score": min(score,100), "metrics": {"ctr_potential": min(score-10,100)}, "verdict": "Good thumbnail." if score>=70 else "Needs improvement.", "suggestions": ["Bigger text","Add a face","Brighter colors","Use 16:9 ratio"], "strengths": []}
     except Exception as e:
         import logging
         logging.getLogger("sociomee").error(f"Internal error: {e}", exc_info=True)

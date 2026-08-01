@@ -26,6 +26,8 @@ PLAN_LIMITS: Dict[str, int] = {
     "pro_annual":       180,
     "premium_monthly":  300,
     "premium_annual":   300,
+    "pro+":              300,
+    "proplus":           300,
 }
 
 PLAN_PRICES: Dict[str, Dict[str, Any]] = {

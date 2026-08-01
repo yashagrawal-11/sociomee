@@ -10,15 +10,25 @@ from functools import lru_cache
 # Simple title cache to avoid repeated API calls for same topic
 _title_cache = {}
 
-# Initialize Vertex AI once at module load
 os.environ.setdefault('GOOGLE_APPLICATION_CREDENTIALS', '/var/www/sociomee/backend/sociomee-auth-key.json')
-try:
-    import vertexai as _VERTEXAI
-    _VERTEXAI.init(project='sociomee-auth', location='us-central1')
-    from vertexai.generative_models import GenerativeModel as _VertexModel, GenerationConfig as _VertexConfig
-    _VERTEX_READY = True
-except Exception as _ve:
-    _VERTEX_READY = False
+_VERTEX_READY = False
+_VertexModel = None
+_VertexConfig = None
+
+def _init_vertex():
+    global _VERTEX_READY, _VertexModel, _VertexConfig
+    if _VERTEX_READY:
+        return True
+    try:
+        import vertexai as _VERTEXAI
+        _VERTEXAI.init(project='sociomee-auth', location='us-central1')
+        from vertexai.generative_models import GenerativeModel as _VM, GenerationConfig as _VC
+        _VertexModel = _VM
+        _VertexConfig = _VC
+        _VERTEX_READY = True
+        return True
+    except Exception:
+        return False
 
 POWER_WORDS = {
     "secret","shocking","truth","nobody","mistake","never","always","exposed",
@@ -54,7 +64,7 @@ def _score_title(title: str, topic: str, trending_keywords: List[str]) -> Dict[s
 
 
 def _gemini_titles(topic: str, persona: Dict[str, Any] = None, trending_keywords: List[str] = None) -> List[str]:
-    if not _VERTEX_READY:
+    if not _init_vertex():
         return []
     # Check cache first
     _cache_key = hashlib.md5(f"{topic}".encode()).hexdigest()
