@@ -165,21 +165,28 @@ def generate_instagram(topic: str, tone: str = "casual", persona: str = "default
     from persona_profiles import get_tone_modifier
     tone_hint = get_tone_modifier(tone)
 
+    lang_map = {
+        "hinglish": "Write ALL text in Hinglish (Hindi words in Roman script mixed naturally with English). This is mandatory.",
+        "hindi": "Write ALL text in Hindi using Devanagari script. This is mandatory.",
+        "english": "Write ALL text in clear fluent English. This is mandatory.",
+        "marathi": "Write ALL text in Marathi using Devanagari script. This is mandatory.",
+        "tamil": "Write ALL text in Tamil script. This is mandatory.",
+        "bengali": "Write ALL text in Bengali script. This is mandatory.",
+    }
+    lang_instruction = lang_map.get(language.lower(), "Write ALL text in English.")
     prompt = f"""Generate Instagram content for this topic: "{topic}"
 Niche: {niche}
 Tone: {tone_hint}
-Language: {language}
-
+LANGUAGE INSTRUCTION (MANDATORY): {lang_instruction}
 Instagram is a VISUAL platform. No titles or long descriptions.
-
 Return ONLY valid JSON:
 {{
-  "reel_hook": "First 3 seconds spoken hook for a reel — must stop the scroll immediately. 1-2 punchy sentences.",
-  "caption": "Full Instagram caption. Start with a hook line. 3-4 short paragraphs. Conversational. Ends with a question or CTA. 150-250 words.",
-  "hashtags": ["list", "of", "20", "relevant", "hashtags", "mix", "of", "niche", "trending", "broad"],
-  "cta": "Call to action — save this, share with a friend, comment below, etc.",
-  "story_ideas": ["3 story slide ideas related to this topic"],
-  "bio_link_text": "Text to say 'link in bio' naturally in the persona voice"
+  "reel_hook": "First 3 seconds spoken hook for a reel. Must stop the scroll. 1-2 punchy sentences in the specified language.",
+  "caption": "Full Instagram caption. Hook line first. 3-4 short paragraphs. Conversational. Ends with question or CTA. 150-250 words in the specified language.",
+  "hashtags": ["20", "relevant", "hashtags"],
+  "cta": "Call to action in the specified language.",
+  "story_ideas": ["3 story slide ideas in the specified language"],
+  "bio_link_text": "Link in bio text in the specified language"
 }}"""
 
     result = generate_json(prompt, max_tokens=3000)

@@ -1014,27 +1014,20 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
             if not _HAS_IG: raise HTTPException(503, "InstagramEngine not available.")
             from vertex_engine import generate_instagram
             _ig = generate_instagram(topic=topic, tone=payload.tone or "casual", persona=payload.effective_persona(), language=payload.language or "hinglish", niche=payload.niche or "general")
-            _ig_cap1 = _ig.get("caption","")
-            try:
-                from vertex_engine import generate as _vg
-                _ig2 = generate_instagram(topic=topic, tone="emotional", persona=payload.effective_persona(), language=payload.language or "hinglish", niche=payload.niche or "general")
-                _ig3 = generate_instagram(topic=topic, tone="motivational", persona=payload.effective_persona(), language=payload.language or "hinglish", niche=payload.niche or "general")
-                _ig_variants = [v for v in [_ig_cap1, _ig2.get("caption",""), _ig3.get("caption","")] if v]
-            except Exception:
-                _ig_variants = [_ig_cap1]
+            _ig_cap = _ig.get("caption","")
             result = {
                 "platform": "instagram",
                 "topic": topic,
                 "reel_hook": _ig.get("reel_hook",""),
-                "caption": _ig_cap1,
-                "post": _ig_cap1,
+                "caption": _ig_cap,
+                "post": _ig_cap,
                 "hashtags": _ig.get("hashtags",[]),
                 "cta": _ig.get("cta",""),
                 "story_ideas": _ig.get("story_ideas",[]),
-                "post_variants": _ig_variants,
-                "seo_packs": {"instagram": {"caption": _ig_cap1, "description": _ig_cap1, "hashtags": _ig.get("hashtags",[])}},
+                "bio_link_text": _ig.get("bio_link_text",""),
+                "post_variants": [],
+                "seo_packs": {"instagram": {"caption": _ig_cap, "description": _ig_cap, "hashtags": _ig.get("hashtags",[])}},
             }
-            result["caption"] = _ig_cap1
         elif p == "x":
             if not _HAS_X: raise HTTPException(503, "XEngine not available.")
             from vertex_engine import generate_twitter_x

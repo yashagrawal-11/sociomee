@@ -801,6 +801,36 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
                 <div style={{ display:"flex",flexWrap:"wrap" }}>{pack.hashtags.map((h,i)=><Pill key={i} color={C.rose}>{h}</Pill>)}</div>
               </div>
             )}
+            {active==="instagram"&&result?.reel_hook&&(
+              <div>
+                <SectionHead icon="🎬" title="Reel Hook (First 3 seconds)" copyText={result.reel_hook}/>
+                <div style={{ background:C.glass,borderRadius:"12px",padding:"14px 16px",fontSize:"13px",lineHeight:1.7,color:C.ink,border:`1px solid ${C.hairline}`,fontWeight:600,fontStyle:"italic" }}>{result.reel_hook}</div>
+              </div>
+            )}
+            {active==="instagram"&&result?.cta&&(
+              <div>
+                <SectionHead icon="📣" title="Call to Action" copyText={result.cta}/>
+                <div style={{ background:C.glass,borderRadius:"12px",padding:"14px 16px",fontSize:"13px",lineHeight:1.7,color:C.ink,border:`1px solid ${C.hairline}` }}>{result.cta}</div>
+              </div>
+            )}
+            {active==="instagram"&&result?.story_ideas?.length>0&&(
+              <div>
+                <SectionHead icon="📖" title="Story Ideas" copyText={result.story_ideas.join("\n")}/>
+                <div style={{ display:"flex",flexDirection:"column",gap:"6px" }}>
+                  {result.story_ideas.map((s,i)=>(
+                    <div key={i} style={{ background:C.glass,borderRadius:"10px",padding:"10px 14px",border:`1px solid ${C.hairline}`,fontSize:"13px",color:C.ink }}>
+                      <span style={{ fontSize:"10px",fontWeight:"800",color:C.purple,letterSpacing:"1px",textTransform:"uppercase",marginRight:"8px" }}>Slide {i+1}</span>{s}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {active==="instagram"&&result?.bio_link_text&&(
+              <div>
+                <SectionHead icon="🔗" title="Bio Link Text" copyText={result.bio_link_text}/>
+                <div style={{ background:C.glass,borderRadius:"12px",padding:"14px 16px",fontSize:"13px",lineHeight:1.7,color:C.ink,border:`1px solid ${C.hairline}` }}>{result.bio_link_text}</div>
+              </div>
+            )}
           </div>
         );
         return isPro ? content : <ProLock label="Full platform SEO packs — Pro feature" onUpgradeClick={onUpgradeClick}>{content}</ProLock>;
@@ -1465,6 +1495,36 @@ function ResultPanel({ result, platform, keyword, isPro, onUpgradeClick, user, o
       )}
 
       {Object.keys(seoPacks).length>0&&<><PlatformSEOTabs seoPacks={seoPacks} defaultPlatform={platform} isPro={isPro} onUpgradeClick={onUpgradeClick} result={result}/><Divider/></>}
+      {(result.platform||platform)==="instagram"&&result.reel_hook&&(
+        <div style={{ marginBottom:"18px" }}>
+          <SectionHead icon="🎬" title="Reel Hook (First 3 seconds)" copyText={result.reel_hook}/>
+          <div style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderLeft:`3px solid ${C.rose}`,borderRadius:"12px",padding:"12px 16px",fontSize:"14px",fontWeight:"600",color:C.ink,fontStyle:"italic" }}>{result.reel_hook}</div>
+        </div>
+      )}
+      {(result.platform||platform)==="instagram"&&result.cta&&(
+        <div style={{ marginBottom:"18px" }}>
+          <SectionHead icon="📣" title="Call to Action" copyText={result.cta}/>
+          <div style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderLeft:`3px solid ${C.purple}`,borderRadius:"12px",padding:"12px 16px",fontSize:"14px",color:C.ink }}>{result.cta}</div>
+        </div>
+      )}
+      {(result.platform||platform)==="instagram"&&result.story_ideas?.length>0&&(
+        <div style={{ marginBottom:"18px" }}>
+          <SectionHead icon="📖" title="Story Ideas" copyText={result.story_ideas.join("\n")}/>
+          <div style={{ display:"flex",flexDirection:"column",gap:"6px" }}>
+            {result.story_ideas.map((s,i)=>(
+              <div key={i} style={{ background:C.glass,borderRadius:"10px",padding:"10px 14px",border:`1px solid ${C.hairline}`,fontSize:"13px",color:C.ink }}>
+                <span style={{ fontSize:"10px",fontWeight:"800",color:C.purple,letterSpacing:"1px",textTransform:"uppercase",marginRight:"8px" }}>Slide {i+1}</span>{s}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {(result.platform||platform)==="instagram"&&result.bio_link_text&&(
+        <div style={{ marginBottom:"18px" }}>
+          <SectionHead icon="🔗" title="Bio Link Text" copyText={result.bio_link_text}/>
+          <div style={{ background:C.glass,border:`1px solid ${C.hairline}`,borderLeft:`3px solid ${C.purple}`,borderRadius:"12px",padding:"12px 16px",fontSize:"14px",color:C.ink }}>{result.bio_link_text}</div>
+        </div>
+      )}
 
       {sections.length>0&&(
         <div style={{ marginBottom:"22px" }}>
@@ -2994,7 +3054,7 @@ export default function App() {
                 {/* TONE - Pills desktop, Dropdown mobile */}
                 <div style={{ fontSize:"11px", fontWeight:"700", color:"rgba(255,255,255,0.3)", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"10px" }}>NICHE</div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"16px" }}>
-                  {[{id:"",label:"Auto"},{id:"gaming",label:"Gaming"},{id:"tech",label:"Tech & AI"},{id:"finance",label:"Finance"},{id:"lifestyle",label:"Lifestyle"},{id:"education",label:"Education"},{id:"fitness",label:"Fitness"},{id:"food",label:"Food"},{id:"travel",label:"Travel"},{id:"fashion",label:"Fashion"},{id:"business",label:"Business"},{id:"motivation",label:"Motivation"},{id:"music",label:"Music"},{id:"sports",label:"Sports"},{id:"news",label:"News"}].map(n=>(
+                  {[{id:"",label:"Auto"},{id:"gaming",label:"Gaming"},{id:"tech",label:"Tech & AI"},{id:"finance",label:"Finance"},{id:"lifestyle",label:"Lifestyle"},{id:"education",label:"Education"},{id:"fitness",label:"Fitness"},{id:"food",label:"Food"},{id:"travel",label:"Travel"},{id:"fashion",label:"Fashion"},{id:"beauty",label:"Beauty"},{id:"business",label:"Business"},{id:"motivation",label:"Motivation"},{id:"music",label:"Music"},{id:"sports",label:"Sports"},{id:"news",label:"News"}].map(n=>(
                     <button key={n.id} onClick={()=>setNiche(n.id)}
                       style={{ padding:"6px 14px", borderRadius:"99px", border:`1px solid ${niche===n.id?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.08)"}`, background:niche===n.id?"rgba(255,255,255,0.1)":"transparent", color:niche===n.id?"#fff":"rgba(255,255,255,0.4)", fontSize:"12px", fontWeight:niche===n.id?"600":"400", cursor:"pointer", fontFamily:"'Poppins',sans-serif", transition:"all 0.15s" }}>
                       {n.label}

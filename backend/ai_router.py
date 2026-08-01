@@ -120,35 +120,62 @@ def _check_topic_safety(topic: str) -> bool:
     t_lower = topic.lower()
     if any(kw in t_lower for kw in _SAFE_KEYWORDS):
         return True
-    # Hard-block obvious violations without calling Gemini
+    # Hard-block obvious violations without calling any API
     _BLOCK_KEYWORDS = [
-        "suicide","self harm","self-harm","kill myself","rape","porn","sex act","nude",
-        "child abuse","csam","bhenchod","chutiya","madarchod","fuck you",
+        # English sexual/explicit
+        "pussy","penis","vagina","dick","cock","boobs","tits","ass","nude","naked","porn",
+        "pornography","sex act","blowjob","handjob","masturbat","orgasm","erotic","xxx",
+        "onlyfans","camgirl","sexting","rape","molest","grope","incest","bestiality",
+        "child abuse","csam","pedophil","lolita",
+        # English violence/self-harm
+        "suicide","self harm","self-harm","kill myself","slit wrist","overdose on",
+        "how to die","want to die","end my life",
+        # English slurs
+        "fuck you","motherfucker","nigger","faggot","cunt",
+        # Hindi/Hinglish slurs and sexual terms
+        "bhenchod","bhen chod","bc ","mbc","madarchod","mc ","chutiya","chutiye",
+        "gaand","lund","lauda","randi","kamina","harami","bhadwa","bhadwe",
+        "chut","lavda","loda","bhosda","bhosdi","gandu","gadha sala",
+        # Short forms commonly used to evade
+        " mc"," bc"," mmc"," mbc","sala mc","teri mc","teri bc",
+        # Marathi slurs
+        "zavanya","zavadya","chakka","ghanta","aai chi","aaicha","aaizhavadya",
+        # Tamil slurs  
+        "ommala","omala","pundai","sunni","koothi","otha",
+        # Bengali slurs
+        "magi","khankir","choda","chudi","bokachoda","shala",
+        # Evasion patterns
+        "s3x","sexx","pr0n","p0rn","fvck","fuk ","phuck","fck ",
     ]
     if any(kw in t_lower for kw in _BLOCK_KEYWORDS):
         return False
-    try:
-        check_prompt = f"""You are a content safety classifier. Classify the following video topic.
-Topic: "{topic}"
-Answer with ONLY one word: SAFE or UNSAFE.
-Mark UNSAFE if the topic involves: suicide or self-harm, sexual content or explicit sex acts, slurs or profanity (in any language, including Hindi/Hinglish such as bhenchod, chutiya, etc.), hate speech, graphic violence, illegal drugs, or content sexualizing minors.
-Mark UNSAFE even if the topic is spelled with extra letters, numbers, or symbols to evade filters (e.g. "sexx", "s3x", "fuckk").
-Mark SAFE only for genuinely neutral, informational, or entertainment topics with no harmful intent.
-Answer with only SAFE or UNSAFE, nothing else."""
-        resp = requests.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}",
-            headers={"Content-Type": "application/json"},
-            json={"contents": [{"parts": [{"text": check_prompt}]}], "generationConfig": {"maxOutputTokens": 20, "temperature": 0, "thinkingConfig": {"thinkingBudget": 0}}},
-            timeout=15
-        )
-        data = resp.json()
-        if "candidates" in data:
-            verdict = data["candidates"][0]["content"]["parts"][0]["text"].strip().upper()
-            if "UNSAFE" in verdict:
+    # Context-aware: block only if clearly sexual/harmful, not metaphorical use
+    _CONTEXT_WORDS = ["bomb","kill","destroy","murder","blast","shoot","stab","poison"]
+    _SAFE_CONTEXT = ["strategy","marketing","sales","growth","business","startup",
+                     "game","gaming","score","goal","competition","music","beat",
+                     "stage","performance","interview","exam","presentation"]
+    for cw in _CONTEXT_WORDS:
+        if cw in t_lower:
+            if not any(sc in t_lower for sc in _SAFE_CONTEXT):
                 return False
-            if "SAFE" in verdict:
-                return True
-        # Could not parse a clear verdict — fail open (allow) to avoid blocking legitimate topics
+    try:
+        from vertex_engine import generate as _vgen
+        check_prompt = (
+            "You are a content safety classifier. Classify the following topic.\n"
+            "Topic: \"" + topic + "\"\n"
+            "Answer with ONLY one word: SAFE or UNSAFE.\n"
+            "Mark UNSAFE if the topic involves: suicide or self-harm, sexual content or explicit sex acts, "
+            "slurs or profanity in any language including Hindi, Hinglish, Marathi, Tamil, Bengali, "
+            "hate speech, graphic violence, illegal drugs, or content sexualizing minors.\n"
+            "Mark UNSAFE even if spelled with extra letters, numbers, or symbols to evade filters.\n"
+            "Mark SAFE for neutral, informational, or entertainment topics with no harmful intent.\n"
+            "Answer with only SAFE or UNSAFE, nothing else."
+        )
+        verdict = _vgen(check_prompt, max_tokens=10, temperature=0).strip().upper()
+        if "UNSAFE" in verdict:
+            return False
+        if "SAFE" in verdict:
+            return True
         return True
     except Exception as exc:
         import logging
