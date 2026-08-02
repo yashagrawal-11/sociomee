@@ -40,10 +40,10 @@ def send_push(user_id,title,body,url="https://sociomeeai.com/app",tag="sociomee"
     except Exception as e: log.error("send_push: %s",e); return False
 
 def notify_out_of_credits(user_id):
-    return send_push(user_id,"⚠️ You're out of credits","Upgrade to Pro or buy a top-up to keep creating on SocioMee.","https://sociomeeai.com/app","out-of-credits",True)
+    return send_push(user_id,"credits all used up 🙌","looks like you've been busy. top up or upgrade to keep the momentum going ⚡","https://sociomeeai.com/pricing","out-of-credits",True)
 
 def notify_credits_restored(user_id,credits=20):
-    return send_push(user_id,"🎉 Your credits are back!",f"You have {credits} fresh credits this month. Time to create! 🚀","https://sociomeeai.com/app","credits-restored",False)
+    return send_push(user_id,"your credits just dropped ✨",f"{credits} fresh credits. new month new content. lets go 🚀","https://sociomeeai.com/app","credits-restored",False)
 
 @router.post("/subscribe")
 async def subscribe(request: Request):
@@ -93,8 +93,8 @@ def notify_welcome(user_id, name=""):
     first = name.split()[0] if name else "creator"
     return send_push(
         user_id,
-        f"welcome to socio world, {first}. you're in.",
-        "",
+        f"hey {first} 👋 welcome to SocioMee AI",
+        "one topic. infinite content. lets build something great 🚀",
         "https://sociomeeai.com/app",
         "welcome",
         False
@@ -159,13 +159,13 @@ NOTIFICATION_POOLS = {
 def get_random_nudge_message():
     now = _dt.now()
     if now.weekday() >= 5:
-        pools = ["weekend", "genz", "savage"]
+        pools = ["weekend", "genz", "motivational"]
     elif 5 <= now.hour < 12:
-        pools = ["morning", "genz"]
+        pools = ["morning", "motivational"]
     elif 12 <= now.hour < 17:
         pools = ["afternoon", "genz"]
     elif 17 <= now.hour < 23:
-        pools = ["evening", "savage"]
+        pools = ["evening", "motivational"]
     else:
         pools = ["late_night"]
     chosen_pool = random.choice(pools)
@@ -178,7 +178,7 @@ def notify_idle_nudge(user_id):
     message = get_random_nudge_message()
     return send_push(
         user_id,
-        "SocioMee",
+        "SocioMee AI 👋",
         message,
         "https://sociomeeai.com/app",
         "idle-nudge",
