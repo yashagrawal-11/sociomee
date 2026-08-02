@@ -1,4 +1,17 @@
 import { useState } from "react";
+const AI = "https://sociomeeai.com/api/ai/generate";
+let lastCall = 0;
+async function askGemini(prompt) {
+  const now = Date.now();
+  if (now - lastCall < 3000) await new Promise(r => setTimeout(r, 3000 - (now - lastCall)));
+  lastCall = Date.now();
+  const token = localStorage.getItem("sociomee_token");
+  const r = await fetch(AI, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ messages: [{ role: "user", content: prompt }], cost: 2 }) });
+  if (!r.ok) { const d = await r.json().catch(()=>({})); throw new Error(d?.detail?.message || d?.detail || "Not enough credits or an error occurred."); }
+  const d = await r.json();
+  if (d.credit_status) window.dispatchEvent(new CustomEvent("sociomee-credits-updated", { detail: d.credit_status }));
+  return d.content?.[0]?.text || "";
+}
 
 const C = {
   purple:"rgba(255,255,255,0.7)", teal:"rgba(255,255,255,0.8)", glass:"rgba(255,255,255,0.04)",
@@ -113,16 +126,22 @@ export function TelegramHookGenerator() {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(null);
 
-  const generate = () => {
+  const [hookError, setHookError] = useState("");
+  const generate = async () => {
     if (!topic.trim()) return;
     setLoading(true);
-    setTimeout(() => {
-      const templates = HOOK_TEMPLATES[niche.toLowerCase()] || HOOK_TEMPLATES.general;
-      const shuffled = [...templates].sort(() => Math.random() - 0.5);
-      const generated = shuffled.slice(0, 5).map(t => filterText(t.replace("{topic}", topic)));
-      setHooks(generated);
+    setHookError("");
+    try {
+      const prompt = "Write 5 short, punchy Telegram channel hook lines (opening lines to grab attention) about this topic: " + topic + ". Niche: " + niche + ". Each hook should be 1-2 sentences, curiosity-driven, and suitable for an Indian Telegram audience. Return ONLY valid JSON, no markdown: {\"hooks\": [\"hook1\", \"hook2\", \"hook3\", \"hook4\", \"hook5\"]}";
+      const raw = await askGemini(prompt);
+      const clean = raw.replace(/```json|```/g, "").trim();
+      const data = JSON.parse(clean);
+      setHooks((data.hooks || []).map(h => filterText(h)));
+    } catch (e) {
+      setHookError(e.message || "Could not generate hooks. Please try again.");
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   const niches = ["General","Crypto","News","Tech","Finance","Entertainment","Sports","Education","Motivation","Stock Market","Gaming","Bollywood","Business","Politics","Astrology"];
@@ -141,6 +160,7 @@ export function TelegramHookGenerator() {
             </button>
           ))}
         </div>
+        {hookError && <div style={{background:"rgba(248,113,113,0.06)",border:"1px solid rgba(248,113,113,0.2)",borderRadius:"10px",padding:"10px 14px",marginBottom:"12px",fontSize:"12px",color:"#f87171"}}>{hookError}</div>}
         <GenButton onClick={generate} loading={loading} label="Generate Hooks"/>
       </GlassCard>
       {hooks.length>0 && (
@@ -194,20 +214,23 @@ export function TelegramPollGenerator() {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(null);
 
-  const generate = () => {
+  const [pollError, setPollError] = useState("");
+  const generate = async () => {
     if (!topic.trim() && !niche) return;
     setLoading(true);
-    setTimeout(() => {
-      const pool = POLL_TEMPLATES[niche] || POLL_TEMPLATES.general;
-      const extra = [
-        {q:`What do you think about ${topic}?`,opts:["Very positive ","Somewhat positive ","Neutral 😐","Negative 👎"]},
-        {q:`${topic} — overhyped or underrated?`,opts:["Totally overhyped 🙄","Slightly overhyped","Fairly valued","Very underrated "]},
-        {q:`Will ${topic} impact your life in 2024?`,opts:["Yes, majorly ","Somewhat yes","Not really","Not sure yet "]},
-      ];
-      const combined = [...pool, ...extra].sort(() => Math.random() - 0.5).slice(0, 3);
-      setPolls(combined.map(p => ({question: p.q, options: p.opts})));
+    setPollError("");
+    try {
+      const subject = topic.trim() || niche;
+      const prompt = "Generate 3 engaging Telegram poll ideas about: " + subject + ". Niche: " + niche + ". Each poll needs a question and exactly 4 short answer options, suitable for an Indian Telegram audience. Return ONLY valid JSON, no markdown: {\"polls\": [{\"question\": \"q1\", \"options\": [\"o1\",\"o2\",\"o3\",\"o4\"]}, {\"question\": \"q2\", \"options\": [\"o1\",\"o2\",\"o3\",\"o4\"]}, {\"question\": \"q3\", \"options\": [\"o1\",\"o2\",\"o3\",\"o4\"]}]}";
+      const raw = await askGemini(prompt);
+      const clean = raw.replace(/```json|```/g, "").trim();
+      const data = JSON.parse(clean);
+      setPolls(data.polls || []);
+    } catch (e) {
+      setPollError(e.message || "Could not generate polls. Please try again.");
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   const copyPoll = (poll, i) => {
@@ -233,6 +256,7 @@ export function TelegramPollGenerator() {
             </button>
           ))}
         </div>
+        {pollError && <div style={{background:"rgba(248,113,113,0.06)",border:"1px solid rgba(248,113,113,0.2)",borderRadius:"10px",padding:"10px 14px",marginBottom:"12px",fontSize:"12px",color:"#f87171"}}>{pollError}</div>}
         <GenButton onClick={generate} loading={loading} label="Generate Polls"/>
       </GlassCard>
       {polls.length>0 && (

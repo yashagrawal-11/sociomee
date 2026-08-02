@@ -801,36 +801,6 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
                 <div style={{ display:"flex",flexWrap:"wrap" }}>{pack.hashtags.map((h,i)=><Pill key={i} color={C.rose}>{h}</Pill>)}</div>
               </div>
             )}
-            {active==="instagram"&&result?.reel_hook&&(
-              <div>
-                <SectionHead icon="🎬" title="Reel Hook (First 3 seconds)" copyText={result.reel_hook}/>
-                <div style={{ background:C.glass,borderRadius:"12px",padding:"14px 16px",fontSize:"13px",lineHeight:1.7,color:C.ink,border:`1px solid ${C.hairline}`,fontWeight:600,fontStyle:"italic" }}>{result.reel_hook}</div>
-              </div>
-            )}
-            {active==="instagram"&&result?.cta&&(
-              <div>
-                <SectionHead icon="📣" title="Call to Action" copyText={result.cta}/>
-                <div style={{ background:C.glass,borderRadius:"12px",padding:"14px 16px",fontSize:"13px",lineHeight:1.7,color:C.ink,border:`1px solid ${C.hairline}` }}>{result.cta}</div>
-              </div>
-            )}
-            {active==="instagram"&&result?.story_ideas?.length>0&&(
-              <div>
-                <SectionHead icon="📖" title="Story Ideas" copyText={result.story_ideas.join("\n")}/>
-                <div style={{ display:"flex",flexDirection:"column",gap:"6px" }}>
-                  {result.story_ideas.map((s,i)=>(
-                    <div key={i} style={{ background:C.glass,borderRadius:"10px",padding:"10px 14px",border:`1px solid ${C.hairline}`,fontSize:"13px",color:C.ink }}>
-                      <span style={{ fontSize:"10px",fontWeight:"800",color:C.purple,letterSpacing:"1px",textTransform:"uppercase",marginRight:"8px" }}>Slide {i+1}</span>{s}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {active==="instagram"&&result?.bio_link_text&&(
-              <div>
-                <SectionHead icon="🔗" title="Bio Link Text" copyText={result.bio_link_text}/>
-                <div style={{ background:C.glass,borderRadius:"12px",padding:"14px 16px",fontSize:"13px",lineHeight:1.7,color:C.ink,border:`1px solid ${C.hairline}` }}>{result.bio_link_text}</div>
-              </div>
-            )}
           </div>
         );
         return isPro ? content : <ProLock label="Full platform SEO packs — Pro feature" onUpgradeClick={onUpgradeClick}>{content}</ProLock>;
@@ -1910,10 +1880,12 @@ function SkeletonScreen() {
 
 // Plan gate helper
 function isPro(plan) {
-  return plan === "pro_monthly" || plan === "pro_annual" || plan === "premium_monthly" || plan === "premium_annual";
+  const p = (plan || "").toLowerCase();
+  return p.includes("pro") || p.includes("premium");
 }
 function isPremium(plan) {
-  return plan === "premium_monthly" || plan === "premium_annual";
+  const p = (plan || "").toLowerCase();
+  return p.includes("premium") || p.includes("pro+") || p.includes("proplus");
 }
 
 function PlanGate({ plan, required="pro", onUpgrade, children, toolName="" }) {
@@ -2183,6 +2155,8 @@ export default function App() {
     subtitles:"Subtitles | SocioMee", hashtags:"Hashtag Generator | SocioMee",
     texttaudio:"Text to Audio | SocioMee", hookgenerator:"Hook Generator | SocioMee",
     biowriter:"Bio Writer | SocioMee",
+    "yt-keyword":"Keyword Research | SocioMee", "yt-trending":"Trending Videos | SocioMee", "yt-evergreen":"Evergreen Score | SocioMee", "yt-ideas":"Daily Video Ideas | SocioMee", "tg-hook":"Hook Generator | SocioMee", "tg-poll":"Poll Generator | SocioMee", "tg-besttime":"Best Time to Post | SocioMee", "pt-pindesc":"Pin Description | SocioMee", "pt-board":"Board Names | SocioMee", "pt-hashtag":"Hashtag Generator | SocioMee", "pt-besttime":"Best Time to Post | SocioMee", "th-thread":"Thread Generator | SocioMee", "th-bio":"Bio Writer | SocioMee", "th-hook":"Hook Generator | SocioMee", "rd-title":"Post Title Generator | SocioMee", "rd-subreddit":"Subreddit Finder | SocioMee", "rd-besttime":"Best Time to Post | SocioMee", "fb-post":"Post Caption | SocioMee", "fb-group":"Group Post | SocioMee", "fb-ad":"Ad Copy | SocioMee", "fb-besttime":"Best Time to Post | SocioMee", "tt-hook":"Hook Generator | SocioMee", "tt-caption":"Caption Generator | SocioMee", "tt-ideas":"Video Idea Generator | SocioMee", "tt-hashtag":"Hashtag Generator | SocioMee", "tt-besttime":"Best Time to Post | SocioMee", "wa-broadcast":"Broadcast Messages | SocioMee", "wa-reply":"Reply Templates | SocioMee", "wa-channel":"Channel Post | SocioMee", "x-post":"Post Generator | SocioMee", "x-thread":"Thread Generator | SocioMee", "x-hook":"Hook Generator | SocioMee", "x-besttime":"Best Time to Post | SocioMee", "quora-answer":"Answer Generator | SocioMee", "quora-finder":"Question Finder | SocioMee", "quora-hook":"Hook Generator | SocioMee", "quora-space":"Space Finder | SocioMee", "quora-bio":"Profile Bio | SocioMee", "quora-comment":"Comment Generator | SocioMee", "quora-digest":"Digest Creator | SocioMee", "li-post":"Post Generator | SocioMee", "li-headline":"Headlines | SocioMee", "li-about":"About Section | SocioMee", "li-carousel":"Carousel Ideas | SocioMee", "li-hashtags":"Hashtags | SocioMee", "li-besttime":"Best Time to Post | SocioMee", linkinbio:"Link in Bio | SocioMee",
+    qrgenerator:"QR Code Generator | SocioMee",
     notes:"Notes | SocioMee", pixel:"Pixel | SocioMee", pdf:"PDF | SocioMee",
     share:"Share | SocioMee", calendar:"Calendar | SocioMee", news:"News | SocioMee", reminders:"Reminders | SocioMee",
     cloud:"Cloud | SocioMee", screenrecorder:"Screen Recorder | SocioMee", convert:"Convert | SocioMee",
@@ -2418,8 +2392,6 @@ export default function App() {
                 {tab:"tg-hook",label:t("hookGenerator"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>},
                 {tab:"tg-poll",label:"Poll Generator",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>},
                 {tab:"tg-besttime",label:t("bestTimeToPost"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>},
-                {tab:"tg-scheduler",label:"Broadcast Scheduler",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>},
-                {tab:"translator",label:t("translator"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
                 {tab:"texttaudio",label:t("textToAudio"),icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>},
               ].map(item=>(
                 <button key={item.tab+"-tg"} onClick={()=>{toggleTab(item.tab);setSidebarOpen(false);}}
@@ -3175,12 +3147,11 @@ export default function App() {
           {activeTab==="news" && isLoggedIn && <SocioMeeNews userId={user?.email||"anonymous"}/>}
 
           {activeTab==="translator" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><Translator user={user}/></div>}
-          {activeTab==="videoclipper"&&isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><VideoClipper user={user}/></div>}
+          {activeTab==="videoclipper"&&isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><PlanGate plan={user?.plan||"free"} required="pro" toolName="Video Clipper" onUpgrade={()=>window.location.href="/pricing?from=app"}><VideoClipper user={user}/></PlanGate></div>}
           {activeTab==="subtitles"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><SubtitleGenerator user={user}/></div>}
           {activeTab==="tg-hook"     && isLoggedIn && <TelegramHookGenerator userId={user?.id||localStorage.getItem("sociomee_user_id")||""}/>}
       {activeTab==="tg-poll"     && isLoggedIn && <TelegramPollGenerator userId={user?.id||localStorage.getItem("sociomee_user_id")||""}/>}
       {activeTab==="tg-besttime" && isLoggedIn && <TelegramBestTime userId={user?.id||localStorage.getItem("sociomee_user_id")||""}/>}
-      {activeTab==="tg-scheduler"&& isLoggedIn && <TelegramScheduler user={user}/>}
       {activeTab==="pt-pindesc"   && isLoggedIn && <PinterestPinDesc/>}
       {activeTab==="pt-board"     && isLoggedIn && <PinterestBoardNames/>}
       {activeTab==="pt-hashtag"   && isLoggedIn && <PinterestHashtags/>}

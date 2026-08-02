@@ -3,6 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional
 from collections import defaultdict
+from middleware import get_current_user
+from credits_manager import use_credit, get_credit_status
+
+def _yt_tools_check_credits(user_id: str, cost: int = 2):
+    ok = use_credit(user_id, cost=cost)
+    if not ok:
+        status = get_credit_status(user_id)
+        raise HTTPException(status_code=402, detail={"error": "no_credits", "message": f"Not enough credits. You have {status.get('credits_remaining',0)} credits remaining. This tool costs {cost} credits."})
 
 # ── Rate Limiter ──────────────────────────────────────────────────────
 _rate_store = defaultdict(list)
@@ -58,7 +66,8 @@ class KeywordReq(BaseModel):
     country: str = "IN"
 
 @router.post("/keyword-research")
-async def keyword_research(req: KeywordReq, request: Request):
+async def keyword_research(req: KeywordReq, request: Request, user: dict = Depends(get_current_user)):
+    _yt_tools_check_credits(user.get("user_id",""), cost=2)
     ip = request.client.host
     if not rate_limit(ip, max_calls=15, window=60):
         raise HTTPException(status_code=429, detail="Too many requests. Please wait a moment.")
@@ -134,7 +143,8 @@ CATEGORY_MAP = {
 }
 
 @router.post("/trending")
-async def trending_videos(req: TrendingReq, request: Request = None):
+async def trending_videos(req: TrendingReq, request: Request = None, user: dict = Depends(get_current_user)):
+    _yt_tools_check_credits(user.get("user_id",""), cost=2)
     if request:
         ip = request.client.host
         if not rate_limit(ip, max_calls=15, window=60):
@@ -233,7 +243,8 @@ class EvergreenReq(BaseModel):
     niche: str = "general"
 
 @router.post("/evergreen-score")
-async def evergreen_score(req: EvergreenReq, request: Request):
+async def evergreen_score(req: EvergreenReq, request: Request, user: dict = Depends(get_current_user)):
+    _yt_tools_check_credits(user.get("user_id",""), cost=2)
     ip = request.client.host
     if not rate_limit(ip, max_calls=15, window=60):
         raise HTTPException(status_code=429, detail="Too many requests. Please wait a moment.")
@@ -273,7 +284,8 @@ class VideoIdeasReq(BaseModel):
     language: str = "English"
 
 @router.post("/daily-ideas")
-async def daily_video_ideas(req: VideoIdeasReq, request: Request):
+async def daily_video_ideas(req: VideoIdeasReq, request: Request, user: dict = Depends(get_current_user)):
+    _yt_tools_check_credits(user.get("user_id",""), cost=2)
     ip = request.client.host
     if not rate_limit(ip, max_calls=10, window=60):
         raise HTTPException(status_code=429, detail="Too many requests. Please wait a moment.")

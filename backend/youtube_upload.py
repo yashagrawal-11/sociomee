@@ -93,18 +93,37 @@ def _gemini_text(prompt, max_tokens=2048):
 
 def _gemini_vision(prompt, images):
     try:
-        import google.generativeai as genai, base64
-        k=os.getenv("GOOGLE_API_KEY", os.getenv("GOOGLE_AI_API_KEY",""))
-        if not k: return ""
-        genai.configure(api_key=k)
-        parts=[]
+        import sys, os as _os, base64, warnings
+        sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+        _os.environ.setdefault('GOOGLE_APPLICATION_CREDENTIALS', '/var/www/sociomee/backend/sociomee-auth-key.json')
+        import vertexai
+        from vertexai.generative_models import GenerativeModel, Part
+        vertexai.init(project='sociomee-auth', location='us-central1')
+        parts = []
         for img in images:
-            b64 = base64.b64encode(img).decode() if isinstance(img, bytes) else img
-            parts.append({"mime_type":"image/jpeg","data":b64})
+            data = img if isinstance(img, bytes) else base64.b64decode(img)
+            parts.append(Part.from_data(data=data, mime_type="image/jpeg"))
         parts.append(prompt)
-        return genai.GenerativeModel("gemini-2.0-flash").generate_content(parts).text.strip()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            model = GenerativeModel("gemini-2.5-flash")
+            resp = model.generate_content(parts)
+        return resp.text.strip()
     except Exception as e:
-        log.warning("Gemini vision: %s",e); return ""
+        log.warning("Vertex vision failed: %s", e)
+        try:
+            import google.generativeai as genai, base64
+            k=os.getenv("GOOGLE_API_KEY", os.getenv("GOOGLE_AI_API_KEY",""))
+            if not k: return ""
+            genai.configure(api_key=k)
+            parts=[]
+            for img in images:
+                b64 = base64.b64encode(img).decode() if isinstance(img, bytes) else img
+                parts.append({"mime_type":"image/jpeg","data":b64})
+            parts.append(prompt)
+            return genai.GenerativeModel("gemini-2.0-flash").generate_content(parts).text.strip()
+        except Exception as e2:
+            log.warning("Gemini vision fallback also failed: %s", e2); return ""
 
 def _pj(raw):
     try:
@@ -154,16 +173,69 @@ Website:
 
 Uploaded by SocioMee AI · sociomeeai.com"""
 
+_YT_LANG_MAP = {
+    "Hindi/English": "hinglish",
+    "Hindi": "hindi",
+    "English": "english",
+    "Tamil": "tamil",
+    "Marathi": "marathi",
+}
+
 def gen_seo(kw,vt="video",lang="Hindi/English",prem=True):
-    extra = ',\n  "hook":"15 sec script",\n  "thumbnail_idea":"thumbnail concept",\n  "best_title_alternatives":["a","b","c"]' if prem else ""
-    prompt=f"""YouTube SEO expert for Indian creators. Video about: "{kw}" | Type: {vt} | Language: {lang}
-Return ONLY valid JSON:
-{{"title":"viral title under 60 chars","about":"3 sentence description","queries":["q1","q2","q3","q4","q5","q6","q7","q8","q9","q10"],"tags":["t1","t2","t3","t4","t5","t6","t7","t8","t9","t10","t11","t12","t13","t14","t15","t16","t17","t18","t19","t20"],"hashtags":["#h1","#h2","#h3"],"category":"Education","seo_score":85,"why_viral":"reason"{extra}}}"""
-    r=_pj(_gemini_text(prompt,1500))
-    if not r.get("title"):
-        r={"title":f"{kw} | Must Watch 2025","about":f"Everything about {kw}. Must watch!","queries":[kw,f"{kw} tips",f"{kw} tutorial",f"how to {kw}",f"best {kw}",f"{kw} 2025",f"{kw} hindi",f"{kw} guide",f"learn {kw}",f"{kw} beginners"],"tags":[kw,"india","youtube","viral","trending","2025","hindi","tips","tutorial","guide","howto","indian","creator","content",kw.replace(" ",""),"sociomee","shorts","ytindia","youtubeindia","ytshorts"],"hashtags":[f"#{kw.replace(' ','')}","#india","#youtube"],"category":"People & Blogs","seo_score":65,"why_viral":"Trending topic"}
-    r["description"]=_build_desc(r.get("title",kw),r.get("about",""),kw,r.get("queries",[]),r.get("hashtags",[]))
-    return r
+    import sys, os as _os
+    sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+    try:
+        from ai_router import generate_full_content as _gfc, _check_topic_safety as _cts
+    except Exception:
+        _gfc = None
+        _cts = lambda t: True
+
+    if _cts and not _cts(kw):
+        return {"title": "", "about": "", "queries": [], "tags": [], "hashtags": [],
+                "category": "People & Blogs", "seo_score": 0, "why_viral": "",
+                "description": "This topic cannot be generated. SocioMee does not create content involving self-harm, sexual content, slurs, hate speech, or violence.",
+                "error": "UNSAFE_TOPIC"}
+
+    _lang = _YT_LANG_MAP.get(lang, "english")
+    try:
+        raw = _gfc(topic=kw, persona="default", language=_lang, country="in",
+                   plan="pro" if prem else "free", deep_research=False, niche="auto")
+        best_title = raw.get("best_title", kw)
+        titles_ws = raw.get("seo_scores") or []
+        if not titles_ws:
+            titles_ws = [{"title": t, "seo_score": 70} for t in raw.get("titles", [])]
+        hook = raw.get("structure", {}).get("hook", "")
+        desc = _generate_yt_description(topic=kw, hook=hook, structure=raw.get("structure", {}),
+                                          titles_with_score=titles_ws, language=lang)
+    except Exception as e:
+        log.warning("gen_seo pipeline failed: %s", e)
+        best_title = f"{kw} | Must Watch 2025"
+        desc = _build_desc(best_title, f"Everything about {kw}. Must watch!", kw,
+                            [kw,f"{kw} tips",f"{kw} tutorial",f"how to {kw}",f"best {kw}"],
+                            [f"#{kw.replace(' ','')}","#india","#youtube"])
+        titles_ws = []
+
+    hashtags_line = [l for l in desc.split(chr(10)) if l.strip().startswith("#")]
+    hashtags = hashtags_line[0].split() if hashtags_line else [f"#{kw.replace(' ','')}"]
+    tags = [kw] + [h.replace("#","") for h in hashtags][:19]
+
+    return {
+        "title": best_title,
+        "about": desc[:300],
+        "queries": [t.get("title","") for t in titles_ws[:10]] if titles_ws else [kw],
+        "tags": tags,
+        "hashtags": hashtags,
+        "category": "Education",
+        "seo_score": titles_ws[0].get("seo_score", 75) if titles_ws else 75,
+        "why_viral": "AI-generated based on topic research",
+        "description": desc,
+    }
+
+def _generate_yt_description(topic, hook, structure, titles_with_score, language="hinglish"):
+    import sys, os as _os
+    sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+    from app import _generate_yt_description as _real_gen
+    return _real_gen(topic=topic, hook=hook, structure=structure, titles_with_score=titles_with_score, language=language)
 
 CATMAP={"film & animation":"1","music":"10","pets & animals":"15","sports":"17","travel":"19","gaming":"20","people & blogs":"22","comedy":"23","entertainment":"24","news & politics":"25","howto & style":"26","education":"27","science & technology":"28"}
 def _catid(n):
@@ -259,7 +331,7 @@ async def rseo(user_id:str=Form(...),keyword:str=Form(...),video_type:str=Form(d
     plan=_gplan(user_id)
     if plan=="free": raise HTTPException(403,"Requires Pro plan")
     from credits_manager import use_credit, get_credit_status
-    if not use_credit(user_id, cost=5):
+    if not use_credit(user_id, cost=10):
         status = get_credit_status(user_id)
         raise HTTPException(402, detail={"error":"no_credits","message":f"Not enough credits. You have {status.get('credits_remaining',0)} credits remaining."})
     return {"seo":gen_seo(keyword,video_type,language,True),"plan":plan}
@@ -268,6 +340,10 @@ async def rseo(user_id:str=Form(...),keyword:str=Form(...),video_type:str=Form(d
 async def rthumb(user_id:str=Form(...),thumbnail1:UploadFile=File(...),thumbnail2:Optional[UploadFile]=File(default=None)):
     plan=_gplan(user_id)
     if plan=="free": raise HTTPException(403,"Requires Pro plan")
+    from credits_manager import use_credit, get_credit_status
+    if not use_credit(user_id, cost=2):
+        status = get_credit_status(user_id)
+        raise HTTPException(402, detail={"error":"no_credits","message":f"Not enough credits. You have {status.get('credits_remaining',0)} credits remaining. Thumbnail analysis costs 2 credits."})
     t1=await thumbnail1.read()
     t2=None
     if thumbnail2 is not None:
@@ -283,9 +359,10 @@ async def rauto(user_id:str=Form(...),keyword:str=Form(...),video_type:str=Form(
     if plan=="free": raise HTTPException(403,detail={"error":"upgrade_required","message":"Requires Pro or Premium"})
     q=get_upload_status(user_id,plan)
     from credits_manager import use_credit, get_credit_status
-    if not use_credit(user_id, cost=5):
+    # 10 credits for AI SEO generation + 2 credits for the actual YouTube upload action = 12 total
+    if not use_credit(user_id, cost=12):
         status = get_credit_status(user_id)
-        raise HTTPException(402, detail={"error":"no_credits","message":f"Not enough credits. You have {status.get('credits_remaining',0)} credits remaining."})
+        raise HTTPException(402, detail={"error":"no_credits","message":f"Not enough credits. You have {status.get('credits_remaining',0)} credits remaining. This action costs 12 credits (10 for SEO + 2 for upload)."})
     vb=await video.read()
     if len(vb)>4*1024*1024*1024: raise HTTPException(413,"Max 4 GB")
     isshort=video_type.lower()=="short"

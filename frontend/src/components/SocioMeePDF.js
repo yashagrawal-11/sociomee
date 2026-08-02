@@ -232,7 +232,7 @@ export default function SocioMeePDF({ onSendToGenerator, user, creditStatus }) {
       const res = await fetch("https://sociomeeai.com/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], cost: 2 }),
       });
       const data = await res.json();
       const text = data.content?.[0]?.text || data.candidates?.[0]?.content?.parts?.[0]?.text || JSON.stringify(data);

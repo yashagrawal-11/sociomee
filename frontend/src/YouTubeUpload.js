@@ -7,6 +7,56 @@ import { useState, useEffect, useRef } from "react";
 
 const BASE = "https://sociomeeai.com/api";
 
+function YTCustomSelect({ value, onChange, options, style={} }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const selected = options.find(o => o.value === value);
+  useEffect(() => {
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+  return (
+    <div ref={ref} style={{ position:"relative", flex:1, userSelect:"none", ...style }}>
+      <button type="button" onClick={() => setOpen(o => !o)} style={{
+        width:"100%", padding:"7px 10px", borderRadius:"9px",
+        border:`1.5px solid ${open ? "rgba(167,139,250,0.4)" : "rgba(167,139,250,0.15)"}`,
+        background: open ? "rgba(255,255,255,0.07)" : "rgba(8,8,10,0.9)",
+        color:"#ede8ff", fontSize:"11px", fontFamily:"'Poppins',sans-serif", cursor:"pointer",
+        display:"flex", alignItems:"center", justifyContent:"space-between", gap:"6px", outline:"none"
+      }}>
+        <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{selected?.label || "Select"}</span>
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2" style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition:"transform 0.2s", flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      {open && (
+        <div style={{
+          position:"absolute", top:"calc(100% + 4px)", left:0, right:0, zIndex:999,
+          background:"rgba(12,12,14,0.98)", border:"1px solid rgba(167,139,250,0.15)",
+          borderRadius:"12px", padding:"5px",
+          backdropFilter:"blur(30px)", WebkitBackdropFilter:"blur(30px)",
+          boxShadow:"0 16px 48px rgba(0,0,0,0.7)",
+          maxHeight:"220px", overflowY:"auto",
+        }}>
+          {options.map((opt) => {
+            const isActive = opt.value === value;
+            return (
+              <button key={opt.value} type="button" onClick={() => { onChange(opt.value); setOpen(false); }}
+                style={{
+                  display:"flex", alignItems:"center", width:"100%",
+                  padding:"7px 10px", borderRadius:"8px", border:"none",
+                  background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
+                  color: isActive ? "#fff" : "rgba(255,255,255,0.5)",
+                  fontSize:"11px", fontWeight: isActive ? "700" : "400",
+                  cursor:"pointer", fontFamily:"'Poppins',sans-serif", textAlign:"left"
+                }}>{opt.label}</button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Inject Poppins font
 if (typeof document !== "undefined" && !document.getElementById("yt-poppins")) {
   const l = document.createElement("link");
@@ -275,7 +325,7 @@ function FullSEOPanel({ seo, prediction, videoUrl, compact=false }) {
       {/* Description */}
       <div style={{ marginBottom:"10px" }}>
         <div style={row}><span style={lbl}>Full Description</span>{copyBtn(getField("description", seo.description||""),"desc")}</div>
-        <textarea value={getField("description", seo.description||"")} onChange={e=>setField("description",e.target.value)} rows={compact?4:14} style={{ fontSize:12, color:"rgba(255,255,255,0.6)", lineHeight:1.9, width:"100%", boxSizing:"border-box", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10, padding:"12px 14px", resize:"none", outline:"none", fontFamily:"'Poppins',sans-serif" }}/>
+        <textarea className="yt-dark-scroll" value={getField("description", seo.description||"")} onChange={e=>setField("description",e.target.value)} rows={compact?4:14} style={{ fontSize:12, color:"rgba(255,255,255,0.6)", lineHeight:1.9, width:"100%", boxSizing:"border-box", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10, padding:"12px 14px", resize:"none", outline:"none", fontFamily:"'Poppins',sans-serif" }}/>
       </div>
 
       {/* Tags */}
@@ -289,7 +339,9 @@ function FullSEOPanel({ seo, prediction, videoUrl, compact=false }) {
       {(seo.hashtags||[]).length>0 && (
         <div style={{ marginBottom:"10px" }}>
           <div style={row}><span style={lbl}>Hashtags</span>{copyBtn((seo.hashtags||[]).join(" "),"hash")}</div>
-          <div style={{ fontSize:12, color:"rgba(255,255,255,0.5)", fontWeight:600, lineHeight:1.8, fontFamily:"'Poppins',sans-serif" }}>{seo.hashtags.join(" ")}</div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:"6px" }}>
+            {seo.hashtags.map((h,i) => <span key={i} style={{ display:"inline-block", padding:"5px 13px", borderRadius:"99px", fontSize:"12px", fontWeight:"600", background:"rgba(255,61,143,0.08)", color:"#ff6eb5", border:"1px solid rgba(255,61,143,0.2)" }}>{h}</span>)}
+          </div>
         </div>
       )}
 
@@ -297,7 +349,7 @@ function FullSEOPanel({ seo, prediction, videoUrl, compact=false }) {
         <div style={{ marginBottom:"10px" }}>
           <div style={{ ...lbl, marginBottom:"5px", display:"block" }}>Search Queries People Use</div>
           <div style={{ display:"flex", flexWrap:"wrap", gap:"5px" }}>
-            {seo.queries.map((q,i) => <span key={i} style={{ padding:"2px 7px", borderRadius:"99px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", color:"rgba(255,255,255,0.45)", fontSize:12, fontWeight:500 }}>{q}</span>)}
+            {seo.queries.map((q,i) => <span key={i} style={{ display:"inline-block", padding:"5px 13px", borderRadius:"99px", fontSize:"12px", fontWeight:"600", background:"rgba(167,139,250,0.08)", color:"#a78bfa", border:"1px solid rgba(167,139,250,0.2)" }}>{q}</span>)}
           </div>
         </div>
       )}
@@ -430,19 +482,22 @@ function VideoCard({ item, index, onUpdate, onRemove, bestTime }) {
           {item.seoGenerated && item.seo && <FullSEOPanel seo={item.seo} prediction={null} videoUrl={null} compact={true} />}
 
           <div style={{ display:"flex", gap:"6px", marginBottom:"8px", marginTop:"8px" }}>
-            <select value={item.videoType} onChange={e=>onUpdate(index,{videoType:e.target.value})}
-              style={{ flex:1, padding:"7px 10px", borderRadius:"9px", border:`1.5px solid ${C.hairline}`, background:C.inputBg, color:C.ink, fontSize:"11px", fontFamily:"'Poppins',sans-serif" }}>
-              <option value="video">Long Video</option>
-              <option value="short">⚡ Short</option>
-            </select>
-            <select value={item.language} onChange={e=>onUpdate(index,{language:e.target.value})}
-              style={{ flex:1, padding:"7px 10px", borderRadius:"9px", border:`1.5px solid ${C.hairline}`, background:C.inputBg, color:C.ink, fontSize:"11px", fontFamily:"'Poppins',sans-serif" }}>
-              <option value="Hindi/English">Hinglish</option>
-              <option value="Hindi">Hindi</option>
-              <option value="English">English</option>
-              <option value="Tamil">Tamil</option>
-              <option value="Marathi">Marathi</option>
-            </select>
+            <YTCustomSelect value={item.videoType} onChange={v=>onUpdate(index,{videoType:v})}
+              options={[{value:"video",label:"Long Video"},{value:"short",label:"⚡ Short"}]}/>
+            <YTCustomSelect value={item.language} onChange={v=>onUpdate(index,{language:v})}
+              options={[
+                {value:"Hindi/English",label:"Hinglish"},
+                {value:"Hindi",label:"Hindi"},
+                {value:"English",label:"English"},
+                {value:"Tamil",label:"Tamil"},
+                {value:"Marathi",label:"Marathi"},
+              ]}/>
+            <YTCustomSelect value={item.privacy||"public"} onChange={v=>onUpdate(index,{privacy:v})}
+              options={[
+                {value:"public",label:"Public"},
+                {value:"unlisted",label:"Unlisted"},
+                {value:"private",label:"Private"},
+              ]}/>
           </div>
 
           <div style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>
@@ -485,7 +540,7 @@ function BulkUpload({ userId, plan, quota, setQuota, bestTime }) {
 
     setError("");
     setVideos(prev=>[...prev,...valid.slice(0,canAdd).map(file=>({
-      file, preview:URL.createObjectURL(file), keyword:"", videoType:"video", language:"Hindi/English",
+      file, preview:URL.createObjectURL(file), keyword:"", videoType:"video", language:"Hindi/English", privacy:"public",
       scheduleType:"best", customTime:"", privacy:"public", seo:null, seoGenerated:false,
       jobId:null, jobStatus:null, jobProgress:0, jobMessage:"", jobResult:null, jobError:null, userId,
     }))]);
@@ -623,16 +678,15 @@ function UploadHistory({ userId }) {
 
   if (!history.length) return (
     <div style={{ textAlign:"center", padding:"40px", color:C.muted }}>
-      <div style={{ fontSize:"36px", marginBottom:"12px" }}>📭</div>
       <div style={{ fontSize:"14px", fontWeight:"700", color:C.ink, marginBottom:"6px" }}>No uploads yet</div>
-      <div style={{ fontSize:"12px" }}>Upload your first video from Bulk Upload tab!</div>
+      <div style={{ fontSize:"12px" }}>Upload your first video from the Bulk Upload tab</div>
     </div>
   );
 
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"16px" }}>
-        <div style={{ fontSize:"13px", fontWeight:"800", color:C.ink }}>📜 Upload History</div>
+        <div style={{ fontSize:"11px", fontWeight:"700", color:C.muted, textTransform:"uppercase", letterSpacing:"1.2px" }}>Upload History</div>
         <span style={{ fontSize:"11px", color:C.muted }}>{history.length} video{history.length!==1?"s":""} uploaded</span>
       </div>
 
@@ -640,30 +694,32 @@ function UploadHistory({ userId }) {
         const r = job.result||{};
         const isOpen = expanded[job.job_id];
         return (
-          <div key={job.job_id} style={{ background:C.glass, border:`1px solid ${C.hairline}`, borderRadius:"14px", marginBottom:"10px", overflow:"hidden" }}>
+          <div key={job.job_id} style={{ background:"rgba(255,255,255,0.02)", border:`1px solid rgba(255,255,255,0.07)`, borderRadius:"14px", marginBottom:"10px", overflow:"hidden" }}>
             <div style={{ display:"flex", alignItems:"center", gap:"12px", padding:"14px 16px", cursor:"pointer" }} onClick={()=>toggle(job.job_id)}>
-              <div style={{ width:"40px", height:"40px", borderRadius:"8px", background:"#ff000018", border:"1px solid #ff000044", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"18px", flexShrink:0 }}>▶</div>
+              <div style={{ width:"36px", height:"36px", borderRadius:"8px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M8 5v14l11-7z"/></svg>
+              </div>
               <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:"13px", fontWeight:"800", color:C.ink, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{r.title||"Untitled"}</div>
+                <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{r.title||"Untitled"}</div>
                 <div style={{ fontSize:"10px", color:C.muted, marginTop:"2px", display:"flex", gap:"8px", alignItems:"center" }}>
-                  {r.scheduled?<span style={{color:C.warn}}>⏰ Scheduled</span>:<span style={{color:C.success}}>🔴 Live</span>}
+                  {r.scheduled?<span>Scheduled</span>:<span>Live</span>}
                   {r.seo?.seo_score && <SEOScore score={r.seo.seo_score} />}
                 </div>
               </div>
-              <div style={{ display:"flex", gap:"8px", alignItems:"center", flexShrink:0 }}>
+              <div style={{ display:"flex", gap:"6px", alignItems:"center", flexShrink:0 }}>
                 {r.video_url && (
                   <a href={r.video_url} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()}
-                    style={{ padding:"5px 12px", borderRadius:"8px", background:"#ff0000", color:"white", fontWeight:"800", fontSize:"10px", textDecoration:"none" }}>
-                    ▶ YT
+                    style={{ padding:"5px 12px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.04)", color:C.ink, fontWeight:"700", fontSize:"10px", textDecoration:"none", fontFamily:"'Poppins',sans-serif" }}>
+                    View
                   </a>
                 )}
                 {r.seo && (
                   <button onClick={e=>{e.stopPropagation();downloadSEOPdf({...r.seo,prediction:r.prediction},r.video_url);}}
-                    style={{ padding:"5px 12px", borderRadius:"8px", border:"none", background:`linear-gradient(135deg,${C.purple},${C.rose})`, color:"white", fontWeight:"800", fontSize:"10px", cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>
+                    style={{ padding:"5px 12px", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.04)", color:C.ink, fontWeight:"700", fontSize:"10px", cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>
                     PDF
                   </button>
                 )}
-                <span style={{ fontSize:"14px", color:C.muted }}>{isOpen?"▲":"▼"}</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2.5" style={{ transform: isOpen?"rotate(180deg)":"rotate(0)", transition:"transform 0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>
               </div>
             </div>
             {isOpen && r.seo && (
@@ -707,27 +763,27 @@ function SEOGenerator({ userId }) {
 
   return (
     <div>
-      <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink, marginBottom:"4px" }}>🤖 AI Viral SEO Generator</div>
-      <div style={{ fontSize:"11.5px", color:C.muted, marginBottom:"18px" }}>Viral title · Hook · Thumbnail idea · Full description · 20 tags · Queries</div>
-      <input value={keyword} onChange={e=>setKeyword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&generate()} placeholder="e.g. AI tools for students, cricket tips…"
-        style={{ width:"100%", padding:"12px 14px", borderRadius:"12px", border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:"13px", fontFamily:"'Poppins',sans-serif", outline:"none", boxSizing:"border-box", marginBottom:"10px" }} />
+      <div style={{ fontSize:"11px", fontWeight:"700", color:C.muted, textTransform:"uppercase", letterSpacing:"1.2px", marginBottom:"4px" }}>AI SEO Generator</div>
+      <div style={{ fontSize:"11.5px", color:C.muted, marginBottom:"18px" }}>Title, hook, thumbnail idea, description, tags and search queries</div>
+      <input value={keyword} onChange={e=>setKeyword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&generate()} placeholder="e.g. AI tools for students, cricket tips"
+        style={{ width:"100%", padding:"12px 14px", borderRadius:"12px", border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:C.ink, fontSize:"13px", fontFamily:"'Poppins',sans-serif", outline:"none", boxSizing:"border-box", marginBottom:"10px" }} />
       <div style={{ display:"flex", gap:"8px", marginBottom:"12px" }}>
         {[["video","Long"],["short","Short"]].map(([v,l]) => (
-          <button key={v} onClick={()=>setVideoType(v)} style={{ flex:1, padding:"8px", borderRadius:"10px", border:`1.5px solid ${videoType===v?C.yt:C.hairline}`, background:videoType===v?`${C.yt}12`:C.glass, color:videoType===v?C.yt:C.muted, fontWeight:"700", fontSize:"12px", cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>{l}</button>
+          <button key={v} onClick={()=>setVideoType(v)} style={{ flex:1, padding:"8px", borderRadius:"10px", border:`1px solid ${videoType===v?"rgba(167,139,250,0.4)":"rgba(255,255,255,0.08)"}`, background:videoType===v?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.02)", color:videoType===v?"#a78bfa":C.muted, fontWeight:"700", fontSize:"12px", cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>{l}</button>
         ))}
-        <select value={language} onChange={e=>setLanguage(e.target.value)}
-          style={{ flex:2, padding:"8px 10px", borderRadius:"10px", border:`1.5px solid ${C.hairline}`, background:C.glass, color:C.ink, fontSize:"12px", fontFamily:"'Poppins',sans-serif" }}>
-          <option value="Hindi/English">Hinglish</option>
-          <option value="Hindi">Hindi</option>
-          <option value="English">English</option>
-          <option value="Tamil">Tamil</option>
-          <option value="Marathi">Marathi</option>
-        </select>
+        <YTCustomSelect value={language} onChange={setLanguage} style={{flex:2}}
+          options={[
+            {value:"Hindi/English",label:"Hinglish"},
+            {value:"Hindi",label:"Hindi"},
+            {value:"English",label:"English"},
+            {value:"Tamil",label:"Tamil"},
+            {value:"Marathi",label:"Marathi"},
+          ]}/>
       </div>
-      {error && <div style={{ background:`${C.danger}12`, border:`1px solid ${C.danger}44`, borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:C.danger }}>⚠ {error}</div>}
+      {error && <div style={{ background:"rgba(248,113,113,0.06)", border:"1px solid rgba(248,113,113,0.2)", borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:"#f87171" }}>{error}</div>}
       <button onClick={generate} disabled={loading||!keyword.trim()}
-        style={{ width:"100%", padding:"12px", borderRadius:"12px", border:"none", background:(loading||!keyword.trim())?C.hairline:`linear-gradient(135deg,${C.purple},${C.rose})`, color:(loading||!keyword.trim())?C.muted:"white", fontWeight:"800", fontSize:"14px", cursor:(loading||!keyword.trim())?"not-allowed":"pointer", fontFamily:"'Poppins',sans-serif", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", marginBottom:"18px" }}>
-        {loading?<><Spinner size={16} color="white"/> Generating…</>:"✨ Generate Viral SEO"}
+        style={{ width:"100%", padding:"12px", borderRadius:"12px", border:"1px solid rgba(167,139,250,0.25)", background:(loading||!keyword.trim())?"rgba(255,255,255,0.03)":"rgba(167,139,250,0.1)", color:(loading||!keyword.trim())?C.muted:"#a78bfa", fontWeight:"700", fontSize:"14px", cursor:(loading||!keyword.trim())?"not-allowed":"pointer", fontFamily:"'Poppins',sans-serif", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", marginBottom:"18px" }}>
+        {loading?<><Spinner size={16} color="#a78bfa"/> Generating</>:"Generate SEO"}
       </button>
       {seo && <FullSEOPanel seo={seo} prediction={null} videoUrl={null} compact={false} />}
     </div>
@@ -750,27 +806,47 @@ function ThumbnailAnalyzer({ userId }) {
 
   return (
     <div>
-      <div style={{ fontSize:"13px", fontWeight:"700", color:C.ink, marginBottom:"4px" }}>🖼️ Thumbnail CTR Analyzer</div>
+      <div style={{ fontSize:"11px", fontWeight:"700", color:C.muted, textTransform:"uppercase", letterSpacing:"1.2px", marginBottom:"4px" }}>Thumbnail CTR Analyzer</div>
       <div style={{ fontSize:"11.5px", color:C.muted, marginBottom:"16px" }}>Upload 1 to analyze, or 2 to A/B compare</div>
       <div style={{ display:"flex", gap:"10px", marginBottom:"18px" }}>
-        {[{label:"Thumbnail A *",prev:prev1,ref:ref1,n:1},{label:"Thumbnail B",prev:prev2,ref:ref2,n:2}].map(({label,prev,ref,n})=>(
-          <div key={n} onClick={()=>ref.current?.click()} style={{ flex:1, border:`2px dashed ${prev?C.success:C.purple}55`, borderRadius:"12px", padding:"10px", textAlign:"center", cursor:"pointer", background:prev?`${C.success}06`:`${C.purple}04`, minHeight:"80px", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+        {[{label:"Thumbnail A",prev:prev1,ref:ref1,n:1},{label:"Thumbnail B",prev:prev2,ref:ref2,n:2}].map(({label,prev,ref,n})=>(
+          <div key={n} onClick={()=>ref.current?.click()} style={{ flex:1, border:`1px solid ${prev?"rgba(52,211,153,0.3)":"rgba(255,255,255,0.1)"}`, borderRadius:"12px", padding:"6px", textAlign:"center", cursor:"pointer", background:"rgba(255,255,255,0.02)", overflow:"hidden" }}>
             <input ref={ref} type="file" accept="image/*" style={{ display:"none" }} onChange={e=>handleImg(e.target.files[0],n)} />
-            {prev?<img src={prev} alt={label} style={{ width:"100%", maxHeight:"60px", objectFit:"cover", borderRadius:"6px" }} />:<><div style={{ fontSize:"20px" }}>🖼️</div><div style={{ fontSize:"10px", fontWeight:"700", color:C.purple, marginTop:"3px" }}>{label}</div></>}
+            {prev
+              ? <img src={prev} alt={label} style={{ width:"100%", aspectRatio:"16/9", objectFit:"contain", borderRadius:"8px", background:"#000" }} />
+              : <div style={{ aspectRatio:"16/9", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <div style={{ fontSize:"11px", fontWeight:"700", color:C.muted }}>{label}</div>
+                </div>
+            }
           </div>
         ))}
       </div>
-      {error&&<div style={{ background:`${C.danger}12`, border:`1px solid ${C.danger}44`, borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:C.danger }}>⚠ {error}</div>}
+      {error&&<div style={{ background:"rgba(248,113,113,0.06)", border:"1px solid rgba(248,113,113,0.2)", borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:"#f87171" }}>{error}</div>}
       <button onClick={analyze} disabled={loading||!thumb1}
-        style={{ width:"100%", padding:"12px", borderRadius:"12px", border:"none", background:(loading||!thumb1)?C.hairline:`linear-gradient(135deg,${C.purple},${C.rose})`, color:(loading||!thumb1)?C.muted:"white", fontWeight:"800", fontSize:"14px", cursor:(loading||!thumb1)?"not-allowed":"pointer", fontFamily:"'Poppins',sans-serif", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", marginBottom:"16px" }}>
-        {loading?<><Spinner size={16} color="white"/> Analyzing…</>:"Analyze Thumbnail"}
+        style={{ width:"100%", padding:"12px", borderRadius:"12px", border:"1px solid rgba(167,139,250,0.25)", background:(loading||!thumb1)?"rgba(255,255,255,0.03)":"rgba(167,139,250,0.1)", color:(loading||!thumb1)?C.muted:"#a78bfa", fontWeight:"700", fontSize:"14px", cursor:(loading||!thumb1)?"not-allowed":"pointer", fontFamily:"'Poppins',sans-serif", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", marginBottom:"16px" }}>
+        {loading?<><Spinner size={16} color="#a78bfa"/> Analyzing</>:"Analyze Thumbnail"}
       </button>
       {result?.analysis&&(
-        <div style={{ background:C.glass, border:`1.5px solid ${C.purple}22`, borderRadius:"14px", padding:"16px" }}>
-          {result.mode==="compare"&&result.analysis.winner&&<div style={{ background:`${C.success}12`, border:`1px solid ${C.success}44`, borderRadius:"10px", padding:"10px 12px", marginBottom:"12px" }}><div style={{ fontSize:"13px", fontWeight:"900", color:C.success }}>🏆 Thumbnail {result.analysis.winner} wins!</div><div style={{ fontSize:"11px", color:C.ink, marginTop:"3px" }}>{result.analysis.winner_reason}</div></div>}
-          {result.mode==="single"&&<><div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"12px" }}><span style={{ fontSize:"13px", fontWeight:"900", color:C.ink }}>Analysis Result</span><ScoreRing score={result.analysis.ctr_score}/></div>{prev1&&<img src={prev1} style={{ width:"100%", maxHeight:"100px", objectFit:"cover", borderRadius:"8px", marginBottom:"10px" }} alt="thumbnail"/>}</>}
-          {[{label:"✅ Strengths",items:result.analysis.strengths,col:C.success},{label:"❌ Weaknesses",items:result.analysis.weaknesses,col:C.danger},{label:"Improvements",items:result.analysis.improvements,col:C.purple}].map(({label,items,col})=>items?.filter(Boolean).length>0&&<div key={label} style={{ marginBottom:"10px" }}><div style={{ fontSize:"10px", fontWeight:"700", color:col, marginBottom:"4px", textTransform:"uppercase" }}>{label}</div>{items.filter(Boolean).map((item,i)=><div key={i} style={{ fontSize:"11.5px", color:C.ink, padding:"2px 0" }}>• {item}</div>)}</div>)}
-          {result.analysis.overall&&<div style={{ background:`${C.purple}08`, borderRadius:"10px", padding:"10px", marginTop:"8px", fontSize:"12px", color:C.ink, fontStyle:"normal" }}>{result.analysis.overall}</div>}
+        <div style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"16px" }}>
+          {result.mode==="compare"&&result.analysis.winner&&(
+            <div style={{ background:"rgba(52,211,153,0.06)", border:"1px solid rgba(52,211,153,0.25)", borderRadius:"10px", padding:"14px 16px", marginBottom:"14px" }}>
+              <div style={{ fontSize:"14px", fontWeight:"800", color:"#34d399" }}>Thumbnail {result.analysis.winner} performs better</div>
+              <div style={{ fontSize:"12px", color:C.ink, marginTop:"6px", lineHeight:1.6 }}>{result.analysis.winner_reason}</div>
+            </div>
+          )}
+          {result.mode==="compare"&&(
+            <div style={{ display:"flex", gap:"10px", marginBottom:"14px" }}>
+              {[{label:"Thumbnail A",data:result.analysis.thumbnail_a},{label:"Thumbnail B",data:result.analysis.thumbnail_b}].map(({label,data})=>data&&(
+                <div key={label} style={{ flex:1, background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:"10px", padding:"10px" }}>
+                  <div style={{ fontSize:"10px", fontWeight:"700", color:C.muted, textTransform:"uppercase", marginBottom:"6px" }}>{label}</div>
+                  <ScoreRing score={data.ctr_score}/>
+                </div>
+              ))}
+            </div>
+          )}
+          {result.mode==="single"&&<><div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"12px" }}><span style={{ fontSize:"11px", fontWeight:"700", color:C.muted, textTransform:"uppercase", letterSpacing:"1.2px" }}>Analysis Result</span><ScoreRing score={result.analysis.ctr_score}/></div>{prev1&&<img src={prev1} style={{ width:"100%", aspectRatio:"16/9", objectFit:"contain", borderRadius:"8px", marginBottom:"12px", background:"#000" }} alt="thumbnail"/>}</>}
+          {[{label:"Strengths",items:result.analysis.strengths,col:"#34d399"},{label:"Weaknesses",items:result.analysis.weaknesses,col:"#f87171"},{label:"Improvements",items:result.analysis.improvements,col:"#a78bfa"}].map(({label,items,col})=>items?.filter(Boolean).length>0&&<div key={label} style={{ marginBottom:"10px" }}><div style={{ fontSize:"10px", fontWeight:"700", color:col, marginBottom:"4px", textTransform:"uppercase", letterSpacing:"0.8px" }}>{label}</div>{items.filter(Boolean).map((item,i)=><div key={i} style={{ fontSize:"11.5px", color:C.ink, padding:"2px 0" }}>{item}</div>)}</div>)}
+          {result.analysis.overall&&<div style={{ background:"rgba(167,139,250,0.05)", borderRadius:"10px", padding:"10px", marginTop:"8px", fontSize:"12px", color:C.ink }}>{result.analysis.overall}</div>}
         </div>
       )}
     </div>
@@ -821,6 +897,10 @@ export default function YouTubeUpload({ user }) {
         * { box-sizing: border-box; margin: 0; }
         @keyframes spin { to { transform: rotate(360deg); } }
         input:focus, select:focus { outline: none; border-color: #7c3aed !important; }
+        .yt-dark-scroll::-webkit-scrollbar { width: 6px; }
+        .yt-dark-scroll::-webkit-scrollbar-track { background: transparent; }
+        .yt-dark-scroll::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.25); border-radius: 99px; }
+        .yt-dark-scroll { scrollbar-width: thin; scrollbar-color: rgba(167,139,250,0.25) transparent; }
       `}</style>
     </div>
   );

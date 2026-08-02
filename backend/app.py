@@ -832,8 +832,8 @@ def get_credits(user_id: str, request: Request, user: dict = Depends(get_current
         raise HTTPException(500, "Something went wrong. Please try again.")
 
 @app.post("/use-credit")
-def use_credit_route(user: dict = Depends(get_current_user)):
-    ok = use_credit(user.get("user_id",""))
+def use_credit_route(cost: int = 1, user: dict = Depends(get_current_user)):
+    ok = use_credit(user.get("user_id",""), cost=cost)
     if not ok:
         status = get_credit_status(user.get("user_id",""))
         raise HTTPException(status_code=402, detail={"error": "No credits remaining", "credit_status": status})
@@ -1510,8 +1510,12 @@ def admin_usage(_=Depends(_require_admin)):
 # ── Google Translate Proxy (no API key needed) ─────────────────────
 @app.post("/translate")
 @limiter.limit("20/minute")
-async def translate_text(request: Request):
+async def translate_text(request: Request, user: dict = Depends(get_current_user)):
     import httpx, urllib.parse
+    if get_credit_status(user.get("user_id","")).get("plan","free") == "free":
+        raise HTTPException(403, "Requires Pro plan.")
+    err = _check_credits(user.get("user_id",""), cost=2)
+    if err: return err
     body = await request.json()
     text = body.get("text", "").strip()[:5000]  # max 5000 chars
     target_lang = body.get("target_lang", "hi")
@@ -1543,7 +1547,9 @@ async def translate_text(request: Request):
 @limiter.limit("3/hour")
 async def upload_for_subtitles(request: Request, file: UploadFile = File(...), lang: str = Form("auto"), user: dict = Depends(get_current_user)):
     import httpx, os
-    err = _check_credits(user.get("user_id",""))
+    if get_credit_status(user.get("user_id","")).get("plan","free") == "free":
+        raise HTTPException(403, "Requires Pro plan.")
+    err = _check_credits(user.get("user_id",""), cost=2)
     if err: return err
     api_key = os.environ.get("ASSEMBLYAI_API_KEY", "")
 
@@ -1756,8 +1762,12 @@ async def generate_hashtags(request: Request):
 # ── Hook Generator (Free - template based) ────────────────────────────
 @app.post("/hooks/generate")
 @limiter.limit("10/minute")
-async def generate_hooks(request: Request):
+async def generate_hooks(request: Request, user: dict = Depends(get_current_user)):
     import random
+    if get_credit_status(user.get("user_id","")).get("plan","free") == "free":
+        raise HTTPException(403, "Requires Pro plan.")
+    err = _check_credits(user.get("user_id",""), cost=2)
+    if err: return err
     body = await request.json()
     topic = body.get("topic", "").strip()[:200]  # max 200 chars
     platform = body.get("platform", "youtube")
@@ -2434,7 +2444,7 @@ async def register_fingerprint(request: Request, user=Depends(get_current_user))
 
 @app.post("/convert/doc-to-pdf")
 async def doc_to_pdf(request: Request, user: dict = Depends(get_current_user)):
-    _check_credits(user.get("user_id",""), cost=1)
+    _check_credits(user.get("user_id",""), cost=2)
     import subprocess, tempfile, os, base64
     form = await request.form()
     file = form.get("file")
@@ -2463,7 +2473,7 @@ async def doc_to_pdf(request: Request, user: dict = Depends(get_current_user)):
 
 @app.post("/convert/media")
 async def convert_media(request: Request, user: dict = Depends(get_current_user)):
-    _check_credits(user.get("user_id",""), cost=1)
+    _check_credits(user.get("user_id",""), cost=2)
     import subprocess, tempfile, os, base64
     form = await request.form()
     file = form.get("file")
@@ -2510,7 +2520,7 @@ async def convert_media(request: Request, user: dict = Depends(get_current_user)
 
 @app.post("/convert/pdf-to-images")
 async def pdf_to_images(request: Request, user: dict = Depends(get_current_user)):
-    _check_credits(user.get("user_id",""), cost=1)
+    _check_credits(user.get("user_id",""), cost=2)
     import io, base64, tempfile, os
     try:
         import fitz  # PyMuPDF
@@ -2541,7 +2551,7 @@ async def pdf_to_images(request: Request, user: dict = Depends(get_current_user)
 
 @app.post("/convert/img-to-svg")
 async def img_to_svg(request: Request, user: dict = Depends(get_current_user)):
-    _check_credits(user.get("user_id",""), cost=1)
+    _check_credits(user.get("user_id",""), cost=2)
     try:
         body = await request.json()
     except Exception as e:

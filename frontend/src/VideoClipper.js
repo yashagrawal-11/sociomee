@@ -194,6 +194,11 @@ export default function VideoClipper({ user }) {
   };
 
   const trimAllClips = async () => {
+    try {
+      const token = localStorage.getItem("sociomee_token");
+      const cr = await fetch("https://sociomeeai.com/api/use-credit?cost=2", { method:"POST", headers:{"Authorization":`Bearer ${token}`} });
+      if (!cr.ok) { const d = await cr.json().catch(()=>({})); alert(d?.detail?.error || "Not enough credits."); return; }
+    } catch (e) { /* fail open if credit check itself errors */ }
     const allClips = clips.length > 0 ? clips : [{start:startTime, end:endTime, id:0}];
     for (let i=0; i<allClips.length; i++) {
       await trimVideo(allClips[i].start, allClips[i].end, allClips.length>1?i+1:0);
