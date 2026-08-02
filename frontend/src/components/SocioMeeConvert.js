@@ -91,6 +91,15 @@ export default function SocioMeeConvert({ user, creditStatus }) {
     if (!files.length) { fileRef.current?.click(); return; }
     if (isMedia && !isPP) { setError("Audio/Video conversion requires Pro+."); return; }
     setLoading(true); setError(""); setResult(null);
+    // Charge 2 credits for server-side conversions
+    const serverSide = ["img-svg","doc-pdf","ppt-pdf","xls-pdf","pdf-img","mp3-wav","wav-mp3","mp4-mp3","mp4-webm","webm-mp4","mov-mp4"];
+    if (serverSide.includes(active)) {
+      try {
+        const cr = await fetch(`${API}/use-credit?cost=2`, { method:"POST", headers:{"Authorization":`Bearer ${token()}`}, credentials:"include" });
+        const crd = await cr.json();
+        if (!cr.ok) { setError(crd?.detail?.message || crd?.detail || "Not enough credits."); setLoading(false); return; }
+      } catch(e) { setError("Credit check failed."); setLoading(false); return; }
+    }
     try {
       if (active === "img-svg") {
         const resp = await fetch(`${API}/convert/img-to-svg`, {
