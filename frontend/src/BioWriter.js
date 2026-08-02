@@ -16,7 +16,7 @@ const NICHES = [
   "Skincare Creator","Parenting Creator","Sports Creator","Spiritual Creator","Other"
 ];
 
-const PLATFORMS = ["YouTube","Instagram","LinkedIn","Twitter/X","Threads","Podcast","Pinterest","Discord"];
+
 
 const CATEGORIES = [
   "Entrepreneur","Public Figure","Artist","Musician","Dancer",
@@ -42,8 +42,11 @@ const BLOCKED_KEYWORDS = [
 const isBlocked = (text) => BLOCKED_KEYWORDS.some(w => text.toLowerCase().includes(w));
 
 const AESTHETIC_COMBOS = [
-  "💙🫧","🤍","🖤","","🌅",
-  "💜🌌","","🤍","🌻🍯","🎸","none",
+  "💜🌷","🩷🌸","🌙✨","💛🌻","🤍🕊️",
+  "🖤🕸️","💙🌊","🌹❤️","🍯🌼","🦋💜",
+  "🌿🤍","🎀🩷","⭐🌙","🍋💛","🌺🌸",
+  "💎🩵","🫧🤍","🌙🔮","🌸🩷","🍄🌿",
+  "none",
 ];
 
 // 6 batches per type — each batch has 4 types
@@ -120,7 +123,7 @@ export default function BioWriter({ user }) {
   const [name,        setName       ] = useState("");
   const [niche,       setNiche      ] = useState("");
   const [customNiche, setCustomNiche] = useState("");
-  const [platforms,   setPlatforms  ] = useState([]);
+
   const [achievement, setAchievement] = useState("");
   const [category,    setCategory   ] = useState("");
   const [role,        setRole       ] = useState("");
@@ -135,7 +138,6 @@ export default function BioWriter({ user }) {
 
   const P = "rgba(255,255,255,0.15)";
 
-  const togglePlatform = (p) => setPlatforms(prev => prev.includes(p) ? prev.filter(x=>x!==p) : [...prev,p]);
 
   const generate = (regen=false) => {
     const finalNiche = niche==="Other" ? customNiche : niche;
@@ -149,7 +151,7 @@ export default function BioWriter({ user }) {
 
     const n = name.trim();
     const ni = finalNiche.trim();
-    const pl = platforms.length>0 ? platforms.join(" & ") : "Social Media";
+    const pl = "Instagram";
     const ach = achievement.trim();
     const cat = category;
     const r = role.trim();
@@ -289,31 +291,7 @@ export default function BioWriter({ user }) {
 
       {/* Platforms */}
       <div style={{marginBottom:"16px"}}>
-        <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",marginBottom:"8px"}}>{bt("प्लेटफ़ॉर्म","प्लॅटफॉर्म","தளங்கள்","প্ল্যাটফর্ম","PLATFORMS")}</div>
-        <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
-          {PLATFORMS.map(p=>(
-            <button key={p} onClick={()=>togglePlatform(p)} style={pillStyle(platforms.includes(p))}>{p}</button>
-          ))}
-        </div>
-      </div>
 
-      {/* Achievement */}
-      <div style={{marginBottom:"16px"}}>
-        <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",marginBottom:"8px"}}>
-          {bt("उपलब्धि","उपलब्धि","சாதனை","অর্জন","ACHIEVEMENT")}
-          <span style={{color:"rgba(255,255,255,0.2)",fontWeight:"400",fontSize:"9px",textTransform:"none",marginLeft:"6px"}}>optional</span>
-        </div>
-        <input value={achievement} onChange={e=>setAchievement(e.target.value)}
-          placeholder="e.g. 100K subscribers, Shark Tank S1, Award winner..."
-          style={{width:"100%",padding:"12px 18px",borderRadius:"99px",border:"1.5px solid rgba(255,255,255,0.25)",outline:"none",fontSize:"14px",color:"#fff",background:"rgba(255,255,255,0.05)",backdropFilter:"blur(8px)",fontFamily:"inherit",boxSizing:"border-box",transition:"border 0.2s"}}
-          onFocus={e=>{e.target.style.border=`1.5px solid ${P}`;e.target.style.boxShadow=`0 0 0 3px rgba(255,255,255,0.06)`;}}
-          onBlur={e=>{e.target.style.border="1.5px solid rgba(255,255,255,0.12)";e.target.style.boxShadow="none";}}
-        />
-      </div>
-
-      {/* Language */}
-      <div style={{marginBottom:"16px"}}>
-        <div style={{fontSize:"10px",fontWeight:"800",letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",marginBottom:"8px"}}>{bt("भाषा","भाषा","மொழி","ভাষা","LANGUAGE")}</div>
         <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
           {LANGUAGES.map(l=>(
             <button key={l.id} onClick={()=>setLanguage(l.id)} style={pillStyle(language===l.id)}>{l.label}</button>

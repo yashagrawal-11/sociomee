@@ -520,18 +520,7 @@ export default function SocioMeePDF({ onSendToGenerator, user, creditStatus }) {
       {/* Top Header */}
       <div style={{ borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", flexShrink:0, background:"rgba(255,255,255,0.01)" }}>
         {mob && <div style={{ width:"52px", flexShrink:0, height:"44px" }}/>}
-        {!mob && <div style={{ padding:"10px 16px", display:"flex", alignItems:"center", gap:"10px", flexShrink:0 }}>
-          <div style={{ width:"30px", height:"30px", borderRadius:"9px", background:"rgba(255,255,255,0.07)", border:"1px solid rgba(124,58,237,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          </div>
-          <div>
-            {fileName ? (
-              <h2 style={{ fontSize:"13px", fontWeight:"700", color:C.white, margin:0, fontFamily:C.font, maxWidth:"280px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{fileName}</h2>
-            ) : (
-              <h2 style={{ fontSize:"13px", fontWeight:"700", color:C.white, margin:0, fontFamily:C.font }}>PDF</h2>
-            )}
-          </div>
-        </div>}
+
 
         {pdfDoc && (
           <div style={{ display:"flex", gap:"6px", alignItems:"center", flexWrap:"nowrap", overflowX:"auto", flex:1, padding:mob?"8px 8px":"0 16px 0 0", scrollbarWidth:"thin" }}>

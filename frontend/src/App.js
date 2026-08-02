@@ -2944,7 +2944,7 @@ export default function App() {
                       setIsListening(false);
                     };
                     rec.start();
-                  }} style={{ position:"absolute", right:"50px", top:"50%", transform:"translateY(-50%)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:isListening?"#7c3aed":"rgba(255,255,255,0.08)", border:"none", transition:"all 0.2s", boxShadow:isListening?"0 0 0 4px rgba(124,58,237,0.2)":"none" }}>
+                  }} style={{ position:"absolute", right:"50px", top:"11px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:isListening?"#7c3aed":"rgba(255,255,255,0.08)", border:"none", transition:"all 0.2s", boxShadow:isListening?"0 0 0 4px rgba(124,58,237,0.2)":"none" }}>
                     {isListening
                       ? <svg width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="none">
                           <rect x="3" y="8" width="3" height="8" rx="1.5"><animate attributeName="height" values="4;12;4" dur="0.8s" repeatCount="indefinite" begin="0s"/><animate attributeName="y" values="10;6;10" dur="0.8s" repeatCount="indefinite" begin="0s"/></rect>
@@ -2955,7 +2955,7 @@ export default function App() {
                       : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
                     }
                   </button>
-                  <label title={videoFile?"Change file":(platform==="youtube"?"Attach video file":"Attach image file")} style={{ position:"absolute", right:"12px", top:"50%", transform:"translateY(-50%)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:videoFile?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.08)" }}>
+                  <label title={videoFile?"Change file":(platform==="youtube"?"Attach video file":"Attach image file")} style={{ position:"absolute", right:"12px", top:"11px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", width:"32px", height:"32px", borderRadius:"99px", background:videoFile?"rgba(255,255,255,0.12)":"rgba(255,255,255,0.08)" }}>
                     {videoFile
                       ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                       : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>

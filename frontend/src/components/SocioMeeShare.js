@@ -237,23 +237,14 @@ export default function SocioMeeShare({ user, creditStatus }) {
         ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.3);border-radius:99px}
       `}</style>
 
-      {/* Header */}
-      <div style={{ padding:ms("10px 20px","8px 12px"), borderBottom:`1px solid ${C.border}`, display:mob?"none":"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-          <div style={{ width:"30px", height:"30px", borderRadius:"9px", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          </div>
-          <div>
-            <h2 style={{ fontSize:"13px", fontWeight:"800", color:C.white, margin:0, fontFamily:"'Orbitron',sans-serif", letterSpacing:"1px", textTransform:"uppercase" }}>SocioMee Share</h2>
-            <p style={{ fontSize:"10px", color:C.muted, margin:0, fontFamily:C.font }}>Instant cross-device transfer</p>
-          </div>
-        </div>
-        {mode !== "home" && (
+      {/* Header removed */}
+      {mode !== "home" && (
+        <div style={{ padding:ms("10px 20px","8px 12px"), display:"flex", justifyContent:"flex-end", flexShrink:0 }}>
           <button onClick={reset} style={{ padding:"6px 12px", borderRadius:"8px", border:`1px solid ${C.border}`, background:"rgba(255,255,255,0.04)", color:C.muted, fontSize:"11px", cursor:"pointer", fontFamily:C.font }}>
             New Share
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <div style={{ flex:1, overflowY:"auto", display:"flex", alignItems:mob?"flex-start":"center", justifyContent:"center", padding:ms("20px","12px") }}>
 
