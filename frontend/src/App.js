@@ -3148,7 +3148,7 @@ export default function App() {
 
           {activeTab==="translator" && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><Translator user={user}/></div>}
           {activeTab==="videoclipper"&&isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><PlanGate plan={user?.plan||"free"} required="pro" toolName="Video Clipper" onUpgrade={()=>window.location.href="/pricing?from=app"}><VideoClipper user={user}/></PlanGate></div>}
-          {activeTab==="subtitles"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><SubtitleGenerator user={user}/></div>}
+          {activeTab==="subtitles"  && isLoggedIn && <div style={{background:"rgba(255,255,255,0.04)",border:"1.5px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"24px"}}><SubtitleGenerator user={user} onCreditUse={()=>fetch(`${BASE}/credits/${user?.user_id}`,{credentials:"include"}).then(r=>r.ok?r.json():null).then(d=>{if(d)setCreditStatus({plan:d.plan||"free",plan_label:d.plan_label||"Free",credits_remaining:d.credits_remaining??d.credits??20,credits:d.credits_remaining??d.credits??20,monthly_limit:d.monthly_limit??20,next_reset:d.next_reset||""})}).catch(()=>{})}/></div>}
           {activeTab==="tg-hook"     && isLoggedIn && <TelegramHookGenerator userId={user?.id||localStorage.getItem("sociomee_user_id")||""}/>}
       {activeTab==="tg-poll"     && isLoggedIn && <TelegramPollGenerator userId={user?.id||localStorage.getItem("sociomee_user_id")||""}/>}
       {activeTab==="tg-besttime" && isLoggedIn && <TelegramBestTime userId={user?.id||localStorage.getItem("sociomee_user_id")||""}/>}
@@ -3178,10 +3178,10 @@ export default function App() {
       {activeTab==="x-thread"     && isLoggedIn && <XThreadGenerator/>}
       {activeTab==="x-hook"       && isLoggedIn && <XHookGenerator/>}
       {activeTab==="x-besttime"   && isLoggedIn && <XBestTime/>}
-      {activeTab==="yt-keyword"   && isLoggedIn && <KeywordResearch/>}
-      {activeTab==="yt-trending"  && isLoggedIn && <TrendingVideos/>}
-      {activeTab==="yt-evergreen" && isLoggedIn && <EvergreenScore/>}
-      {activeTab==="yt-ideas"     && isLoggedIn && <DailyVideoIdeas/>}
+      {activeTab==="yt-keyword"   && isLoggedIn && <KeywordResearch onCreditUse={()=>fetch(`${BASE}/credits/${user?.user_id}`,{credentials:"include"}).then(r=>r.ok?r.json():null).then(d=>{if(d)setCreditStatus({plan:d.plan||"free",plan_label:d.plan_label||"Free",credits_remaining:d.credits_remaining??d.credits??20,credits:d.credits_remaining??d.credits??20,monthly_limit:d.monthly_limit??20,next_reset:d.next_reset||""})}).catch(()=>{})}/>}
+      {activeTab==="yt-trending"  && isLoggedIn && <TrendingVideos onCreditUse={()=>fetch(`${BASE}/credits/${user?.user_id}`,{credentials:"include"}).then(r=>r.ok?r.json():null).then(d=>{if(d)setCreditStatus({plan:d.plan||"free",plan_label:d.plan_label||"Free",credits_remaining:d.credits_remaining??d.credits??20,credits:d.credits_remaining??d.credits??20,monthly_limit:d.monthly_limit??20,next_reset:d.next_reset||""})}).catch(()=>{})}/>}
+      {activeTab==="yt-evergreen" && isLoggedIn && <EvergreenScore onCreditUse={()=>fetch(`${BASE}/credits/${user?.user_id}`,{credentials:"include"}).then(r=>r.ok?r.json():null).then(d=>{if(d)setCreditStatus({plan:d.plan||"free",plan_label:d.plan_label||"Free",credits_remaining:d.credits_remaining??d.credits??20,credits:d.credits_remaining??d.credits??20,monthly_limit:d.monthly_limit??20,next_reset:d.next_reset||""})}).catch(()=>{})}/>}
+      {activeTab==="yt-ideas"     && isLoggedIn && <DailyVideoIdeas onCreditUse={()=>fetch(`${BASE}/credits/${user?.user_id}`,{credentials:"include"}).then(r=>r.ok?r.json():null).then(d=>{if(d)setCreditStatus({plan:d.plan||"free",plan_label:d.plan_label||"Free",credits_remaining:d.credits_remaining??d.credits??20,credits:d.credits_remaining??d.credits??20,monthly_limit:d.monthly_limit??20,next_reset:d.next_reset||""})}).catch(()=>{})}/>}
       {activeTab==="screenrecorder" && isLoggedIn && <ScreenRecorder user={user} creditStatus={creditStatus}/>}
       {activeTab==="convert" && isLoggedIn && (
         <div className="app-fullscreen-panel" style={{ flex:1, height:"100vh", overflow:"auto", position:"fixed", top:0, left:"220px", right:0, bottom:0, zIndex:100, background:"#0a0a0a" }}>
