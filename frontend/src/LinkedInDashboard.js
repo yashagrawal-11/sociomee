@@ -189,12 +189,12 @@ function LinkedInDashboard({ user }) {
   if (status==="disconnected") return (
     <div style={{ display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"70vh",padding:24 }}>
       <div style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:16,textAlign:"center",background:"rgba(255,255,255,0.02)",border:`1px solid ${C.hairline}`,borderRadius:20,padding:"40px 32px",maxWidth:360,width:"100%" }}>
-        <div style={{ width:64,height:64,borderRadius:"50%",background:"rgba(10,102,194,0.1)",border:"2px solid rgba(10,102,194,0.2)",display:"flex",alignItems:"center",justifyContent:"center" }}>
+        <div style={{ width:64,height:64,borderRadius:"50%",background:"rgba(255,255,255,0.06)",border:"2px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center" }}>
           <img src="/icons/linkedin.png" style={{ width:28,height:28,objectFit:"contain" }} alt="linkedin"/>
         </div>
         <h3 style={{ fontSize:16,fontWeight:900,color:C.ink,margin:0 }}>Connect LinkedIn</h3>
-        <p style={{ fontSize:12.5,color:C.muted,lineHeight:1.7,maxWidth:280,margin:0 }}>Post text, images and articles to your LinkedIn personal feed directly from SocioMee.</p>
-        <a href={BASE+"/linkedin/connect?user_id="+userId} style={{ display:"flex",alignItems:"center",gap:8,padding:"12px 24px",borderRadius:99,border:"none",background:"rgba(255,255,255,0.08)",color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit",textDecoration:"none" }}>
+        <p style={{ fontSize:12.5,color:C.muted,lineHeight:1.6,maxWidth:280,margin:0 }}>Post text, images and articles to your LinkedIn feed.</p>
+        <a href={BASE+"/linkedin/connect?user_id="+userId} style={{ display:"flex",alignItems:"center",gap:"8px",padding:"12px 24px",borderRadius:"12px",border:"none",background:"rgba(255,255,255,0.08)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:"pointer",fontFamily:"inherit",textDecoration:"none" }}>
           <img src="/icons/linkedin.png" style={{ width:16,height:16,objectFit:"contain" }} alt=""/> Connect LinkedIn
         </a>
       </div>

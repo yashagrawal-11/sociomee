@@ -379,15 +379,13 @@ export default function ThreadsDashboard({ user, topic = "" }) {
   // ── Not connected ──────────────────────────────────────────────────
   if (!connected) return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
-      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"380px", width:"100%" }}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%" }}>
         <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(255,255,255,0.06)", border:"2px solid rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <ThreadsIcon size={30} color="#fff" />
         </div>
         <h2 style={{ fontSize:18, fontWeight:900, color:C.ink, margin:0 }}>Connect Threads</h2>
-        <p style={{ fontSize:12.5, color:C.muted, maxWidth:280, lineHeight:1.7, margin:0 }}>
-          Get full analytics, viral predictions, audience insights, and best time to post — all in one place.
-        </p>
-        <button onClick={handleConnect} disabled={connecting} style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 24px", borderRadius:99, border:"none", background:"rgba(255,255,255,0.1)", color:"#fff", fontWeight:800, fontSize:14, cursor: connecting ? "not-allowed" : "pointer", fontFamily:"inherit", boxShadow:"0 4px 16px rgba(0,0,0,0.3)", opacity: connecting ? 0.7 : 1 }}>
+        <p style={{ fontSize:12.5, color:C.muted, maxWidth:280, lineHeight:1.6, margin:0 }}>Get full analytics, viral predictions and audience insights.</p>
+        <button onClick={handleConnect} disabled={connecting} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"12px 24px", borderRadius:"12px", border:"none", background:"rgba(255,255,255,0.08)", color:"#fff", fontWeight:"800", fontSize:"14px", cursor:connecting?"not-allowed":"pointer", fontFamily:"inherit", opacity:connecting?0.7:1 }}>
           <ThreadsIcon size={18} color="#fff" />
           {connecting ? "Redirecting…" : "Connect with Threads"}
         </button>

@@ -233,13 +233,13 @@ function ConnectYouTube({ userId }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%" }}>
-        <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(255,0,0,0.12)", border:"2px solid rgba(255,0,0,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(255,255,255,0.06)", border:"1.5px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <img src="/icons/youtube.png" style={{ width:32, height:32, objectFit:"contain" }} alt="YouTube"/>
         </div>
         <h3 style={{ fontSize:16, fontWeight:900, color:C.ink, margin:0 }}>Connect YouTube</h3>
         <p style={{ fontSize:12.5, color:C.muted, lineHeight:1.6, maxWidth:280, margin:0 }}>Get real analytics, AI growth predictions, festival content calendar and more.</p>
         {err && <p style={{ color:C.danger, fontSize:12, fontWeight:600, margin:0 }}>⚠ {err}</p>}
-        <button onClick={handleConnect} disabled={loading} style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 24px", borderRadius:99, border:"none", background:"rgba(255,0,0,0.85)", color:"#fff", fontWeight:800, fontSize:14, cursor:loading?"not-allowed":"pointer", fontFamily:"inherit", boxShadow:"0 4px 20px rgba(255,0,0,0.3)", opacity:loading?0.7:1 }}>
+        <button onClick={handleConnect} disabled={loading} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"12px 24px", borderRadius:"12px", border:"none", background:"rgba(255,255,255,0.08)", color:"#fff", fontWeight:"800", fontSize:"14px", cursor:loading?"not-allowed":"pointer", fontFamily:"inherit", opacity:loading?0.7:1 }}>
           <img src="/icons/youtube.png" style={{ width:16, height:16, objectFit:"contain" }} alt=""/>
           {loading ? "Redirecting…" : "Connect YouTube"}
         </button>

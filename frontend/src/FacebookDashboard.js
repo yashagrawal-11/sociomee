@@ -150,14 +150,14 @@ export default function FacebookDashboard({ user }) {
   if (!status?.connected) return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:24 }}>
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:20, padding:"40px 32px", maxWidth:360, width:"100%" }}>
-        <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(24,119,242,0.1)", border:"2px solid rgba(24,119,242,0.2)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(255,255,255,0.06)", border:"2px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <img src="/icons/facebook.png" style={{ width:32, height:32, objectFit:"contain" }} alt="Facebook"/>
         </div>
         <h3 style={{ fontSize:16, fontWeight:900, color:C.ink, margin:0 }}>Connect Facebook</h3>
         <p style={{ fontSize:12.5, color:C.muted, maxWidth:280, lineHeight:1.7, margin:0 }}>Publish posts, track page analytics, and schedule content from SocioMee.</p>
-        <button onClick={handleConnect} disabled={connecting} style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 24px", borderRadius:99, border:"none", background:"rgba(255,255,255,0.08)", color:"#fff", fontWeight:800, fontSize:14, cursor:connecting?"not-allowed":"pointer", fontFamily:"inherit", opacity:connecting?0.7:1 }}>
+        <button onClick={handleConnect} disabled={connecting} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"12px 24px", borderRadius:"12px", border:"none", background:"rgba(255,255,255,0.08)", color:"#fff", fontWeight:"800", fontSize:"14px", cursor:connecting?"not-allowed":"pointer", fontFamily:"inherit", opacity:connecting?0.7:1 }}>
           <img src="/icons/facebook.png" style={{ width:16, height:16, objectFit:"contain" }} alt=""/>
-          {connecting ? "Redirecting…" : "Connect Facebook Page"}
+          {connecting ? "Redirecting…" : "Connect Facebook"}
         </button>
       </div>
     </div>

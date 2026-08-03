@@ -332,17 +332,17 @@ export default function InstagramDashboard({ user, topic = "" }) {
   if (!connected) return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"70vh", padding:"24px" }}>
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"40px 32px", maxWidth:"360px", width:"100%" }}>
-        <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(225,48,108,0.12)", border:"2px solid rgba(225,48,108,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(255,255,255,0.06)", border:"2px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <IGIcon size={30} />
         </div>
         <h3 style={{ fontSize:16, fontWeight:900, color:C.ink, margin:0 }}>Connect Instagram</h3>
-        <p style={{ fontSize:12.5, color:C.muted, maxWidth:280, lineHeight:1.7, margin:0 }}>Get full analytics, viral predictions, Reels insights, audience data, and best time to post.</p>
+        <p style={{ fontSize:12.5, color:C.muted, maxWidth:280, lineHeight:1.6, margin:0 }}>Get full analytics, viral predictions and Reels insights.</p>
         <div style={{ background:"rgba(255,193,7,0.08)", border:"1px solid rgba(255,193,7,0.2)", borderRadius:10, padding:"10px 14px", fontSize:12, color:"rgba(255,193,7,0.8)", lineHeight:1.6, textAlign:"left" }}>
           Requires Instagram Business or Creator account linked to a Facebook Page.
         </div>
-        <button onClick={handleConnect} disabled={connecting} style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 24px", borderRadius:99, border:"none", background:C.ig, color:"#fff", fontWeight:800, fontSize:14, cursor: connecting ? "not-allowed" : "pointer", fontFamily:"inherit", boxShadow:"0 4px 20px rgba(225,48,108,0.35)", opacity: connecting ? 0.7 : 1 }}>
+        <button onClick={handleConnect} disabled={connecting} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"12px 24px", borderRadius:"12px", border:"none", background:"rgba(255,255,255,0.08)", color:"#fff", fontWeight:"800", fontSize:"14px", cursor:connecting?"not-allowed":"pointer", fontFamily:"inherit", opacity:connecting?0.7:1 }}>
           <IGIcon size={16} />
-          {connecting ? "Redirecting…" : "Connect with Instagram"}
+          {connecting ? "Redirecting…" : "Connect Instagram"}
         </button>
       </div>
     </div>

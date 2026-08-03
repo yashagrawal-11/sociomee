@@ -412,7 +412,7 @@ export default function DiscordScheduler({ user }) {
       <style>{`@keyframes dspin{to{transform:rotate(360deg)}} *{box-sizing:border-box;margin:0} @media(max-width:768px){.dc-stats-grid{grid-template-columns:repeat(2,1fr)!important}.dc-half-grid{grid-template-columns:1fr!important}.dc-tabs::-webkit-scrollbar{display:none}.dc-tabs{-ms-overflow-style:none;scrollbar-width:none}.dc-connected-card{flex-wrap:wrap!important;align-items:flex-start!important}.dc-channels-wrap{order:2;width:100%!important}.dc-connected-card>button:last-child{align-self:flex-start}}`}</style>
 
       {/* Server selector */}
-      <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"16px",flexWrap:"wrap"}}>
+      {!noGuilds && <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"16px",flexWrap:"wrap"}}>
         {guilds.map(g=>(
           <button key={g.guild_id} onClick={()=>{setActiveGuild(g);setActiveChan(g.channels?.[0]||null);}}
             style={{display:"flex",alignItems:"center",gap:"8px",padding:"8px 14px",borderRadius:"99px",
@@ -428,7 +428,7 @@ export default function DiscordScheduler({ user }) {
             background:"transparent",color:C.muted,fontSize:"12px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>
           {connecting?<Spinner size={12}/>:"+ Add Server"}
         </button>
-      </div>
+      </div>}
 
       {activeGuild&&(
         <div style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 16px",borderRadius:"12px",
@@ -463,14 +463,19 @@ export default function DiscordScheduler({ user }) {
       )}
 
       {noGuilds?(
-        <GC style={{textAlign:"center",padding:"48px 24px"}}>
-          <div style={{fontSize:"14px",fontWeight:"700",color:C.ink,marginBottom:"8px"}}>Connect your Discord Server</div>
-          <div style={{fontSize:"12px",color:C.muted,marginBottom:"20px"}}>Add SocioMee bot to your server to start posting and viewing analytics.</div>
-          <button onClick={connectBot} style={{padding:"12px 28px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.2)",
-            background:"rgba(255,255,255,0.08)",color:C.ink,fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"inherit"}}>
-            Connect Discord Server
-          </button>
-        </GC>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"70vh",padding:"24px"}}>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16,textAlign:"center",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"40px 32px",maxWidth:"360px",width:"100%"}}>
+            <div style={{width:64,height:64,borderRadius:"50%",background:"rgba(255,255,255,0.06)",border:"2px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <svg width={30} height={30} viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+            </div>
+            <h3 style={{fontSize:16,fontWeight:900,color:C.ink,margin:0}}>Connect Discord</h3>
+            <p style={{fontSize:12.5,color:C.muted,maxWidth:280,lineHeight:1.6,margin:0}}>Add SocioMee bot to your server to start posting and viewing analytics.</p>
+            <button onClick={connectBot} style={{display:"flex",alignItems:"center",gap:"8px",padding:"12px 24px",borderRadius:"12px",border:"none",background:"rgba(255,255,255,0.08)",color:"#fff",fontWeight:"800",fontSize:"14px",cursor:"pointer",fontFamily:"inherit"}}>
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="#fff"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+              Connect Discord
+            </button>
+          </div>
+        </div>
       ):(
         <>
           {/* Tabs */}
