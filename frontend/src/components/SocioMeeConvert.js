@@ -186,7 +186,7 @@ export default function SocioMeeConvert({ user, creditStatus }) {
         <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.8"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           <span style={{ fontSize:mob?"11px":"13px", fontWeight:"700", color:C.white }}>Convert</span>
-          <span style={{ fontSize:"10px", color:C.muted }}>1 cr / file</span>
+          <span style={{ fontSize:"10px", color:C.muted }}>2 cr / file</span>
         </div>
         <button onClick={()=>setShowPicker(true)}
           style={{ display:"flex", alignItems:"center", gap:"6px", padding:mob?"5px 10px":"6px 14px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.08)", backdropFilter:"blur(8px)", color:C.white, fontSize:mob?"10px":"12px", fontWeight:"600", cursor:"pointer", fontFamily:F }}>
