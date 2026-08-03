@@ -144,7 +144,7 @@ export default function LinkInBio({ user }) {
       {error && <div style={{color:"#f87171",fontSize:"13px",marginBottom:"12px"}}>{error}</div>}
 
       <button style={s.btn} onClick={save} disabled={saving}>
-        {saving ? "Saving... (1 credit)" : bioUrl ? "Update Link in Bio (1 credit)" : "Create Link in Bio (1 credit)"}
+        {saving ? "Saving..." : bioUrl ? "Update Link in Bio" : "Create Link in Bio"}
       </button>
 
       {bioUrl && (
