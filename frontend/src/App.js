@@ -1683,6 +1683,7 @@ function ChannelSettingsModal({ user, onClose, BASE, onUpgrade }) {
   const [ytChannels, setYtChannels] = useState([]);
   const [pinterestStatus, setPinterestStatus] = useState(null);
   const [threadsStatus, setThreadsStatus] = useState(null);
+  const [igStatus, setIgStatus] = useState(null);
   const [liStatus, setLiStatus] = useState(null);
   const [bugModal, setBugModal] = useState(false);
 
@@ -1702,6 +1703,7 @@ function ChannelSettingsModal({ user, onClose, BASE, onUpgrade }) {
       const chs = yt.value?.channels || []; setYtChannels(chs.map(ch => ({title: ch.channel_title, thumbnail: ch.thumbnail_url, subscribers: ch.subscribers, channel_id: ch.channel_id})));
       fetch(BASE+"/pinterest/status?user_id="+userId).then(r=>r.json()).then(setPinterestStatus).catch(()=>setPinterestStatus(null));
       fetch(BASE+"/threads/status?user_id="+userId).then(r=>r.json()).then(setThreadsStatus).catch(()=>setThreadsStatus(null));
+      fetch(BASE+"/instagram/status?user_id="+userId).then(r=>r.json()).then(setIgStatus).catch(()=>setIgStatus(null));
       fetch(BASE+"/linkedin/status?user_id="+userId).then(r=>r.json()).then(d=>setLiStatus(d.connected?d:null)).catch(()=>setLiStatus(null));
       if (tg.value) setTgStatus(tg.value);
       if (dc.value) setDcStatus(dc.value);
@@ -1822,11 +1824,25 @@ function ChannelSettingsModal({ user, onClose, BASE, onUpgrade }) {
               <span style={{fontSize:"10px",color:"rgba(255,255,255,0.2)",fontWeight:"600",background:"rgba(255,255,255,0.05)",padding:"3px 8px",borderRadius:"99px"}}>Coming Soon</span>
             </div>
           )}
-          <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
-            <img src="/icons/instagram.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="Instagram"/>
-            <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Instagram</span>
-            <span style={{fontSize:"10px",color:"rgba(255,255,255,0.2)",fontWeight:"600",background:"rgba(255,255,255,0.05)",padding:"3px 8px",borderRadius:"99px"}}>Coming Soon</span>
-          </div>
+          {igStatus?.connected ? (
+            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",marginBottom:"8px"}}>
+              <img src="/icons/instagram.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="Instagram"/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>@{igStatus.username||"instagram"}</div>
+                <div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{igStatus.display_name||""}</div>
+              </div>
+              <DisconnectBtn onClick={()=>{
+                fetch(BASE+"/instagram/disconnect?user_id="+userId,{method:"POST"}).catch(()=>{});
+                setIgStatus(null);
+              }}/>
+            </div>
+          ) : (
+            <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
+              <img src="/icons/instagram.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="Instagram"/>
+              <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Instagram</span>
+              {isPro ? <a href={BASE+"/instagram/auth-url?user_id="+userId} style={{fontSize:"10px",color:"#e1306c",fontWeight:"700",background:"rgba(225,48,108,0.1)",padding:"3px 8px",borderRadius:"99px",textDecoration:"none",border:"1px solid rgba(225,48,108,0.3)"}}>Connect</a> : <button onClick={()=>onUpgrade()} style={{fontSize:"10px",color:"#a78bfa",fontWeight:"700",background:"rgba(124,58,237,0.1)",padding:"3px 8px",borderRadius:"99px",border:"1px solid rgba(124,58,237,0.3)",cursor:"pointer",fontFamily:"inherit"}}>Upgrade</button>}
+            </div>
+          )}
           <div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}>
             <img src="/icons/facebook.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="Facebook"/>
             <span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>Facebook</span>
@@ -1965,7 +1981,7 @@ export default function App() {
   const [downgradeError, setDowngradeError] = useState("");
   const [downgradeSuccess, setDowngradeSuccess] = useState("");
   const [deleteError, setDeleteError] = useState("");
-  const [notifSettings, setNotifSettings] = useState({newFeatures:true,weeklyTips:true,usageAlerts:true,proOffers:false});
+  const [notifSettings, setNotifSettings] = useState({updates:true});
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [openGroups, setOpenGroups] = useState({youtube:true, instagram:false, telegram:false, pinterest:false, threads:false, reddit:false, linkedin:false, facebook:false, tiktok:false, whatsapp:false, xtools:false, analytics:false});
   const [myApps, setMyApps] = useState([]);
@@ -2662,7 +2678,7 @@ export default function App() {
               <div style={{fontSize:"16px",fontWeight:"800",color:"#fff",fontFamily:"Poppins,sans-serif"}}>Notifications</div>
               <button onClick={()=>setShowNotificationsModal(false)} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
-            {[{key:"newFeatures",label:"New Features",desc:"Get notified when we launch new tools"},{key:"weeklyTips",label:"Weekly Tips",desc:"Creator tips every week"},{key:"usageAlerts",label:"Usage Alerts",desc:"Alert when credits are running low"},{key:"proOffers",label:"Pro Offers",desc:"Exclusive deals and discounts"}].map(({key,label,desc})=>(
+            {[{key:"updates",label:"Updates",desc:"Credit alerts, resets, new features and product updates"}].map(({key,label,desc})=>(
               <div key={key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px",borderRadius:"10px",background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",marginBottom:"8px"}}>
                 <div><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",fontFamily:"Poppins,sans-serif"}}>{label}</div><div style={{fontSize:"11px",color:"rgba(255,255,255,0.4)",fontFamily:"Poppins,sans-serif",marginTop:"2px"}}>{desc}</div></div>
                 <button onClick={()=>setNotifSettings(p=>({...p,[key]:!p[key]}))} style={{width:"44px",height:"24px",borderRadius:"99px",border:"none",background:notifSettings[key]?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.1)",cursor:"pointer",position:"relative",transition:"all 0.2s",flexShrink:0}}>
@@ -2670,7 +2686,33 @@ export default function App() {
                 </button>
               </div>
             ))}
-            <button onClick={()=>setShowNotificationsModal(false)} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif",marginTop:"8px"}}>Save Preferences</button>
+            <button onClick={async()=>{
+  if(notifSettings.updates){
+    if(!("serviceWorker"in navigator)||!("PushManager"in window)){setShowNotificationsModal(false);return;}
+    try{
+      const reg=await navigator.serviceWorker.register("/sw.js",{scope:"/"});
+      await navigator.serviceWorker.ready;
+      const p=await Notification.requestPermission();
+      if(p==="granted"){
+        const VAPID="BEByuC2Mkl9PWIgaiOFEgIcXjn6GSmlBo4tstvA8TS9d-PJtFshfg5KVqGQr75hb3-AWnFTsKZOnc1hF0OjTXLY";
+        const pad="=".repeat((4-VAPID.length%4)%4);
+        const raw=window.atob((VAPID+pad).replace(/-/g,"+").replace(/_/g,"/"));
+        const key=Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
+        const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
+        await apiFetch("/push/subscribe",{subscription:sub.toJSON()});
+      }
+    }catch(e){console.warn("push enable failed:",e);}
+  } else {
+    try{
+      if("serviceWorker"in navigator){
+        const reg=await navigator.serviceWorker.getRegistration("/");
+        if(reg){const sub=await reg.pushManager.getSubscription();if(sub)await sub.unsubscribe();}
+      }
+      await apiFetch("/push/unsubscribe",{});
+    }catch(e){console.warn("push disable failed:",e);}
+  }
+  setShowNotificationsModal(false);
+}} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif",marginTop:"8px"}}>Save Preferences</button>
           </div>
         </div>
       )}

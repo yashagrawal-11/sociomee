@@ -53,6 +53,10 @@ async def save_bio(request: Request):
     bio        = payload.get("bio", "").strip()
     links      = payload.get("links", [])
     avatar     = payload.get("avatar", "")
+    bg_color   = payload.get("bg_color", "#0a0a0a")
+    btn_style  = payload.get("btn_style", "soft")
+    btn_shape  = payload.get("btn_shape", "pill")
+    accent_color = payload.get("accent_color", "#a78bfa")
 
     if not user_id: raise HTTPException(400, "user_id required")
     if not _valid_handle(handle): raise HTTPException(400, "Invalid handle")
@@ -67,7 +71,7 @@ async def save_bio(request: Request):
             raise HTTPException(409, "Handle already taken")
 
     # Deduct 1 credit
-    ok = use_credit(user_id, cost=1)
+    ok = use_credit(user_id, cost=2)
     if not ok:
         status = get_credit_status(user_id)
         raise HTTPException(402, f"No credits remaining on your {status.get('plan','free')} plan.")
@@ -78,6 +82,10 @@ async def save_bio(request: Request):
         "bio": bio,
         "links": links,
         "avatar": avatar,
+        "bg_color": bg_color,
+        "btn_style": btn_style,
+        "btn_shape": btn_shape,
+        "accent_color": accent_color,
         "user_email": user_email,
         "updated_at": __import__("datetime").datetime.utcnow().isoformat()
     }
@@ -97,6 +105,10 @@ async def get_bio_page(handle: str):
                 "name": v.get("name",""),
                 "bio": v.get("bio",""),
                 "links": v.get("links",[]),
-                "avatar": v.get("avatar","")
+                "avatar": v.get("avatar",""),
+                "bg_color": v.get("bg_color","#0a0a0a"),
+                "btn_style": v.get("btn_style","soft"),
+                "btn_shape": v.get("btn_shape","pill"),
+                "accent_color": v.get("accent_color","#a78bfa")
             }
     return {"exists": False}

@@ -2607,3 +2607,33 @@ async def img_to_svg(request: Request, user: dict = Depends(get_current_user)):
         try:
             if os.path.exists(svg_path): os.unlink(svg_path)
         except: pass
+
+# ── Push Notification Endpoints ──────────────────────────────────────────────
+import json as _json
+
+PUSH_SUBS_FILE = "/var/www/sociomee/backend/push_subscriptions.json"
+
+def _load_subs():
+    try:
+        with open(PUSH_SUBS_FILE) as f: return _json.load(f)
+    except: return {}
+
+def _save_subs(data):
+    with open(PUSH_SUBS_FILE, "w") as f: _json.dump(data, f)
+
+@app.post("/push/subscribe")
+async def push_subscribe(request: Request, user=Depends(get_current_user)):
+    body = await request.json()
+    sub = body.get("subscription")
+    if not sub: raise HTTPException(400, "No subscription")
+    data = _load_subs()
+    data[str(user["user_id"])] = sub
+    _save_subs(data)
+    return {"ok": True}
+
+@app.post("/push/unsubscribe")
+async def push_unsubscribe(user=Depends(get_current_user)):
+    data = _load_subs()
+    data.pop(str(user["user_id"]), None)
+    _save_subs(data)
+    return {"ok": True}
