@@ -385,26 +385,39 @@ function LinkedInAnalytics({ history }) {
     weekly.push({ week: label, posts: history.filter(h => new Date(h.date) >= wStart && new Date(h.date) < wEnd).length });
   }
 
-  const SparkLine = ({ pts, valueKey, color="rgba(255,255,255,0.7)", dashed=false }) => {
+  const SparkLine = ({ pts: rawPts, valueKey, color="rgba(255,255,255,0.7)", dashed=false }) => {
+    const [hov, setHov] = useState(null);
     const W=300, H=70, pad=8;
-    const vals = pts.map(p => p[valueKey]);
+    const padded = [{[valueKey]:0}, ...rawPts, {[valueKey]:0}];
+    const vals = padded.map(p => p[valueKey]);
     const maxV = Math.max(...vals, 1);
-    const xs = pts.map((_,i) => pad + (i/(pts.length-1||1))*(W-pad*2));
-    const ys = pts.map(v => H - pad - (v/maxV)*(H-pad*2));
-    const path = pts.map((_,i) => `${i===0?"M":"L"}${xs[i]},${ys[i]}`).join(" ");
+    const xs = padded.map((_,i) => pad + (i/(padded.length-1||1))*(W-pad*2));
+    const ys = vals.map(v => H - pad - (v/maxV)*(H-pad*2));
+    const path = padded.map((_,i) => `${i===0?"M":"L"}${xs[i]},${ys[i]}`).join(" ");
     const area = `${path} L${xs[xs.length-1]},${H} L${xs[0]},${H} Z`;
     return (
-      <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:"visible", display:"block" }}>
-        <defs>
-          <linearGradient id={`liGrad${valueKey}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.12)"/>
-            <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
-          </linearGradient>
-        </defs>
-        <path d={area} fill={`url(#liGrad${valueKey})`}/>
-        <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={dashed?"4 3":undefined}/>
-        {pts.map((p,i) => p[valueKey]>0 && <circle key={i} cx={xs[i]} cy={ys[i]} r="3" fill="rgba(255,255,255,0.5)"/>)}
-      </svg>
+      <div style={{position:"relative"}}>
+        <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:"visible", display:"block" }}>
+          <defs>
+            <linearGradient id={`liGrad${valueKey}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.12)"/>
+              <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
+            </linearGradient>
+          </defs>
+          <path d={area} fill={`url(#liGrad${valueKey})`}/>
+          <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={dashed?"4 3":undefined}/>
+          {padded.map((p,i) => p[valueKey]>0 && (
+            <circle key={i} cx={xs[i]} cy={ys[i]} r={hov===i?5:3} fill={hov===i?"#fff":"rgba(255,255,255,0.5)"}
+              style={{cursor:"pointer"}} onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)}/>
+          ))}
+          {hov!==null && padded[hov] && (
+            <g>
+              <rect x={Math.min(xs[hov]-20,W-44)} y={ys[hov]-20} width="42" height="14" rx="4" fill="rgba(15,15,15,0.95)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.75"/>
+              <text x={Math.min(xs[hov]-20,W-44)+21} y={ys[hov]-10.5} fill="#fff" fontSize="7" fontWeight="600" textAnchor="middle">{padded[hov][valueKey]} post{padded[hov][valueKey]===1?"":"s"}</text>
+            </g>
+          )}
+        </svg>
+      </div>
     );
   };
 

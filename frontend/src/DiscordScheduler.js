@@ -394,7 +394,7 @@ export default function DiscordScheduler({ user }) {
   const connectBot=async()=>{
     setConnecting(true);
     const r=await fetch(`${BASE}/discord/oauth-url?user_id=${userId}`).then(r=>r.json()).catch(()=>({}));
-    if(r.url)window.open(r.url,"_blank","width=500,height=700");
+    if(r.url)window.location.href=r.url;
     setConnecting(false);
   };
 

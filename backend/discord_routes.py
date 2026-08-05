@@ -43,6 +43,7 @@ DISCORD_SERVER_LIMITS = {
     "pro_annual":       2,
     "premium_monthly":  4,
     "premium_annual":   4,
+    "pro+":             4,
 }
 
 def _get_server_limit(user_id: str) -> int:
