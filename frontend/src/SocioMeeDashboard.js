@@ -1,4 +1,5 @@
 import React,{useState,useEffect,useRef,useCallback} from "react";
+import {LineChart,Line,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer} from "recharts";
 const BASE="https://sociomeeai.com/api";
 const PLATS=[
   {id:"youtube",  label:"YouTube",  color:"#ff0000",statLabel:"Subscribers",stat2Label:"Views",
@@ -64,6 +65,7 @@ function InsightsPanel({data,conn}){const topP=[...conn].sort((a,b)=>{const da=d
 function UnifiedChart({userId,tgDaily,data}){
   const[days,setDays]=React.useState(30);
   const[chartType,setChartType]=React.useState("line");
+  const[viewMode,setViewMode]=React.useState("combined");
   const[hovBar,setHovBar]=React.useState(null);
   const[hovPie,setHovPie]=React.useState(null);
   const[ytData,setYtData]=React.useState([]);
@@ -101,62 +103,164 @@ function UnifiedChart({userId,tgDaily,data}){
     {key:"ig",  label:"Instagram Reach", color:"#e1306c", vals:(allData.ig?.chart_data||[]).map(d=>d.reach||d.impressions||d.views||0)},
     {key:"pi",  label:"Pinterest Impr",  color:"#e60023", vals:(allData.pi?.chart_data||[]).map(d=>d.impressions||d.views||0)},
     {key:"tg",  label:"Telegram Posts",  color:"#2aabee", vals:tgDaily.slice(-days)},
-    {key:"li",  label:"LinkedIn",        color:"#0a66c2", vals:liVals},
-    {key:"dc",  label:"Discord Posts",   color:"#5865f2", vals:dcVals},
   ];
-  const datasets=PLAT_DATASETS.filter(d=>d.vals.length>0&&(d.vals.some(v=>v>=0)||d.key==="li"||d.key==="dc"));
+  const datasets=PLAT_DATASETS.filter(d=>d.vals.length>0&&d.vals.some(v=>v>0));
 
-  const H=chartType==="donut"?220:chartType==="bar"?200:chartType==="pie"?220:140;
-  const W=600,pad=10;
+  const H=chartType==="donut"?280:chartType==="bar"?280:chartType==="pie"?280:300;
+  const W=1000,pad=10;
   const allVals=datasets.flatMap(d=>d.vals);
   const maxV=Math.max(...allVals,1);
   const len=Math.max(...datasets.map(d=>d.vals.length),1);
   const xs=Array.from({length:len},(_,i)=>pad+(i/(len-1||1))*(W-pad*2));
+  const smoothPath=(xs,ys,yMin,yMax)=>{
+    const clamp=v=>Math.max(yMin,Math.min(yMax,v));
+    if(xs.length<2)return"";
+    if(xs.length===2)return`M${xs[0]},${ys[0]} L${xs[1]},${ys[1]}`;
+    let d=`M${xs[0]},${ys[0]}`;
+    for(let i=0;i<xs.length-1;i++){
+      const x0=xs[i-1]??xs[i],y0=ys[i-1]??ys[i];
+      const x1=xs[i],y1=ys[i];
+      const x2=xs[i+1],y2=ys[i+1];
+      const x3=xs[i+2]??x2,y3=ys[i+2]??y2;
+      const cp1x=x1+(x2-x0)/6,cp1y=clamp(y1+(y2-y0)/6);
+      const cp2x=x2-(x3-x1)/6,cp2y=clamp(y2-(y3-y1)/6);
+      d+=` C${cp1x},${cp1y} ${cp2x},${cp2y} ${x2},${y2}`;
+    }
+    return d;
+  };
   const paths=datasets.map(ds=>{
     const ys=ds.vals.map(v=>H-pad-(v/maxV)*(H-pad*2));
-    const pts=ds.vals.map((_,i)=>`${i===0?"M":"L"}${xs[i]},${ys[i]}`).join(" ");
+    const pts=smoothPath(xs.slice(0,ds.vals.length),ys,pad,H-pad);
     const area=`${pts} L${xs[ds.vals.length-1]},${H} L${xs[0]},${H} Z`;
     return{...ds,ys,path:pts,area};
   });
 
   const total=datasets.reduce((s,d)=>s+d.vals.reduce((a,v)=>a+v,0),0);
   const labels=ytData.length?{start:ytData[0]?.date?.slice(5),end:ytData[ytData.length-1]?.date?.slice(5)}:{start:"",end:"Today"};
+  const hasMeaningfulData=datasets.some(d=>d.vals.filter(v=>v>0).length>=2);
+  const rcData=Array.from({length:len},(_,i)=>{
+    const row={idx:i};
+    datasets.forEach(d=>{row[d.key]=d.vals[i]||0;});
+    return row;
+  });
+  const NO_TREND_SUPPORT={linkedin:{label:"LinkedIn",color:"#0a66c2"},facebook:{label:"Facebook",color:"#1877f2"},discord:{label:"Discord",color:"#5865f2"}};
+  const UNSUPPORTED_PLATFORMS=Object.keys(NO_TREND_SUPPORT).filter(k=>data?.[k]?.connected).map(k=>NO_TREND_SUPPORT[k]);
+  const ALL_TREND_DATASETS=[
+    {key:"yt",label:"YouTube Views",color:"#ff0000",connKey:"youtube"},
+    {key:"th",label:"Threads Views",color:"#e0e0e0",connKey:"threads"},
+    {key:"ig",label:"Instagram Reach",color:"#e1306c",connKey:"instagram"},
+    {key:"pi",label:"Pinterest Impr",color:"#e60023",connKey:"pinterest"},
+    {key:"tg",label:"Telegram Posts",color:"#2aabee",connKey:"telegram"},
+  ].filter(d=>data?.[d.connKey]?.connected);
+  const rcDataCombined=Array.from({length:len},(_,i)=>{
+    const row={idx:i,total:datasets.reduce((s,d)=>s+(d.vals[i]||0),0)};
+    datasets.forEach(d=>{row[d.key]=d.vals[i]||0;});
+    return row;
+  });
+  const CombinedTooltip=({active,payload})=>{
+    if(!active||!payload||!payload.length)return null;
+    const row=payload[0].payload;
+    const total=row.total||0;
+    return(
+      <div style={{background:"rgba(15,15,15,0.97)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:12,padding:"10px 12px",fontSize:11,minWidth:170,maxWidth:220,boxShadow:"0 8px 32px rgba(0,0,0,0.5)"}}>
+        <div style={{fontWeight:900,color:"#f5f5f7",marginBottom:6,fontSize:12}}>Total activity: {fmt(total)}</div>
+        {ALL_TREND_DATASETS.map(d=>{
+          const v=row[d.key]||0;
+          const pct=total>0?Math.round((v/total)*100):0;
+          return(
+            <div key={d.key} style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:d.color,flexShrink:0}}/>
+              <span style={{color:"rgba(255,255,255,0.7)",flex:1}}>{d.label}</span>
+              <span style={{color:"#f5f5f7",fontWeight:700}}>{fmt(v)} ({pct}%)</span>
+            </div>
+          );
+        })}
+        {UNSUPPORTED_PLATFORMS.length>0&&(
+          <div style={{marginTop:6,paddingTop:6,borderTop:"1px solid rgba(255,255,255,0.08)"}}>
+            {UNSUPPORTED_PLATFORMS.map(p=>(
+              <div key={p.label} style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                <div style={{width:6,height:6,borderRadius:"50%",background:p.color,opacity:0.4,flexShrink:0}}/>
+                <span style={{color:"rgba(255,255,255,0.35)",flex:1}}>{p.label}</span>
+                <span style={{color:"rgba(255,255,255,0.3)",fontSize:10}}>Not supported</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return(
-    <Glass style={{flex:2,minWidth:0,padding:20}}>
+    <Glass style={{width:"100%",padding:20}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
         <div>
           <div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"1.2px",color:"rgba(255,255,255,0.28)",marginBottom:4}}>Channel Analytics</div>
           <div style={{fontSize:22,fontWeight:900,color:"#f5f5f7"}}>{fmt(total)}</div>
           <div style={{fontSize:10,color:"rgba(255,255,255,0.35)",marginTop:2}}>Last {days} days</div>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
-          <div style={{display:"flex",gap:4,marginBottom:4}}>
-            {[["line","Line"],["bar","Bar"],["donut","Donut"],["pie","Pie"]].map(([k,l])=>(
-              <button key={k} onClick={()=>setChartType(k)} style={{padding:"4px 10px",borderRadius:99,border:`1px solid ${chartType===k?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.07)"}`,background:chartType===k?"rgba(255,255,255,0.1)":"transparent",color:chartType===k?"#f5f5f7":"rgba(255,255,255,0.4)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>{l}</button>
-            ))}
-          </div>
-          <div style={{display:"flex",gap:4}}>
-            {[7,30,90].map(d=>(
-              <button key={d} onClick={()=>setDays(d)} style={{padding:"4px 10px",borderRadius:99,border:`1px solid ${days===d?"rgba(255,255,255,0.25)":"rgba(255,255,255,0.07)"}`,background:days===d?"rgba(255,255,255,0.1)":"transparent",color:days===d?"#f5f5f7":"rgba(255,255,255,0.4)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>{d}d</button>
-            ))}
+        <div style={{display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",justifyContent:"flex-end"}}>
+            <div style={{display:"flex",gap:3,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:99,padding:3}}>
+              {[["line","Line"],["bar","Bar"],["donut","Donut"],["pie","Pie"]].map(([k,l])=>(
+                <button key={k} onClick={()=>setChartType(k)} style={{padding:"4px 10px",borderRadius:99,border:"none",background:chartType===k?"rgba(255,255,255,0.14)":"transparent",color:chartType===k?"#f5f5f7":"rgba(255,255,255,0.4)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>{l}</button>
+              ))}
+            </div>
+            {chartType==="line"&&(
+              <div style={{display:"flex",gap:3,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:99,padding:3}}>
+                {[["combined","All Platforms"],["split","By Platform"]].map(([k,l])=>(
+                  <button key={k} onClick={()=>setViewMode(k)} style={{padding:"4px 10px",borderRadius:99,border:"none",background:viewMode===k?"rgba(255,255,255,0.14)":"transparent",color:viewMode===k?"#f5f5f7":"rgba(255,255,255,0.4)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>{l}</button>
+                ))}
+              </div>
+            )}
+            <div style={{display:"flex",gap:3,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:99,padding:3}}>
+              {[7,30,90].map(d=>(
+                <button key={d} onClick={()=>setDays(d)} style={{padding:"4px 10px",borderRadius:99,border:"none",background:days===d?"rgba(255,255,255,0.14)":"transparent",color:days===d?"#f5f5f7":"rgba(255,255,255,0.4)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>{d}d</button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-      {loading?<Skel h={H} r={8}/>:paths.length>0?(
+      {loading?<Skel h={H} r={8}/>:(hasMeaningfulData&&paths.length>0)?(
         <div>
-          {chartType==="line"&&(
-            <div>
-              <svg width="100%" height={H} viewBox={"0 0 "+W+" "+H} style={{display:"block",overflow:"visible",cursor:"crosshair"}}
-                onMouseMove={e=>{const r=e.currentTarget.getBoundingClientRect();const mx=(e.clientX-r.left)/r.width*W;setHovX(Math.max(0,Math.min(len-1,Math.round((mx-pad)/(W-pad*2)*(len-1)))));}}
-                onMouseLeave={()=>setHovX(null)}>
-                <defs>{paths.map((p,i)=>(<linearGradient key={i} id={"ucg"+i} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={p.color} stopOpacity="0.2"/><stop offset="100%" stopColor={p.color} stopOpacity="0"/></linearGradient>))}</defs>
-                {paths.map((p,i)=>(<g key={i}><path d={p.area} fill={"url(#ucg"+i+")"}/><path d={p.path} fill="none" stroke={p.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={hov!=null&&hov!==i?0.25:1} style={{transition:"opacity 0.2s"}}/></g>))}
-                {hovX!=null&&(<><line x1={xs[hovX]} y1={pad} x2={xs[hovX]} y2={H} stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="3 3"/>{paths.map((p,i)=>(hovX<p.vals.length&&<circle key={i} cx={xs[hovX]} cy={p.ys[hovX]} r="4" fill={p.color} stroke="#000" strokeWidth="1.5"/>))}<rect x={Math.min(xs[hovX]+8,W-120)} y={pad} width="112" height={paths.length*16+10} rx="6" fill="rgba(8,8,8,0.96)" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>{paths.map((p,i)=>(hovX<p.vals.length&&(<g key={i}><rect x={Math.min(xs[hovX]+14,W-114)} y={pad+6+i*16} width="6" height="6" rx="2" fill={p.color}/><text x={Math.min(xs[hovX]+24,W-104)} y={pad+13+i*16} fill="rgba(255,255,255,0.8)" fontSize="10" fontFamily="DM Sans,sans-serif">{p.label}: {fmt(p.vals[hovX])}</text></g>)))}</>)}
-              </svg>
-              <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}><span style={{fontSize:9,color:"rgba(255,255,255,0.2)"}}>{labels.start}</span><span style={{fontSize:9,color:"rgba(255,255,255,0.2)"}}>Today</span></div>
+          {chartType==="line"&&viewMode==="combined"&&(
+            <div style={{height:H,background:"transparent"}}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={rcDataCombined} margin={{top:4,right:4,left:-28,bottom:0}}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
+                  <XAxis dataKey="idx" hide={true}/>
+                  <YAxis tick={{fill:"rgba(255,255,255,0.25)",fontSize:9}} axisLine={false} tickLine={false}/>
+                  <Tooltip content={<CombinedTooltip/>}/>
+                  <Line type="monotone" dataKey="total" stroke="#f5f5f7" strokeWidth={2.5} dot={false} activeDot={{r:5,fill:"#f5f5f7",stroke:"#0a0a0a",strokeWidth:2}}/>
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           )}
+          {chartType==="line"&&viewMode==="split"&&(
+            <div style={{height:H,background:"transparent"}}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={rcData} margin={{top:4,right:4,left:-28,bottom:0}}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
+                  <XAxis dataKey="idx" hide={true}/>
+                  <YAxis tick={{fill:"rgba(255,255,255,0.25)",fontSize:9}} axisLine={false} tickLine={false}/>
+                  <Tooltip contentStyle={{background:"rgba(10,5,20,0.95)",border:"1px solid rgba(124,58,237,0.3)",borderRadius:"12px",fontSize:"11px",boxShadow:"0 8px 32px rgba(0,0,0,0.4)"}} labelStyle={{display:"none"}} formatter={(value,name)=>{const ds=datasets.find(d=>d.key===name);return[fmt(value),ds?ds.label:name];}}/>
+                  {datasets.map(ds=>(
+                    <Line key={ds.key} type="monotone" dataKey={ds.key} stroke={ds.color} strokeWidth={2.5} dot={false} activeDot={{r:5,fill:ds.color,stroke:"#fff",strokeWidth:2}}/>
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+          {chartType==="line"&&(()=>{
+            const trendCount=ALL_TREND_DATASETS.length;
+            const appreciation=total>200?"Your social media game is looking strong right now.":total>0?"You're building real momentum, keep it up.":"Time to get your first post tracked here.";
+            const smartTip=trendCount<3?"Connect more platforms like Instagram or Pinterest to see your full reach.":"Stay consistent, steady posting compounds over time.";
+            return(
+              <div style={{marginTop:14,padding:"10px 14px",background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:10,fontFamily:"Poppins,sans-serif"}}>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.55)",marginBottom:3}}>{appreciation}</div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>{smartTip}</div>
+              </div>
+            );
+          })()}
           {chartType==="bar"&&(()=>{
             const BW=600,BH=H,bpad=10,grpGap=4,barGap=1;
             const barLen=Math.min(len,days===7?7:days===30?14:20);
@@ -286,14 +390,16 @@ function UnifiedChart({userId,tgDaily,data}){
               </div>
             );
           })()}
+          {!(chartType==="line"&&viewMode==="combined")&&(
           <div style={{display:"flex",gap:10,marginTop:10,flexWrap:"wrap"}}>
             {paths.map((p,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:5,cursor:"pointer",opacity:hov!=null&&hov!==i?0.3:1,transition:"opacity 0.2s"}} onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)}><div style={{width:7,height:7,borderRadius:"50%",background:p.color,boxShadow:`0 0 6px ${p.color},0 0 12px ${p.color}66`,flexShrink:0}}/><span style={{fontSize:9,color:"rgba(255,255,255,0.45)",whiteSpace:"nowrap"}}>{p.label}</span></div>))}
           </div>
+          )}
         </div>
       ):(
         <div style={{height:H,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:8,fontSize:11,color:"rgba(255,255,255,0.18)",borderRadius:8,border:"1px dashed rgba(255,255,255,0.06)"}}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Connect YouTube to see analytics
+          {datasets.length===0?"Connect a platform to see analytics":"Not enough activity yet to show a trend"}
         </div>
       )}
     </Glass>
@@ -306,23 +412,22 @@ function InsightsHorizontal({data,conn}){
   const totalReach=conn.reduce((s,p)=>{const d=data[p.id];return s+(d?.subscribers??d?.followers??d?.member_count??0);},0);
   const connPct=Math.round((conn.length/8)*100);
   const cards=[
-    {icon:"✦",color:"#a78bfa",label:"Coverage",value:`${conn.length}/8`,sub:conn.length===8?"All platforms active!":`${8-conn.length} more to connect`,bg:"rgba(167,139,250,0.08)",border:"rgba(167,139,250,0.2)"},
-    {icon:"↑",color:"#34d399",label:"Total Reach",value:fmt(totalReach),sub:"across all platforms",bg:"rgba(52,211,153,0.06)",border:"rgba(52,211,153,0.15)"},
-    {icon:"⚡",color:wc>=0?"#34d399":"#f87171",label:"This Week",value:tw+" posts",sub:wc>=0?`+${wc}% vs last week`:`${wc}% vs last week`,bg:wc>=0?"rgba(52,211,153,0.06)":"rgba(248,113,113,0.06)",border:wc>=0?"rgba(52,211,153,0.15)":"rgba(248,113,113,0.15)"},
-    {icon:"★",color:"#60a5fa",label:"Top Platform",value:topP?topP.label:"None",sub:topP?fmt(data[topP.id]?.subscribers??data[topP.id]?.followers??data[topP.id]?.member_count??0)+" reach":"Connect platforms",bg:"rgba(96,165,250,0.06)",border:"rgba(96,165,250,0.15)"},
+    {color:"#a78bfa",label:"Coverage",value:`${conn.length}/8`,sub:conn.length===8?"All platforms active!":`${8-conn.length} more to connect`},
+    {color:"#34d399",label:"Total Reach",value:fmt(totalReach),sub:"across all platforms"},
+    {color:wc>=0?"#34d399":"#f87171",label:"This Week",value:tw+" posts",sub:wc>=0?`+${wc}% vs last week`:`${wc}% vs last week`},
+    {color:"#60a5fa",label:"Top Platform",value:topP?topP.label:"None",sub:topP?fmt(data[topP.id]?.subscribers??data[topP.id]?.followers??data[topP.id]?.member_count??0)+" reach":"Connect platforms"},
   ];
   const tip=conn.length===0?"Connect a platform to get AI tips.":conn.length<4?`On ${conn.length} platforms. Creators on 5+ grow 3x faster.`:tw===0?"Post to Telegram consistently to build momentum.":wc>50?"Great momentum! Cross-post to Instagram now.":"Analyze best content and double down on it.";
   return(
     <div>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
-        <span style={{fontSize:13,fontWeight:900,color:"#f5f5f7"}}>✦ SocioMee AI Insights</span>
+        <span style={{fontSize:13,fontWeight:900,color:"#f5f5f7"}}>SocioMee AI Insights</span>
         <div style={{width:8,height:8,borderRadius:"50%",background:"#34d399",boxShadow:"0 0 10px #34d399,0 0 20px #34d39944"}}/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:14}} className="d-ins-grid">
         {cards.map((card,i)=>(
-          <div key={i} style={{padding:"14px 16px",borderRadius:12,background:card.bg,border:`1px solid ${card.border}`}}>
-            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-              <span style={{fontSize:14,color:card.color}}>{card.icon}</span>
+          <div key={i} style={{padding:"14px 16px",borderRadius:12,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.07)"}}>
+            <div style={{marginBottom:8}}>
               <span style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:"1px",color:"rgba(255,255,255,0.35)"}}>{card.label}</span>
             </div>
             <div style={{fontSize:20,fontWeight:900,color:"#f5f5f7",marginBottom:3}}>{card.value}</div>

@@ -2946,13 +2946,15 @@ export default function App() {
         </div>
       )}
       <div id="main-content" style={{ marginLeft:"220px", flex:1, padding:"48px 32px 80px", minHeight:"100vh", overflowX:"hidden", display:(activeTab==="notes"||activeTab==="pdf"||activeTab==="pixel"||activeTab==="share"||activeTab==="cloud"||activeTab==="calendar")?"none":"block" }}>
-        <div style={{ maxWidth:"860px", margin:"0 auto" }}>
+        <div style={{ maxWidth: activeTab==="dashboard" ? "100%" : "860px", margin:"0 auto" }}>
 
+          {activeTab!=="dashboard" && (
           <div style={{ marginBottom:"28px" }}>
             
             <a href="/" target="_blank" rel="noopener noreferrer" style={{ fontSize:"clamp(28px,4vw,44px)", fontWeight:"700", fontFamily:"'Orbitron',sans-serif", color:"#fff", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"6px", textDecoration:"none", cursor:"pointer", display:"block" }}>SOCIOMEE</a>
             <p style={{ fontSize:"15px", color:"rgba(255,255,255,0.35)" }}>{t("oneTopicInfinite")}</p>
           </div>
+          )}
 
           {!isLoggedIn && (
             <div style={{ textAlign:"center", padding:"60px 20px" }}>
