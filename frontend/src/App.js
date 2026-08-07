@@ -91,14 +91,9 @@ const BASE = window.location.origin + "/api";
 // STATIC DATA
 // ══════════════════════════════════════════════════════════════════════
 const PERSONAS = [
-  {id:"dhruvrathee",label:"Dhruv Rathee",flag:"📊",lang:"hinglish"},
-  {id:"carryminati",label:"CarryMinati",flag:"💀",lang:"hinglish"},
-  {id:"samayraina",label:"Samay Raina",flag:"😶",lang:"hinglish"},
-  {id:"rebelkid",label:"RebelKid",flag:"🔥",lang:"hinglish"},
-  {id:"shahrukhkhan",label:"Shah Rukh Khan",flag:"🌙",lang:"hinglish"},
-  {id:"mrbeast",label:"MrBeast",flag:"🤯",lang:"english"},
-  {id:"alexhormozi",label:"Alex Hormozi",flag:"📈",lang:"english"},
-  {id:"joerogan",label:"Joe Rogan",flag:"🎙️",lang:"english"},
+  {id:"agentalex",label:"Agent Alex",flag:"📊",lang:"hinglish"},
+  {id:"mrflame",label:"Mr. Flame",flag:"🤯",lang:"english"},
+  {id:"rebelrose",label:"Rebel Rose",flag:"🔥",lang:"hinglish"},
   {id:"default",label:"Default",flag:"✨",lang:"hinglish"},
 ];
 
@@ -113,7 +108,23 @@ const PLATFORMS = [
   {id:"telegram",  label:"Telegram",  img:"/icons/telegram.png",  color:"#2aabee"},
   {id:"reddit",    label:"Reddit",    img:"/icons/reddit.png",    color:"#ff4500"},
   {id:"quora",     label:"Quora",     img:"/icons/quora.png",     color:"#b92b27"},
+  {id:"tiktok",    label:"TikTok",    img:"/icons/tiktok.png",    color:"#ffffff"},
+  {id:"whatsapp",  label:"WhatsApp",  img:"/icons/whatsapp.png",  color:"#25d366"},
 ];
+const PLATFORM_FORMATS = {
+  youtube:   [{id:"long",  label:"YouTube Long Form"}, {id:"short", label:"YouTube Shorts"}],
+  instagram: [{id:"reel",  label:"Instagram Reel"},    {id:"post",  label:"Instagram Post"}],
+  tiktok:    [{id:"short", label:"TikTok Video"}],
+  linkedin:  [{id:"post",  label:"LinkedIn Post"}],
+  x:         [{id:"post",  label:"Tweet"}],
+  facebook:  [{id:"post",  label:"Facebook Post"}],
+  threads:   [{id:"post",  label:"Threads Post"}],
+  pinterest: [{id:"post",  label:"Pinterest Pin"}],
+  telegram:  [{id:"post",  label:"Telegram Post"}],
+  whatsapp:  [{id:"post",  label:"WhatsApp Channel Post"}],
+  reddit:    [{id:"post",  label:"Reddit Post"}],
+  quora:     [{id:"post",  label:"Quora Answer"}],
+};
 
 const TONES = [
   {id:"bold",emoji:"🔥",color:"#ff4d4d"},
@@ -184,6 +195,46 @@ async function runRazorpayCheckout({ planId, userId, email, onSuccess, onError }
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// PAYMENT RESULT SCREEN (full-screen success/failure)
+function PaymentResultScreen({ success, lines, onDone, doneLabel }) {
+  return (
+    <div style={{position:"fixed",inset:0,background:"#000",zIndex:99999,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px",textAlign:"center"}}>
+      <style>{`
+        @keyframes prPopIn{0%{opacity:0;transform:scale(0.85) translateY(10px)}60%{opacity:1;transform:scale(1.03) translateY(0)}100%{opacity:1;transform:scale(1) translateY(0)}}
+        @keyframes prGlow{0%,100%{text-shadow:0 0 18px rgba(255,255,255,0.35),0 0 40px rgba(124,58,237,0.25)}50%{text-shadow:0 0 28px rgba(255,255,255,0.55),0 0 60px rgba(124,58,237,0.4)}}
+        @keyframes prFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes prShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+      `}</style>
+      {success ? (
+        <div style={{width:"64px",height:"64px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.85)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:"28px",animation:"prPopIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both"}}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      ) : (
+        <div style={{width:"64px",height:"64px",borderRadius:"50%",border:"2px solid rgba(239,68,68,0.9)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:"28px",animation:"prPopIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both, prShake 0.5s ease 0.5s both"}}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+      )}
+      {lines.map((line, i) => (
+        <div key={i} style={{
+          fontFamily:"Poppins,sans-serif",
+          fontSize: i===0 ? "22px" : "14px",
+          fontWeight: i===0 ? "800" : "500",
+          color: i===0 ? "#fff" : "rgba(255,255,255,0.55)",
+          marginBottom: i===0 ? "10px" : "4px",
+          opacity:0,
+          animation:`prFadeUp 0.55s ease ${0.15 + i*0.28}s both${i===0 && success ? ", prGlow 2.4s ease-in-out 1.2s infinite" : ""}`,
+        }}>{line}</div>
+      ))}
+      <button onClick={onDone} style={{
+        marginTop:"32px",padding:"12px 32px",borderRadius:"99px",border:"1px solid rgba(255,255,255,0.25)",
+        background: success ? "rgba(255,255,255,0.1)" : "rgba(239,68,68,0.1)",
+        color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif",
+        opacity:0,animation:`prFadeUp 0.5s ease ${0.15 + lines.length*0.28 + 0.2}s both`,
+      }}>{doneLabel || (success ? "Continue" : "Try Again")}</button>
+    </div>
+  );
+}
+
 // PRICING POPUP
 // ══════════════════════════════════════════════════════════════════════
 // PRICING POPUP REPLACEMENT for App.js
@@ -191,6 +242,7 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", curre
   const [paying,     setPaying    ] = useState(null);
   const [payErr,     setPayErr    ] = useState("");
   const [doneMsg,    setDoneMsg   ] = useState("");
+  const [paymentResult, setPaymentResult] = useState(null);
   const [coupon,     setCoupon    ] = useState("");
   const [couponMsg,  setCouponMsg ] = useState("");
   const [discount,   setDiscount  ] = useState(null);
@@ -243,8 +295,8 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", curre
   ];
 
   const topups = [
-    { id:"topup_99",  label:"Starter Pack", price:99,  credits:20,  cta:"Buy 20 Credits" },
-    { id:"topup_249", label:"Value Pack",   price:249, credits:60,  cta:"Buy 60 Credits", badge:"Best Value" },
+    { id:"topup_99",  label:"Starter Pack", price:99,  credits:50,  cta:"Buy 50 Credits" },
+    { id:"topup_199", label:"Value Pack",   price:199, credits:120, cta:"Buy 120 Credits", badge:"Best Value" },
   ];
 
   const pay = async (planId, price) => {
@@ -257,22 +309,29 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", curre
       await runRazorpayCheckout({
         planId, userId, email,
         onSuccess: result => {
-          setDoneMsg(result.message || "Credits added!");
           setPaying(null);
-          setTimeout(() => { onSuccess(result); onClose(); }, 2000);
+          setPaymentResult({ success:true, result, lines:["Payment Successful", result.message || "Credits added", "You're all set"] });
         },
-        onError: msg => { setPayErr(msg); setPaying(null); },
+        onError: msg => {
+          setPaying(null);
+          setPaymentResult({ success:false, result:null, lines:["Payment Failed", msg || "Something went wrong", "Please try again"] });
+        },
       });
     } else {
       // Subscription autopay flow
       try {
         const loaded = await loadRazorpay();
-        if (!loaded) { setPayErr("Razorpay SDK failed to load."); setPaying(null); return; }
+        if (!loaded) { setPaying(null); setPaymentResult({ success:false, result:null, lines:["Payment Failed", "Razorpay SDK failed to load", "Please try again"] }); return; }
         const res = await fetch(`${BASE}/subscription/create`, {
           method: "POST", headers: {"Content-Type":"application/json"},
           body: JSON.stringify({ user_id: userId, email, plan: planId }),
         });
-        if (!res.ok) { const e = await res.json().catch(()=>({})); setPayErr(e.detail||"Failed to create subscription."); setPaying(null); return; }
+        if (!res.ok) {
+          const e = await res.json().catch(()=>({}));
+          setPaying(null);
+          setPaymentResult({ success:false, result:null, lines:["Payment Failed", e.detail || "Failed to create subscription", "Please try again"] });
+          return;
+        }
         const sub = await res.json();
         new window.Razorpay({
           key: sub.key_id,
@@ -294,18 +353,22 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", curre
                 }),
               });
               const result = await verify.json();
+              setPaying(null);
               if (result.success) {
-                setDoneMsg(result.message || "Subscription active!");
-                setPaying(null);
-                setTimeout(() => { onSuccess(result); onClose(); }, 2000);
+                setPaymentResult({ success:true, result, lines:["Payment Successful", `You're now on ${sub.plan_label}`, "Welcome to SocioMee"] });
               } else {
-                setPayErr("Verification failed. Contact support.");
-                setPaying(null);
+                setPaymentResult({ success:false, result:null, lines:["Payment Failed", "Verification failed", "Contact support"] });
               }
-            } catch { setPayErr("Verification failed. Contact support."); setPaying(null); }
+            } catch {
+              setPaying(null);
+              setPaymentResult({ success:false, result:null, lines:["Payment Failed", "Verification failed", "Contact support"] });
+            }
           },
         }).open();
-      } catch(e) { setPayErr(e.message || "Something went wrong."); setPaying(null); }
+      } catch(e) {
+        setPaying(null);
+        setPaymentResult({ success:false, result:null, lines:["Payment Failed", e.message || "Something went wrong", "Please try again"] });
+      }
     }
   };
 
@@ -370,6 +433,19 @@ function PricingPopup({ onClose, onSuccess, userId, email, mode="upgrade", curre
     popularTag: { position:"absolute",top:"-9px",left:"50%",transform:"translateX(-50%)",background:"rgba(124,58,237,0.12)",backdropFilter:"blur(12px)",border:"1px solid rgba(124,58,237,0.4)",color:"#c4b5fd",fontSize:"8px",fontWeight:"600",padding:"2px 10px",borderRadius:"99px",whiteSpace:"nowrap",boxShadow:"0 0 12px rgba(124,58,237,0.25)" },
   };
 
+  if (paymentResult) {
+    return (
+      <PaymentResultScreen
+        success={paymentResult.success}
+        lines={paymentResult.lines}
+        onDone={() => {
+          const r = paymentResult.result;
+          setPaymentResult(null);
+          if (paymentResult.success) { onSuccess(r); onClose(); }
+        }}
+      />
+    );
+  }
   return (
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }} style={S.overlay}>
       <div style={S.modal}>
@@ -741,7 +817,7 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
   const [editCap, setEditCap] = useState("");
   const [editMode, setEditMode] = useState(false);
   if (!all.length) return null;
-  const meta = { youtube:{icon:"/icons/youtube.png",color:"#ff0000"},instagram:{icon:"/icons/instagram.png",color:"#e1306c"},x:{icon:"/icons/x.png",color:"#ffffff"},facebook:{icon:"/icons/facebook.png",color:"#1877f2"},threads:{icon:"/icons/threads.png",color:"#ffffff"},pinterest:{icon:"/icons/pinterest.png",color:"#e60023"},telegram:{icon:"/icons/telegram.png",color:"#2aabee"},linkedin:{icon:"/icons/linkedin.png",color:"#0077b5"},reddit:{icon:"/icons/reddit.png",color:"#ff4500"},quora:{icon:"/icons/quora.png",color:"#b92b27"} };
+  const meta = { youtube:{icon:"/icons/youtube.png",color:"#ff0000"},instagram:{icon:"/icons/instagram.png",color:"#e1306c"},tiktok:{icon:"/icons/tiktok.png",color:"#000000"},x:{icon:"/icons/x.png",color:"#ffffff"},facebook:{icon:"/icons/facebook.png",color:"#1877f2"},threads:{icon:"/icons/threads.png",color:"#ffffff"},pinterest:{icon:"/icons/pinterest.png",color:"#e60023"},telegram:{icon:"/icons/telegram.png",color:"#2aabee"},whatsapp:{icon:"/icons/whatsapp.png",color:"#25d366"},linkedin:{icon:"/icons/linkedin.png",color:"#0077b5"},reddit:{icon:"/icons/reddit.png",color:"#ff4500"},quora:{icon:"/icons/quora.png",color:"#b92b27"} };
   const pack = seoPacks[active]||{};
   const variants = (result?.post_variants?.length>1) ? result.post_variants : null;
   const baseCap = variants ? variants[selV] : (pack.description||pack.caption||pack.post||"");
@@ -769,10 +845,29 @@ function PlatformSEOTabs({ seoPacks={}, defaultPlatform="youtube", isPro, onUpgr
                 ))}
               </div>
             )}
+            {active==="pinterest"&&pack.pin_title&&(
+              <div>
+                <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px" }}>
+                  <SectionHead icon="" title="Pin Title" copyText={null}/>
+                  <CopyBtn text={pack.pin_title}/>
+                </div>
+                <div style={{ padding:"12px 14px",borderRadius:"10px",background:C.pillBg,border:`1px solid ${C.hairline}`,fontSize:"13.5px",fontWeight:"700",color:C.ink,marginBottom:"12px" }}>{pack.pin_title}</div>
+              </div>
+            )}
+            {active==="pinterest"&&pack.board_suggestions&&pack.board_suggestions.length>0&&(
+              <div>
+                <SectionHead icon="" title="Suggested Boards" copyText={null}/>
+                <div style={{ display:"flex",gap:"8px",flexWrap:"wrap",marginTop:"6px",marginBottom:"12px" }}>
+                  {pack.board_suggestions.map((b,i)=>(
+                    <span key={i} style={{ padding:"5px 12px",borderRadius:"99px",background:"rgba(230,0,35,0.08)",border:"1px solid rgba(230,0,35,0.2)",color:"#e60023",fontSize:"11.5px",fontWeight:"700" }}>{b}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             {(pack.description||pack.caption||pack.post)&&active!=="youtube"&&(
               <div>
                 <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px" }}>
-                  <SectionHead icon="" title="Caption" copyText={null}/>
+                  <SectionHead icon="" title={active==="pinterest"?"Pin Description":"Caption"} copyText={null}/>
                   <div style={{ display:"flex",gap:"6px",alignItems:"center" }}>
                     <CopyBtn text={displayCap}/>
                     <button onClick={()=>setEditMode(!editMode)} style={{ padding:"3px 9px",fontSize:"11px",fontWeight:"700",borderRadius:"7px",border:`1px solid ${editMode?"#a78bfa":C.hairline}`,background:editMode?"rgba(255,255,255,0.06)":C.glass,color:editMode?"#a78bfa":C.muted,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"3px",flexShrink:0 }}>
@@ -1752,6 +1847,10 @@ function ChannelSettingsModal({ user, onClose, BASE, onUpgrade }) {
           <button onClick={onClose} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         </div>
         <div style={{height:"1px",background:"rgba(255,255,255,0.07)",margin:"16px 0"}}/>
+        <div style={{display:"flex",gap:"8px",alignItems:"flex-start",padding:"10px 12px",borderRadius:"10px",background:"rgba(52,211,153,0.06)",border:"1px solid rgba(52,211,153,0.2)",marginBottom:"14px"}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" style={{flexShrink:0,marginTop:"1px"}}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span style={{fontSize:"11px",color:"rgba(255,255,255,0.6)",lineHeight:1.5}}>We only request the permissions needed to generate, publish and schedule your content. Nothing is posted except what you generate, schedule or approve yourself, and you can disconnect any account instantly, anytime, right here.</span>
+        </div>
         {loading ? <div style={{textAlign:"center",padding:"40px",color:"rgba(255,255,255,0.3)",fontSize:"13px"}}>Loading...</div> : (<>
           <Sec icon={<img src="/icons/youtube.png" style={{width:20,height:20,objectFit:"contain"}} alt="yt"/>} label="YouTube Channels" count={ytChannels.length}>
             {ytChannels.length ? ytChannels.map(ch => (<div key={ch.channel_id||ch.title} style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",marginBottom:"8px"}}>{ch.thumbnail?<img src={ch.thumbnail} style={{width:38,height:38,borderRadius:"50%",objectFit:"cover",flexShrink:0}} alt=""/>:<YTIcon/>}<div style={{flex:1,minWidth:0}}><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ch.title||"Channel"}</div><div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)"}}>{ch.subscribers?Number(ch.subscribers).toLocaleString()+" subs":""}</div></div><DisconnectBtn onClick={()=>disconnectYT(ch.channel_id)}/></div>)) : (<div style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",borderRadius:"12px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",marginBottom:"8px"}}><img src="/icons/youtube.png" style={{width:24,height:24,objectFit:"contain",flexShrink:0}} alt="YouTube"/><span style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.5)",flex:1}}>YouTube</span>{isPro ? <button onClick={()=>{fetch(`${BASE}/youtube/auth-url?redirect_uri=${encodeURIComponent(window.location.origin + "/youtube/callback")}`).then(r=>r.json()).then(d=>{if(d.url)window.location.href=d.url;}).catch(()=>{});}} style={{fontSize:"10px",color:"#ff0000",fontWeight:"700",background:"rgba(255,0,0,0.1)",padding:"3px 8px",borderRadius:"99px",border:"1px solid rgba(255,0,0,0.3)",cursor:"pointer",fontFamily:"inherit"}}>Connect</button> : <button onClick={()=>onUpgrade()} style={{fontSize:"10px",color:"#a78bfa",fontWeight:"700",background:"rgba(124,58,237,0.1)",padding:"3px 8px",borderRadius:"99px",border:"1px solid rgba(124,58,237,0.3)",cursor:"pointer",fontFamily:"inherit"}}>Upgrade</button>}</div>)}
@@ -1957,10 +2056,17 @@ export default function App() {
   const [selectedTitle, setSelectedTitle] = useState("");
   const [platform,     setPlatform   ] = useState("youtube");
   const [tone,         setTone       ] = useState("casual");
-  const [personality,  setPersonality] = useState("dhruvrathee");
+  const [personality,  setPersonality] = useState("agentalex");
   const [language,     setLanguage   ] = useState("hinglish");
   const [niche,        setNiche      ] = useState("");
   const [formatType,   setFormatType ] = useState("long");
+
+  useEffect(() => {
+    const validFormats = PLATFORM_FORMATS[platform] || PLATFORM_FORMATS.youtube;
+    if (!validFormats.find(f => f.id === formatType)) {
+      setFormatType(validFormats[0].id);
+    }
+  }, [platform]);
   const [result,       setResult     ] = useState(null);
   const [loading,      setLoading    ] = useState(false);
   const [error,        setError      ] = useState("");
@@ -1990,6 +2096,10 @@ export default function App() {
   const [showUsagePopup, setShowUsagePopup] = useState(false);
   const [showPlansPopup, setShowPlansPopup] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [consentSettings, setConsentSettings] = useState({marketing_consent:true, analytics_consent:true});
+  const [consentLoading, setConsentLoading] = useState(false);
+  const [consentSaved, setConsentSaved] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [downgradeConfirm, setDowngradeConfirm] = useState(null);
   const [downgradeLoading, setDowngradeLoading] = useState(false);
@@ -2668,6 +2778,11 @@ export default function App() {
           <span style={{flex:1}}>Notifications</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
+        <button onClick={async()=>{setShowPrivacyModal(true);setProfilePanelOpen(false);setConsentLoading(true);try{const d=await apiFetch("/account/consent",{});setConsentSettings(d);}catch(e){}setConsentLoading(false);}} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span style={{flex:1}}>Privacy</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
         <button onClick={()=>setBugModal(true)} style={{display:"flex",alignItems:"center",gap:"10px",width:"100%",padding:"10px 12px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.7)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",marginBottom:"4px",transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span style={{flex:1}}>Report a Bug</span>
@@ -2728,6 +2843,43 @@ export default function App() {
   }
   setShowNotificationsModal(false);
 }} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"none",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif",marginTop:"8px"}}>Save Preferences</button>
+          </div>
+        </div>
+      )}
+      {showPrivacyModal && (
+        <div onClick={()=>setShowPrivacyModal(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"rgba(10,10,10,0.97)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"24px",width:"100%",maxWidth:"360px",boxShadow:"0 24px 60px rgba(0,0,0,0.6)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"8px"}}>
+              <div style={{fontSize:"16px",fontWeight:"800",color:"#fff",fontFamily:"Poppins,sans-serif"}}>Privacy</div>
+              <button onClick={()=>setShowPrivacyModal(false)} style={{width:"30px",height:"30px",borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+            </div>
+            <div style={{fontSize:"11px",color:"rgba(255,255,255,0.35)",fontFamily:"Poppins,sans-serif",marginBottom:"16px",lineHeight:1.5}}>Manage how your data is used. Changes apply immediately and never affect your account access.</div>
+            {consentLoading ? (
+              <div style={{padding:"20px 0",textAlign:"center",color:"rgba(255,255,255,0.4)",fontSize:"12px",fontFamily:"Poppins,sans-serif"}}>Loading...</div>
+            ) : (
+              [
+                {key:"marketing_consent",label:"Product Update Emails",desc:"New features, tips and announcements. Account and billing emails are always sent regardless."},
+                {key:"analytics_consent",label:"Usage Analytics",desc:"Helps us understand how the product is used to improve it. Does not affect functionality."},
+              ].map(({key,label,desc})=>(
+                <div key={key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px",borderRadius:"10px",background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",marginBottom:"8px"}}>
+                  <div><div style={{fontSize:"13px",fontWeight:"700",color:"#fff",fontFamily:"Poppins,sans-serif"}}>{label}</div><div style={{fontSize:"11px",color:"rgba(255,255,255,0.4)",fontFamily:"Poppins,sans-serif",marginTop:"2px"}}>{desc}</div></div>
+                  <button onClick={()=>{setConsentSettings(p=>({...p,[key]:!p[key]}));setConsentSaved(false);}} style={{width:"44px",height:"24px",borderRadius:"99px",border:"none",background:consentSettings[key]?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.1)",cursor:"pointer",position:"relative",transition:"all 0.2s",flexShrink:0}}>
+                    <div style={{width:"18px",height:"18px",borderRadius:"50%",background:consentSettings[key]?"#000":"#fff",position:"absolute",top:"3px",transition:"all 0.2s",left:consentSettings[key]?"23px":"3px"}}/>
+                  </button>
+                </div>
+              ))
+            )}
+            <button onClick={async()=>{
+              try{
+                await apiFetch("/account/consent",consentSettings);
+                if(typeof window!=="undefined"&&window.gtag){
+                  window.gtag("consent","update",{analytics_storage:consentSettings.analytics_consent?"granted":"denied"});
+                }
+                localStorage.setItem("sociomee_analytics_consent",consentSettings.analytics_consent?"granted":"denied");
+                setConsentSaved(true);
+                setTimeout(()=>setShowPrivacyModal(false),700);
+              }catch(e){console.warn("consent save failed:",e);}
+            }} style={{width:"100%",padding:"11px",borderRadius:"10px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",color:"#fff",fontSize:"13px",fontWeight:"700",cursor:"pointer",fontFamily:"Poppins,sans-serif",marginTop:"8px"}}>{consentSaved?"Saved ✓":"Save Preferences"}</button>
           </div>
         </div>
       )}
@@ -3054,7 +3206,7 @@ export default function App() {
 
                 {/* Platform Grid */}
                 <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>{t("platformLabel")}</div>
-                <div className="platform-grid" style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:"6px", marginBottom:"20px" }}>
+                <div className="platform-grid" style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:"6px", marginBottom:"20px" }}>
                   {PLATFORMS.map(p=>(
                     <button key={p.id} onClick={()=>setPlatform(p.id)}
                       style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"4px", padding:"10px 4px", borderRadius:"16px", border:`1.5px solid ${platform===p.id?p.color:"rgba(255,255,255,0.08)"}`, background:platform===p.id?`${p.color}18`:"rgba(255,255,255,0.03)", color:platform===p.id?p.color:"rgba(255,255,255,0.5)", fontSize:"10px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", boxShadow:platform===p.id?`0 0 12px ${p.color}30`:"none" }}>
@@ -3076,7 +3228,7 @@ export default function App() {
                   </div>
                   <div>
                     <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"8px" }}>{t("formatLabel")}</div>
-                    <CustomSelect value={formatType} onChange={setFormatType} label={t("selectFormat")} options={[{id:"long",label:t("formatLong")},{id:"short",label:t("formatShort")},{id:"thread",label:t("formatThread")},{id:"reel",label:t("formatReel")}]}/>
+                    <CustomSelect value={formatType} onChange={setFormatType} label={t("selectFormat")} options={PLATFORM_FORMATS[platform] || PLATFORM_FORMATS.youtube}/>
                   </div>
                 </div>
 
@@ -3133,7 +3285,7 @@ export default function App() {
                 {/* FORMAT - mobile only dropdown (desktop is in PLF row) */}
                 <div className="format-mobile-only" style={{ display:"none", marginBottom:"16px" }}>
                   <div style={{ fontSize:"9px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"6px" }}>{t("formatLabel")}</div>
-                  <CustomSelect centered={true} value={formatType} onChange={setFormatType} grid={true} label={t("formatLong")} options={[{id:"long",label:t("formatLong")},{id:"short",label:t("formatShort")},{id:"thread",label:t("formatThread")},{id:"reel",label:t("formatReel")}]}/>
+                  <CustomSelect centered={true} value={formatType} onChange={setFormatType} grid={true} label={t("formatLabel")} options={PLATFORM_FORMATS[platform] || PLATFORM_FORMATS.youtube}/>
                 </div>
 
 

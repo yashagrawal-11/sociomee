@@ -15,6 +15,7 @@ class TikTokPack:
     objective: str
     video_style: str
     hook: str
+    script: str
     cover_text: str
     caption: str
     hashtags: List[str]
@@ -242,10 +243,12 @@ class TikTokEngine:
         tone_data    = self.TONE_LIBRARY.get(tone, self.TONE_LIBRARY["default"])
         video_style  = self._choose_video_style(objective, tone, niche_data)
 
-        hook            = self._build_hook(topic, niche_data, tone, objective)
+        ai_content = self._generate_ai_content(topic, niche, tone)
+        hook            = ai_content.get("hook") or self._build_hook(topic, niche_data, tone, objective)
+        script          = ai_content.get("script", "")
         cover_text      = self._build_cover_text(topic, niche_data, tone)
-        caption         = self._build_caption(topic, niche_data, tone_data, objective)
-        hashtags        = self._build_hashtags(topic, niche_data, tone)
+        caption         = ai_content.get("caption") or self._build_caption(topic, niche_data, tone_data, objective)
+        hashtags        = ai_content.get("hashtags") or self._build_hashtags(topic, niche_data, tone)
         on_screen_text  = self._build_on_screen_text(topic, niche_data, tone, duration_seconds)
         beat_plan       = self._build_beat_plan(topic, niche_data, tone, duration_seconds)
         shot_plan       = self._build_shot_plan(topic, niche_data, video_style, duration_seconds)
@@ -264,6 +267,7 @@ class TikTokEngine:
             objective=objective,
             video_style=video_style,
             hook=hook,
+            script=script,
             cover_text=cover_text,
             caption=caption,
             hashtags=hashtags,
@@ -279,6 +283,14 @@ class TikTokEngine:
             variants=variants,
             generated_at=datetime.utcnow().isoformat(),
         )
+
+    # ── AI content ─────────────────────────────────────────────────────
+    def _generate_ai_content(self, topic: str, niche: str, tone: str) -> Dict[str, Any]:
+        try:
+            from vertex_engine import generate_tiktok_script
+            return generate_tiktok_script(topic=topic, tone=tone or "casual", niche=niche or "general", language="english")
+        except Exception:
+            return {}
 
     # ── Helpers ────────────────────────────────────────────────────────
     def _clean(self, text: str) -> str:
@@ -349,22 +361,22 @@ class TikTokEngine:
         )
 
     def _build_hashtags(self, topic: str, niche_data: Dict[str, Any], tone: str) -> List[str]:
+        topic_words = re.sub(r"[^a-z0-9 ]+", "", topic.lower()).strip().split()
+        short_topic = "".join(topic_words[:2])[:18]
         raw = [
-            topic,
-            f"{topic} tips",
-            f"{topic} ideas",
-            f"{topic} for beginners",
-            f"best {topic}",
+            short_topic,
             random.choice(niche_data["keywords"]),
             random.choice(niche_data["keywords"]),
-            random.choice(["viral", "fyp", "tiktok", "shortform", "trending"]),
+            "fyp",
+            "viral",
+            "tiktok",
         ]
         result: List[str] = []
         for item in raw:
-            clean = re.sub(r"[^a-z0-9 ]+", "", item.lower()).strip().replace(" ", "")
+            clean = re.sub(r"[^a-z0-9 ]+", "", item.lower()).strip().replace(" ", "")[:18]
             if clean and f"#{clean}" not in result:
                 result.append(f"#{clean}")
-        return result[:10]
+        return result[:6]
 
     def _build_on_screen_text(
         self, topic: str, niche_data: Dict[str, Any], tone: str, duration_seconds: int

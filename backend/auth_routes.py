@@ -41,9 +41,20 @@ def get_or_create_social_user(provider: str, provider_id: str, email: str, name:
             "picture": picture, "provider": provider, "provider_id": provider_id,
             "plan": "free", "credits": 20, "created_at": int(time.time()),
             "email_verified": True, "is_new": True,
+            "marketing_consent": True, "analytics_consent": True,
         }
         users[email] = new_user
         users_file.write_text(json.dumps(users, indent=2), encoding="utf-8")
+        # DPDP consent audit trail — every new social-login account gets a durable,
+        # timestamped consent record at the moment of creation, regardless of whether
+        # that provider's callback also shows a dedicated confirmation screen (Google
+        # does, via /auth/confirm-age; this covers every provider unconditionally).
+        try:
+            from consent_log import log_consent
+            log_consent(user_id, email, provider)
+        except Exception as _ce:
+            import logging
+            logging.getLogger("auth").error(f"consent log failed (social signup): {_ce}")
         return new_user
     except Exception as e:
         import logging
@@ -231,6 +242,19 @@ def confirm_age_endpoint(request: Request, response: Response, pending: str = Bo
     user_payload = _json_mod3.loads(raw)
     from oauth_age_manager import confirm_age
     confirm_age(user_payload["user_id"])
+    try:
+        from consent_log import log_consent
+        client_ip = request.headers.get("CF-Connecting-IP") or request.headers.get("X-Forwarded-For","").split(",")[0].strip() or (request.client.host if request.client else "")
+        log_consent(
+            user_payload.get("user_id",""),
+            user_payload.get("email",""),
+            user_payload.get("provider","oauth"),
+            ip=client_ip,
+            user_agent=request.headers.get("user-agent",""),
+        )
+    except Exception as _ce:
+        import logging
+        logging.getLogger("auth").error(f"consent log failed (oauth): {_ce}")
     token = create_jwt_token(user_payload)
     response.set_cookie(
         key="sociomee_session", value=token, httponly=True, secure=True,
@@ -526,12 +550,24 @@ def register(body: RegisterBody, request: Request, response: Response):
         "plan": "free",
         "email_verified": False,
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "marketing_consent": True,
+        "analytics_consent": True,
     }
     _save_users(users)
+    try:
+        from consent_log import log_consent
+        client_ip = request.headers.get("CF-Connecting-IP") or request.headers.get("X-Forwarded-For","").split(",")[0].strip() or (request.client.host if request.client else "")
+        log_consent(user_id, email, "email", ip=client_ip, user_agent=request.headers.get("user-agent",""))
+    except Exception as _ce:
+        import logging
+        logging.getLogger("auth").error(f"consent log failed: {_ce}")
     # Send welcome email
     try:
-        from email_service import send_welcome_email
+        from email_service import send_welcome_email, send_admin_signup_alert
         send_welcome_email(email, users[email].get("name", email.split("@")[0]))
+        try:
+            send_admin_signup_alert(email, users[email].get("name", email.split("@")[0]))
+        except Exception as _ae: print(f"admin signup alert skip: {_ae}")
         try:
             from push_routes import notify_welcome
             notify_welcome(users[email].get("user_id",""), users[email].get("name",""))

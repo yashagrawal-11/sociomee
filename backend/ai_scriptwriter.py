@@ -78,8 +78,8 @@ def _nvidia_chat(
 
 PERSONA_VOICE_GUIDES: Dict[str, str] = {
 
-    "dhruvrathee": dedent("""
-        You are writing in Dhruv Rathee's exact style.
+    "agentalex": dedent("""
+        You are writing in Agent Alex's exact style.
         VOICE:
         - Calm, analytical, investigative
         - Always opens with "Namaskar doston" + a striking fact or question
@@ -91,50 +91,8 @@ PERSONA_VOICE_GUIDES: Dict[str, str] = {
         - BANNED phrases: "let us begin", "it is important", "as we all know", "in conclusion"
     """).strip(),
 
-    "carryminati": dedent("""
-        You are writing in CarryMinati (Ajey Nagar)'s exact style.
-        VOICE:
-        - High energy Hindi-matrix Hinglish (Roman script, not Devanagari), aggressive roast
-        - Sentences: 4-8 words, chaotic rhythm
-        - Must use: bhai, yaar, arre, dekh, sun
-        - Pattern interrupts: sudden volume drops mid-sentence, then EXPLODE
-        - Every 3rd paragraph must have a roast punchline
-        - Close section with: "Toh bhai, yahi tha scene."
-        - NEVER: calm/measured tone, academic vocabulary, formal openers
-    """).strip(),
-
-    "samayraina": dedent("""
-        You are writing in Samay Raina's exact style.
-        VOICE:
-        - Dry wit, dark comedy, deadpan Hinglish (Roman script, not Devanagari)
-        - Sentences: 10-15 words, slow build with [pause] markers
-        - Anti-climax is the punchline tool
-        - Signature: "matlab", "haan toh", "sochta hoon", "ye bhi theek hai"
-        - NEVER scream, NEVER use hyperbole
-    """).strip(),
-
-    "rebelkid": dedent("""
-        You are writing in RebelKid (Apoorva Mukhija)'s exact style.
-        VOICE:
-        - Bold, unapologetic, English-matrix Hinglish (~70% English, Roman script, not Devanagari)
-        - Breathless run-on sentences followed by sharp fragments
-        - Signature: "cute little red flag", "not my problem", "boundary hai"
-        - Direct address to viewer: "you know what I mean?", "literally why"
-        - NEVER: academic tone, passive voice, hedging
-    """).strip(),
-
-    "shahrukhkhan": dedent("""
-        You are writing in Shah Rukh Khan's cinematic monologue style.
-        VOICE:
-        - Poetic Hindi-Urdu matrix with occasional English
-        - Must use: ishq, zindagi, dil, mohabbat, khwab, safar, yakeen
-        - Metaphors of stars, seasons, journeys, love
-        - End each section with a philosophical one-liner
-        - Warm, nostalgic, slightly dramatic
-    """).strip(),
-
-    "mrbeast": dedent("""
-        You are writing in MrBeast's exact style.
+    "mrflame": dedent("""
+        You are writing in Mr. Flame's exact style.
         VOICE:
         - Pure English, 6th grade reading level
         - Sentences: 5-10 words maximum
@@ -144,26 +102,14 @@ PERSONA_VOICE_GUIDES: Dict[str, str] = {
         - Transitions: "But wait", "And then", "So we decided to"
     """).strip(),
 
-    "alexhormozi": dedent("""
-        You are writing in Alex Hormozi's exact style.
+    "rebelrose": dedent("""
+        You are writing in Rebel Rose's exact style.
         VOICE:
-        - Direct, English-only, framework-driven
-        - Sentences: 5-12 words, stacked like bullet points
-        - Antithesis: "Winners do X. Losers do Y."
-        - Vocabulary: leverage, compound, asymmetric, offer, system
-        - Energy ceiling: 5/10 — credibility through calm authority
-        - BANNED: hedging, filler, any sentence over 15 words
-    """).strip(),
-
-    "joerogan": dedent("""
-        You are writing in Joe Rogan's conversational podcast style.
-        VOICE:
-        - English, curious and exploratory
-        - Asymmetric rhythm: short ("Dude.") then long (30-word exploration)
-        - Socratic questioning: ask question, partially answer, ask deeper question
-        - Signature: "dude", "man", "it's entirely possible", "think about it"
-        - End sections with: "And that's the part that gets me."
-        - NEVER: formal language, corporate tone, passive voice
+        - Bold, unapologetic, English-matrix Hinglish (~70% English, Roman script, not Devanagari)
+        - Breathless run-on sentences followed by sharp fragments
+        - Signature: "cute little red flag", "not my problem", "boundary hai"
+        - Direct address to viewer: "you know what I mean?", "literally why"
+        - NEVER: academic tone, passive voice, hedging
     """).strip(),
 
     "default": dedent("""
@@ -247,9 +193,9 @@ def _offline_script(
     p     = str(persona).lower().strip()
 
     if is_hi:
-        opener = {"dhruvrathee":"Namaskar doston.","carryminati":"Bhai, sun zara.","samayraina":"Toh haan...","rebelkid":"Okay, ek second.","shahrukhkhan":"Dosto, ek baat sunni hai."}.get(p,"Namaskar doston.")
+        opener = {"agentalex":"Namaskar doston.","rebelrose":"Okay, ek second."}.get(p,"Namaskar doston.")
     else:
-        opener = {"mrbeast":"This is INSANE.","alexhormozi":"Here is the truth.","joerogan":"Dude, think about this."}.get(p,"Let us talk about this.")
+        opener = {"mrflame":"This is INSANE."}.get(p,"Let us talk about this.")
 
     def hi(h, e): return h if is_hi else e
 
@@ -303,7 +249,7 @@ def _offline_script(
 def generate_script(
     topic:         str,
     structure:     Dict[str, Any],
-    persona:       str           = "dhruvrathee",
+    persona:       str           = "agentalex",
     language:      str           = "hinglish",
     min_words:     int           = 2000,
     max_words:     int           = 5000,
@@ -482,14 +428,9 @@ def _normalize_personality(value: str) -> str:
     key = _compact_key(value)
     aliases = {
         "default":"default","casual":"default",
-        "carry":"carryminati","carryminati":"carryminati",
-        "samay":"samayraina","samayraina":"samayraina",
-        "dhruv":"dhruvrathee","dhruvrathee":"dhruvrathee",
-        "srk":"shahrukhkhan","shahrukh":"shahrukhkhan","shahrukhkhan":"shahrukhkhan",
-        "mrbeast":"mrbeast","jimmy":"mrbeast",
-        "rogan":"joerogan","joerogan":"joerogan",
-        "hormozi":"alexhormozi","alex":"alexhormozi","alexhormozi":"alexhormozi",
-        "rebelkid":"rebelkid","apoorva":"rebelkid","apoorvamakhija":"rebelkid",
+        "agentalex":"agentalex","agent":"agentalex","alex":"agentalex",
+        "mrflame":"mrflame","flame":"mrflame","mrf":"mrflame",
+        "rebelrose":"rebelrose","rebel":"rebelrose","rose":"rebelrose",
     }
     return aliases.get(key, key)
 
@@ -515,26 +456,16 @@ class InvalidLanguageError(AIScriptwriterError): pass
 
 
 _INLINE_HOOKS: Dict[str, str] = {
-    "carryminati":  "Bhai, {topic} ka scene dekh ke dimaag hil gaya mera.",
-    "samayraina":   "Toh haan... {topic}. [pause] Mujhe lagta hai ye hona hi tha.",
-    "dhruvrathee":  "Namaskar doston. Aaj hum {topic} ke baare mein baat karenge.",
-    "rebelkid":     "Hey — {topic} pe baat karni hai because this is getting old.",
-    "shahrukhkhan": "Zindagi mein {topic} bhi ek safar ki tarah hota hai...",
-    "mrbeast":      "[HIGH ENERGY] We just figured out the insane truth about {topic}!",
-    "joerogan":     "Dude, think about {topic} for a second. [pause] Like really think about it.",
-    "alexhormozi":  "Here's the thing about {topic}: most people get the first step completely wrong.",
+    "agentalex":    "Namaskar doston. Aaj hum {topic} ke baare mein baat karenge.",
+    "mrflame":      "[HIGH ENERGY] We just figured out the insane truth about {topic}!",
+    "rebelrose":    "Hey — {topic} pe baat karni hai because this is getting old.",
     "default":      "Yaar, {topic} ke baare mein aaj seedha baat karte hain.",
 }
 
 _INLINE_CTAS: Dict[str, str] = {
-    "carryminati":  "Samajh gaya toh like kar aur subscribe ho ja.",
-    "samayraina":   "Agar thoda useful laga toh follow kar lo. [pause] warna bhi theek hai.",
-    "dhruvrathee":  "Agar aapko ye analysis useful lagi, toh channel subscribe karein.",
-    "rebelkid":     "If this triggered you, good. Save it. Stop apologizing for having standards.",
-    "shahrukhkhan": "Agar dil se laga ho toh isse save kar lo.",
-    "mrbeast":      "If this was insane, subscribe and keep watching.",
-    "joerogan":     "If this got you thinking, stick around.",
-    "alexhormozi":  "Save this framework and stop guessing. Use it. Period.",
+    "agentalex":    "Agar aapko ye analysis useful lagi, toh channel subscribe karein.",
+    "mrflame":      "If this was insane, subscribe and keep watching.",
+    "rebelrose":    "If this triggered you, good. Save it. Stop apologizing for having standards.",
     "default":      "Isko save kar le bro, baad mein kaam aayega.",
 }
 

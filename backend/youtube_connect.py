@@ -276,8 +276,9 @@ def exchange_code(code: str, redirect_uri: str = "") -> Dict[str, str]:
 
 
 def _plan_channel_limit(plan: str) -> int:
-    """Return max YouTube channels allowed per plan."""
-    return {"free": 1, "pro_monthly": 2, "pro_annual": 2, "premium_monthly": 5, "premium_annual": 5}.get(plan, 1)
+    """Return max YouTube channels allowed per plan. Free tier has no platform
+    connections at all, matching the pricing page."""
+    return {"free": 0, "pro_monthly": 2, "pro_annual": 2, "premium_monthly": 4, "premium_annual": 4}.get(plan, 0)
 
 
 def store_youtube_tokens(

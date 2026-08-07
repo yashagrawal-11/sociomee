@@ -63,11 +63,26 @@ def _score_title(title: str, topic: str, trending_keywords: List[str]) -> Dict[s
     return {"title": title, "score": score, "grade": grade, "tips": tips, "signals": signals}
 
 
-def _gemini_titles(topic: str, persona: Dict[str, Any] = None, trending_keywords: List[str] = None) -> List[str]:
+_LANG_TITLE_INST = {
+    "hindi": "Write ALL 8 titles ENTIRELY in Hindi using Devanagari script. Do not use Roman script.",
+    "hinglish": "Write ALL 8 titles in Hinglish, Roman script, natural Hindi and English mix as Indians actually speak.",
+    "english": "Write ALL 8 titles in English only.",
+    "marathi": "Write ALL 8 titles ENTIRELY in Marathi using Devanagari script. Do not use Roman script.",
+    "tamil": "Write ALL 8 titles ENTIRELY in Tamil script. Do not use Roman script.",
+    "bengali": "Write ALL 8 titles ENTIRELY in Bengali script. Do not use Roman script.",
+    "telugu": "Write ALL 8 titles in natural spoken Telugu, Roman script, mixed with English.",
+    "gujarati": "Write ALL 8 titles in natural spoken Gujarati, Roman script, mixed with English.",
+    "punjabi": "Write ALL 8 titles in natural spoken Punjabi, Roman script, mixed with English.",
+    "kannada": "Write ALL 8 titles in natural spoken Kannada, Roman script, mixed with English.",
+    "malayalam": "Write ALL 8 titles in natural spoken Malayalam (Manglish), Roman script.",
+}
+
+def _gemini_titles(topic: str, persona: Dict[str, Any] = None, trending_keywords: List[str] = None, language: str = None) -> List[str]:
     if not _init_vertex():
         return []
-    # Check cache first
-    _cache_key = hashlib.md5(f"{topic}".encode()).hexdigest()
+    lang_key = (language or "hinglish").lower().strip()
+    lang_inst = _LANG_TITLE_INST.get(lang_key, _LANG_TITLE_INST["hinglish"])
+    _cache_key = hashlib.md5(f"{topic}|{lang_key}".encode()).hexdigest()
     if _cache_key in _title_cache:
         return _title_cache[_cache_key]
     persona_name = (persona or {}).get("name", "default") if persona else "default"
@@ -75,6 +90,8 @@ def _gemini_titles(topic: str, persona: Dict[str, Any] = None, trending_keywords
     prompt = f"""You are a YouTube title expert. Write 8 DISTINCT title options for this video topic.
 
 VIDEO TOPIC: "{topic}"
+
+LANGUAGE (HIGHEST PRIORITY): {lang_inst}
 
 STRICT RULES:
 1. Every title must be UNIQUE in structure and angle — no two titles should use the same formula
@@ -86,10 +103,10 @@ STRICT RULES:
 7. Each title 45 to 65 characters
 8. NO templates like "X Facts Nobody Talks About", "What You Think", "What Actually Happened" unless the topic genuinely warrants them
 9. Titles should feel like they were written by someone who deeply understands this specific topic
+10. Do NOT mix languages. Every title must be entirely in the specified language.
 
 Return ONLY a valid JSON array of 8 short strings. Max 55 characters per title. No markdown, no backticks, no explanation. Start your response with [ and end with ]:
 ["title 1", "title 2", "title 3", "title 4", "title 5", "title 6", "title 7", "title 8"]"""
-
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -112,8 +129,7 @@ Return ONLY a valid JSON array of 8 short strings. Max 55 characters per title. 
         logging.getLogger("seo_engine").warning("Title generation failed: %s", e, exc_info=True)
     return []
 
-
-def generate_seo(topic: str, youtube_data: Dict[str, Any] = None, persona: Dict[str, Any] = None) -> Dict[str, Any]:
+def generate_seo(topic: str, youtube_data: Dict[str, Any] = None, persona: Dict[str, Any] = None, language: str = None) -> Dict[str, Any]:
     """
     Generates and scores candidate titles for a topic.
     Uses Gemini for topic-aware titles, falls back to templates if unavailable.
@@ -124,7 +140,7 @@ def generate_seo(topic: str, youtube_data: Dict[str, Any] = None, persona: Dict[
         topic_clean = topic.strip()
 
         # Try Gemini first for real topic-aware titles
-        candidates = _gemini_titles(topic_clean, persona, trending_keywords)
+        candidates = _gemini_titles(topic_clean, persona, trending_keywords, language)
 
         # Fall back to templates only if Gemini failed
         if not candidates:

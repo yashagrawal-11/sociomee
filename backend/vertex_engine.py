@@ -182,6 +182,7 @@ Instagram is a VISUAL platform. No titles or long descriptions.
 Return ONLY valid JSON:
 {{
   "reel_hook": "First 3 seconds spoken hook for a reel. Must stop the scroll. 1-2 punchy sentences in the specified language.",
+  "script": "IMPORTANT: this field must be a single STRING value, never a JSON array or list of scene objects. Write the full spoken voiceover script for a 35-45 second Instagram Reel as one plain text string (target 130-170 words, since natural speaking pace is about 2.5-3 words per second), with literal newline characters INSIDE the string for spacing, in exactly this shape: the hook as its own short line, then a blank line, then the main body as 3-5 lines separated by line breaks, then a blank line, then a one-line CTA/outro. Each body line must give REAL, specific, useful detail about the topic, not a one-clause summary -- explain the why, the how, or a concrete example for that point, like a person actually teaching it out loud. Do not write it as one dense paragraph, do not just list bare labels, and do not return an array or list of objects.",
   "caption": "Full Instagram caption. Hook line first. 3-4 short paragraphs. Conversational. Ends with question or CTA. 150-250 words in the specified language.",
   "hashtags": ["20", "relevant", "hashtags"],
   "cta": "Call to action in the specified language.",
@@ -329,9 +330,9 @@ Pinterest is a visual discovery platform. Content must be highly searchable and 
 
 Return ONLY valid JSON:
 {{
-  "pin_title": "Pin title under 100 characters — SEO optimized, includes main keyword",
-  "pin_description": "Pin description 200-300 words. Keyword rich. Lists steps or tips. Ends with a soft CTA.",
-  "hashtags": ["10", "to", "15", "pinterest", "specific", "hashtags"],
+  "pin_title": "Pin title, 40-60 characters. Lead with the main keyword. Scannable, not a full sentence.",
+  "pin_description": "Pin description, 150-200 characters MAXIMUM. Lead with a specific keyword phrase or number in the first few words, not a generic opener like Transform your day or Discover how. Be concrete: mention what exactly is inside (a technique, a number, a result). One or two short sentences. No markdown, no bullet points.",
+  "hashtags": ["5", "to", "8", "specific", "hashtags"],
   "board_suggestions": ["3 Pinterest board names this pin would fit"],
   "seo_keywords": ["5 search keywords people would use to find this"]
 }}"""
@@ -344,6 +345,44 @@ Return ONLY valid JSON:
             "hashtags": ["#pinterest", "#lifestyle", "#tips", "#howto", "#guide"],
             "board_suggestions": ["Helpful Tips", "Life Hacks", "Must Read"],
             "seo_keywords": [topic, f"{topic} tips", f"how to {topic}"]
+        }
+    return result
+
+def generate_tiktok_script(topic: str, tone: str = "casual", persona: str = "default",
+                       language: str = "hinglish", niche: str = "general") -> dict:
+    """Generate a real AI-written TikTok script, hook, caption, and short hashtags."""
+    from persona_profiles import get_tone_modifier
+    tone_hint = get_tone_modifier(tone)
+
+    lang_map = {
+        "hinglish": "Write ALL text in Hinglish (Hindi words in Roman script mixed naturally with English). This is mandatory.",
+        "hindi": "Write ALL text in Hindi using Devanagari script. This is mandatory.",
+        "english": "Write ALL text in clear fluent English. This is mandatory.",
+        "marathi": "Write ALL text in Marathi using Devanagari script. This is mandatory.",
+        "tamil": "Write ALL text in Tamil script. This is mandatory.",
+        "bengali": "Write ALL text in Bengali script. This is mandatory.",
+    }
+    lang_instruction = lang_map.get(language.lower(), "Write ALL text in English.")
+    prompt = f'''Generate a TikTok video script for this specific topic: "{topic}"
+Niche: {niche}
+Tone: {tone_hint}
+LANGUAGE INSTRUCTION (MANDATORY): {lang_instruction}
+This must be REAL content about the actual topic, not a generic template. Be specific to "{topic}".
+Return ONLY valid JSON:
+{{
+  "hook": "First 1-2 seconds spoken hook. Must state the real value of this specific topic immediately, no generic filler. 1 punchy sentence in the specified language.",
+  "script": "IMPORTANT: this field must be a single STRING value, never a JSON array or list of scene objects. Write the full spoken voiceover script for a 35-45 second TikTok video as one plain text string (target 130-170 words, matching real speaking pace of about 2.5-3 words per second), with literal newline characters INSIDE the string for spacing, in exactly this shape: the hook as its own short line, then a blank line, then the main body as 3-5 lines separated by line breaks, then a blank line, then a one-line CTA/outro. Each body line must give REAL, specific, useful detail about {topic}, not a one-clause summary -- explain the why, the how, or a concrete example for that point, like a person actually teaching it out loud. Do not write it as one dense paragraph, do not just list bare labels, and do not return an array or list of objects.",
+  "caption": "Short TikTok caption, 1-2 sentences, supports the video, ends with a question or light CTA. Under 150 characters in the specified language.",
+  "hashtags": ["4", "to", "6", "short", "real", "hashtags", "under", "20", "characters", "each", "no", "long", "concatenated", "phrases"]
+}}'''
+
+    result = generate_json(prompt, max_tokens=1500)
+    if not result:
+        return {
+            "hook": f"Here is what nobody tells you about {topic}",
+            "script": f"Let's talk about {topic}. This is something that actually matters and most people get wrong.",
+            "caption": f"Real talk about {topic}. Save this.",
+            "hashtags": ["#fyp", "#viral", "#tiktok", "#trending"]
         }
     return result
 

@@ -480,7 +480,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 # ── Models ────────────────────────────────────────────────────────────
 class FullContentRequest(BaseModel):
-    topic: str = Field(..., min_length=1, max_length=300); persona: str = "dhruvrathee"
+    topic: str = Field(..., min_length=1, max_length=300); persona: str = "agentalex"
     deep_research: bool = Field(default=True)
     language: str = Field(default="hinglish", max_length=20)
     country: str = Field(default="in", max_length=10)
@@ -568,8 +568,23 @@ def _seo_tips(title: str, keyword: str, score: int) -> list:
 
 def _generate_titles_with_scores(topic: str, persona: str, language: str) -> list:
     t = topic.strip()
-    is_hi = "hindi" in language.lower() or language.lower() == "hinglish"
-    lang_inst = "Write titles in Hinglish (Hindi words in Roman script mixed with English)." if is_hi else "Write titles in English."
+    lang_key = (language or "hinglish").lower().strip()
+    LANG_TITLE_INST = {
+        "hindi": "Write titles ENTIRELY in Hindi using Devanagari script (हिंदी). Do not use Roman script.",
+        "hinglish": "Write titles in Hinglish, Roman script, natural Hindi and English mix as Indians actually speak.",
+        "english": "Write titles in English only.",
+        "marathi": "Write titles ENTIRELY in Marathi using Devanagari script (मराठी). Do not use Roman script.",
+        "tamil": "Write titles ENTIRELY in Tamil script (தமிழ்). Do not use Roman script.",
+        "bengali": "Write titles ENTIRELY in Bengali script (বাংলা). Do not use Roman script.",
+        "telugu": "Write titles in natural spoken Telugu, Roman script, mixed with English as Telugu speakers actually do.",
+        "gujarati": "Write titles in natural spoken Gujarati, Roman script, mixed with English as Gujaratis actually speak.",
+        "punjabi": "Write titles in natural spoken Punjabi, Roman script, mixed with English as Punjabis actually speak.",
+        "kannada": "Write titles in natural spoken Kannada, Roman script, mixed with English as Kannadigas actually speak.",
+        "malayalam": "Write titles in natural spoken Malayalam (Manglish), Roman script, mixed with English.",
+    }
+    lang_inst = LANG_TITLE_INST.get(lang_key, LANG_TITLE_INST["hinglish"])
+    import logging
+    _log = logging.getLogger("sociomee")
     try:
         from vertex_engine import generate as _vgen
         import json as _tj
@@ -583,6 +598,7 @@ def _generate_titles_with_scores(topic: str, persona: str, language: str) -> lis
             + "- Mix formats: one emotional/story, one listicle/numbered, one bold claim\n"
             + "- 50-70 characters each\n"
             + "- No generic templates like 'dark truth' or '3 galtiyan'\n"
+            + "- The ENTIRE output must be in the specified language, no mixing with other languages\n"
             + "Return ONLY valid JSON, no markdown:\n"
             + '{"titles": ["title1", "title2", "title3"]}'
         )
@@ -599,23 +615,38 @@ def _generate_titles_with_scores(topic: str, persona: str, language: str) -> lis
                 result.append({"title": title, "seo_score": score, "grade": grade, "tips": tips})
             result.sort(key=lambda x: x["seo_score"], reverse=True)
             return result
+        _log.warning("title_gen: Vertex returned fewer than 3 titles, raw=%s", raw[:300])
     except Exception as _te:
-        pass
-    # Fallback only if Vertex fails
-    tc = t.title()
-    fallback = [
-        tc + ": Full Truth Finally Revealed | Deep Dive",
-        "Why " + tc + " Matters More Than You Think",
-        "Everything You Didn't Know About " + tc + " | Explained",
-    ]
-    result = []
-    for title in fallback:
-        score = _seo_score_title(title, topic)
-        tips = _seo_tips(title, topic, score)
-        grade = "A" if score >= 80 else "B" if score >= 65 else "C" if score >= 50 else "D"
-        result.append({"title": title, "seo_score": score, "grade": grade, "tips": tips})
-    result.sort(key=lambda x: x["seo_score"], reverse=True)
-    return result
+        _log.error("title_gen: Vertex call failed: %s", _te, exc_info=True)
+    # Retry once before falling back, transient failures are common
+    try:
+        from vertex_engine import generate as _vgen2
+        import json as _tj2
+        retry_prompt = (
+            "Generate 3 unique YouTube video titles for: " + t + "\n" + lang_inst + "\n"
+            + "Return ONLY valid JSON: {\"titles\": [\"title1\", \"title2\", \"title3\"]}"
+        )
+        raw2 = _vgen2(retry_prompt, max_tokens=300, temperature=0.9)
+        raw2 = raw2.replace("```json","").replace("```","").strip()
+        data2 = _tj2.loads(raw2)
+        titles2 = data2.get("titles", [])
+        if len(titles2) >= 3:
+            result = []
+            for title in titles2[:3]:
+                score = _seo_score_title(title, topic)
+                tips = _seo_tips(title, topic, score)
+                grade = "A" if score >= 80 else "B" if score >= 65 else "C" if score >= 50 else "D"
+                result.append({"title": title, "seo_score": score, "grade": grade, "tips": tips})
+            result.sort(key=lambda x: x["seo_score"], reverse=True)
+            return result
+    except Exception as _te2:
+        _log.error("title_gen: retry also failed: %s", _te2, exc_info=True)
+    # Last-resort only: both Vertex attempts failed, return topic as single safe title
+    _log.error("title_gen: both attempts failed for topic=%s language=%s, returning bare topic", t, lang_key)
+    score = _seo_score_title(t, topic)
+    tips = _seo_tips(t, topic, score)
+    grade = "A" if score >= 80 else "B" if score >= 65 else "C" if score >= 50 else "D"
+    return [{"title": t, "seo_score": score, "grade": grade, "tips": tips}]
 
 # NOTE: _check_topic_safety is imported from ai_router (see top of file) — do NOT
 # redefine it here. A duplicate copy previously existed in this exact spot and
@@ -627,59 +658,80 @@ def _generate_yt_description(topic: str, hook: str, structure: dict, titles_with
         return ("This topic cannot be generated. SocioMee does not create content involving self-harm, "
                 "sexual content, slurs, hate speech, or violence. Please choose a different topic.")
     best_title = titles_with_score[0]["title"] if titles_with_score else t.title()
+    lang_map = {
+        "hinglish": "Hinglish (Hindi words in Roman script mixed naturally with English)",
+        "hindi": "Hindi using Devanagari script only, no Roman script",
+        "english": "English",
+        "marathi": "Marathi using Devanagari script only, no Roman script",
+        "tamil": "Tamil script only, no Roman script",
+        "bengali": "Bengali script only, no Roman script",
+        "telugu": "natural spoken Telugu, Roman script, mixed with English",
+        "gujarati": "natural spoken Gujarati, Roman script, mixed with English",
+        "punjabi": "natural spoken Punjabi, Roman script, mixed with English",
+        "kannada": "natural spoken Kannada, Roman script, mixed with English",
+        "malayalam": "natural spoken Malayalam (Manglish), Roman script",
+    }
+    lang_name = lang_map.get((language or "hinglish").lower(), lang_map["hinglish"])
+    import logging
+    _log = logging.getLogger("sociomee")
+    queries, hashtags, engagement_line, copyright_line = [], [], "", ""
     try:
         from vertex_engine import generate as _vgen
         import json as _dj
-        lang_map = {
-            "hinglish": "Hinglish (Hindi words in Roman script mixed naturally with English)",
-            "hindi": "Hindi using Devanagari script",
-            "english": "English",
-            "marathi": "Marathi (Devanagari script)",
-            "tamil": "Tamil script",
-            "bengali": "Bengali script",
-        }
-        lang_name = lang_map.get(language.lower(), "English")
         prompt = (
-            "Generate YouTube search queries and hashtags for this video.\n"
+            "Generate a complete YouTube description package for this video.\n"
             "Topic: " + t + "\n"
             "Title: " + best_title + "\n"
-            "Write in " + lang_name + ".\n\n"
-            "Return ONLY valid JSON, no markdown:\n"
+            "Write EVERYTHING in " + lang_name + ". Do not mix in any other language.\n\n"
+            "Return ONLY valid JSON, no markdown, with these exact keys:\n"
             "{\"queries\": [\"10 short specific search queries related to the topic, each 2-5 words\"], "
-            "\"hashtags\": [\"8 hashtags without the hash symbol, most relevant and specific to the topic first, broader ones after\"]}"
+            "\"hashtags\": [\"8 hashtags without the hash symbol, most relevant and specific to the topic first, broader ones after\"], "
+            "\"engagement_line\": \"one natural sentence asking viewers to like, comment, share and subscribe, written in the target language and voice, not a literal translation of an English template\", "
+            "\"copyright_line\": \"one fair-use / copyright disclaimer sentence for educational and commentary content, written in the target language\"}"
         )
-        raw = _vgen(prompt, max_tokens=500, temperature=0.8)
+        raw = _vgen(prompt, max_tokens=600, temperature=0.8)
         raw = raw.replace("```json","").replace("```","").strip()
         data = _dj.loads(raw)
         queries = data.get("queries", [])[:10]
         hashtags = data.get("hashtags", [])[:8]
-    except Exception:
-        queries = []
-        hashtags = []
+        engagement_line = (data.get("engagement_line") or "").strip()
+        copyright_line = (data.get("copyright_line") or "").strip()
+    except Exception as _de:
+        _log.error("yt_description: Vertex call failed: %s", _de, exc_info=True)
 
-    if not queries:
-        queries = [t, t+" explained", t+" full analysis", t+" truth revealed",
-                   t+" in hindi", t+" documentary", "about "+t, t+" real story",
-                   t+" latest news", t+" facts"]
-    if not hashtags:
-        clean = t.lower().replace(" ", "")
-        hashtags = [clean, clean+"video", "youtube", "youtubevideo", "tutorial", "contentcreator", "videoseo", "creator"]
+    if not queries or not hashtags or not engagement_line or not copyright_line:
+        # Retry once, transient failures are common
+        try:
+            from vertex_engine import generate as _vgen2
+            import json as _dj2
+            retry_prompt = (
+                "Generate a YouTube description package in JSON only.\n"
+                "Topic: " + t + "\nTitle: " + best_title + "\n"
+                "Write EVERYTHING in " + lang_name + ".\n"
+                "{\"queries\": [...10 short queries...], \"hashtags\": [...8 hashtags no hash symbol...], "
+                "\"engagement_line\": \"...\", \"copyright_line\": \"...\"}"
+            )
+            raw2 = _vgen2(retry_prompt, max_tokens=600, temperature=0.8)
+            raw2 = raw2.replace("```json","").replace("```","").strip()
+            data2 = _dj2.loads(raw2)
+            if not queries: queries = data2.get("queries", [])[:10]
+            if not hashtags: hashtags = data2.get("hashtags", [])[:8]
+            if not engagement_line: engagement_line = (data2.get("engagement_line") or "").strip()
+            if not copyright_line: copyright_line = (data2.get("copyright_line") or "").strip()
+        except Exception as _de2:
+            _log.error("yt_description: retry also failed: %s", _de2, exc_info=True)
 
     NL = chr(10)
-    queries_block = NL.join(queries)
-    hashtags_block = " ".join("#" + h.replace("#","").replace(" ","") for h in hashtags)
+    queries_block = NL.join(queries) if queries else t
+    hashtags_block = " ".join("#" + h.replace("#","").replace(" ","") for h in hashtags) if hashtags else ("#" + t.lower().replace(" ",""))
 
-    return (
-        best_title + NL + NL
-        + "\U0001F50E Your Queries:" + NL + NL
-        + queries_block + NL + NL
-        + hashtags_block + NL + NL
-        + "Don't forget to Like, Comment, Share and Subscribe for more content like this!" + NL + NL
-        + "Copyright Disclaimer under Section 107 of the Copyright Act 1976: This video is for criticism, comment, "
-        + "news reporting, teaching, scholarship, and research. Fair use depends on the full context of the use "
-        + "and is not legal advice." + NL + NL
-        + "Published by SocioMee AI"
-    )
+    parts = [best_title, "", "\U0001F50E " + t, "", queries_block, "", hashtags_block]
+    if engagement_line:
+        parts += ["", engagement_line]
+    if copyright_line:
+        parts += ["", copyright_line]
+    parts += ["", "Published by SocioMee AI"]
+    return NL.join(parts)
 
 
 
@@ -813,6 +865,42 @@ def validate_coupon_endpoint(request: Request, code: str = Body(..., embed=True)
         log.error("validate_coupon error: %s", e)
         return {"valid": False, "message": "Could not validate coupon. Please try again."}
 
+
+@app.get("/account/consent")
+def get_consent(user: dict = Depends(get_current_user)):
+    """Returns the current user's marketing/analytics consent preferences."""
+    from auth_routes import _load_users
+    users = _load_users()
+    u = users.get(user.get("email",""), {})
+    return {
+        "marketing_consent": u.get("marketing_consent", True),
+        "analytics_consent": u.get("analytics_consent", True),
+    }
+
+@app.post("/account/consent")
+def update_consent(
+    request: Request,
+    marketing_consent: bool = Body(None, embed=True),
+    analytics_consent: bool = Body(None, embed=True),
+    user: dict = Depends(get_current_user),
+):
+    """Updates the current user's marketing/analytics consent. DPDP Act Section 6(4):
+    withdrawal must be as easy as giving consent, so this lets a user change either
+    preference independently without deleting their account."""
+    from auth_routes import _load_users, _save_users
+    users = _load_users()
+    email = user.get("email","")
+    if email not in users:
+        raise HTTPException(404, "User not found")
+    if marketing_consent is not None:
+        users[email]["marketing_consent"] = marketing_consent
+    if analytics_consent is not None:
+        users[email]["analytics_consent"] = analytics_consent
+    _save_users(users)
+    return {
+        "marketing_consent": users[email].get("marketing_consent", True),
+        "analytics_consent": users[email].get("analytics_consent", True),
+    }
 
 @app.get("/credits/me")
 def get_my_credits(user: dict = Depends(get_current_user)):
@@ -995,17 +1083,20 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
         elif p == "instagram":
             if not _HAS_IG: raise HTTPException(503, "InstagramEngine not available.")
             from vertex_engine import generate_instagram
+            _ig_is_reel = (payload.format_type or "reel") != "post"
             _ig = generate_instagram(topic=topic, tone=payload.tone or "casual", persona=payload.effective_persona(), language=payload.language or "hinglish", niche=payload.niche or "general")
             _ig_cap = _ig.get("caption","")
             result = {
                 "platform": "instagram",
                 "topic": topic,
-                "reel_hook": _ig.get("reel_hook",""),
+                "reel_hook": _ig.get("reel_hook","") if _ig_is_reel else "",
+                "hook": _ig.get("reel_hook","") if _ig_is_reel else "",
+                "script_text": _ig.get("script","") if _ig_is_reel else "",
                 "caption": _ig_cap,
                 "post": _ig_cap,
                 "hashtags": _ig.get("hashtags",[]),
                 "cta": _ig.get("cta",""),
-                "story_ideas": _ig.get("story_ideas",[]),
+                "story_ideas": _ig.get("story_ideas",[]) if _ig_is_reel else [],
                 "bio_link_text": _ig.get("bio_link_text",""),
                 "post_variants": [],
                 "seo_packs": {"instagram": {"caption": _ig_cap, "description": _ig_cap, "hashtags": _ig.get("hashtags",[])}},
@@ -1060,7 +1151,7 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
                 "board_suggestions": _pint_r.get("board_suggestions", []),
                 "seo_keywords": _pint_r.get("seo_keywords", []),
                 "post_variants": _pint_variants,
-                "seo_packs": {"pinterest": {"caption": _pint_d1, "description": _pint_d1, "hashtags": _pint_r.get("hashtags", [])}},
+                "seo_packs": {"pinterest": {"caption": _pint_d1, "description": _pint_d1, "pin_title": _pint_title, "pin_description": _pint_d1, "hashtags": _pint_r.get("hashtags", []), "board_suggestions": _pint_r.get("board_suggestions", [])}},
             }
         elif p == "facebook":
             if not _HAS_FB: raise HTTPException(503, "FacebookEngine not available.")
@@ -1088,7 +1179,8 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
         elif p == "tiktok":
             if not _HAS_TT: raise HTTPException(503, "TikTokEngine not available.")
             result = TikTokEngine().generate(topic=topic, niche=payload.niche, tone=payload.tone, objective=payload.objective, duration_seconds=payload.duration_seconds).to_dict()
-            result["caption"] = result.get("caption") or result.get("script","")
+            result["script_text"] = result.get("script", "")
+            result["seo_packs"] = {"tiktok": {"caption": result.get("caption",""), "description": result.get("caption",""), "hashtags": result.get("hashtags",[])}}
         elif p == "telegram":
             if not _HAS_TG: raise HTTPException(503, "TelegramEngine not available.")
             from vertex_engine import generate_telegram
@@ -1195,6 +1287,20 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
                 "post": post_body,
                 "post_variants": _r_variants,
                 "hashtags": [],
+            }
+        elif p == "whatsapp":
+            from vertex_engine import generate_telegram
+            _wa = generate_telegram(topic=topic, tone=payload.tone or "informative", persona=payload.effective_persona(), language=payload.language or "hinglish", destination_type="channel")
+            _wa_m1 = _wa.get("message","")
+            result = {
+                "platform": "whatsapp",
+                "topic": topic,
+                "message": _wa_m1,
+                "post": _wa_m1,
+                "caption": _wa_m1,
+                "hashtags": _wa.get("hashtags",[]),
+                "post_variants": [_wa_m1],
+                "seo_packs": {"whatsapp": {"caption": _wa_m1, "description": _wa_m1, "hashtags": _wa.get("hashtags",[])}},
             }
         elif p == "quora":
             import requests as _req_q, json as _json_q
@@ -1457,17 +1563,18 @@ def verify_payment(payload: VerifyPaymentRequest):
             amount=amount_inr,
             payment_id=payload.razorpay_payment_id,
         )
-        # Send GST invoice (only for plan purchases, not top-ups)
-        if info.get("type") != "topup":
-            from email_service import send_invoice_email
-            send_invoice_email(
-                to_email=payload.email,
-                name=payload.email.split("@")[0],
-                plan_label=info["label"],
-                amount=amount_inr,
-                payment_id=payload.razorpay_payment_id,
-                order_id=payload.razorpay_order_id,
-            )
+        # Send GST invoice — every taxable supply (plan purchase or credit
+        # top-up) legally requires a GST-compliant invoice, there is no
+        # exemption under GST law for one-time vs recurring purchases.
+        from email_service import send_invoice_email
+        send_invoice_email(
+            to_email=payload.email,
+            name=payload.email.split("@")[0],
+            plan_label=info["label"],
+            amount=amount_inr,
+            payment_id=payload.razorpay_payment_id,
+            order_id=payload.razorpay_order_id,
+        )
     except Exception as _e:
         log.warning("Payment email failed: %s", _e)
     return {"success": True, "message": msg, "plan": plan, "plan_label": info["label"], "credits": total, "credit_status": get_credit_status(payload.user_id)}
@@ -2418,7 +2525,7 @@ async def pinterest_callback(code: str = None, error: str = None, state: str = N
 async def register_fingerprint(request: Request, user=Depends(get_current_user)):
     try:
         from device_fingerprint import make_fingerprint, check_fingerprint, reduce_credits_for_suspicious
-        from credits_manager import get_credit_status
+        from credits_manager import get_credit_status, set_free_credit_cap
         body = await request.json()
         uid = user.get("user_id","") if isinstance(user,dict) else str(user)
         email = user.get("email","") if isinstance(user,dict) else ""
@@ -2433,10 +2540,22 @@ async def register_fingerprint(request: Request, user=Depends(get_current_user))
             platform=body.get("platform",""),
         )
         result = check_fingerprint(fp, uid, email)
+        import logging
+        # Enforcement: actually cap this user's free credits based on device abuse score.
+        # Never raises credits — only lowers them, and only for users still on the free plan.
+        cap = reduce_credits_for_suspicious(uid, result["abuse_score"])
+        new_balance = set_free_credit_cap(uid, cap, email=email)
         if not result["allowed"]:
-            import logging
-            logging.getLogger("sociomee").warning(f"Blocked device: user={uid} fp={fp} score={result['abuse_score']}")
-        return {"fingerprint": fp[:8]+"...", "abuse_score": result["abuse_score"], "allowed": result["allowed"]}
+            logging.getLogger("sociomee").warning(
+                f"Blocked device: user={uid} fp={fp} score={result['abuse_score']} accounts={result.get('account_count')} capped_to={new_balance}"
+            )
+        return {
+            "fingerprint": fp[:8]+"...",
+            "abuse_score": result["abuse_score"],
+            "allowed": result["allowed"],
+            "reason": result.get("reason",""),
+            "credits_capped_to": new_balance,
+        }
     except Exception as e:
         return {"ok": True}
 

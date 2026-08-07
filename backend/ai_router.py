@@ -293,7 +293,7 @@ def _gemini_generate(system_prompt: str, user_prompt: str, temperature: float=0.
 
 def generate_full_content(
     topic:    str,
-    persona:  str = "dhruvrathee",
+    persona:  str = "agentalex",
     language: str = "hinglish",
     country:  str = "in",
     plan:     str = "free",
@@ -310,7 +310,7 @@ def generate_full_content(
     Returns unified content pack (see module docstring for full shape).
     """
     topic    = (topic    or "").strip()
-    persona  = (persona  or "dhruvrathee").strip()
+    persona  = (persona  or "agentalex").strip()
     language = (language or "hinglish").strip().lower()
     country  = (country  or "in").strip().lower()
     niche    = (niche    or "auto").strip().lower()
@@ -395,12 +395,9 @@ def generate_full_content(
         
         # Generate persona-specific hook using Gemini
         persona_hooks = {
-            "dhruvrathee": f"Namaskar doston. Aaj hum {topic} ke baare mein woh sach baat karenge jo mainstream media aapko nahi batata. Evidence dekhte hain.",
-            "carryminati": f"Bhai, {topic} ka scene dekh ke dimaag hil gaya mera. Yeh kya ho raha hai seriously?",
-            "samayraina": f"Toh haan... {topic}. [pause] Maine socha nahi tha ki aaj iss topic pe baat karni padegi.",
-            "rebelkid": f"Okay so {topic} — yeh topic bahut log avoid karte hain. Main nahi karunga.",
-            "mrbeast": f"We spent 30 days investigating {topic} and what we found will SHOCK you!",
-            "alexhormozi": f"Here is the uncomfortable truth about {topic} that nobody wants to admit.",
+            "agentalex": f"Namaskar doston. Aaj hum {topic} ke baare mein woh sach baat karenge jo mainstream media aapko nahi batata. Evidence dekhte hain.",
+            "mrflame": f"We spent 30 days investigating {topic} and what we found will SHOCK you!",
+            "rebelrose": f"Okay so {topic} — yeh topic bahut log avoid karte hain. Main nahi karunga.",
             "default": f"Aaj hum {topic} ke baare mein seedha baat karte hain — bina sugarcoating ke.",
         }
         
@@ -565,12 +562,12 @@ FINAL REMINDER: The ENTIRE output must be in {language} only. Not Hinglish. Not 
     seo_result: Dict[str, Any] = {}
     try:
         seo_result = _generate_seo(
-            topic=topic, youtube_data=youtube_data, persona=persona_data,
+            topic=topic, youtube_data=youtube_data, persona=persona_data, language=language,
         )
     except Exception as exc:
         # Try without persona if seo_engine doesn't support it yet
         try:
-            seo_result = _generate_seo(topic=topic, youtube_data=youtube_data)
+            seo_result = _generate_seo(topic=topic, youtube_data=youtube_data, language=language)
         except Exception as exc2:
             errors.append(f"seo_engine: {exc2}")
             seo_result = {
@@ -607,14 +604,9 @@ FINAL REMINDER: The ENTIRE output must be in {language} only. Not Hinglish. Not 
 # ══════════════════════════════════════════════════════════════════════
 
 _PERSONA_STYLES: Dict[str, str] = {
-    "carryminati":  "Aggressive, roast-heavy Hinglish. Evidence-powered roast. Dark humor. Full energy.",
-    "samayraina":   "Dry wit, deadpan Hinglish. State specific facts without exaggeration — the evidence does the work.",
-    "rebelkid":     "Bold, unapologetic. Use specific evidence to make call-outs credible. Name the pattern.",
-    "dhruvrathee":  "Calm, analytical. Data-heavy. Cite every claim. Show gap between narrative and reality.",
-    "shahrukhkhan": "Poetic, philosophical. Transform specific facts into universal human truths.",
-    "mrbeast":      "High energy. Lead with the biggest specific number. Escalate with evidence.",
-    "alexhormozi":  "Direct, framework-driven. Build the framework FROM the evidence, not generic advice.",
-    "joerogan":     "Curious, exploratory. Use specific facts to raise deeper questions. Socratic method.",
+    "agentalex":  "Calm, analytical. Data-heavy. Cite every claim. Show gap between narrative and reality.",
+    "mrflame":    "High energy. Lead with the biggest specific number. Escalate with evidence.",
+    "rebelrose":  "Bold, unapologetic. Use specific evidence to make call-outs credible. Name the pattern.",
 }
 
 _DEFAULT_STYLE = "Evidence-first content creator. Open with the strongest specific fact. Build every argument from evidence."

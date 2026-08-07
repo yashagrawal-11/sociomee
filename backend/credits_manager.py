@@ -101,6 +101,19 @@ def _save(data: Dict[str, Any]) -> None:
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+def set_free_credit_cap(user_id: str, cap: int, email: str = "") -> int:
+    """Caps a free-tier user's remaining credits at `cap` (device-fingerprint abuse
+    prevention). Never raises credits, only lowers them. Returns the resulting
+    credits_remaining."""
+    with _lock:
+        data = _load()
+        record = _get_or_init(data, user_id)
+        if email:
+            record["email"] = email
+        if record.get("plan", "free") == "free":
+            record["credits_remaining"] = min(record.get("credits_remaining", cap), cap)
+        _save(data)
+        return record["credits_remaining"]
 
 
 def _get_or_init(data: Dict, user_id: str) -> Dict[str, Any]:
@@ -212,7 +225,7 @@ def use_credit(user_id: str, cost: int = 1) -> bool:
         record  = _get_or_init(data, user_id)
         record  = _check_and_reset(record)
         credits = record.get("credits_remaining", 0)
-        if credits <= 0:
+        if credits < cost:
             data[user_id] = record
             _save(data)
             try:

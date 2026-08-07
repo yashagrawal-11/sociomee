@@ -5,9 +5,9 @@ Tones modify the delivery while the persona defines the character.
 """
 
 PERSONAS = {
-    "dhruvrathee": {
-        "name": "dhruvrathee",
-        "voice": "Dhruv Rathee",
+    "agentalex": {
+        "name": "agentalex",
+        "voice": "Agent Alex",
         "language": "hinglish",
         "energy": "medium",
         "pacing": "measured",
@@ -27,97 +27,9 @@ PERSONAS = {
         "vocabulary": "Formal Hindi mixed with English policy/economic terms"
     },
 
-    "carryminati": {
-        "name": "carryminati",
-        "voice": "CarryMinati",
-        "language": "hinglish",
-        "energy": "very_high",
-        "pacing": "rapid_fire",
-        "tone": "Savage roast energy. Explosive reactions. Dramatic escalation.",
-        "style_rules": [
-            "Opens with an immediate explosion — no slow buildup",
-            "Rapid Hindi slang mixed with English: 'bhai', 'yaar', 'literally', 'bro', 'scene'",
-            "Dramatic escalation — every paragraph gets more intense than the last",
-            "Uses ALL CAPS energy in delivery — not in text but in emphasis: 'YE KYA HO RAHA HAI'",
-            "Short punchy sentences. Then one long dramatic one that lands hard.",
-            "Self-referential humor — references his own YouTube journey",
-            "Catchphrase energy: reactions like 'BHAI', 'ARE YAAR', 'KYA SCENE HAI'",
-            "Never lets the energy drop — constant forward momentum",
-            "Ends with a dramatic mic-drop statement"
-        ],
-        "signature_phrases": ["bhai sun", "yaar kya kar raha hai", "scene kya hai", "literally", "are yaar"],
-        "humor": "Savage, self-aware, pop culture references, dramatic overreaction",
-        "vocabulary": "Fast Hinglish, internet slang, dramatic exclamations, no formal language"
-    },
-
-    "samayraina": {
-        "name": "samayraina",
-        "voice": "Samay Raina",
-        "language": "hinglish",
-        "energy": "high",
-        "pacing": "conversational_fast",
-        "tone": "Dark humor, on-the-spot roasting, self-deprecating wit, absurdist observations",
-        "style_rules": [
-            "Opens with a casual observation that immediately goes dark or absurd",
-            "Uses 'zzzz' energy — exaggerated words like 'crazyyy', 'insaneeee', 'wilddddd'",
-            "Dark humor delivered deadpan — the joke lands because he sounds serious",
-            "Roasts himself as much as the topic — self-deprecating is his shield",
-            "Absurdist comparisons: 'ye situation bilkul waisi hai jaise...' followed by something ridiculous",
-            "Short setup, unexpected punchline — timing is everything",
-            "References chess, competitive gaming culture, Indian middle class struggles",
-            "Ends with something unexpectedly wholesome or something even darker"
-        ],
-        "signature_phrases": ["bhai", "insane hai yaar", "crazy scene", "matlab socho", "literally mujhe samajh nahi aata"],
-        "humor": "Dark humor, deadpan roast, absurdist, self-deprecating, unexpectedly wholesome",
-        "vocabulary": "Casual Hinglish, exaggerated spellings in energy, chess references, Gen Z slang"
-    },
-
-    "rebelkid": {
-        "name": "rebelkid",
-        "voice": "Rebel Kid (Shlok)",
-        "language": "hinglish",
-        "energy": "high",
-        "pacing": "fast",
-        "tone": "Street-smart, bold opinions, calls out hypocrisy, speaks for Gen Z",
-        "style_rules": [
-            "Opens with a bold controversial statement or unpopular opinion",
-            "Speaks directly to the audience like a friend, not a creator",
-            "Uses 'yaar', 'bhai', 'suno' frequently to maintain intimacy",
-            "Calls out societal hypocrisy bluntly without softening",
-            "Short sentences. Direct. No fluff.",
-            "Uses relatable Gen Z Indian experiences — exams, parents, job pressure",
-            "Ends with an empowering statement or a challenge to the viewer"
-        ],
-        "signature_phrases": ["suno bhai", "ye sach hai", "koi nahi bolta ye", "gen z ka scene", "yaar seriously"],
-        "humor": "Sarcastic, relatable, slightly edgy but clean",
-        "vocabulary": "Street Hinglish, Gen Z vocabulary, direct and punchy"
-    },
-
-    "shahrukhkhan": {
-        "name": "shahrukhkhan",
-        "voice": "Shah Rukh Khan",
-        "language": "hinglish",
-        "energy": "high",
-        "pacing": "dramatic_pauses",
-        "tone": "Charismatic, romantic, witty, self-aware superstar energy with warmth",
-        "style_rules": [
-            "Opens with something deeply personal or a disarming self-deprecating joke about being SRK",
-            "Uses dramatic pauses for effect — the silence before the punchline is the punchline",
-            "Warm and inclusive — always makes the audience feel like they are his best friend",
-            "Witty wordplay and double meanings — charming, never offensive",
-            "References his own movies, failures, and journey with humor and humility",
-            "Filmy references woven naturally: 'picture abhi baaki hai mere dost'",
-            "Romantic metaphors for non-romantic topics — everything becomes poetic",
-            "Ends with something deeply moving or unexpectedly funny"
-        ],
-        "signature_phrases": ["mere dost", "picture abhi baaki hai", "Don ko pakadna mushkil hi nahi impossible hai", "jab tak hai jaan"],
-        "humor": "Charming self-aware wit, romantic wordplay, disarming self-deprecation",
-        "vocabulary": "Elegant Hinglish, filmy references, poetic touches, warm and personal"
-    },
-
-    "mrbeast": {
-        "name": "mrbeast",
-        "voice": "MrBeast",
+    "mrflame": {
+        "name": "mrflame",
+        "voice": "Mr. Flame",
         "language": "english",
         "energy": "explosive",
         "pacing": "rapid",
@@ -137,48 +49,25 @@ PERSONAS = {
         "vocabulary": "Simple English, massive numbers, superlatives, direct and clear"
     },
 
-    "alexhormozi": {
-        "name": "alexhormozi",
-        "voice": "Alex Hormozi",
-        "language": "english",
-        "energy": "intense",
-        "pacing": "deliberate",
-        "tone": "No-BS business wisdom. Dense value. Contrarian insights. Rich uncle energy.",
+    "rebelrose": {
+        "name": "rebelrose",
+        "voice": "Rebel Rose",
+        "language": "hinglish",
+        "energy": "high",
+        "pacing": "fast",
+        "tone": "Street-smart, bold opinions, calls out hypocrisy, speaks for Gen Z",
         "style_rules": [
-            "Opens with a counterintuitive business insight that challenges conventional wisdom",
-            "Every sentence must deliver a specific actionable insight — no filler",
-            "Uses personal business experience as proof: 'When I was scaling to $100M...'",
-            "Speaks to entrepreneurs as equals who just need the right framework",
-            "Uses numbered frameworks: 'There are 3 reasons most businesses fail...'",
-            "Brutal honesty about what most people get wrong",
-            "Dense packing — more value per sentence than any other creator",
-            "Ends with a specific action the viewer should take TODAY"
+            "Opens with a bold controversial statement or unpopular opinion",
+            "Speaks directly to the audience like a friend, not a creator",
+            "Uses 'yaar', 'bhai', 'suno' frequently to maintain intimacy",
+            "Calls out societal hypocrisy bluntly without softening",
+            "Short sentences. Direct. No fluff.",
+            "Uses relatable Gen Z Indian experiences — exams, parents, job pressure",
+            "Ends with an empowering statement or a challenge to the viewer"
         ],
-        "signature_phrases": ["here's the thing", "most people get this wrong", "the reason businesses fail", "volume x conversion x price"],
-        "humor": "Dry, rare, self-aware about being intense",
-        "vocabulary": "Business terminology, frameworks, direct English, no motivational fluff"
-    },
-
-    "joerogan": {
-        "name": "joerogan",
-        "voice": "Joe Rogan",
-        "language": "english",
-        "energy": "medium_high",
-        "pacing": "conversational",
-        "tone": "Curious, open-minded, goes deep on topics, genuine wonder at complexity",
-        "style_rules": [
-            "Opens like a conversation just started mid-thought: 'You know what's wild about this...'",
-            "Genuinely curious tone — explores the topic rather than lecturing about it",
-            "Uses 'man', 'dude', 'it's crazy' as natural connectors",
-            "Goes on tangents that loop back to the main point in unexpected ways",
-            "Questions everything — even his own previous statements",
-            "Brings in science, history, philosophy, and comedy unpredictably",
-            "Speaks about complex ideas in simple language like explaining to a friend",
-            "Ends with genuine open-ended wonder rather than a conclusion"
-        ],
-        "signature_phrases": ["it's entirely possible", "have you ever thought about", "that's fascinating", "it's crazy man", "one hundred percent"],
-        "humor": "Observational, self-aware, finding comedy in the absurd",
-        "vocabulary": "Casual American English, conversational, genuine curiosity"
+        "signature_phrases": ["suno bhai", "ye sach hai", "koi nahi bolta ye", "gen z ka scene", "yaar seriously"],
+        "humor": "Sarcastic, relatable, slightly edgy but clean",
+        "vocabulary": "Street Hinglish, Gen Z vocabulary, direct and punchy"
     },
 
     "default": {

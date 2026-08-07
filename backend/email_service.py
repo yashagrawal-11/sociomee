@@ -1,6 +1,11 @@
 """
 email_service.py — SocioMee Email Notifications via Resend
 Handles: Welcome, Payment Confirmation, Low Credits Warning, Plan Expiry
+
+NOTE: Any future non-transactional email (product announcements, newsletters,
+feature updates) MUST check marketing_consent before sending. See /account/consent
+endpoint in app.py. Transactional emails (billing, OTP, security, account status)
+do NOT require this check. DPDP Act Section 6(4) compliance depends on this.
 """
 import os
 import logging
@@ -305,6 +310,25 @@ def send_welcome_email(to_email: str, name: str) -> bool:
         return True
     except Exception as e:
         log.error("send_welcome_email failed: %s", e)
+        return False
+
+
+def send_admin_signup_alert(new_user_email: str, new_user_name: str) -> bool:
+    """Notify admin whenever a new user signs up."""
+    if not resend.api_key:
+        log.warning("send_admin_signup_alert: missing API key")
+        return False
+    try:
+        resend.Emails.send({
+            "from":    FROM_EMAIL,
+            "to":      [SUPPORT_EMAIL],
+            "subject": f"New signup: {new_user_name} ({new_user_email})",
+            "html":    f"<p>New user just signed up on SocioMee AI.</p><p><b>Name:</b> {new_user_name}<br/><b>Email:</b> {new_user_email}<br/><b>Time:</b> {datetime.now().isoformat()}</p>",
+        })
+        log.info("Admin signup alert sent for %s", new_user_email)
+        return True
+    except Exception as e:
+        log.error("send_admin_signup_alert failed: %s", e)
         return False
 
 

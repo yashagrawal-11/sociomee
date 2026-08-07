@@ -148,12 +148,11 @@ def create_share_link(text: str, expires_minutes: int = 30) -> dict:
 
 
 @mcp.tool(title="Generate a content script", annotations={"readOnlyHint": False, "openWorldHint": True, "destructiveHint": False})
-def generate_content(topic: str, persona: str = "dhruvrathee", language: str = "hinglish",
+def generate_content(topic: str, persona: str = "agentalex", language: str = "hinglish",
                       country: str = "in", platform: str = "youtube") -> dict:
     """Generates a full video/content script on a topic using SocioMee's AI pipeline.
     Costs 1 credit. If generation fails for any reason, the credit is automatically
-    refunded. persona options include: dhruvrathee, carryminati, samayraina, rebelkid,
-    shahrukhkhan, mrbeast, alexhormozi, joerogan, or default."""
+    refunded. persona options include: agentalex, mrflame, rebelrose, or default."""
     user_id = _current_user_id()
     if not credits_manager.use_credit(user_id):
         status = credits_manager.get_credit_status(user_id)

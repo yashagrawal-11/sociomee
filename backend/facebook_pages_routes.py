@@ -52,12 +52,9 @@ def _del(user_id: str):
 
 @router.get("/auth-url")
 async def get_auth_url(user_id: str):
-    from facebook_pages_routes import _load as fb_load
-    data = fb_load()
-    current = 1 if data.get(str(user_id)) else 0
-    chk = check_connect_limit(user_id, current, "Facebook")
-    if not chk["allowed"]:
-        raise HTTPException(403, chk["reason"])
+    # Facebook login itself is never blocked — a single login can return many
+    # Pages at once, so the plan limit is enforced on which pages are usable
+    # (see /status, /select-page, /post below), not on logging in.
     if not FB_APP_ID:
         raise HTTPException(500, "FB_PAGES_APP_ID not configured")
     url = (
@@ -146,11 +143,19 @@ async def fb_status(user_id: str):
     data = _get(user_id)
     if not data:
         return {"connected": False}
+    from plan_limits import get_connect_limit
+    limit = get_connect_limit(user_id)
+    raw_pages = data.get("pages", [])
+    pages = [
+        {**p, "locked": i >= limit}
+        for i, p in enumerate(raw_pages)
+    ]
     return {
         "connected":      True,
         "fb_name":        data.get("fb_name"),
         "fb_pic":         data.get("fb_pic"),
-        "pages":          data.get("pages", []),
+        "pages":          pages,
+        "page_limit":     limit,
         "selected_page":  data.get("selected_page"),
     }
 
@@ -165,9 +170,14 @@ async def select_page(request: Request):
     if not data:
         raise HTTPException(404, "Not connected")
     pages = data.get("pages", [])
-    page = next((p for p in pages if p["id"] == page_id), None)
-    if not page:
+    page_index = next((i for i, p in enumerate(pages) if p["id"] == page_id), None)
+    if page_index is None:
         raise HTTPException(404, "Page not found")
+    from plan_limits import get_connect_limit
+    limit = get_connect_limit(user_id)
+    if page_index >= limit:
+        raise HTTPException(403, f"This page is locked on your current plan. You can use up to {limit} Facebook Pages — upgrade to unlock more.")
+    page = pages[page_index]
     data["selected_page"] = page
     _set(user_id, data)
     return {"ok": True, "page": page}
@@ -198,6 +208,15 @@ async def post_to_page(request: Request):
     page = data.get("selected_page")
     if not page:
         raise HTTPException(400, "No page selected")
+
+    # Defense in depth: re-check the selected page is still within plan limit,
+    # in case the user downgraded after selecting it.
+    from plan_limits import get_connect_limit
+    pages = data.get("pages", [])
+    page_index = next((i for i, p in enumerate(pages) if p["id"] == page.get("id")), None)
+    limit = get_connect_limit(user_id)
+    if page_index is None or page_index >= limit:
+        raise HTTPException(403, f"This page is locked on your current plan. You can use up to {limit} Facebook Pages — upgrade to unlock more.")
 
     page_id    = page["id"]
     page_token = page["access_token"]
