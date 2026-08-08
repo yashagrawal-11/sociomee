@@ -2037,6 +2037,27 @@ function PlanGate({ plan, required="pro", onUpgrade, children, toolName="" }) {
 
 export default function App() {
   const { user, isLoggedIn, logout, refreshToken, loading: authLoading } = useAuth();
+  const [connections, setConnections] = useState({});
+  useEffect(() => {
+    const uid = localStorage.getItem("sociomee_user_id") || user?.user_id || "";
+    if (!uid) return;
+    const checkAll = async () => {
+      const conn = {};
+      try { const tg = await fetch(`${BASE}/telegram/connect-status?user_id=${uid}`).then(r=>r.ok?r.json():null); conn.telegram = tg?.connected || false; } catch { conn.telegram = false; }
+      try { const pt = await fetch(`${BASE}/pinterest/status?user_id=${uid}`).then(r=>r.ok?r.json():null); conn.pinterest = pt?.connected || false; } catch { conn.pinterest = false; }
+      try { const yt = await fetch(`${BASE}/youtube/channels/${uid}`, {credentials:"include"}).then(r=>r.ok?r.json():null); const chs = yt?.channels || []; conn.youtube = Array.isArray(chs) && chs.length > 0; } catch { conn.youtube = false; }
+      try { const dc = await fetch(`${BASE}/discord/guilds?user_id=${uid}`).then(r=>r.ok?r.json():null); conn.discord = Array.isArray(dc?.guilds) && dc.guilds.length > 0; } catch { conn.discord = false; }
+      try { const li = await fetch(`${BASE}/linkedin/status?user_id=${uid}`).then(r=>r.ok?r.json():null); conn.linkedin = li?.connected || false; } catch { conn.linkedin = false; }
+      try { const fb = await fetch(`${BASE}/facebook/status?user_id=${uid}`).then(r=>r.ok?r.json():null); conn.facebook = fb?.connected || false; } catch { conn.facebook = false; }
+      conn.instagram = false;
+      conn.threads = false;
+      setConnections(conn);
+    };
+    checkAll();
+    const _pollId = setInterval(checkAll, 15000);
+    return () => clearInterval(_pollId);
+  }, [user]);
+
 
   const apiFetch = useCallback(async (path, body) => {
     const headers = { "Content-Type":"application/json" };
@@ -2414,6 +2435,7 @@ export default function App() {
             <button key={ch.id} onClick={()=>{ if(!isPro){window.location.href="/pricing?from=app";return;} toggleTab(ch.id);setSidebarOpen(false);}}
               style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 12px",borderRadius:"8px",border:"none",borderLeft:activeTab===ch.id?`3px solid ${ch.color}`:"3px solid transparent",background:activeTab===ch.id?`${ch.color}14`:"transparent",color:activeTab===ch.id?ch.color:"rgba(255,255,255,0.4)",fontSize:"13px",fontWeight:"600",cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",transition:"all 0.15s"}}>
               <span style={{display:"flex",alignItems:"center",gap:"8px"}}>{ch.icon}{ch.label}</span>
+              <span style={{width:"7px",height:"7px",borderRadius:"50%",flexShrink:0,background:connections[ch.id]?"#ffffff":"rgba(255,255,255,0.15)",boxShadow:connections[ch.id]?"0 0 6px 1px rgba(255,255,255,0.7)":"none",transition:"all 0.2s"}}/>
             </button>
           ))}
 
@@ -3125,7 +3147,7 @@ export default function App() {
 
                 {/* Keyword Input */}
                 <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>{t("keywordTopic")}</div>
-                <div style={{ position:"relative", marginBottom:videoFile?"8px":"20px" }}>
+                <div className="kw-wrap" style={{ position:"relative", marginBottom:videoFile?"8px":"20px" }}>
                   <input value={keyword} onChange={e=>setKeyword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
                     placeholder={videoFile ? "Enter keyword or video title for better results..." : "e.g. why every creator needs SocioMee AI"}
                     style={{ width:"100%", padding:"14px 92px 14px 22px", borderRadius:"99px", border:"1px solid rgba(255,255,255,0.1)", outline:"none", fontSize:"15px", color:"#fff", background:"rgba(255,255,255,0.05)", fontFamily:"'Poppins',sans-serif", boxSizing:"border-box", transition:"border 0.2s" }}
@@ -3194,7 +3216,7 @@ export default function App() {
                   </div>
                 )}
                 <div style={{ display:"flex",alignItems:"center",gap:"10px",marginBottom:"20px" }}>
-                  <button onClick={()=>{ if(!isPro){ openPricing("upgrade"); return; } setDeepResearch(r=>!r); }} style={{ display:"flex",alignItems:"center",gap:"8px",padding:"7px 14px",borderRadius:"99px",border:`1.5px solid ${deepResearch&&isPro?"#a78bfa":"rgba(255,255,255,0.12)"}`,background:deepResearch&&isPro?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s",opacity:isPro?1:0.6 }}>
+                  <button onClick={()=>{ if(!isPro){ openPricing("upgrade"); return; } setDeepResearch(r=>!r); }} className="deep-research-btn" style={{ display:"flex",alignItems:"center",gap:"8px",padding:"7px 14px",borderRadius:"99px",border:`1.5px solid ${deepResearch&&isPro?"#a78bfa":"rgba(255,255,255,0.12)"}`,background:deepResearch&&isPro?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.04)",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s",opacity:isPro?1:0.6 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={deepResearch&&isPro?"#a78bfa":"rgba(255,255,255,0.4)"} strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
                     <span style={{ fontSize:"12px",fontWeight:"700",color:deepResearch&&isPro?"#a78bfa":"rgba(255,255,255,0.4)",letterSpacing:"0.3px" }}>Deep Research</span>
                     {!isPro&&<span style={{ fontSize:"10px",padding:"2px 7px",borderRadius:"99px",background:"rgba(251,191,36,0.2)",color:"#fbbf24",fontWeight:"800" }}>PRO</span>}
@@ -3246,13 +3268,16 @@ export default function App() {
 
                 {/* TONE - Pills desktop, Dropdown mobile */}
                 <div style={{ fontSize:"11px", fontWeight:"700", color:"rgba(255,255,255,0.3)", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"10px" }}>NICHE</div>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"16px" }}>
+                <div className="niche-pills" style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"16px" }}>
                   {[{id:"",label:"Auto"},{id:"gaming",label:"Gaming"},{id:"tech",label:"Tech & AI"},{id:"finance",label:"Finance"},{id:"lifestyle",label:"Lifestyle"},{id:"education",label:"Education"},{id:"fitness",label:"Fitness"},{id:"food",label:"Food"},{id:"travel",label:"Travel"},{id:"fashion",label:"Fashion"},{id:"beauty",label:"Beauty"},{id:"business",label:"Business"},{id:"motivation",label:"Motivation"},{id:"music",label:"Music"},{id:"sports",label:"Sports"},{id:"news",label:"News"},{id:"entertainment",label:"Entertainment"}].map(n=>(
                     <button key={n.id} onClick={()=>setNiche(n.id)}
                       style={{ padding:"6px 14px", borderRadius:"99px", border:`1px solid ${niche===n.id?"rgba(255,255,255,0.3)":"rgba(255,255,255,0.08)"}`, background:niche===n.id?"rgba(255,255,255,0.1)":"transparent", color:niche===n.id?"#fff":"rgba(255,255,255,0.4)", fontSize:"12px", fontWeight:niche===n.id?"600":"400", cursor:"pointer", fontFamily:"'Poppins',sans-serif", transition:"all 0.15s" }}>
                       {n.label}
                     </button>
                   ))}
+                </div>
+                <div className="niche-dropdown" style={{ display:"none", marginBottom:"16px", width:"100%" }}>
+                  <CustomSelect value={niche} onChange={setNiche} label="Niche" options={[{id:"",label:"Auto"},{id:"gaming",label:"Gaming"},{id:"tech",label:"Tech & AI"},{id:"finance",label:"Finance"},{id:"lifestyle",label:"Lifestyle"},{id:"education",label:"Education"},{id:"fitness",label:"Fitness"},{id:"food",label:"Food"},{id:"travel",label:"Travel"},{id:"fashion",label:"Fashion"},{id:"beauty",label:"Beauty"},{id:"business",label:"Business"},{id:"motivation",label:"Motivation"},{id:"music",label:"Music"},{id:"sports",label:"Sports"},{id:"news",label:"News"},{id:"entertainment",label:"Entertainment"}]}/>
                 </div>
                 <div style={{ fontSize:"11px", fontWeight:"800", letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,0.3)", marginBottom:"10px" }}>{t("toneLabel")}</div>
                 <div className="tone-pills" style={{ display:"flex", flexWrap:"wrap", gap:"8px", marginBottom:"16px" }}>
@@ -3272,13 +3297,13 @@ export default function App() {
                   ))}
                 </div>
                 <div className="tone-dropdown" style={{ display:"none", marginBottom:"16px", width:"100%" }}>
-                  <CustomSelect centered={true} value={tone} onChange={setTone} grid={true} label={"😎 "+t("toneCasual")} options={[
-                    {id:"bold",label:"🔥 "+t("toneBold")},{id:"funny",label:"😂 "+t("toneFunny")},
-                    {id:"emotional",label:"💖 "+t("toneEmotional")},{id:"informative",label:"📚 "+t("toneInformative")},
-                    {id:"aggressive",label:" "+t("toneAggressive")},{id:"sales",label:"💸 "+t("toneSales")},
-                    {id:"dramatic",label:"🎭 "+t("toneDramatic")},{id:"casual",label:"😎 "+t("toneCasual")},
-                    {id:"motivational",label:"🚀 "+t("toneMotivational")},{id:"storytelling",label:"📖 "+t("toneStorytelling")},
-                    {id:"educational",label:"🎓 "+t("toneEducational")},{id:"cinematic",label:"🎬 "+t("toneCinematic")},
+                  <CustomSelect centered={true} value={tone} onChange={setTone} grid={true} label={t("toneCasual")} options={[
+                    {id:"bold",label:t("toneBold")},{id:"funny",label:t("toneFunny")},
+                    {id:"emotional",label:t("toneEmotional")},{id:"informative",label:t("toneInformative")},
+                    {id:"aggressive",label:t("toneAggressive")},{id:"sales",label:t("toneSales")},
+                    {id:"dramatic",label:t("toneDramatic")},{id:"casual",label:t("toneCasual")},
+                    {id:"motivational",label:t("toneMotivational")},{id:"storytelling",label:t("toneStorytelling")},
+                    {id:"educational",label:t("toneEducational")},{id:"cinematic",label:t("toneCinematic")},
                   ]}/>
                 </div>
 
@@ -3647,7 +3672,7 @@ export default function App() {
         .gen-btn:hover:not(:disabled){background:rgba(124,58,237,0.25)!important;border-color:rgba(124,58,237,1)!important;box-shadow:0 0 40px rgba(124,58,237,0.8),0 0 80px rgba(124,58,237,0.3)!important;transform:translateY(-2px);}
         select{appearance:none;-webkit-appearance:none;}
         select option{background:#0a0a0a;color:#fff;}
-        html,body{overflow-x:hidden!important;} @media(max-width:768px){ .tone-pills{display:none!important;} .tone-dropdown{display:block!important;} .format-mobile-only{display:block!important;} .plf-desktop{display:none!important;} .plf-mobile{display:flex!important;} .plf-mobile button{font-size:11px!important;padding:9px 10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;} .platform-grid button{border-radius:50%!important;width:48px!important;height:48px!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;} .platform-grid button img{width:24px!important;height:24px!important;} .platform-label{display:none!important;} .platform-grid{gap:6px!important;} .custom-select-btn{padding:7px 10px!important;font-size:11px!important;} .custom-select-drop{font-size:11px!important;} .persona-lang-grid{grid-template-columns:1fr!important;gap:8px!important;} 
+        html,body{overflow-x:hidden!important;} @media(max-width:768px){ .tone-pills{display:none!important;} .tone-dropdown{display:block!important;} .format-mobile-only{display:block!important;} .plf-desktop{display:none!important;} .plf-mobile{display:flex!important;} .plf-mobile button{font-size:11px!important;padding:9px 10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;} .platform-grid button{border-radius:50%!important;width:48px!important;height:48px!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;} .platform-grid button img{width:24px!important;height:24px!important;} .platform-label{display:none!important;} .platform-grid{gap:6px!important;} .custom-select-btn{padding:7px 10px!important;font-size:11px!important;} .custom-select-drop{font-size:11px!important;} .persona-lang-grid{grid-template-columns:1fr!important;gap:8px!important;} .niche-pills{display:none!important;} .niche-dropdown{display:block!important;} .kw-wrap input{padding:10px 70px 10px 16px!important;font-size:13px!important;} .deep-research-btn{padding:5px 10px!important;} .deep-research-btn svg{width:11px!important;height:11px!important;} .deep-research-btn span{font-size:10px!important;} .platform-grid{grid-template-columns:repeat(6,1fr)!important;gap:5px!important;} .platform-grid button{width:44px!important;height:44px!important;padding:0!important;border-radius:50%!important;aspect-ratio:1/1!important;} .platform-grid button img{width:16px!important;height:16px!important;} .kw-wrap{position:relative!important;} .kw-wrap input{padding:10px 68px 10px 14px!important;font-size:12px!important;} .kw-wrap input::placeholder{font-size:12px!important;} .kw-wrap button{top:8px!important;width:28px!important;height:28px!important;right:44px!important;} .kw-wrap label{top:8px!important;width:28px!important;height:28px!important;right:8px!important;} 
           #app-sidebar{transform:translateX(-100%);width:240px!important;}
           #app-sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,0.5);}
           #main-content{margin-left:0!important;padding:60px 16px 80px!important;} #main-content.notes-mode{padding:0!important;}

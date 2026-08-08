@@ -502,7 +502,7 @@ class PlatformContentRequest(BaseModel):
     language: str = Field(default="hinglish", max_length=20)
 
     def effective_persona(self) -> str:
-        return self.persona or self.personality or "default"
+        return self.personality or self.persona or "default"
 
 class CreateOrderRequest(BaseModel):
     user_id: str = Field(..., min_length=1)
@@ -1292,6 +1292,8 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
             from vertex_engine import generate_telegram
             _wa = generate_telegram(topic=topic, tone=payload.tone or "informative", persona=payload.effective_persona(), language=payload.language or "hinglish", destination_type="channel")
             _wa_m1 = _wa.get("message","")
+            import re as _re_wa
+            _wa_m1 = _re_wa.sub(r"\*\*(.+?)\*\*", r"*\1*", _wa_m1)
             result = {
                 "platform": "whatsapp",
                 "topic": topic,
@@ -1419,6 +1421,7 @@ def gen_platform(request: Request, payload: PlatformContentRequest, user: dict =
     if isinstance(result, dict):
         result["language"] = payload.language or "hinglish"
         result["format_type"] = payload.format_type or "long"
+        result["personality_used"] = payload.effective_persona()
     # wrap caption into seo_packs so PlatformSEOTabs can render it
     caption = result.get("caption","") or result.get("post","") or result.get("description","")
     if "seo_packs" not in result:

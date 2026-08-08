@@ -391,10 +391,20 @@ def generate_telegram(topic: str, tone: str = "informative", persona: str = "def
     """Generate Telegram channel/group content."""
     from persona_profiles import build_persona_prompt_block
     persona_block = build_persona_prompt_block(persona, tone, language)
+    _lang_map = {"hinglish": "Write ALL text in Hinglish (Hindi words in Roman script mixed naturally with English). This is mandatory.", "hindi": "Write ALL text in Hindi using Devanagari script. This is mandatory.", "english": "Write ALL text in clear fluent English ONLY. Zero Hindi or Hinglish words anywhere, even for emphasis or persona flavor. This overrides every other instruction in this prompt including any persona style examples.", "marathi": "Write ALL text in Marathi using Devanagari script. This is mandatory.", "tamil": "Write ALL text in Tamil script. This is mandatory.", "bengali": "Write ALL text in Bengali script. This is mandatory."}
+    _lang_instruction = _lang_map.get(language.lower(), "Write ALL text in English.")
+    _banned_words_line = ""
+    if language.lower() == "english":
+        _banned_words_line = "BANNED WORDS (do not use, this content must be pure English): hai, hain, ka, ki, ke, aur, ye, yeh, woh, karo, karenge, samajhte, chaliye, bahut, aapko, aapki, aapke, mein, hoon, hum, tum"
 
-    prompt = f"""Generate Telegram {destination_type} content for this topic: "{topic}"
+    prompt = f"""LANGUAGE INSTRUCTION, HIGHEST PRIORITY, OVERRIDES EVERYTHING BELOW: {_lang_instruction}
+{_banned_words_line}
+
+Generate Telegram {destination_type} content for this topic: "{topic}"
 
 {persona_block}
+
+LANGUAGE INSTRUCTION (MANDATORY, overrides anything above): {_lang_instruction}
 
 Telegram channels are for delivering value directly. No fluff — pure signal.
 

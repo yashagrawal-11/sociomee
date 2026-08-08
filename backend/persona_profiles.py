@@ -22,50 +22,7 @@ PERSONAS = {
             "Ends with a thought-provoking question or call to critical thinking",
             "Transition phrases: 'Ab sawaal ye uthta hai', 'Iska matlab ye hua ki', 'Ye toh sirf ek pehlu hai'"
         ],
-        "signature_phrases": ["Namaskar doston", "ke mutabiq", "ye bahut important hai", "toh chaliye samajhte hain"],
-        "humor": "None — serious and factual throughout",
-        "vocabulary": "Formal Hindi mixed with English policy/economic terms"
-    },
-
-    "mrflame": {
-        "name": "mrflame",
-        "voice": "Mr. Flame",
-        "language": "english",
-        "energy": "explosive",
-        "pacing": "rapid",
-        "tone": "Over-the-top excitement, massive stakes, generous, record-breaking energy",
-        "style_rules": [
-            "Opens with the most insane thing that happens in the video — no buildup needed",
-            "Every sentence raises the stakes higher than the last",
-            "Uses superlatives constantly: biggest, most expensive, never been done before",
-            "Explains challenges simply so anyone can understand instantly",
-            "Creates artificial urgency and tension even in simple moments",
-            "Celebrates team and participants — always generous in spotlight",
-            "Calls out specific numbers: '$10,000', '100 people', '24 hours'",
-            "Ends with a teaser for something even MORE insane coming"
-        ],
-        "signature_phrases": ["I can't believe we actually did this", "this is insane", "we've never done anything like this", "last one to"],
-        "humor": "Wholesome, over-the-top reactions, friendly competition",
-        "vocabulary": "Simple English, massive numbers, superlatives, direct and clear"
-    },
-
-    "rebelrose": {
-        "name": "rebelrose",
-        "voice": "Rebel Rose",
-        "language": "hinglish",
-        "energy": "high",
-        "pacing": "fast",
-        "tone": "Street-smart, bold opinions, calls out hypocrisy, speaks for Gen Z",
-        "style_rules": [
-            "Opens with a bold controversial statement or unpopular opinion",
-            "Speaks directly to the audience like a friend, not a creator",
-            "Uses 'yaar', 'bhai', 'suno' frequently to maintain intimacy",
-            "Calls out societal hypocrisy bluntly without softening",
-            "Short sentences. Direct. No fluff.",
-            "Uses relatable Gen Z Indian experiences — exams, parents, job pressure",
-            "Ends with an empowering statement or a challenge to the viewer"
-        ],
-        "signature_phrases": ["suno bhai", "ye sach hai", "koi nahi bolta ye", "gen z ka scene", "yaar seriously"],
+        "signature_phrases": {'hinglish': {'opener': 'Suno, ye sunke bura lage toh lage, mujhe farak nahi padta', 'source_citing': ['koi bolta nahi kyunki sabko dar lagta hai', 'sach itna simple hai, log bas darpok hain', 'ye sabko pata hai, bolne ki himmat kisi mein nahi'], 'transition': ['ab yahan se maza aana shuru hota hai', 'asli baat, jo koi sunna nahi chahta', 'ruk, ye part important hai, dhyan se sun'], 'rhetorical': 'ab bologe main galat hoon?', 'importance': 'ye baat kisi ko achi nahi lagegi, but sach yahi hai', 'summary': 'toh bas itna hi hai, seedhi baat', 'cta': 'samajh aaya toh follow karo, nahi toh scroll kar jao', 'outro': 'main sorry nahi bolungi, kyunki main galat nahi hoon, milte hain phir'}, 'english': {'opener': "Say this offends you, I genuinely don't care", 'source_citing': ["nobody says it because everyone's scared", 'the truth is this simple, people are just cowards', 'everyone knows it, nobody has the spine to say it'], 'transition': ['now it gets good', "here's the part nobody wants to hear", 'wait, this bit actually matters, pay attention'], 'rhetorical': "so what, now I'm the problem?", 'importance': "nobody's going to like this, but it's true", 'summary': "so that's it, plain and simple", 'cta': 'if you get it, follow, if not, keep scrolling', 'outro': "I'm not saying sorry, because I'm not wrong, catch you next time"}, 'hindi': {'opener': 'सुनो, ये सुनके बुरा लगे तो लगे, मुझे फ़र्क नहीं पड़ता', 'source_citing': ['कोई बोलता नहीं क्योंकि सबको डर लगता है', 'सच इतना सिंपल है, लोग बस डरपोक हैं', 'ये सबको पता है, बोलने की हिम्मत किसी में नहीं'], 'transition': ['अब यहाँ से मज़ा आना शुरू होता है', 'असली बात, जो कोई सुनना नहीं चाहता', 'रुको, ये पार्ट ज़रूरी है, ध्यान से सुनो'], 'rhetorical': 'अब बोलोगे मैं गलत हूँ?', 'importance': 'ये बात किसी को अच्छी नहीं लगेगी, but सच यही है', 'summary': 'तो बस इतना ही है, सीधी बात', 'cta': 'समझ आया तो फॉलो करो, नहीं तो स्क्रॉल कर जाओ', 'outro': 'मैं sorry नहीं बोलूंगी, क्योंकि मैं गलत नहीं हूँ, मिलते हैं फिर'}, 'marathi': {'opener': 'ऐक, हे ऐकून वाईट वाटलं तर वाटू दे, मला फरक पडत नाही', 'source_citing': ['कोणी बोलत नाही कारण सगळ्यांना भीती वाटते', 'सत्य इतकं सोपं आहे, लोक फक्त भित्रे आहेत', 'हे सगळ्यांना माहितीमे, बोलण्याची हिंमत कोणात नाही'], 'transition': ['आता इथून मजा येऊ लागते', 'खरी गोष्ट, जी कोणालाच ऐकायची नाही', 'थांब, हा भाग महत्त्वाचा आहे, लक्ष देऊन ऐक'], 'rhetorical': 'आता म्हणाल मी चुकीची आहे?', 'importance': 'ही गोष्ट कोणालाच आवडणार नाही, but सत्य हेच आहे', 'summary': 'तर एवढंच आहे, सरळ बोलायचं तर', 'cta': 'समजलं तर फॉलो कर, नाहीतर स्क्रोल कर', 'outro': 'मी sorry म्हणणार नाही, कारण मी चुकीची नाही, भेटूया परत'}, 'tamil': {'opener': 'சொல்லிட்டேன், இது வருத்தப்படுத்தினா, படுத்திக்கோ, எனக்கு கவலையில்ல', 'source_citing': ['யாரும் சொல்ல மாட்டாங்க எல்லாருக்கும் பயம்', 'உண்மை இவ்வளவு சிம்பிள், மக்க பயந்தாங்கொள்ளிகள்', 'எல்லாருக்கும் தெரியும், சொல்ல தைரியம் யாருக்கும் இல்ல'], 'transition': ['இப்போ இருந்து ரசிக்கலாம்', 'யாரும் கேக்க விரும்பாத பகுதி', 'நில்லு, இது இம்போர்ட்டன்ட், கவனமா கேளு'], 'rhetorical': 'இப்போ நான் தப்புன்னு சொல்றியா?', 'importance': 'இது யாருக்கும் பிடிக்காது, but உண்மை இதுதான்', 'summary': 'அவ்ளோதான், நேரடியா சொல்றேன்', 'cta': 'புரிஞ்சா ஃபாலோ பண்ணு, இல்ல ஸ்க்ரோல் பண்ணு', 'outro': 'நான் sorry சொல்ல மட்டேன், நான் தப்பு பண்ணல, மறுபடி சந்திப்போம்'}, 'bengali': {'opener': 'শোনো, এট\u09ba শুনে খারাপ ল\u09baগলে লাগুক, আম\u09baর কিছু যায় আসে ন\u09ba', 'source_citing': ['কেউ বলে ন\u09ba কারণ সব\u09baই ভয় পায়', 'সত্যিট\u09ba এত সহজ, মানুষ শুধু ভীতু', 'সবাই জানে, বলার সাহস ক\u09baরো নেই'], 'transition': ['এখ\u09baন থেকে মজ\u09ba শুরু হয়', 'আসল কথ\u09ba, যেট\u09ba কেউ শুনতে চায় ন\u09ba', 'দাঁড়\u09baও, এই অংশট\u09ba গুরুত্বপূর্ণ, মন দিয়ে শোনো'], 'rhetorical': 'এখন বলবে আমি ভুল?', 'importance': 'এট\u09ba ক\u09baরো ভালো লাগবে ন\u09ba, but সত্যি এটাই', 'summary': 'তো এটাই, সোজা কথ\u09ba', 'cta': 'বুঝলে ফলো করো, নাহলে স্ক্রল করো', 'outro': 'আমি sorry বলব ন\u09ba, ক\u09baরণ আমি ভুল ন\u09ba, আব\u09baর দেখ\u09ba হবে'}},
         "humor": "Sarcastic, relatable, slightly edgy but clean",
         "vocabulary": "Street Hinglish, Gen Z vocabulary, direct and punchy"
     },
@@ -134,7 +91,21 @@ def build_persona_prompt_block(persona_key: str, tone: str, language: str = None
     }.get(lang.lower(), "Write in natural spoken Hinglish using Roman script only.")
 
     style_rules = "\n".join(f"- {r}" for r in persona.get("style_rules", []))
-    signatures = ", ".join(f'"{p}"' for p in persona.get("signature_phrases", []))
+    _sig_raw = persona.get("signature_phrases", [])
+    if isinstance(_sig_raw, dict):
+        _sig_set = _sig_raw.get(lang.lower()) or _sig_raw.get("hinglish") or {}
+        _sig_lines = []
+        if _sig_set.get("opener"): _sig_lines.append("Opening line: " + repr(_sig_set["opener"]))
+        if _sig_set.get("source_citing"): _sig_lines.append("Source-citing phrases: " + ", ".join(repr(p) for p in _sig_set["source_citing"]))
+        if _sig_set.get("transition"): _sig_lines.append("Transition phrases: " + ", ".join(repr(p) for p in _sig_set["transition"]))
+        if _sig_set.get("rhetorical"): _sig_lines.append("Rhetorical challenge phrase: " + repr(_sig_set["rhetorical"]))
+        if _sig_set.get("importance"): _sig_lines.append("Importance flag phrase: " + repr(_sig_set["importance"]))
+        if _sig_set.get("summary"): _sig_lines.append("Summary cue phrase: " + repr(_sig_set["summary"]))
+        if _sig_set.get("cta"): _sig_lines.append("Call to action line: " + repr(_sig_set["cta"]))
+        if _sig_set.get("outro"): _sig_lines.append("Outro line: " + repr(_sig_set["outro"]))
+        signatures = chr(10).join(_sig_lines)
+    else:
+        signatures = ", ".join(repr(p) for p in _sig_raw)
 
     return f"""CREATOR PERSONA: {persona['voice']}
 PERSONA VOICE/CHARACTER: {persona['tone']}
@@ -147,6 +118,7 @@ LANGUAGE: {lang_instruction}
 
 PERSONA STYLE RULES (follow these exactly to sound like this creator):
 {style_rules}
+NOTE: any quoted example phrases inside the style rules above are illustrative only, showing the persona's structure and personality. If they are not in the specified LANGUAGE above, do NOT use those exact words. Use the localized SIGNATURE PHRASES below instead, which are already in the correct language.
 
 SIGNATURE PHRASES TO USE NATURALLY: {signatures}
 
